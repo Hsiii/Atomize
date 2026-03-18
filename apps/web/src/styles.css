@@ -1,4 +1,9 @@
 :root {
+  --ink: #08111c;
+  --accent: #123f72;
+  --accent-strong: #0a2c54;
+  --mist: rgba(255, 255, 255, 0.56);
+  --shadow: rgba(8, 17, 28, 0.08);
   color: #08111c;
   background:
     radial-gradient(circle at top left, rgba(203, 213, 225, 0.95), transparent 35%),
@@ -24,7 +29,7 @@ input {
 button {
   border: 0;
   border-radius: 18px;
-  background: #08111c;
+  background: var(--ink);
   color: #f8fafc;
   padding: 1rem;
 }
@@ -95,20 +100,34 @@ input {
 }
 
 .screen-menu {
+  position: relative;
+  overflow: hidden;
   justify-content: center;
   align-items: stretch;
 }
 
 .menu-stack {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.menu-stack h1 {
+.hero-title {
   margin: 0;
-  font-size: clamp(2.8rem, 14vw, 4.8rem);
-  line-height: 0.9;
+  font-size: clamp(4.5rem, 22vw, 7rem);
+  line-height: 0.84;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+}
+
+.hero-copy {
+  max-width: 16rem;
+  margin: 0;
+  font-size: 1rem;
+  color: rgba(8, 17, 28, 0.76);
 }
 
 .action-stack {
@@ -118,8 +137,15 @@ input {
 
 .primary-action,
 .secondary-action,
+.mode-action,
 .ghost-action {
   width: 100%;
+}
+
+.mode-action {
+  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-strong) 100%);
+  color: #f8fafc;
+  box-shadow: 0 18px 40px rgba(10, 44, 84, 0.24);
 }
 
 .secondary-action {
@@ -151,9 +177,9 @@ input {
 .code-panel {
   padding: 1rem;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.56);
+  background: var(--mist);
   backdrop-filter: blur(14px);
-  box-shadow: 0 18px 42px rgba(8, 17, 28, 0.08);
+  box-shadow: 0 18px 42px var(--shadow);
 }
 
 .scoreboard strong,
@@ -222,6 +248,129 @@ input {
   color: rgba(8, 17, 28, 0.76);
 }
 
+.menu-ornaments {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.prime,
+.atom {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  user-select: none;
+}
+
+.prime {
+  width: 3.75rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid rgba(18, 63, 114, 0.18);
+  background: rgba(255, 255, 255, 0.32);
+  backdrop-filter: blur(10px);
+  color: rgba(10, 44, 84, 0.82);
+  font-size: 1.3rem;
+  font-weight: 800;
+  box-shadow: 0 18px 40px rgba(18, 63, 114, 0.08);
+  animation: float-drift 10s ease-in-out infinite;
+}
+
+.atom {
+  width: 7rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  opacity: 0.55;
+  animation: atom-spin 18s linear infinite;
+}
+
+.atom::before,
+.atom::after {
+  content: "";
+  position: absolute;
+  inset: 0.8rem;
+  border: 1.5px solid rgba(10, 44, 84, 0.18);
+  border-radius: 50%;
+}
+
+.atom::after {
+  transform: rotate(68deg) scaleX(0.62);
+}
+
+.atom-a {
+  top: 12%;
+  right: -0.4rem;
+}
+
+.atom-b {
+  bottom: 18%;
+  left: -1rem;
+  animation-duration: 22s;
+}
+
+.atom-c {
+  top: 44%;
+  right: 18%;
+  width: 5.5rem;
+  animation-duration: 14s;
+}
+
+.prime-a {
+  top: 16%;
+  left: 10%;
+}
+
+.prime-b {
+  top: 10%;
+  right: 24%;
+  animation-delay: -2s;
+}
+
+.prime-c {
+  top: 38%;
+  right: 8%;
+  animation-delay: -4s;
+}
+
+.prime-d {
+  bottom: 27%;
+  left: 6%;
+  animation-delay: -6s;
+}
+
+.prime-e {
+  bottom: 14%;
+  right: 18%;
+  animation-delay: -3s;
+}
+
+.prime-f {
+  bottom: 8%;
+  left: 28%;
+  animation-delay: -5s;
+}
+
+@keyframes float-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(0, -14px, 0);
+  }
+}
+
+@keyframes atom-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (min-width: 700px) {
   .screen {
     width: min(430px, 100%);
@@ -230,6 +379,19 @@ input {
 }
 
 @media (max-width: 380px) {
+  .hero-title {
+    font-size: clamp(3.8rem, 24vw, 5rem);
+  }
+
+  .prime {
+    width: 3.1rem;
+    font-size: 1.05rem;
+  }
+
+  .atom {
+    width: 5rem;
+  }
+
   .scoreboard {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

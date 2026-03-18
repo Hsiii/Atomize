@@ -19,6 +19,17 @@ import {
 } from "./lib/supabase";
 
 const soloSeed = "solo-mvp-seed";
+const menuOrnaments = [
+  { label: "2", className: "prime prime-a" },
+  { label: "3", className: "prime prime-b" },
+  { label: "5", className: "prime prime-c" },
+  { label: "7", className: "prime prime-d" },
+  { label: "11", className: "prime prime-e" },
+  { label: "13", className: "prime prime-f" },
+  { label: "", className: "atom atom-a" },
+  { label: "", className: "atom atom-b" },
+  { label: "", className: "atom atom-c" },
+];
 type Screen = "menu" | "single" | "multi-lobby" | "multi-game";
 
 type MultiplayerState = {
@@ -352,14 +363,22 @@ export default function App() {
     return (
       <main className="app-shell fullscreen-shell">
         <section className="screen screen-menu">
+          <div className="menu-ornaments" aria-hidden="true">
+            {menuOrnaments.map((ornament, index) => (
+              <span key={`${ornament.className}-${index}`} className={ornament.className}>
+                {ornament.label}
+              </span>
+            ))}
+          </div>
           <div className="menu-stack">
-            <p className="eyebrow">Atomize</p>
-            <h1>Choose mode.</h1>
+            <p className="eyebrow">Prime factor battle</p>
+            <h1 className="hero-title">Atomize</h1>
+            <p className="hero-copy">Solo drills or live head-to-head rounds.</p>
             <div className="action-stack">
-              <button type="button" className="primary-action" onClick={startSingleGame}>
+              <button type="button" className="mode-action" onClick={startSingleGame}>
                 Single Player
               </button>
-              <button type="button" className="secondary-action" onClick={openMultiplayerLobby}>
+              <button type="button" className="mode-action" onClick={openMultiplayerLobby}>
                 Multi Player
               </button>
             </div>
