@@ -19,20 +19,31 @@ import {
 } from "./lib/supabase";
 
 const soloSeed = "solo-mvp-seed";
+type MenuMode = "default" | "create-room" | "join-room";
+
 const uiText = {
   back: "Back",
-  serverInfo: "Server Info",
   serverOnline: "Server online",
   serverOffline: "Server offline",
   serverSyncing: "Syncing",
+  title: "Atomize",
+  eyebrow: "Prime factor battle",
+  singlePlayer: "Single Player",
+  multiPlayer: "Multi Player",
   createRoom: "Create Room",
   joinRoom: "Join Room",
   roomCode: "Room Code",
   enterCode: "Enter Code",
   playerName: "Name",
-  roomHint: "Create a room or enter a room code to join.",
+  roomHint: "Choose a room flow to get started.",
+  createHint: "Start a room, get a code, and wait for the second player to arrive.",
+  joinHint: "Enter a room code to connect directly to an existing match.",
   shareHint: "Share the code. The game opens automatically when another player joins.",
   configHint: "Server setup required for multiplayer.",
+  idleStatus: "Server idle",
+  roomPlaceholder: "ABCD",
+  cancel: "Cancel",
+  waitingForPlayer: "Waiting for the second player to join.",
 } as const;
 type Screen = "menu" | "single" | "multi-lobby" | "multi-game";
 
@@ -68,11 +79,12 @@ type RoomBroadcastMessage =
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>("menu");
+  const [menuMode, setMenuMode] = useState<MenuMode>("default");
   const [soloState, setSoloState] = useState(() => createInitialSoloState(soloSeed));
   const [multiplayer, setMultiplayer] = useState<MultiplayerState>({
     playerId: null,
     snapshot: null,
-    statusText: "Server idle",
+    statusText: uiText.idleStatus,
     roomId: "",
     isHost: false,
   });
@@ -137,16 +149,13 @@ export default function App() {
     setMultiplayer({
       playerId: null,
       snapshot: null,
-      statusText: "Server idle",
+      statusText: uiText.idleStatus,
       roomId: "",
       isHost: false,
     });
     setRoomIdInput("");
+    setMenuMode("default");
     setScreen("menu");
-  }
-
-  function openMultiplayerLobby() {
-    setScreen("multi-lobby");
   }
 
   function setStatusText(statusText: string) {
@@ -311,7 +320,7 @@ export default function App() {
   async function createRoom() {
     const roomId = createRoomId();
     const playerId = crypto.randomUUID();
-    const snapshot = createRoomSnapshot(roomId, playerId, playerName);
+    const snapshot = createRoomSnapshot(roomId, playerId, normalizePlayerName(playerName));
 
     await subscribeToRoom(roomId, playerId, true, async () => {
       setScreen("multi-lobby");
@@ -340,7 +349,7 @@ export default function App() {
       await broadcastMessage({
         type: "join_request",
         playerId,
-        playerName,
+        playerName: normalizePlayerName(playerName),
       });
     });
   }
@@ -376,19 +385,85 @@ export default function App() {
   }
 
   if (screen === "menu") {
+    const isCreateFlow = menuMode === "create-room";
+    const isJoinFlow = menuMode === "join-room";
+
     return (
       <main className="app-shell fullscreen-shell">
         <section className="screen screen-menu">
           <div className="menu-stack">
-            <p className="eyebrow">Prime factor battle</p>
-            <h1 className="hero-title">Atomize</h1>
-            <div className="action-stack">
+            <p className="eyebrow">{uiText.eyebrow}</p>
+            <h1 className="hero-title">{uiText.title}</h1>
+            <div className="menu-actions">
               <button type="button" className="mode-action" onClick={startSingleGame}>
-                Single Player
+                {uiText.singlePlayer}
               </button>
-              <button type="button" className="mode-action" onClick={openMultiplayerLobby}>
-                Multi Player
-              </button>
+
+              <section className="multiplayer-panel">
+                <p className="label">{uiText.multiPlayer}</p>
+                <div className="multiplayer-actions">
+                  <button
+                    type="button"
+                    className={isCreateFlow ? "mode-action selected" : "mode-action"}
+                    onClick={() => setMenuMode("create-room")}
+                  >
+                    {uiText.createRoom}
+                  </button>
+                  <button
+                    type="button"
+                    className={isJoinFlow ? "mode-action selected" : "mode-action"}
+                    onClick={() => setMenuMode("join-room")}
+                  >
+                    {uiText.joinRoom}
+                  </button>
+                </div>
+
+                {menuMode === "default" ? (
+                  <p className="helper-copy">{supabaseConfig ? uiText.roomHint : uiText.configHint}</p>
+                ) : (
+                  <div className="setup-panel">
+                    <p className="helper-copy">{isCreateFlow ? uiText.createHint : uiText.joinHint}</p>
+
+                    <label className="field">
+                      <span>{uiText.playerName}</span>
+                      <input value={playerName} onChange={(event) => setPlayerName(event.target.value)} />
+                    </label>
+
+                    {isJoinFlow ? (
+                      <label className="field">
+                        <span>{uiText.enterCode}</span>
+                        <input
+                          value={roomIdInput}
+                          onChange={(event) => setRoomIdInput(event.target.value.toUpperCase())}
+                          placeholder={uiText.roomPlaceholder}
+                        />
+                      </label>
+                    ) : null}
+
+                    <div className="setup-actions">
+                      <button
+                        type="button"
+                        className="primary-action"
+                        onClick={() => void (isCreateFlow ? createRoom() : joinRoom())}
+                      >
+                        {isCreateFlow ? uiText.createRoom : uiText.joinRoom}
+                      </button>
+                      <button
+                        type="button"
+                        className="ghost-action"
+                        onClick={() => {
+                          setMenuMode("default");
+                          setStatusText(uiText.idleStatus);
+                        }}
+                      >
+                        {uiText.cancel}
+                      </button>
+                    </div>
+
+                    <p className="helper-copy status-copy">{multiplayer.statusText}</p>
+                  </div>
+                )}
+              </section>
             </div>
           </div>
         </section>
@@ -402,9 +477,9 @@ export default function App() {
         <section className="screen game-screen">
           <header className="top-bar">
             <button type="button" className="ghost-action" onClick={() => void returnToMenu()}>
-              Back
+              {uiText.back}
             </button>
-            <span className="status-pill">Single Player</span>
+            <span className="status-pill">{uiText.singlePlayer}</span>
           </header>
 
           <section className="scoreboard">
@@ -461,44 +536,29 @@ export default function App() {
           </header>
 
           <div className="lobby-stack">
-            <label className="field">
-              <span>{uiText.playerName}</span>
-              <input value={playerName} onChange={(event) => setPlayerName(event.target.value)} />
-            </label>
-
-            <button type="button" className="primary-action" onClick={() => void createRoom()}>
-              {uiText.createRoom}
-            </button>
+            <p className="eyebrow">{uiText.multiPlayer}</p>
 
             <div className="code-panel">
               <p className="label">{uiText.roomCode}</p>
               <strong>{multiplayer.roomId || "----"}</strong>
             </div>
 
-            <label className="field">
-              <span>{uiText.enterCode}</span>
-              <input
-                value={roomIdInput}
-                onChange={(event) => setRoomIdInput(event.target.value.toUpperCase())}
-                placeholder="ABCD"
-              />
-            </label>
+            <section className="scoreboard player-scoreboard lobby-scoreboard">
+              {multiplayer.snapshot?.players.map((player) => {
+                const isCurrentPlayer = player.id === multiplayer.playerId;
 
-            <button type="button" className="secondary-action" onClick={() => void joinRoom()}>
-              {uiText.joinRoom}
-            </button>
-
-            <section className="server-panel" aria-live="polite">
-              <p className="label">{uiText.serverInfo}</p>
-              <p className="helper-copy">
-                {supabaseConfig
-                  ? multiplayer.roomId
-                    ? uiText.shareHint
-                    : uiText.roomHint
-                  : uiText.configHint}
-              </p>
-              <p className="server-meta">{multiplayer.statusText}</p>
+                return (
+                  <div key={player.id} className={isCurrentPlayer ? "player-card active" : "player-card"}>
+                    <p className="label">{isCurrentPlayer ? "You" : "Opponent"}</p>
+                    <strong>{player.name}</strong>
+                    <span>{player.hp} HP</span>
+                  </div>
+                );
+              })}
             </section>
+
+            <p className="helper-copy">{supabaseConfig ? uiText.shareHint : uiText.configHint}</p>
+            <p className="server-meta">{multiplayer.statusText || uiText.waitingForPlayer}</p>
           </div>
         </section>
       </main>
@@ -558,4 +618,10 @@ export default function App() {
 
 function createRoomId(): string {
   return Math.random().toString(36).slice(2, 6).toUpperCase();
+}
+
+function normalizePlayerName(playerName: string): string {
+  const trimmedName = playerName.trim();
+
+  return trimmedName || "Player";
 }

@@ -152,6 +152,30 @@ input {
   flex-direction: column;
 }
 
+.menu-actions,
+.multiplayer-panel,
+.multiplayer-actions,
+.setup-panel,
+.setup-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.menu-actions {
+  margin-top: var(--space-7);
+}
+
+.multiplayer-panel,
+.setup-panel,
+.server-panel {
+  padding: var(--space-7);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface-base);
+  backdrop-filter: blur(var(--blur-panel));
+  box-shadow: var(--shadow-panel);
+}
+
 .primary-action,
 .secondary-action,
 .mode-action,
@@ -164,6 +188,11 @@ input {
   border: 1px solid var(--color-border-soft);
   background: var(--color-surface-strong);
   color: var(--color-ink);
+}
+
+.mode-action.selected {
+  border-color: var(--color-outline-strong);
+  background: var(--color-surface-accent);
 }
 
 .secondary-action {
@@ -199,6 +228,10 @@ input {
 .game-screen,
 .lobby-screen {
   gap: var(--space-7);
+}
+
+.lobby-scoreboard {
+  margin-top: var(--space-1);
 }
 
 .scoreboard {
@@ -282,6 +315,10 @@ input {
 .helper-copy {
   margin: var(--space-0);
   color: var(--color-ink-soft);
+}
+
+.status-copy {
+  min-height: 1.4rem;
 }
 
 .server-panel {
