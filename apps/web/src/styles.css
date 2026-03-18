@@ -287,6 +287,10 @@ input {
   box-shadow: var(--shadow-panel);
 }
 
+.player-card {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+}
+
 .scoreboard strong,
 .player-card strong,
 .code-panel strong {
