@@ -441,13 +441,13 @@ export default function App() {
             <p className="eyebrow">{uiText.eyebrow}</p>
             <h1 className="hero-title">{uiText.title}</h1>
             <div className="action-stack menu-actions">
-              <button type="button" className="mode-action" onClick={startSingleGame}>
+              <button type="button" className="primary-action" onClick={startSingleGame}>
                 {uiText.singlePlayer}
               </button>
-              <button type="button" className="mode-action" onClick={startCreateRoomFlow}>
+              <button type="button" className="secondary-action" onClick={startCreateRoomFlow}>
                 {uiText.createRoom}
               </button>
-              <button type="button" className="mode-action" onClick={startJoinRoomFlow}>
+              <button type="button" className="secondary-action" onClick={startJoinRoomFlow}>
                 {uiText.joinRoom}
               </button>
             </div>
