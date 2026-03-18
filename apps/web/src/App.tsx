@@ -19,6 +19,21 @@ import {
 } from "./lib/supabase";
 
 const soloSeed = "solo-mvp-seed";
+const uiText = {
+  back: "Back",
+  serverInfo: "Server Info",
+  serverOnline: "Server online",
+  serverOffline: "Server offline",
+  serverSyncing: "Syncing",
+  createRoom: "Create Room",
+  joinRoom: "Join Room",
+  roomCode: "Room Code",
+  enterCode: "Enter Code",
+  playerName: "Name",
+  roomHint: "Create a room or enter a room code to join.",
+  shareHint: "Share the code. The game opens automatically when another player joins.",
+  configHint: "Server setup required for multiplayer.",
+} as const;
 type Screen = "menu" | "single" | "multi-lobby" | "multi-game";
 
 type MultiplayerState = {
@@ -57,7 +72,7 @@ export default function App() {
   const [multiplayer, setMultiplayer] = useState<MultiplayerState>({
     playerId: null,
     snapshot: null,
-    statusText: "Supabase room idle",
+    statusText: "Server idle",
     roomId: "",
     isHost: false,
   });
@@ -75,6 +90,18 @@ export default function App() {
   const multiplayerStageSummary = useMemo(() => {
     return multiplayer.snapshot?.stage.remainingFactors.join(" × ") || "waiting";
   }, [multiplayer.snapshot]);
+
+  const serverStatusLabel = useMemo(() => {
+    if (!supabaseConfig) {
+      return uiText.serverOffline;
+    }
+
+    if (multiplayer.playerId || multiplayer.snapshot) {
+      return uiText.serverSyncing;
+    }
+
+    return uiText.serverOnline;
+  }, [multiplayer.playerId, multiplayer.snapshot, supabaseConfig]);
 
   useEffect(() => {
     latestMultiplayerRef.current = multiplayer;
@@ -110,7 +137,7 @@ export default function App() {
     setMultiplayer({
       playerId: null,
       snapshot: null,
-      statusText: "Supabase room idle",
+      statusText: "Server idle",
       roomId: "",
       isHost: false,
     });
@@ -133,7 +160,7 @@ export default function App() {
     const channel = channelRef.current;
 
     if (!channel) {
-      setStatusText("No active Supabase room channel");
+      setStatusText("No active server channel");
       return;
     }
 
@@ -144,7 +171,7 @@ export default function App() {
     });
 
     if (response !== "ok") {
-      setStatusText(`Supabase send failed: ${response}`);
+      setStatusText(`Server send failed: ${response}`);
     }
   }
 
@@ -175,7 +202,7 @@ export default function App() {
     if (!supabase) {
       const missingVars = getMissingSupabaseEnvVars();
       const envList = missingVars.join(", ");
-      setStatusText(`Multiplayer unavailable: missing ${envList}. On Vercel, add them to this environment and redeploy.`);
+      setStatusText(`Server unavailable: missing ${envList}. Add them to this environment and redeploy.`);
       return;
     }
 
@@ -276,7 +303,7 @@ export default function App() {
       }
 
       if (status === "CHANNEL_ERROR") {
-        setStatusText("Supabase room subscription failed");
+        setStatusText("Server connection failed");
       }
     });
   }
@@ -288,7 +315,7 @@ export default function App() {
 
     await subscribeToRoom(roomId, playerId, true, async () => {
       setScreen("multi-lobby");
-      updateSnapshot(snapshot, `Room ${roomId} created in Supabase`);
+      updateSnapshot(snapshot, `Room ${roomId} created`);
       await broadcastMessage({
         type: "room_state",
         snapshot,
@@ -422,30 +449,34 @@ export default function App() {
       <main className="app-shell fullscreen-shell">
         <section className="screen lobby-screen">
           <header className="top-bar">
-            <button type="button" className="ghost-action" onClick={() => void returnToMenu()}>
-              Back
+            <button
+              type="button"
+              className="icon-action"
+              onClick={() => void returnToMenu()}
+              aria-label={uiText.back}
+            >
+              <span aria-hidden="true">&#8592;</span>
             </button>
-            <span className="status-pill">{multiplayer.statusText}</span>
+            <span className="status-pill muted">{serverStatusLabel}</span>
           </header>
 
           <div className="lobby-stack">
-            <p className="eyebrow">Multi Player</p>
             <label className="field">
-              <span>Name</span>
+              <span>{uiText.playerName}</span>
               <input value={playerName} onChange={(event) => setPlayerName(event.target.value)} />
             </label>
 
             <button type="button" className="primary-action" onClick={() => void createRoom()}>
-              Create Room
+              {uiText.createRoom}
             </button>
 
             <div className="code-panel">
-              <p className="label">Room Code</p>
+              <p className="label">{uiText.roomCode}</p>
               <strong>{multiplayer.roomId || "----"}</strong>
             </div>
 
             <label className="field">
-              <span>Enter Code</span>
+              <span>{uiText.enterCode}</span>
               <input
                 value={roomIdInput}
                 onChange={(event) => setRoomIdInput(event.target.value.toUpperCase())}
@@ -454,16 +485,20 @@ export default function App() {
             </label>
 
             <button type="button" className="secondary-action" onClick={() => void joinRoom()}>
-              Join Room
+              {uiText.joinRoom}
             </button>
 
-            <p className="helper-copy">
-              {supabaseConfig
-                ? multiplayer.roomId
-                  ? "Share the code. The game screen opens automatically when another player joins."
-                  : "Create a room or enter a room code to join."
-                : "Set Supabase environment variables to enable multiplayer."}
-            </p>
+            <section className="server-panel" aria-live="polite">
+              <p className="label">{uiText.serverInfo}</p>
+              <p className="helper-copy">
+                {supabaseConfig
+                  ? multiplayer.roomId
+                    ? uiText.shareHint
+                    : uiText.roomHint
+                  : uiText.configHint}
+              </p>
+              <p className="server-meta">{multiplayer.statusText}</p>
+            </section>
           </div>
         </section>
       </main>
@@ -474,8 +509,13 @@ export default function App() {
     <main className="app-shell fullscreen-shell">
       <section className="screen game-screen">
         <header className="top-bar">
-          <button type="button" className="ghost-action" onClick={() => void returnToMenu()}>
-            Back
+          <button
+            type="button"
+            className="icon-action"
+            onClick={() => void returnToMenu()}
+            aria-label={uiText.back}
+          >
+            <span aria-hidden="true">&#8592;</span>
           </button>
           <span className="status-pill">Room {multiplayer.roomId}</span>
         </header>

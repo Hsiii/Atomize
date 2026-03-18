@@ -155,7 +155,8 @@ input {
 .primary-action,
 .secondary-action,
 .mode-action,
-.ghost-action {
+.ghost-action,
+.icon-action {
   width: 100%;
 }
 
@@ -175,6 +176,24 @@ input {
   padding: var(--space-4) var(--space-7);
   background: var(--color-surface-subtle);
   color: var(--color-ink);
+}
+
+.icon-action {
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: var(--space-0);
+  border: 1px solid var(--color-border-soft);
+  border-radius: 50%;
+  background: var(--color-surface-strong);
+  color: var(--color-ink);
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.icon-action span {
+  font-size: 1.1rem;
+  line-height: 1;
 }
 
 .game-screen,
@@ -262,6 +281,23 @@ input {
 
 .helper-copy {
   margin: var(--space-0);
+  color: var(--color-ink-soft);
+}
+
+.server-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding: var(--space-7);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface-muted);
+}
+
+.server-meta {
+  margin: var(--space-0);
+  font-size: 0.85rem;
   color: var(--color-ink-soft);
 }
 
