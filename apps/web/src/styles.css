@@ -230,6 +230,10 @@ input {
   gap: var(--space-7);
 }
 
+.single-game-screen {
+  flex: 1;
+}
+
 .lobby-scoreboard {
   margin-top: var(--space-1);
 }
@@ -271,6 +275,10 @@ input {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.single-scoreboard {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .player-card.active {
   outline: 2px solid var(--color-outline-strong);
 }
@@ -284,6 +292,20 @@ input {
   display: block;
   font-size: clamp(4rem, 22vw, 7rem);
   line-height: 1;
+}
+
+.single-value-display {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.single-value-display strong {
+  display: block;
+  font-size: clamp(5rem, 28vw, 8rem);
+  line-height: 0.92;
+  font-variant-numeric: tabular-nums;
 }
 
 .keypad {
