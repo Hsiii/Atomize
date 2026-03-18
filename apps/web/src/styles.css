@@ -2,20 +2,25 @@
   --font-family-base: "Avenir Next", "Helvetica Neue", sans-serif;
   --font-family-display: "Avenir Next Condensed", "Avenir Next", "Helvetica Neue", sans-serif;
 
-  --color-ink: #184e77;
-  --color-ink-soft: rgba(24, 78, 119, 0.76);
+  --color-primary: #34a0a4;
+  --color-primary-strong: #27878b;
+  --color-secondary: #184e77;
+  --color-ink: #0b2235;
+  --color-ink-soft: rgba(11, 34, 53, 0.76);
   --color-text-inverse: #ffffff;
   --color-surface-base: rgba(255, 255, 255, 0.96);
   --color-surface-strong: #ffffff;
   --color-surface-muted: rgba(52, 160, 164, 0.08);
   --color-surface-subtle: rgba(52, 160, 164, 0.12);
   --color-surface-accent: rgba(52, 160, 164, 0.18);
-  --color-border-soft: rgba(24, 78, 119, 0.18);
+  --color-border-soft: rgba(24, 78, 119, 0.22);
   --color-outline-strong: rgba(24, 78, 119, 0.5);
   --color-prime-fill: rgba(52, 160, 164, 0.12);
   --color-prime-border: rgba(24, 78, 119, 0.24);
   --color-atom-fill: rgba(52, 160, 164, 0.1);
   --color-page-bg: #ffffff;
+  --color-disabled-bg: rgba(24, 78, 119, 0.12);
+  --color-disabled-text: rgba(11, 34, 53, 0.68);
 
   --space-0: 0;
   --space-1: 0.3rem;
@@ -60,8 +65,8 @@ input {
 button {
   border: 0;
   border-radius: var(--radius-button);
-  background: var(--color-ink);
-  color: var(--color-text-inverse);
+  background: var(--color-primary);
+  color: var(--color-ink);
   padding: var(--space-7);
 }
 
@@ -115,6 +120,7 @@ input {
   padding: var(--space-3) var(--space-5);
   border-radius: var(--radius-pill);
   background: var(--color-surface-subtle);
+  color: var(--color-secondary);
   font-size: 0.9rem;
 }
 
@@ -183,24 +189,30 @@ input {
 .mode-action {
   border: 1px solid var(--color-border-soft);
   background: var(--color-surface-strong);
-  color: var(--color-ink);
+  color: var(--color-secondary);
 }
 
 .mode-action.selected {
   border-color: var(--color-outline-strong);
   background: var(--color-surface-accent);
+  color: var(--color-secondary);
+}
+
+.primary-action {
+  background: var(--color-primary);
+  color: var(--color-ink);
 }
 
 .secondary-action {
-  background: var(--color-surface-accent);
-  color: var(--color-ink);
+  background: var(--color-secondary);
+  color: var(--color-text-inverse);
 }
 
 .ghost-action {
   width: auto;
   padding: var(--space-4) var(--space-7);
   background: var(--color-surface-subtle);
-  color: var(--color-ink);
+  color: var(--color-secondary);
 }
 
 .icon-action {
@@ -210,7 +222,7 @@ input {
   border: 1px solid var(--color-border-soft);
   border-radius: 50%;
   background: var(--color-surface-strong);
-  color: var(--color-ink);
+  color: var(--color-secondary);
   display: grid;
   place-items: center;
   flex: 0 0 auto;
@@ -424,8 +436,8 @@ input {
 
 .start-action:disabled {
   border: 1px solid var(--color-border-soft);
-  background: var(--color-surface-muted);
-  color: var(--color-ink-soft);
+  background: var(--color-disabled-bg);
+  color: var(--color-disabled-text);
 }
 
 @media (min-width: 700px) {
