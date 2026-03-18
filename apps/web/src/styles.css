@@ -139,6 +139,10 @@ input {
   gap: var(--space-7);
 }
 
+.screen-menu .menu-stack {
+  text-align: center;
+}
+
 .hero-title {
   margin: var(--space-0);
   font-family: var(--font-family-display);
