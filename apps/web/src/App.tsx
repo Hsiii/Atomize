@@ -39,6 +39,7 @@ const uiText = {
   joinRoom: "Join Room",
   roomCode: "Room Code",
   enterCode: "Enter Code",
+  backspace: "Backspace",
   enterCombo: "Enter",
   comboPlaceholder: "Tap numbers to build a combo",
   comboSending: "Sending combo...",
@@ -230,6 +231,15 @@ export default function App() {
 
     setSoloComboFeedback(uiText.comboSending);
     setIsSoloComboRunning(true);
+  }
+
+  function handleSoloComboBackspace() {
+    if (soloPrimeQueue.length === 0 || isSoloComboRunning) {
+      return;
+    }
+
+    setSoloComboFeedback(null);
+    setSoloPrimeQueue((currentQueue) => currentQueue.slice(0, -1));
   }
 
   function startSingleGame() {
@@ -568,28 +578,42 @@ export default function App() {
             <div className="combo-bar">
               {soloPrimeQueue.length > 0 ? soloPrimeQueue.join(" x ") : uiText.comboPlaceholder}
             </div>
-            <ActionButton
-              variant="secondary"
-              className="combo-enter-button"
-              onClick={handleSoloComboSubmit}
-              disabled={soloTimeLeft === 0 || soloPrimeQueue.length === 0 || isSoloComboRunning}
-            >
-              {uiText.enterCombo}
-            </ActionButton>
             {soloComboFeedback ? <p className="helper-copy combo-feedback">{soloComboFeedback}</p> : null}
           </section>
 
-          <section className="keypad solo-keypad">
-            {playablePrimes.map((prime) => (
-              <button
-                key={prime}
-                type="button"
-                onClick={() => handlePrimeTap(prime)}
-                disabled={soloTimeLeft === 0 || isSoloComboRunning}
+          <section className="single-controls-grid">
+            <div className="keypad solo-keypad">
+              {playablePrimes.map((prime) => (
+                <button
+                  key={prime}
+                  type="button"
+                  onClick={() => handlePrimeTap(prime)}
+                  disabled={soloTimeLeft === 0 || isSoloComboRunning}
+                >
+                  {prime}
+                </button>
+              ))}
+            </div>
+
+            <div className="combo-actions-column">
+              <ActionButton
+                variant="secondary"
+                className="combo-backspace-button"
+                onClick={handleSoloComboBackspace}
+                disabled={soloPrimeQueue.length === 0 || isSoloComboRunning}
               >
-                {prime}
-              </button>
-            ))}
+                {uiText.backspace}
+              </ActionButton>
+
+              <ActionButton
+                variant="secondary"
+                className="combo-enter-button"
+                onClick={handleSoloComboSubmit}
+                disabled={soloTimeLeft === 0 || soloPrimeQueue.length === 0 || isSoloComboRunning}
+              >
+                {uiText.enterCombo}
+              </ActionButton>
+            </div>
           </section>
         </section>
       </main>
