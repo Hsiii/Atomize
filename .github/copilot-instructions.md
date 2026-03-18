@@ -17,3 +17,8 @@
 
 - Always fixes lint errors after making changes.
 - Always directly read the editor for lint error status, never use commands.
+- Always follow conventional commits when writing commit messages, don't use `style` type wrongly, it's for formatting changes.
+
+## Planing
+
+When Planning, always ask questions beforehand for the details if the prompt from the user wasn't clear enough.
