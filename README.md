@@ -79,6 +79,10 @@ Add these in the Vercel project environment settings:
 
 These are frontend variables, so Vercel injects them into the client build.
 
+After adding or changing them, redeploy the site. Vite bakes `VITE_*` values into the build output, so an existing deployment will keep the old values.
+
+If you are testing a Vercel preview deployment, make sure the variables are added to the `Preview` environment too. Setting them only for `Production` will not populate preview builds.
+
 ### Notes
 
 - `localhost` works for development without HTTPS, but the deployed Vercel domain will automatically use HTTPS.

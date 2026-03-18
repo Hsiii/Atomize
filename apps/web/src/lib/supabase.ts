@@ -5,6 +5,12 @@ export type SupabaseConfig = {
   anonKey: string;
 };
 
+const SUPABASE_ENV_KEYS = ["VITE_SUPABASE_URL", "VITE_SUPABASE_ANON_KEY"] as const;
+
+export function getMissingSupabaseEnvVars(): string[] {
+  return SUPABASE_ENV_KEYS.filter((key) => !import.meta.env[key]);
+}
+
 export function getSupabaseConfig(): SupabaseConfig | null {
   const url = import.meta.env.VITE_SUPABASE_URL;
   const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;

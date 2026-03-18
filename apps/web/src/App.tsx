@@ -12,7 +12,11 @@ import {
   applyBattlePrimeSelection,
   createRoomSnapshot,
 } from "./lib/multiplayer-room";
-import { createRealtimeClient, getSupabaseConfig } from "./lib/supabase";
+import {
+  createRealtimeClient,
+  getMissingSupabaseEnvVars,
+  getSupabaseConfig,
+} from "./lib/supabase";
 
 const soloSeed = "solo-mvp-seed";
 type Screen = "menu" | "single" | "multi-lobby" | "multi-game";
@@ -169,7 +173,9 @@ export default function App() {
     const supabase = supabaseRef.current;
 
     if (!supabase) {
-      setStatusText("Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY first");
+      const missingVars = getMissingSupabaseEnvVars();
+      const envList = missingVars.join(", ");
+      setStatusText(`Multiplayer unavailable: missing ${envList}. On Vercel, add them to this environment and redeploy.`);
       return;
     }
 
