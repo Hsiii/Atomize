@@ -383,7 +383,7 @@ input {
 }
 
 .waiting-player-card {
-  min-height: 8.5rem;
+  min-height: 6.75rem;
   display: flex;
   flex-direction: column;
 }
