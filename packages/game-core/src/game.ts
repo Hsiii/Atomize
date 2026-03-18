@@ -30,11 +30,12 @@ export type SelectionResult =
     };
 
 const MAX_FACTOR_COUNT = 7;
+const MAX_PLAYABLE_PRIME_COUNT = 9;
 
 export function generateStage(seed: string, stageIndex: number): StageState {
   const rng = createRng(`${seed}:${stageIndex}`);
   const factorCount = Math.min(MAX_FACTOR_COUNT, 2 + Math.floor(stageIndex / 2) + randomInt(rng, 0, 1));
-  const primeCeiling = Math.min(PRIME_POOL.length, 4 + Math.floor(stageIndex / 2));
+  const primeCeiling = Math.min(PRIME_POOL.length, MAX_PLAYABLE_PRIME_COUNT, 4 + Math.floor(stageIndex / 2));
   const factors: Prime[] = [];
 
   for (let count = 0; count < factorCount; count += 1) {

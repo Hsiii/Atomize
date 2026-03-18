@@ -20,6 +20,7 @@ import {
 
 const soloSeed = "solo-mvp-seed";
 const soloDurationSeconds = 60;
+const playablePrimes = PRIME_POOL.slice(0, 9);
 type MenuMode = "default" | "create-room" | "join-room";
 
 const uiText = {
@@ -36,6 +37,8 @@ const uiText = {
   joinRoom: "Join Room",
   roomCode: "Room Code",
   enterCode: "Enter Code",
+  enterCombo: "Enter",
+  comboPlaceholder: "Tap numbers to build a combo",
   start: "Start",
   roomHint: "Tap create to open a room, or join with a 4-digit code.",
   configHint: "Server setup required for multiplayer.",
@@ -80,6 +83,7 @@ export default function App() {
   const [menuMode, setMenuMode] = useState<MenuMode>("default");
   const [soloState, setSoloState] = useState(() => createInitialSoloState(soloSeed));
   const [soloTimeLeft, setSoloTimeLeft] = useState(soloDurationSeconds);
+  const [soloPrimeQueue, setSoloPrimeQueue] = useState<Prime[]>([]);
   const [multiplayer, setMultiplayer] = useState<MultiplayerState>({
     playerId: null,
     snapshot: null,
@@ -163,11 +167,25 @@ export default function App() {
       return;
     }
 
-    setSoloState((currentState) => advanceSoloState(currentState, soloSeed, prime));
+    setSoloPrimeQueue((currentQueue) => [...currentQueue, prime]);
+  }
+
+  function handleSoloComboSubmit() {
+    if (soloTimeLeft === 0 || soloPrimeQueue.length === 0) {
+      return;
+    }
+
+    setSoloState((currentState) => {
+      return soloPrimeQueue.reduce((nextState, queuedPrime) => {
+        return advanceSoloState(nextState, soloSeed, queuedPrime);
+      }, currentState);
+    });
+    setSoloPrimeQueue([]);
   }
 
   function startSingleGame() {
     setSoloState(createInitialSoloState(soloSeed));
+    setSoloPrimeQueue([]);
     setScreen("single");
   }
 
@@ -190,6 +208,7 @@ export default function App() {
 
   async function returnToMenu() {
     await closeActiveChannel();
+    setSoloPrimeQueue([]);
     setMultiplayer({
       playerId: null,
       snapshot: null,
@@ -493,8 +512,22 @@ export default function App() {
             <strong>{soloState.currentStage.remainingValue}</strong>
           </section>
 
-          <section className="keypad">
-            {PRIME_POOL.map((prime) => (
+          <section className="combo-panel" aria-live="polite">
+            <div className="combo-bar">
+              {soloPrimeQueue.length > 0 ? soloPrimeQueue.join(" x ") : uiText.comboPlaceholder}
+            </div>
+            <ActionButton
+              variant="secondary"
+              className="combo-enter-button"
+              onClick={handleSoloComboSubmit}
+              disabled={soloTimeLeft === 0 || soloPrimeQueue.length === 0}
+            >
+              {uiText.enterCombo}
+            </ActionButton>
+          </section>
+
+          <section className="keypad solo-keypad">
+            {playablePrimes.map((prime) => (
               <button key={prime} type="button" onClick={() => handlePrimeTap(prime)} disabled={soloTimeLeft === 0}>
                 {prime}
               </button>
@@ -709,7 +742,7 @@ export default function App() {
         </section>
 
         <section className="keypad">
-          {PRIME_POOL.map((prime) => (
+          {playablePrimes.map((prime) => (
             <button
               key={`room-${prime}`}
               type="button"
