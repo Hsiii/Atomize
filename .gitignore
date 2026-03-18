@@ -1,0 +1,8 @@
+node_modules
+bun.lock
+.DS_Store
+dist
+coverage
+.vite
+*.tsbuildinfo
+apps/web/.env.local
