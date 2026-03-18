@@ -234,6 +234,14 @@ input {
   margin-top: var(--space-1);
 }
 
+.waiting-room-stack {
+  justify-content: center;
+}
+
+.waiting-room-grid {
+  align-self: stretch;
+}
+
 .scoreboard {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -384,6 +392,22 @@ input {
 
 .minimal-footer-bottom {
   margin-top: auto;
+}
+
+.waiting-cta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.waiting-copy {
+  text-align: center;
+}
+
+.start-action:disabled {
+  border: 1px solid var(--color-border-soft);
+  background: var(--color-surface-muted);
+  color: var(--color-ink-soft);
 }
 
 @media (min-width: 700px) {

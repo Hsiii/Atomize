@@ -33,10 +33,12 @@ const uiText = {
   joinRoom: "Join Room",
   roomCode: "Room Code",
   enterCode: "Enter Code",
+  start: "Start",
   roomHint: "Tap create to open a room, or join with a 4-digit code.",
   configHint: "Server setup required for multiplayer.",
   idleStatus: "Server idle",
   roomPlaceholder: "0000",
+  openingRoom: "Opening room...",
   waitingForPlayer: "Waiting for the second player to join.",
 } as const;
 type Screen = "menu" | "single" | "multi-lobby" | "multi-game";
@@ -142,8 +144,9 @@ export default function App() {
 
   function startCreateRoomFlow() {
     setMenuMode("create-room");
-    setStatusText(uiText.idleStatus);
     setScreen("multi-lobby");
+    setStatusText(uiText.openingRoom);
+    void createRoom();
   }
 
   function startJoinRoomFlow() {
@@ -333,8 +336,19 @@ export default function App() {
     const playerId = crypto.randomUUID();
     const snapshot = createRoomSnapshot(roomId, playerId);
 
+    if (supabaseRef.current) {
+      setMultiplayer((currentState) => ({
+        ...currentState,
+        playerId,
+        snapshot,
+        roomId,
+        isHost: true,
+        statusText: uiText.openingRoom,
+      }));
+    }
+
     await subscribeToRoom(roomId, playerId, true, async () => {
-      updateSnapshot(snapshot);
+      updateSnapshot(snapshot, "");
       await broadcastMessage({
         type: "room_state",
         snapshot,
@@ -466,8 +480,10 @@ export default function App() {
 
   if (screen === "multi-lobby") {
     const isJoinFlow = menuMode === "join-room";
+    const isCreateFlow = menuMode === "create-room";
+    const shouldShowWaitingRoom = isCreateFlow;
 
-    if (!multiplayer.roomId) {
+    if (!multiplayer.roomId && !shouldShowWaitingRoom) {
       return (
         <main className="app-shell fullscreen-shell">
           <section className="screen lobby-screen">
@@ -514,6 +530,55 @@ export default function App() {
       );
     }
 
+    if (shouldShowWaitingRoom) {
+      return (
+        <main className="app-shell fullscreen-shell">
+          <section className="screen lobby-screen">
+            <header className="top-bar">
+              <button
+                type="button"
+                className="icon-action"
+                onClick={() => void returnToMenu()}
+                aria-label={uiText.back}
+              >
+                <span aria-hidden="true">&#8592;</span>
+              </button>
+            </header>
+
+            <div className="lobby-stack waiting-room-stack">
+              <div className="code-panel">
+                <p className="label">{uiText.roomCode}</p>
+                <strong>{multiplayer.roomId || uiText.roomPlaceholder}</strong>
+              </div>
+
+              <section className="scoreboard player-scoreboard lobby-scoreboard waiting-room-grid">
+                {multiplayer.snapshot?.players.map((player) => {
+                  const isCurrentPlayer = player.id === multiplayer.playerId;
+
+                  return (
+                    <div key={player.id} className={isCurrentPlayer ? "player-card active" : "player-card"}>
+                      <p className="label">{isCurrentPlayer ? "You" : "Opponent"}</p>
+                      <strong>{player.name}</strong>
+                      <span>{player.connected ? "Connected" : uiText.waitingForPlayer}</span>
+                    </div>
+                  );
+                })}
+              </section>
+
+              <div className="waiting-cta">
+                <p className="helper-copy waiting-copy">{uiText.waitingForPlayer}</p>
+                <button type="button" className="primary-action start-action" disabled>
+                  {uiText.start}
+                </button>
+              </div>
+
+              <footer className="minimal-footer minimal-footer-bottom">{multiplayerFooterText}</footer>
+            </div>
+          </section>
+        </main>
+      );
+    }
+
     return (
       <main className="app-shell fullscreen-shell">
         <section className="screen lobby-screen">
@@ -529,8 +594,6 @@ export default function App() {
           </header>
 
           <div className="lobby-stack">
-            <p className="eyebrow">{uiText.multiPlayer}</p>
-
             <div className="code-panel">
               <p className="label">{uiText.roomCode}</p>
               <strong>{multiplayer.roomId || "----"}</strong>
