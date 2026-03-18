@@ -470,16 +470,11 @@ input {
 
 .combo-bar {
   min-height: 3.25rem;
-  padding: var(--space-6) var(--space-7);
-  border: 1px solid var(--color-border-soft);
-  border-radius: var(--radius-panel);
-  background: var(--color-surface-base);
+  padding: 0;
   color: var(--color-secondary);
   font-size: 1rem;
   line-height: 1.4;
   text-align: center;
-  backdrop-filter: blur(var(--blur-panel));
-  box-shadow: var(--shadow-panel);
 }
 
 .combo-enter-button:disabled {

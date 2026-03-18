@@ -43,7 +43,6 @@ const uiText = {
   enterCode: "Enter Code",
   backspace: "Backspace",
   enterCombo: "Enter",
-  comboPlaceholder: "Tap numbers to build a combo",
   start: "Start",
   roomHint: "Tap create to open a room, or join with a 4-digit code.",
   configHint: "Server setup required for multiplayer.",
@@ -577,7 +576,7 @@ export default function App() {
 
           <section className="combo-panel" aria-live="polite">
             <div className="combo-bar">
-              {soloPrimeQueue.length > 0 ? soloPrimeQueue.join(" x ") : uiText.comboPlaceholder}
+              {soloPrimeQueue.length > 0 ? soloPrimeQueue.join(" x ") : null}
             </div>
           </section>
 
