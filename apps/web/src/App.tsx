@@ -135,12 +135,7 @@ export default function App() {
   function startCreateRoomFlow() {
     setMenuMode("create-room");
     setStatusText(uiText.idleStatus);
-
-    if (multiplayer.roomId && multiplayer.isHost) {
-      return;
-    }
-
-    void createRoom();
+    setScreen("multi-lobby");
   }
 
   function startJoinRoomFlow() {
@@ -406,18 +401,6 @@ export default function App() {
               <button type="button" className="mode-action" onClick={startJoinRoomFlow}>
                 {uiText.joinRoom}
               </button>
-            </div>
-            <div className="menu-room-slot">
-              {menuMode === "create-room" ? (
-                <>
-                  <div className="code-panel compact-code-panel">
-                    <p className="label">{uiText.roomCode}</p>
-                    <strong>{multiplayer.roomId || uiText.roomPlaceholder}</strong>
-                  </div>
-                  {!supabaseConfig ? <p className="server-meta">{uiText.configHint}</p> : null}
-                  {multiplayer.statusText ? <p className="server-meta">{multiplayer.statusText}</p> : null}
-                </>
-              ) : null}
             </div>
           </div>
         </section>

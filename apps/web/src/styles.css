@@ -166,14 +166,6 @@ input {
   margin-top: var(--space-7);
 }
 
-.menu-room-slot {
-  min-height: 11rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: var(--space-4);
-}
-
 .multiplayer-panel,
 .setup-panel,
 .server-panel {
