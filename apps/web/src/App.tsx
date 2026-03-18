@@ -28,6 +28,7 @@ const soloSeed = "solo-mvp-seed";
 const soloDurationSeconds = 60;
 const playablePrimes = PRIME_POOL.slice(0, 9);
 const soloComboStepDelayMs = 280;
+const multiplayerComboStepDelayMs = 220;
 const multiplayerCountdownDurationMs = 3000;
 type MenuMode = "default" | "create-room" | "join-room";
 
@@ -112,6 +113,8 @@ export default function App() {
   const [soloPrimeQueue, setSoloPrimeQueue] = useState<Prime[]>([]);
   const [isSoloComboRunning, setIsSoloComboRunning] = useState(false);
   const [soloTimerPenaltyPopKey, setSoloTimerPenaltyPopKey] = useState(0);
+  const [multiplayerPrimeQueue, setMultiplayerPrimeQueue] = useState<Prime[]>([]);
+  const [isMultiplayerComboRunning, setIsMultiplayerComboRunning] = useState(false);
   const [multiplayerCountdownValue, setMultiplayerCountdownValue] = useState<number | null>(null);
   const [multiplayer, setMultiplayer] = useState<MultiplayerState>({
     playerId: null,
@@ -139,7 +142,7 @@ export default function App() {
     ? ((multiplayerStageFactorCount - multiplayerRemainingFactorCount) / multiplayerStageFactorCount) * 100
     : 0;
   const multiplayerScore = currentMultiplayerPlayer?.combo ?? 0;
-  const isMultiplayerInputDisabled = !multiplayer.snapshot || multiplayer.snapshot.status !== "playing";
+  const isMultiplayerInputDisabled = !multiplayer.snapshot || multiplayer.snapshot.status !== "playing" || isMultiplayerComboRunning;
 
   const soloCountdownProgress = (soloTimeLeft / soloDurationSeconds) * 100;
 
@@ -367,6 +370,8 @@ export default function App() {
     setSoloPrimeQueue([]);
     setIsSoloComboRunning(false);
     setSoloTimerPenaltyPopKey(0);
+    setMultiplayerPrimeQueue([]);
+    setIsMultiplayerComboRunning(false);
     setMultiplayer({
       playerId: null,
       snapshot: null,
@@ -599,7 +604,7 @@ export default function App() {
     });
   }
 
-  async function handleMultiplayerPrimeTap(prime: Prime) {
+  async function sendMultiplayerPrime(prime: Prime) {
     const currentState = latestMultiplayerRef.current;
 
     if (!currentState.playerId || !currentState.snapshot) {
@@ -631,6 +636,48 @@ export default function App() {
       playerId: currentState.playerId,
       prime,
     });
+  }
+
+  function handleMultiplayerPrimeTap(prime: Prime) {
+    if (isMultiplayerInputDisabled) {
+      return;
+    }
+
+    setMultiplayerPrimeQueue((currentQueue) => [...currentQueue, prime]);
+  }
+
+  function handleMultiplayerComboBackspace() {
+    if (isMultiplayerComboRunning || multiplayerPrimeQueue.length === 0) {
+      return;
+    }
+
+    setMultiplayerPrimeQueue((currentQueue) => currentQueue.slice(0, -1));
+  }
+
+  async function handleMultiplayerComboSubmit() {
+    if (isMultiplayerInputDisabled || multiplayerPrimeQueue.length === 0 || isMultiplayerComboRunning) {
+      return;
+    }
+
+    setIsMultiplayerComboRunning(true);
+
+    const queuedPrimes = [...multiplayerPrimeQueue];
+    setMultiplayerPrimeQueue([]);
+
+    try {
+      for (const prime of queuedPrimes) {
+        const currentState = latestMultiplayerRef.current;
+
+        if (!currentState.snapshot || currentState.snapshot.status !== "playing") {
+          break;
+        }
+
+        await sendMultiplayerPrime(prime);
+        await wait(multiplayerComboStepDelayMs);
+      }
+    } finally {
+      setIsMultiplayerComboRunning(false);
+    }
   }
 
   async function handleGuestReady() {
@@ -968,21 +1015,57 @@ export default function App() {
           <p className="multiplayer-stage-caption">{multiplayerStageSummary}</p>
         </section>
 
-        <section className="keypad solo-keypad multiplayer-keypad">
-          {playablePrimes.map((prime) => (
-            <button
-              key={`room-${prime}`}
-              type="button"
-              onClick={() => void handleMultiplayerPrimeTap(prime)}
-              disabled={isMultiplayerInputDisabled}
+        <section className="combo-panel" aria-live="polite">
+          <div className="combo-bar">
+            {multiplayerPrimeQueue.length > 0 ? multiplayerPrimeQueue.join(" x ") : null}
+          </div>
+        </section>
+
+        <section className="single-controls-grid multiplayer-controls-grid">
+          <div className="keypad solo-keypad multiplayer-keypad">
+            {playablePrimes.map((prime) => (
+              <button
+                key={`room-${prime}`}
+                type="button"
+                onClick={() => handleMultiplayerPrimeTap(prime)}
+                disabled={isMultiplayerInputDisabled}
+              >
+                {prime}
+              </button>
+            ))}
+          </div>
+
+          <div className="combo-actions-column">
+            <ActionButton
+              variant="secondary"
+              className="combo-backspace-button"
+              onClick={handleMultiplayerComboBackspace}
+              disabled={isMultiplayerComboRunning || multiplayerPrimeQueue.length === 0}
+              aria-label={uiText.backspace}
             >
-              {prime}
-            </button>
-          ))}
+              <Delete className="control-icon" aria-hidden="true" />
+            </ActionButton>
+
+            <ActionButton
+              variant="secondary"
+              className="combo-enter-button"
+              onClick={() => void handleMultiplayerComboSubmit()}
+              disabled={isMultiplayerInputDisabled || multiplayerPrimeQueue.length === 0}
+              aria-label={uiText.enterCombo}
+            >
+              <Swords className="control-icon" aria-hidden="true" />
+            </ActionButton>
+          </div>
         </section>
       </section>
     </main>
   );
+}
+
+function wait(durationMs: number): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, durationMs);
+  });
 }
 
 function createRoomId(): string {
