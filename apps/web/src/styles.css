@@ -477,7 +477,11 @@ input {
   border-radius: var(--radius-panel);
   background: var(--color-surface-base);
   backdrop-filter: blur(var(--blur-panel));
-  box-shadow: var(--shadow-panel);
+}
+
+.join-entry-panel {
+  border: 1px solid var(--color-border-soft);
+  box-shadow: none;
 }
 
 .join-room-panel .field {

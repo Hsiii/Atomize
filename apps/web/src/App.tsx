@@ -526,36 +526,32 @@ export default function App() {
             </header>
 
             <div className="lobby-stack lobby-stack-centered">
-              <div className="join-room-panel">
-                {isJoinFlow ? (
-                  <div className="code-panel join-code-panel compact-code-panel">
-                    <p className="label">{uiText.roomCode}</p>
-                    <div className="room-code-preview" aria-live="polite">
-                      {getRoomCodePreviewDigits(roomIdInput).map((digit, index) => (
-                        <span
-                          key={`room-preview-${index}`}
-                          className={digit.filled ? "room-code-digit" : "room-code-digit empty"}
-                        >
-                          {digit.value}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
+              <div className="code-panel join-code-panel compact-code-panel">
+                <p className="label">{uiText.roomCode}</p>
+                <div className="room-code-preview" aria-live="polite">
+                  {getRoomCodePreviewDigits(roomIdInput).map((digit, index) => (
+                    <span
+                      key={`room-preview-${index}`}
+                      className={digit.filled ? "room-code-digit" : "room-code-digit empty"}
+                    >
+                      {digit.value}
+                    </span>
+                  ))}
+                </div>
+              </div>
 
-                {isJoinFlow ? (
-                  <label className="field">
-                    <span>{uiText.enterCode}</span>
-                    <input
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      maxLength={4}
-                      value={roomIdInput}
-                      onChange={(event) => handleRoomIdInputChange(event.target.value)}
-                      placeholder={uiText.roomPlaceholder}
-                    />
-                  </label>
-                ) : null}
+              <div className="join-room-panel join-entry-panel">
+                <label className="field">
+                  <span>{uiText.enterCode}</span>
+                  <input
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={4}
+                    value={roomIdInput}
+                    onChange={(event) => handleRoomIdInputChange(event.target.value)}
+                    placeholder={uiText.roomPlaceholder}
+                  />
+                </label>
 
                 <ActionButton variant="secondary" onClick={() => void (isJoinFlow ? joinRoom() : createRoom())}>
                   {isJoinFlow ? uiText.joinRoom : uiText.createRoom}
