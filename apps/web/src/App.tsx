@@ -983,7 +983,7 @@ export default function App() {
                 )}
               </div>
 
-              {multiplayerFooterText !== uiText.waitingForPlayer ? (
+              {!isCountdown && multiplayerFooterText !== uiText.waitingForPlayer ? (
                 <footer className="minimal-footer minimal-footer-bottom">{multiplayerFooterText}</footer>
               ) : null}
             </div>
