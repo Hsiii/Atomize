@@ -43,7 +43,6 @@ const uiText = {
   backspace: "Backspace",
   enterCombo: "Enter",
   comboPlaceholder: "Tap numbers to build a combo",
-  comboSending: "Sending combo...",
   start: "Start",
   roomHint: "Tap create to open a room, or join with a 4-digit code.",
   configHint: "Server setup required for multiplayer.",
@@ -90,7 +89,7 @@ export default function App() {
   const [soloTimeLeft, setSoloTimeLeft] = useState(soloDurationSeconds);
   const [soloPrimeQueue, setSoloPrimeQueue] = useState<Prime[]>([]);
   const [isSoloComboRunning, setIsSoloComboRunning] = useState(false);
-  const [soloComboFeedback, setSoloComboFeedback] = useState<string | null>(null);
+  const [soloTimerPenaltyPopKey, setSoloTimerPenaltyPopKey] = useState(0);
   const [multiplayer, setMultiplayer] = useState<MultiplayerState>({
     playerId: null,
     snapshot: null,
@@ -171,13 +170,11 @@ export default function App() {
 
     if (soloTimeLeft === 0) {
       setIsSoloComboRunning(false);
-      setSoloComboFeedback("Time up");
       return;
     }
 
     if (soloPrimeQueue.length === 0) {
       setIsSoloComboRunning(false);
-      setSoloComboFeedback("Combo sent");
       return;
     }
 
@@ -190,14 +187,14 @@ export default function App() {
       setSoloPrimeQueue((currentQueue) => currentQueue.slice(1));
 
       if (outcome.kind === "wrong") {
+        setSoloTimeLeft((currentTime) => Math.max(0, currentTime - 1));
+        setSoloTimerPenaltyPopKey((currentKey) => currentKey + 1);
         setIsSoloComboRunning(false);
-        setSoloComboFeedback(`Stopped on ${nextPrime}: not a factor`);
         return;
       }
 
       if (outcome.cleared) {
         setIsSoloComboRunning(false);
-        setSoloComboFeedback(`Stopped on ${nextPrime}: stage cleared`);
       }
     }, soloComboStepDelayMs);
 
@@ -221,7 +218,6 @@ export default function App() {
       return;
     }
 
-    setSoloComboFeedback(null);
     setSoloPrimeQueue((currentQueue) => [...currentQueue, prime]);
   }
 
@@ -230,7 +226,6 @@ export default function App() {
       return;
     }
 
-    setSoloComboFeedback(uiText.comboSending);
     setIsSoloComboRunning(true);
   }
 
@@ -239,7 +234,6 @@ export default function App() {
       return;
     }
 
-    setSoloComboFeedback(null);
     setSoloPrimeQueue((currentQueue) => currentQueue.slice(0, -1));
   }
 
@@ -247,7 +241,7 @@ export default function App() {
     setSoloState(createInitialSoloState(soloSeed));
     setSoloPrimeQueue([]);
     setIsSoloComboRunning(false);
-    setSoloComboFeedback(null);
+    setSoloTimerPenaltyPopKey(0);
     setScreen("single");
   }
 
@@ -272,7 +266,7 @@ export default function App() {
     await closeActiveChannel();
     setSoloPrimeQueue([]);
     setIsSoloComboRunning(false);
-    setSoloComboFeedback(null);
+    setSoloTimerPenaltyPopKey(0);
     setMultiplayer({
       playerId: null,
       snapshot: null,
@@ -563,6 +557,11 @@ export default function App() {
                 />
               </div>
               <span className="single-timer-text">{formatCountdown(soloTimeLeft)}</span>
+              {soloTimerPenaltyPopKey > 0 ? (
+                <span key={soloTimerPenaltyPopKey} className="single-timer-penalty" aria-hidden="true">
+                  -1s
+                </span>
+              ) : null}
             </div>
 
             <div className="single-score-pill" aria-label={`${uiText.score}: ${soloState.score}`}>
@@ -579,7 +578,6 @@ export default function App() {
             <div className="combo-bar">
               {soloPrimeQueue.length > 0 ? soloPrimeQueue.join(" x ") : uiText.comboPlaceholder}
             </div>
-            {soloComboFeedback ? <p className="helper-copy combo-feedback">{soloComboFeedback}</p> : null}
           </section>
 
           <section className="single-controls-grid">

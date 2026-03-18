@@ -318,6 +318,7 @@ input {
 }
 
 .single-timer-shell {
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -345,6 +346,16 @@ input {
   font-size: 0.8rem;
   line-height: 1;
   color: var(--color-ink-soft);
+}
+
+.single-timer-penalty {
+  position: absolute;
+  top: -0.35rem;
+  right: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #c43a3a;
+  animation: timer-penalty-pop 0.7s ease-out forwards;
 }
 
 .single-score-pill {
@@ -467,16 +478,27 @@ input {
   opacity: 0.55;
 }
 
-.combo-feedback {
-  text-align: center;
-  min-height: 1.4rem;
-}
-
 .single-controls-grid {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(5.5rem, 1fr);
   gap: var(--space-4);
   align-items: stretch;
+}
+
+@keyframes timer-penalty-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(0.45rem) scale(0.92);
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-0.8rem) scale(1);
+  }
 }
 
 .keypad {
