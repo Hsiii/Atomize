@@ -9,18 +9,19 @@ import {
 
 const STARTING_HP = 40;
 const WRONG_SELECTION_DAMAGE = 3;
+const HOST_NAME = "Player 1";
+const GUEST_NAME = "Player 2";
 
 export function createRoomSnapshot(
   roomId: string,
   hostId: string,
-  hostName: string,
 ): RoomSnapshot {
   return {
     roomId,
     seed: roomId,
     stageIndex: 0,
     stage: generateStage(roomId, 0),
-    players: [createPlayer(hostId, hostName)],
+    players: [createPlayer(hostId, HOST_NAME)],
     status: "waiting",
   };
 }
@@ -28,7 +29,6 @@ export function createRoomSnapshot(
 export function addPlayerToRoom(
   snapshot: RoomSnapshot,
   playerId: string,
-  playerName: string,
 ): RoomSnapshot | null {
   if (snapshot.players.some((player) => player.id === playerId)) {
     return snapshot;
@@ -40,7 +40,7 @@ export function addPlayerToRoom(
 
   return {
     ...snapshot,
-    players: [...snapshot.players, createPlayer(playerId, playerName)],
+    players: [...snapshot.players, createPlayer(playerId, GUEST_NAME)],
     status: "playing",
   };
 }

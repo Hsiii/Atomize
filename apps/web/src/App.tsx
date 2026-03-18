@@ -29,11 +29,11 @@ const uiText = {
   title: "Atomize",
   eyebrow: "Prime factor battle",
   singlePlayer: "Single Player",
+  multiPlayer: "Multi Player",
   createRoom: "Create Room",
   joinRoom: "Join Room",
   roomCode: "Room Code",
   enterCode: "Enter Code",
-  playerName: "Name",
   shareHint: "Share the code. The game opens automatically when another player joins.",
   configHint: "Server setup required for multiplayer.",
   idleStatus: "Server idle",
@@ -59,7 +59,6 @@ type RoomBroadcastMessage =
   | {
       type: "join_request";
       playerId: string;
-      playerName: string;
     }
   | {
       type: "prime_selected";
@@ -83,7 +82,6 @@ export default function App() {
     roomId: "",
     isHost: false,
   });
-  const [playerName, setPlayerName] = useState("Player");
   const [roomIdInput, setRoomIdInput] = useState("");
   const channelRef = useRef<RealtimeChannel | null>(null);
   const supabaseRef = useRef<SupabaseClient | null>(null);
@@ -253,7 +251,6 @@ export default function App() {
         const nextSnapshot = addPlayerToRoom(
           currentState.snapshot,
           message.playerId,
-          message.playerName,
         );
 
         if (!nextSnapshot) {
@@ -265,7 +262,7 @@ export default function App() {
           return;
         }
 
-        updateSnapshot(nextSnapshot, `Player ${message.playerName} joined`);
+        updateSnapshot(nextSnapshot, "Player 2 joined");
         await broadcastMessage({
           type: "room_state",
           snapshot: nextSnapshot,
@@ -327,7 +324,7 @@ export default function App() {
   async function createRoom() {
     const roomId = createRoomId();
     const playerId = crypto.randomUUID();
-    const snapshot = createRoomSnapshot(roomId, playerId, normalizePlayerName(playerName));
+    const snapshot = createRoomSnapshot(roomId, playerId);
 
     await subscribeToRoom(roomId, playerId, true, async () => {
       setScreen("multi-lobby");
@@ -356,7 +353,6 @@ export default function App() {
       await broadcastMessage({
         type: "join_request",
         playerId,
-        playerName: normalizePlayerName(playerName),
       });
     });
   }
@@ -464,7 +460,6 @@ export default function App() {
   }
 
   if (screen === "multi-lobby") {
-    const isCreateFlow = menuMode === "create-room";
     const isJoinFlow = menuMode === "join-room";
 
     if (!multiplayer.roomId) {
@@ -484,11 +479,6 @@ export default function App() {
             </header>
 
             <div className="lobby-stack">
-              <label className="field">
-                <span>{uiText.playerName}</span>
-                <input value={playerName} onChange={(event) => setPlayerName(event.target.value)} />
-              </label>
-
               {isJoinFlow ? (
                 <label className="field">
                   <span>{uiText.enterCode}</span>
@@ -503,9 +493,9 @@ export default function App() {
               <button
                 type="button"
                 className="primary-action"
-                onClick={() => void (isCreateFlow ? createRoom() : joinRoom())}
+                onClick={() => void (isJoinFlow ? joinRoom() : createRoom())}
               >
-                {isCreateFlow ? uiText.createRoom : uiText.joinRoom}
+                {isJoinFlow ? uiText.joinRoom : uiText.createRoom}
               </button>
 
               <p className="server-meta">{supabaseConfig ? multiplayer.statusText : uiText.configHint}</p>
@@ -531,6 +521,8 @@ export default function App() {
           </header>
 
           <div className="lobby-stack">
+            <p className="eyebrow">{uiText.multiPlayer}</p>
+
             <div className="code-panel">
               <p className="label">{uiText.roomCode}</p>
               <strong>{multiplayer.roomId || "----"}</strong>
@@ -611,10 +603,4 @@ export default function App() {
 
 function createRoomId(): string {
   return Math.random().toString(36).slice(2, 6).toUpperCase();
-}
-
-function normalizePlayerName(playerName: string): string {
-  const trimmedName = playerName.trim();
-
-  return trimmedName || "Player";
 }

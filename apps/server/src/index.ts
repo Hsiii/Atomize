@@ -30,6 +30,8 @@ type RoomState = {
 const sockets = new Map<WebSocket, PlayerSession>();
 const rooms = new Map<string, RoomState>();
 const port = 8787;
+const HOST_NAME = "Player 1";
+const GUEST_NAME = "Player 2";
 
 const server = new WebSocketServer({ port });
 
@@ -68,7 +70,7 @@ function handleMessage(socket: WebSocket, message: ClientMessage) {
           playerId,
           {
             id: playerId,
-            name: message.playerName,
+            name: HOST_NAME,
             hp: 40,
             combo: 0,
             connected: true,
@@ -105,7 +107,7 @@ function handleMessage(socket: WebSocket, message: ClientMessage) {
     room.guestId = playerId;
     room.players.set(playerId, {
       id: playerId,
-      name: message.playerName,
+      name: GUEST_NAME,
       hp: 40,
       combo: 0,
       connected: true,

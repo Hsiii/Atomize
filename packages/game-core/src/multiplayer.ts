@@ -21,12 +21,10 @@ export type RoomSnapshot = {
 export type ClientMessage =
   | {
       type: "create_room";
-      playerName: string;
     }
   | {
       type: "join_room";
       roomId: string;
-      playerName: string;
     }
   | {
       type: "select_prime";
