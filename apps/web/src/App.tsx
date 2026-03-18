@@ -110,6 +110,7 @@ export default function App() {
   const [menuMode, setMenuMode] = useState<MenuMode>("default");
   const [soloState, setSoloState] = useState(() => createInitialSoloState(soloSeed));
   const [soloTimeLeft, setSoloTimeLeft] = useState(soloDurationSeconds);
+  const [multiplayerTimeLeft, setMultiplayerTimeLeft] = useState(soloDurationSeconds);
   const [soloPrimeQueue, setSoloPrimeQueue] = useState<Prime[]>([]);
   const [isSoloComboRunning, setIsSoloComboRunning] = useState(false);
   const [soloTimerPenaltyPopKey, setSoloTimerPenaltyPopKey] = useState(0);
@@ -136,13 +137,9 @@ export default function App() {
 
   const multiplayerPlayers = multiplayer.snapshot?.players ?? [];
   const currentMultiplayerPlayer = multiplayerPlayers.find((player) => player.id === multiplayer.playerId) ?? null;
-  const multiplayerStageFactorCount = multiplayer.snapshot?.stage.factors.length ?? 0;
-  const multiplayerRemainingFactorCount = multiplayer.snapshot?.stage.remainingFactors.length ?? 0;
-  const multiplayerStageProgress = multiplayerStageFactorCount > 0
-    ? ((multiplayerStageFactorCount - multiplayerRemainingFactorCount) / multiplayerStageFactorCount) * 100
-    : 0;
+  const multiplayerCountdownProgress = (multiplayerTimeLeft / soloDurationSeconds) * 100;
   const multiplayerScore = currentMultiplayerPlayer?.combo ?? 0;
-  const isMultiplayerInputDisabled = !multiplayer.snapshot || multiplayer.snapshot.status !== "playing" || isMultiplayerComboRunning;
+  const isMultiplayerInputDisabled = !multiplayer.snapshot || multiplayer.snapshot.status !== "playing" || isMultiplayerComboRunning || multiplayerTimeLeft === 0;
 
   const soloCountdownProgress = (soloTimeLeft / soloDurationSeconds) * 100;
 
@@ -265,6 +262,29 @@ export default function App() {
       window.clearInterval(timer);
     };
   }, [screen]);
+
+  useEffect(() => {
+    if (screen !== "multi-game") {
+      return;
+    }
+
+    setMultiplayerTimeLeft(soloDurationSeconds);
+
+    const timer = window.setInterval(() => {
+      setMultiplayerTimeLeft((currentTime) => {
+        if (currentTime <= 1) {
+          window.clearInterval(timer);
+          return 0;
+        }
+
+        return currentTime - 1;
+      });
+    }, 1000);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [multiplayer.roomId, screen]);
 
   useEffect(() => {
     if (screen !== "single" || !isSoloComboRunning) {
@@ -986,19 +1006,14 @@ export default function App() {
             <ArrowLeft className="control-icon" aria-hidden="true" />
           </button>
 
-          <div
-            className="single-timer-shell multiplayer-status-shell"
-            aria-label={`${uiText.battle}: ${Math.round(multiplayerStageProgress)}%`}
-          >
+          <div className="single-timer-shell" aria-label={`${uiText.timer}: ${formatCountdown(multiplayerTimeLeft)}`}>
             <div className="single-timer-bar">
               <span
-                className="single-timer-fill multiplayer-status-fill"
-                style={{ width: `${multiplayerStageProgress}%` }}
+                className="single-timer-fill"
+                style={{ width: `${multiplayerCountdownProgress}%` }}
               />
             </div>
-            <span className="single-timer-text multiplayer-status-text">
-              {Math.round(multiplayerStageProgress)}% complete
-            </span>
+            <span className="single-timer-text">{formatCountdown(multiplayerTimeLeft)}</span>
           </div>
 
           <div

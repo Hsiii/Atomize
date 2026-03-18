@@ -392,20 +392,6 @@ input {
   align-items: center;
 }
 
-.multiplayer-status-shell {
-  min-width: 0;
-}
-
-.multiplayer-status-fill {
-  background: linear-gradient(90deg, var(--color-secondary), var(--color-primary));
-}
-
-.multiplayer-status-text {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .multiplayer-score-pill {
   min-width: 5.5rem;
 }
