@@ -19,10 +19,13 @@ import {
 } from "./lib/supabase";
 
 const soloSeed = "solo-mvp-seed";
+const soloDurationSeconds = 60;
 type MenuMode = "default" | "create-room" | "join-room";
 
 const uiText = {
   back: "Back",
+  timer: "Time",
+  score: "Score",
   serverOnline: "Server online",
   serverOffline: "Server offline",
   title: "Atomize",
@@ -76,6 +79,7 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>("menu");
   const [menuMode, setMenuMode] = useState<MenuMode>("default");
   const [soloState, setSoloState] = useState(() => createInitialSoloState(soloSeed));
+  const [soloTimeLeft, setSoloTimeLeft] = useState(soloDurationSeconds);
   const [multiplayer, setMultiplayer] = useState<MultiplayerState>({
     playerId: null,
     snapshot: null,
@@ -88,10 +92,6 @@ export default function App() {
   const supabaseRef = useRef<SupabaseClient | null>(null);
   const latestMultiplayerRef = useRef(multiplayer);
   const supabaseConfig = useMemo(() => getSupabaseConfig(), []);
-
-  const stageSummary = useMemo(() => {
-    return soloState.currentStage.remainingFactors.join(" × ") || "cleared";
-  }, [soloState.currentStage.remainingFactors]);
 
   const multiplayerStageSummary = useMemo(() => {
     return multiplayer.snapshot?.stage.remainingFactors.join(" × ") || "waiting";
@@ -124,6 +124,29 @@ export default function App() {
   }, [multiplayer.snapshot?.status]);
 
   useEffect(() => {
+    if (screen !== "single") {
+      return;
+    }
+
+    setSoloTimeLeft(soloDurationSeconds);
+
+    const timer = window.setInterval(() => {
+      setSoloTimeLeft((currentTime) => {
+        if (currentTime <= 1) {
+          window.clearInterval(timer);
+          return 0;
+        }
+
+        return currentTime - 1;
+      });
+    }, 1000);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [screen]);
+
+  useEffect(() => {
     supabaseRef.current = createRealtimeClient();
 
     return () => {
@@ -134,6 +157,10 @@ export default function App() {
   }, []);
 
   function handlePrimeTap(prime: Prime) {
+    if (soloTimeLeft === 0) {
+      return;
+    }
+
     setSoloState((currentState) => advanceSoloState(currentState, soloSeed, prime));
   }
 
@@ -433,42 +460,36 @@ export default function App() {
   if (screen === "single") {
     return (
       <main className="app-shell fullscreen-shell">
-        <section className="screen game-screen">
+        <section className="screen game-screen single-game-screen">
           <header className="top-bar">
-            <button type="button" className="ghost-action" onClick={() => void returnToMenu()}>
-              {uiText.back}
+            <button
+              type="button"
+              className="icon-action"
+              onClick={() => void returnToMenu()}
+              aria-label={uiText.back}
+            >
+              <span aria-hidden="true">&#8592;</span>
             </button>
-            <span className="status-pill">{uiText.singlePlayer}</span>
           </header>
 
-          <section className="scoreboard">
+          <section className="scoreboard single-scoreboard">
             <div>
-              <p className="label">Stage</p>
-              <strong>{soloState.currentStage.stageIndex + 1}</strong>
+              <p className="label">{uiText.timer}</p>
+              <strong>{formatCountdown(soloTimeLeft)}</strong>
             </div>
             <div>
-              <p className="label">HP</p>
-              <strong>{soloState.hp}</strong>
-            </div>
-            <div>
-              <p className="label">Combo</p>
-              <strong>{soloState.combo}</strong>
-            </div>
-            <div>
-              <p className="label">Score</p>
+              <p className="label">{uiText.score}</p>
               <strong>{soloState.score}</strong>
             </div>
           </section>
 
-          <section className="value-panel">
-            <p className="label">Target</p>
+          <section className="single-value-display" aria-live="polite">
             <strong>{soloState.currentStage.remainingValue}</strong>
-            <p>{stageSummary}</p>
           </section>
 
           <section className="keypad">
             {PRIME_POOL.map((prime) => (
-              <button key={prime} type="button" onClick={() => handlePrimeTap(prime)}>
+              <button key={prime} type="button" onClick={() => handlePrimeTap(prime)} disabled={soloTimeLeft === 0}>
                 {prime}
               </button>
             ))}
@@ -572,7 +593,9 @@ export default function App() {
                 </button>
               </div>
 
-              <footer className="minimal-footer minimal-footer-bottom">{multiplayerFooterText}</footer>
+              {multiplayerFooterText !== uiText.waitingForPlayer ? (
+                <footer className="minimal-footer minimal-footer-bottom">{multiplayerFooterText}</footer>
+              ) : null}
             </div>
           </section>
         </main>
@@ -677,4 +700,11 @@ function createRoomId(): string {
 
 function normalizeRoomId(value: string): string {
   return value.replace(/\D/g, "").slice(0, 4);
+}
+
+function formatCountdown(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
