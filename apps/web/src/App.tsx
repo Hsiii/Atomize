@@ -475,7 +475,8 @@ export default function App() {
               <span className="status-pill muted">{serverStatusLabel}</span>
             </header>
 
-            <div className="lobby-stack">
+            <div className="lobby-stack lobby-stack-centered">
+              <div className="join-room-panel">
               {isJoinFlow ? (
                 <label className="field">
                   <span>{uiText.enterCode}</span>
@@ -503,6 +504,7 @@ export default function App() {
               ) : (
                 <p className="server-meta">{uiText.configHint}</p>
               )}
+              </div>
             </div>
           </section>
         </main>
