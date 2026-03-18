@@ -382,11 +382,19 @@ input {
   box-shadow: none;
 }
 
+.waiting-player-card {
+  min-height: 8.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.waiting-player-card strong {
+  margin-top: auto;
+}
+
 .waiting-placeholder-card {
   background: var(--color-surface-muted);
   color: var(--color-ink-soft);
-  display: flex;
-  flex-direction: column;
   justify-content: space-between;
 }
 
