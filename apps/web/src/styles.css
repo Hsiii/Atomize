@@ -306,6 +306,42 @@ input {
   outline: 2px solid var(--color-outline-strong);
 }
 
+.waiting-code-panel,
+.waiting-player-card {
+  border: 1px solid var(--color-border-soft);
+  box-shadow: none;
+}
+
+.waiting-placeholder-card {
+  background: var(--color-surface-muted);
+  color: var(--color-ink-soft);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.waiting-placeholder-mark {
+  display: grid;
+  place-items: center;
+  min-height: 3rem;
+  margin-top: var(--space-4);
+  border-radius: calc(var(--radius-panel) - 8px);
+  background: rgba(8, 17, 28, 0.06);
+  font-family: var(--font-family-display);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.connection-dot {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  margin-top: var(--space-4);
+  border-radius: 50%;
+  background: #2fa66a;
+}
+
 .value-panel {
   margin-top: auto;
   text-align: center;

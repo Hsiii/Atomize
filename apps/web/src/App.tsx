@@ -552,6 +552,8 @@ export default function App() {
     }
 
     if (shouldShowWaitingRoom) {
+      const waitingPlayers = [multiplayer.snapshot?.players[0] ?? null, multiplayer.snapshot?.players[1] ?? null];
+
       return (
         <main className="app-shell fullscreen-shell">
           <section className="screen lobby-screen">
@@ -567,27 +569,40 @@ export default function App() {
             </header>
 
             <div className="lobby-stack waiting-room-stack">
-              <div className="code-panel">
+              <div className="code-panel waiting-code-panel">
                 <p className="label">{uiText.roomCode}</p>
                 <strong>{multiplayer.roomId || uiText.roomPlaceholder}</strong>
               </div>
 
               <section className="scoreboard player-scoreboard lobby-scoreboard waiting-room-grid">
-                {multiplayer.snapshot?.players.map((player) => {
+                {waitingPlayers.map((player, index) => {
+                  if (!player) {
+                    return (
+                      <div key={`waiting-slot-${index}`} className="player-card waiting-player-card waiting-placeholder-card">
+                        <p className="label">Opponent</p>
+                        <div className="waiting-placeholder-mark" aria-hidden="true">
+                          ?
+                        </div>
+                      </div>
+                    );
+                  }
+
                   const isCurrentPlayer = player.id === multiplayer.playerId;
 
                   return (
-                    <div key={player.id} className={isCurrentPlayer ? "player-card active" : "player-card"}>
+                    <div
+                      key={player.id}
+                      className={isCurrentPlayer ? "player-card waiting-player-card active" : "player-card waiting-player-card"}
+                    >
                       <p className="label">{isCurrentPlayer ? "You" : "Opponent"}</p>
                       <strong>{player.name}</strong>
-                      <span>{player.connected ? "Connected" : uiText.waitingForPlayer}</span>
+                      {player.connected ? <span className="connection-dot" aria-label="Connected" /> : null}
                     </div>
                   );
                 })}
               </section>
 
               <div className="waiting-cta">
-                <p className="helper-copy waiting-copy">{uiText.waitingForPlayer}</p>
                 <button type="button" className="primary-action start-action" disabled>
                   {uiText.start}
                 </button>
