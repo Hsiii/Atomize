@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ButtonHTMLAttributes } from "react";
 import type { RealtimeChannel, SupabaseClient } from "@supabase/supabase-js";
 import {
   PRIME_POOL,
@@ -441,15 +441,15 @@ export default function App() {
             <p className="eyebrow">{uiText.eyebrow}</p>
             <h1 className="hero-title">{uiText.title}</h1>
             <div className="action-stack menu-actions">
-              <button type="button" className="primary-action" onClick={startSingleGame}>
+              <ActionButton variant="primary" onClick={startSingleGame}>
                 {uiText.singlePlayer}
-              </button>
-              <button type="button" className="secondary-action" onClick={startCreateRoomFlow}>
+              </ActionButton>
+              <ActionButton variant="secondary" onClick={startCreateRoomFlow}>
                 {uiText.createRoom}
-              </button>
-              <button type="button" className="secondary-action" onClick={startJoinRoomFlow}>
+              </ActionButton>
+              <ActionButton variant="secondary" onClick={startJoinRoomFlow}>
                 {uiText.joinRoom}
-              </button>
+              </ActionButton>
             </div>
           </div>
         </section>
@@ -522,6 +522,22 @@ export default function App() {
             <div className="lobby-stack lobby-stack-centered">
               <div className="join-room-panel">
                 {isJoinFlow ? (
+                  <div className="code-panel join-code-panel compact-code-panel">
+                    <p className="label">{uiText.roomCode}</p>
+                    <div className="room-code-preview" aria-live="polite">
+                      {getRoomCodePreviewDigits(roomIdInput).map((digit, index) => (
+                        <span
+                          key={`room-preview-${index}`}
+                          className={digit.filled ? "room-code-digit" : "room-code-digit empty"}
+                        >
+                          {digit.value}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {isJoinFlow ? (
                   <label className="field">
                     <span>{uiText.enterCode}</span>
                     <input
@@ -535,16 +551,14 @@ export default function App() {
                   </label>
                 ) : null}
 
-                <button
-                  type="button"
-                  className="primary-action"
-                  onClick={() => void (isJoinFlow ? joinRoom() : createRoom())}
-                >
+                <ActionButton variant="secondary" onClick={() => void (isJoinFlow ? joinRoom() : createRoom())}>
                   {isJoinFlow ? uiText.joinRoom : uiText.createRoom}
-                </button>
+                </ActionButton>
               </div>
 
-              <footer className="minimal-footer">{multiplayerFooterText}</footer>
+              {multiplayerFooterText !== uiText.idleStatus ? (
+                <footer className="minimal-footer">{multiplayerFooterText}</footer>
+              ) : null}
             </div>
           </section>
         </main>
@@ -603,9 +617,9 @@ export default function App() {
               </section>
 
               <div className="waiting-cta">
-                <button type="button" className="primary-action start-action" disabled>
+                <ActionButton variant="primary" className="start-action" disabled>
                   {uiText.start}
-                </button>
+                </ActionButton>
               </div>
 
               {multiplayerFooterText !== uiText.waitingForPlayer ? (
@@ -722,4 +736,23 @@ function formatCountdown(totalSeconds: number): string {
   const seconds = totalSeconds % 60;
 
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+type ActionButtonProps = {
+  variant: "primary" | "secondary";
+} & ButtonHTMLAttributes<HTMLButtonElement>;
+
+function ActionButton({ variant, className, type = "button", ...props }: ActionButtonProps) {
+  const classes = ["app-action-button", variant === "primary" ? "primary-action" : "secondary-action", className]
+    .filter(Boolean)
+    .join(" ");
+
+  return <button type={type} className={classes} {...props} />;
+}
+
+function getRoomCodePreviewDigits(value: string): Array<{ value: string; filled: boolean }> {
+  return Array.from({ length: 4 }, (_, index) => ({
+    value: value[index] ?? uiText.roomPlaceholder[index],
+    filled: index < value.length,
+  }));
 }

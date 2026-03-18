@@ -172,7 +172,7 @@ input {
   margin-top: var(--space-7);
 }
 
-.menu-actions > button {
+.app-action-button {
   border: 1px solid rgba(255, 255, 255, 0.28);
   color: var(--color-text-inverse);
   font-size: 1.1rem;
@@ -180,8 +180,13 @@ input {
   letter-spacing: 0.01em;
 }
 
-.menu-actions > .primary-action {
+.app-action-button.primary-action {
   background: var(--color-primary-strong);
+}
+
+.app-action-button.secondary-action {
+  background: var(--color-secondary);
+  color: var(--color-text-inverse);
 }
 
 .multiplayer-panel,
@@ -317,6 +322,12 @@ input {
   box-shadow: none;
 }
 
+.join-code-panel {
+  width: 100%;
+  border: 1px solid var(--color-border-soft);
+  box-shadow: none;
+}
+
 .waiting-placeholder-card {
   background: var(--color-surface-muted);
   color: var(--color-ink-soft);
@@ -447,6 +458,30 @@ input {
 
 .compact-code-panel strong {
   font-variant-numeric: tabular-nums;
+}
+
+.room-code-preview {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.room-code-digit {
+  display: grid;
+  place-items: center;
+  min-height: 3.25rem;
+  border-radius: calc(var(--radius-panel) - 10px);
+  background: var(--color-surface-strong);
+  color: var(--color-ink);
+  font-family: var(--font-family-display);
+  font-size: clamp(1.8rem, 8vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.room-code-digit.empty {
+  color: rgba(11, 34, 53, 0.32);
 }
 
 .server-panel {
