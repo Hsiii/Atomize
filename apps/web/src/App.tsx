@@ -424,9 +424,7 @@ export default function App() {
                   <p className="helper-copy">{supabaseConfig ? uiText.shareHint : uiText.configHint}</p>
                   <p className="server-meta">{multiplayer.statusText}</p>
                 </>
-              ) : (
-                <p className="helper-copy">{supabaseConfig ? uiText.roomHint : uiText.configHint}</p>
-              )}
+              ) : null}
             </div>
           </div>
         </section>
