@@ -594,7 +594,7 @@ input {
 
 .room-code-block-input {
   display: block;
-  width: 4ch;
+  width: calc(4ch + 0.64em);
   margin: var(--space-1) auto 0;
   border: 0;
   padding: 0;

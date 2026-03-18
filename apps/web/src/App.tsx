@@ -38,6 +38,7 @@ const uiText = {
   multiPlayer: "Multi Player",
   createRoom: "Create Room",
   joinRoom: "Join Room",
+  go: "Go!",
   roomCode: "Room Code",
   enterCode: "Enter Code",
   backspace: "Backspace",
@@ -658,7 +659,7 @@ export default function App() {
 
               <div className="waiting-cta">
                 <ActionButton variant="secondary" onClick={() => void (isJoinFlow ? joinRoom() : createRoom())}>
-                  {isJoinFlow ? uiText.joinRoom : uiText.createRoom}
+                  {isJoinFlow ? uiText.go : uiText.createRoom}
                 </ActionButton>
               </div>
 
