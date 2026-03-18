@@ -73,6 +73,8 @@ function handleMessage(socket: WebSocket, message: ClientMessage) {
             name: HOST_NAME,
             hp: 40,
             combo: 0,
+            stageIndex: 0,
+            stage: soloState.currentStage,
             connected: true,
             ready: false,
           },
@@ -111,6 +113,8 @@ function handleMessage(socket: WebSocket, message: ClientMessage) {
       name: GUEST_NAME,
       hp: 40,
       combo: 0,
+      stageIndex: room.stageIndex,
+      stage: room.stage,
       connected: true,
       ready: false,
     });
@@ -156,7 +160,7 @@ function resolvePrimeSelection(room: RoomState, playerId: string, prime: Prime) 
     return;
   }
 
-  const selection = applyPrimeSelection(room.stage, prime);
+  const selection = applyPrimeSelection(player.stage, prime);
 
   if (selection.kind === "wrong") {
     player.hp = Math.max(0, player.hp - 3);
@@ -170,7 +174,9 @@ function resolvePrimeSelection(room: RoomState, playerId: string, prime: Prime) 
     return;
   }
 
+  player.stage = selection.stage;
   room.stage = selection.stage;
+  room.stageIndex = player.stageIndex;
 
   if (!selection.cleared) {
     broadcast(room, {
@@ -181,22 +187,25 @@ function resolvePrimeSelection(room: RoomState, playerId: string, prime: Prime) 
     return;
   }
 
-  const damage = computeBattleDamage(selection.stage, player.combo);
+  const nextCombo = player.combo + 1;
+  const damage = computeBattleDamage(selection.stage, nextCombo);
   const nextState = advanceSoloState(
     {
       hp: 5,
       combo: player.combo,
       score: 0,
-      clearedStages: room.stageIndex,
+      clearedStages: player.stageIndex,
       currentStage: selection.stage,
     },
     room.seed,
     prime,
   );
 
-  room.stageIndex += 1;
+  room.stageIndex = nextState.clearedStages;
   room.stage = nextState.currentStage;
-  player.combo += 1;
+  player.combo = nextState.combo;
+  player.stageIndex = nextState.clearedStages;
+  player.stage = nextState.currentStage;
 
   for (const [otherPlayerId, otherPlayer] of room.players.entries()) {
     if (otherPlayerId !== playerId) {

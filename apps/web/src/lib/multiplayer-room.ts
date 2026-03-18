@@ -16,12 +16,14 @@ export function createRoomSnapshot(
   roomId: string,
   hostId: string,
 ): RoomSnapshot {
+  const initialStage = generateStage(roomId, 0);
+
   return {
     roomId,
     seed: roomId,
     stageIndex: 0,
-    stage: generateStage(roomId, 0),
-    players: [createPlayer(hostId, HOST_NAME)],
+    stage: initialStage,
+    players: [createPlayer(hostId, HOST_NAME, roomId)],
     countdownEndsAt: null,
     status: "waiting",
   };
@@ -41,7 +43,7 @@ export function addPlayerToRoom(
 
   return {
     ...snapshot,
-    players: [...snapshot.players, createPlayer(playerId, GUEST_NAME)],
+    players: [...snapshot.players, createPlayer(playerId, GUEST_NAME, snapshot.seed)],
     countdownEndsAt: null,
     status: "waiting",
   };
@@ -118,7 +120,7 @@ export function applyBattlePrimeSelection(
     return snapshot;
   }
 
-  const selection = applyPrimeSelection(snapshot.stage, prime);
+  const selection = applyPrimeSelection(actingPlayer.stage, prime);
 
   if (selection.kind === "wrong") {
     return withPlayers(snapshot, snapshot.players.map((player) => {
@@ -135,27 +137,43 @@ export function applyBattlePrimeSelection(
   }
 
   if (!selection.cleared) {
-    return {
-      ...snapshot,
-      stage: selection.stage,
-    };
+    return withPlayers(
+      {
+        ...snapshot,
+        stageIndex: actingPlayer.stageIndex,
+        stage: selection.stage,
+      },
+      snapshot.players.map((player) => {
+        if (player.id !== playerId) {
+          return player;
+        }
+
+        return {
+          ...player,
+          stage: selection.stage,
+        };
+      }),
+    );
   }
 
   const combo = actingPlayer.combo + 1;
   const damage = computeBattleDamage(selection.stage, combo);
-  const stageIndex = snapshot.stageIndex + 1;
+  const stageIndex = actingPlayer.stageIndex + 1;
+  const nextStage = generateStage(snapshot.seed, stageIndex);
 
   return withPlayers(
     {
       ...snapshot,
       stageIndex,
-      stage: generateStage(snapshot.seed, stageIndex),
+      stage: nextStage,
     },
     snapshot.players.map((player) => {
       if (player.id === playerId) {
         return {
           ...player,
           combo,
+          stageIndex,
+          stage: nextStage,
         };
       }
 
@@ -167,12 +185,14 @@ export function applyBattlePrimeSelection(
   );
 }
 
-function createPlayer(id: string, name: string): RoomPlayer {
+function createPlayer(id: string, name: string, seed: string): RoomPlayer {
   return {
     id,
     name,
     hp: STARTING_HP,
     combo: 0,
+    stageIndex: 0,
+    stage: generateStage(seed, 0),
     connected: true,
     ready: false,
   };

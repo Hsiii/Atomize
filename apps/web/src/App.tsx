@@ -1022,7 +1022,7 @@ export default function App() {
         </header>
 
         <section className="single-value-display multiplayer-value-display" aria-live="polite">
-          <strong>{multiplayer.snapshot?.stage.remainingValue ?? "--"}</strong>
+          <strong>{currentMultiplayerPlayer?.stage.remainingValue ?? "--"}</strong>
         </section>
 
         <section className="combo-panel" aria-live="polite">

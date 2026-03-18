@@ -6,6 +6,8 @@ export type RoomPlayer = {
   name: string;
   hp: number;
   combo: number;
+  stageIndex: number;
+  stage: StageState;
   connected: boolean;
   ready: boolean;
 };
