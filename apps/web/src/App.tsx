@@ -131,10 +131,6 @@ export default function App() {
   const latestMultiplayerRef = useRef(multiplayer);
   const supabaseConfig = useMemo(() => getSupabaseConfig(), []);
 
-  const multiplayerStageSummary = useMemo(() => {
-    return multiplayer.snapshot?.stage.remainingFactors.join(" × ") || "waiting";
-  }, [multiplayer.snapshot]);
-
   const multiplayerPlayers = multiplayer.snapshot?.players ?? [];
   const currentMultiplayerPlayer = multiplayerPlayers.find((player) => player.id === multiplayer.playerId) ?? null;
   const multiplayerCountdownProgress = (multiplayerTimeLeft / soloDurationSeconds) * 100;
@@ -1027,7 +1023,6 @@ export default function App() {
 
         <section className="single-value-display multiplayer-value-display" aria-live="polite">
           <strong>{multiplayer.snapshot?.stage.remainingValue ?? "--"}</strong>
-          <p className="multiplayer-stage-caption">{multiplayerStageSummary}</p>
         </section>
 
         <section className="combo-panel" aria-live="polite">

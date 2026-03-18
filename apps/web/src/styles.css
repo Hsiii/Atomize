@@ -400,14 +400,6 @@ input {
   gap: var(--space-4);
 }
 
-.multiplayer-stage-caption {
-  margin: 0;
-  color: var(--color-ink-soft);
-  font-size: 1rem;
-  line-height: 1.35;
-  text-align: center;
-}
-
 .multiplayer-keypad {
   margin-top: 0;
 }
