@@ -263,6 +263,10 @@ input {
   flex: 1;
 }
 
+.single-top-bar {
+  align-items: center;
+}
+
 .lobby-scoreboard {
   margin-top: var(--space-1);
 }
@@ -310,6 +314,62 @@ input {
 
 .single-scoreboard {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.single-timer-shell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.single-timer-bar {
+  position: relative;
+  height: 0.5rem;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: rgba(8, 17, 28, 0.12);
+}
+
+.single-timer-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--color-primary-strong), var(--color-secondary));
+  transition: width 1s linear;
+}
+
+.single-timer-text {
+  font-size: 0.8rem;
+  line-height: 1;
+  color: var(--color-ink-soft);
+}
+
+.single-score-pill {
+  min-width: 4.75rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 1rem;
+  background: var(--color-surface-base);
+  text-align: right;
+  backdrop-filter: blur(var(--blur-panel));
+  box-shadow: var(--shadow-panel);
+}
+
+.single-score-label {
+  display: block;
+  font-size: 0.68rem;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-ink-soft);
+}
+
+.single-score-pill strong {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 1.1rem;
+  line-height: 1;
 }
 
 .player-card.active {

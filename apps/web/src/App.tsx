@@ -97,6 +97,8 @@ export default function App() {
     return multiplayer.snapshot?.stage.remainingFactors.join(" × ") || "waiting";
   }, [multiplayer.snapshot]);
 
+  const soloCountdownProgress = (soloTimeLeft / soloDurationSeconds) * 100;
+
   const multiplayerFooterText = useMemo(() => {
     if (!supabaseConfig) {
       return uiText.configHint;
@@ -461,7 +463,7 @@ export default function App() {
     return (
       <main className="app-shell fullscreen-shell">
         <section className="screen game-screen single-game-screen">
-          <header className="top-bar">
+          <header className="top-bar single-top-bar">
             <button
               type="button"
               className="icon-action"
@@ -470,18 +472,22 @@ export default function App() {
             >
               <span aria-hidden="true">&#8592;</span>
             </button>
-          </header>
 
-          <section className="scoreboard single-scoreboard">
-            <div>
-              <p className="label">{uiText.timer}</p>
-              <strong>{formatCountdown(soloTimeLeft)}</strong>
+            <div className="single-timer-shell" aria-label={`${uiText.timer}: ${formatCountdown(soloTimeLeft)}`}>
+              <div className="single-timer-bar">
+                <span
+                  className="single-timer-fill"
+                  style={{ width: `${soloCountdownProgress}%` }}
+                />
+              </div>
+              <span className="single-timer-text">{formatCountdown(soloTimeLeft)}</span>
             </div>
-            <div>
-              <p className="label">{uiText.score}</p>
+
+            <div className="single-score-pill" aria-label={`${uiText.score}: ${soloState.score}`}>
+              <span className="single-score-label">{uiText.score}</span>
               <strong>{soloState.score}</strong>
             </div>
-          </section>
+          </header>
 
           <section className="single-value-display" aria-live="polite">
             <strong>{soloState.currentStage.remainingValue}</strong>
