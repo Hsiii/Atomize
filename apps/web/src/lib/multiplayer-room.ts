@@ -22,6 +22,7 @@ export function createRoomSnapshot(
     stageIndex: 0,
     stage: generateStage(roomId, 0),
     players: [createPlayer(hostId, HOST_NAME)],
+    countdownEndsAt: null,
     status: "waiting",
   };
 }
@@ -41,6 +42,63 @@ export function addPlayerToRoom(
   return {
     ...snapshot,
     players: [...snapshot.players, createPlayer(playerId, GUEST_NAME)],
+    countdownEndsAt: null,
+    status: "waiting",
+  };
+}
+
+export function setPlayerReady(
+  snapshot: RoomSnapshot,
+  playerId: string,
+  ready: boolean,
+): RoomSnapshot {
+  if (snapshot.status !== "waiting") {
+    return snapshot;
+  }
+
+  return {
+    ...snapshot,
+    players: snapshot.players.map((player) => {
+      if (player.id !== playerId) {
+        return player;
+      }
+
+      return {
+        ...player,
+        ready,
+      };
+    }),
+  };
+}
+
+export function canStartRoomCountdown(snapshot: RoomSnapshot): boolean {
+  if (snapshot.status !== "waiting" || snapshot.players.length < 2) {
+    return false;
+  }
+
+  return snapshot.players.slice(1).every((player) => player.ready);
+}
+
+export function startRoomCountdown(snapshot: RoomSnapshot, countdownEndsAt: number): RoomSnapshot {
+  if (!canStartRoomCountdown(snapshot)) {
+    return snapshot;
+  }
+
+  return {
+    ...snapshot,
+    countdownEndsAt,
+    status: "countdown",
+  };
+}
+
+export function beginRoomMatch(snapshot: RoomSnapshot): RoomSnapshot {
+  if (snapshot.status !== "countdown") {
+    return snapshot;
+  }
+
+  return {
+    ...snapshot,
+    countdownEndsAt: null,
     status: "playing",
   };
 }
@@ -50,7 +108,7 @@ export function applyBattlePrimeSelection(
   playerId: string,
   prime: Prime,
 ): RoomSnapshot {
-  if (snapshot.status === "finished") {
+  if (snapshot.status !== "playing") {
     return snapshot;
   }
 
@@ -116,6 +174,7 @@ function createPlayer(id: string, name: string): RoomPlayer {
     hp: STARTING_HP,
     combo: 0,
     connected: true,
+    ready: false,
   };
 }
 
@@ -125,6 +184,7 @@ function withPlayers(snapshot: RoomSnapshot, players: RoomPlayer[]): RoomSnapsho
   return {
     ...snapshot,
     players,
-    status: hasDefeatedPlayer ? "finished" : players.length === 2 ? "playing" : "waiting",
+    countdownEndsAt: hasDefeatedPlayer ? null : snapshot.countdownEndsAt,
+    status: hasDefeatedPlayer ? "finished" : snapshot.status,
   };
 }

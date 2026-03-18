@@ -74,6 +74,7 @@ function handleMessage(socket: WebSocket, message: ClientMessage) {
             hp: 40,
             combo: 0,
             connected: true,
+            ready: false,
           },
         ],
       ]),
@@ -111,6 +112,7 @@ function handleMessage(socket: WebSocket, message: ClientMessage) {
       hp: 40,
       combo: 0,
       connected: true,
+      ready: false,
     });
     sockets.set(socket, { id: playerId, socket });
 
@@ -219,6 +221,7 @@ function createSnapshot(room: RoomState): RoomSnapshot {
     stageIndex: room.stageIndex,
     stage: room.stage,
     players,
+    countdownEndsAt: null,
     status: finished ? "finished" : room.guestId ? "playing" : "waiting",
   };
 }

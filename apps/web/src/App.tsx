@@ -12,7 +12,11 @@ import {
 import {
   addPlayerToRoom,
   applyBattlePrimeSelection,
+  beginRoomMatch,
+  canStartRoomCountdown,
   createRoomSnapshot,
+  setPlayerReady,
+  startRoomCountdown,
 } from "./lib/multiplayer-room";
 import {
   createRealtimeClient,
@@ -24,12 +28,20 @@ const soloSeed = "solo-mvp-seed";
 const soloDurationSeconds = 60;
 const playablePrimes = PRIME_POOL.slice(0, 9);
 const soloComboStepDelayMs = 280;
+const multiplayerCountdownDurationMs = 3000;
 type MenuMode = "default" | "create-room" | "join-room";
 
 const uiText = {
   back: "Back",
   timer: "Time",
   score: "Score",
+  room: "Room",
+  target: "Target",
+  health: "HP",
+  combo: "Combo",
+  you: "You",
+  opponent: "Opponent",
+  battle: "Battle",
   serverOnline: "Server online",
   serverOffline: "Server offline",
   title: "Atomize",
@@ -43,6 +55,13 @@ const uiText = {
   enterCode: "Enter Code",
   backspace: "Backspace",
   enterCombo: "Enter",
+  ready: "Ready",
+  readyWaiting: "Ready",
+  waitingForHost: "Waiting for host to start.",
+  opponentMustReady: "Opponent must press ready first.",
+  pressReady: "Press ready when you are set.",
+  countdownPrefix: "Starting in",
+  joiningRoom: "Joining room...",
   start: "Start",
   roomHint: "Tap create to open a room, or join with a 4-digit code.",
   configHint: "Server setup required for multiplayer.",
@@ -77,6 +96,11 @@ type RoomBroadcastMessage =
       prime: Prime;
     }
   | {
+      type: "player_ready";
+      playerId: string;
+      ready: boolean;
+    }
+  | {
       type: "room_error";
       targetPlayerId: string;
       message: string;
@@ -90,6 +114,7 @@ export default function App() {
   const [soloPrimeQueue, setSoloPrimeQueue] = useState<Prime[]>([]);
   const [isSoloComboRunning, setIsSoloComboRunning] = useState(false);
   const [soloTimerPenaltyPopKey, setSoloTimerPenaltyPopKey] = useState(0);
+  const [multiplayerCountdownValue, setMultiplayerCountdownValue] = useState<number | null>(null);
   const [multiplayer, setMultiplayer] = useState<MultiplayerState>({
     playerId: null,
     snapshot: null,
@@ -108,6 +133,16 @@ export default function App() {
     return multiplayer.snapshot?.stage.remainingFactors.join(" × ") || "waiting";
   }, [multiplayer.snapshot]);
 
+  const multiplayerPlayers = multiplayer.snapshot?.players ?? [];
+  const currentMultiplayerPlayer = multiplayerPlayers.find((player) => player.id === multiplayer.playerId) ?? null;
+  const opponentMultiplayerPlayer = multiplayerPlayers.find((player) => player.id !== multiplayer.playerId) ?? null;
+  const multiplayerStageFactorCount = multiplayer.snapshot?.stage.factors.length ?? 0;
+  const multiplayerRemainingFactorCount = multiplayer.snapshot?.stage.remainingFactors.length ?? 0;
+  const multiplayerStageProgress = multiplayerStageFactorCount > 0
+    ? ((multiplayerStageFactorCount - multiplayerRemainingFactorCount) / multiplayerStageFactorCount) * 100
+    : 0;
+  const isMultiplayerInputDisabled = !multiplayer.snapshot || multiplayer.snapshot.status !== "playing";
+
   const soloCountdownProgress = (soloTimeLeft / soloDurationSeconds) * 100;
 
   const multiplayerFooterText = useMemo(() => {
@@ -115,16 +150,33 @@ export default function App() {
       return uiText.configHint;
     }
 
+    const snapshot = multiplayer.snapshot;
+
+    if (snapshot?.status === "countdown") {
+      return `${uiText.countdownPrefix} ${multiplayerCountdownValue ?? 3}`;
+    }
+
     if (multiplayer.statusText) {
       return multiplayer.statusText;
     }
 
-    if (multiplayer.roomId) {
+    if (!multiplayer.roomId) {
+      return uiText.serverOnline;
+    }
+
+    if (!snapshot || snapshot.players.length < 2) {
       return uiText.waitingForPlayer;
     }
 
-    return uiText.serverOnline;
-  }, [multiplayer.roomId, multiplayer.statusText, supabaseConfig]);
+    const currentPlayer = snapshot.players.find((player) => player.id === multiplayer.playerId);
+    const opponentReady = snapshot.players.some((player) => player.id !== multiplayer.playerId && player.ready);
+
+    if (multiplayer.isHost) {
+      return opponentReady ? uiText.start : uiText.opponentMustReady;
+    }
+
+    return currentPlayer?.ready ? uiText.waitingForHost : uiText.pressReady;
+  }, [multiplayer.roomId, multiplayer.statusText, multiplayer.snapshot, multiplayer.playerId, multiplayer.isHost, multiplayerCountdownValue, supabaseConfig]);
 
   useEffect(() => {
     latestSoloStateRef.current = soloState;
@@ -139,6 +191,56 @@ export default function App() {
       setScreen("multi-game");
     }
   }, [multiplayer.snapshot?.status]);
+
+  useEffect(() => {
+    const countdownEndsAt = multiplayer.snapshot?.countdownEndsAt;
+
+    if (multiplayer.snapshot?.status !== "countdown" || !countdownEndsAt) {
+      setMultiplayerCountdownValue(null);
+      return;
+    }
+
+    const updateCountdownValue = () => {
+      const remainingMs = countdownEndsAt - Date.now();
+      setMultiplayerCountdownValue(Math.max(1, Math.ceil(remainingMs / 1000)));
+    };
+
+    updateCountdownValue();
+
+    const timer = window.setInterval(updateCountdownValue, 100);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [multiplayer.snapshot?.countdownEndsAt, multiplayer.snapshot?.status]);
+
+  useEffect(() => {
+    const countdownEndsAt = multiplayer.snapshot?.countdownEndsAt;
+
+    if (!multiplayer.isHost || multiplayer.snapshot?.status !== "countdown" || !countdownEndsAt) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      const currentState = latestMultiplayerRef.current;
+
+      if (!currentState.isHost || !currentState.snapshot || currentState.snapshot.status !== "countdown" || !currentState.playerId) {
+        return;
+      }
+
+      const nextSnapshot = beginRoomMatch(currentState.snapshot);
+      updateSnapshot(nextSnapshot, "");
+      void broadcastMessage({
+        type: "room_state",
+        snapshot: nextSnapshot,
+        sourcePlayerId: currentState.playerId,
+      });
+    }, Math.max(0, countdownEndsAt - Date.now()));
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [multiplayer.isHost, multiplayer.snapshot?.countdownEndsAt, multiplayer.snapshot?.status]);
 
   useEffect(() => {
     if (screen !== "single") {
@@ -354,7 +456,7 @@ export default function App() {
           return;
         }
 
-        updateSnapshot(message.snapshot);
+        updateSnapshot(message.snapshot, "");
       })
       .on("broadcast", { event: "join_request" }, async ({ payload }) => {
         const message = payload as RoomBroadcastMessage;
@@ -378,7 +480,24 @@ export default function App() {
           return;
         }
 
-        updateSnapshot(nextSnapshot);
+        updateSnapshot(nextSnapshot, "");
+        await broadcastMessage({
+          type: "room_state",
+          snapshot: nextSnapshot,
+          sourcePlayerId: playerId,
+        });
+      })
+      .on("broadcast", { event: "player_ready" }, async ({ payload }) => {
+        const message = payload as RoomBroadcastMessage;
+        const currentState = latestMultiplayerRef.current;
+
+        if (message.type !== "player_ready" || !currentState.isHost || !currentState.snapshot) {
+          return;
+        }
+
+        const nextSnapshot = setPlayerReady(currentState.snapshot, message.playerId, message.ready);
+
+        updateSnapshot(nextSnapshot, "");
         await broadcastMessage({
           type: "room_state",
           snapshot: nextSnapshot,
@@ -399,7 +518,7 @@ export default function App() {
           message.prime,
         );
 
-        updateSnapshot(nextSnapshot);
+        updateSnapshot(nextSnapshot, "");
         await broadcastMessage({
           type: "room_state",
           snapshot: nextSnapshot,
@@ -471,6 +590,7 @@ export default function App() {
     }
 
     const playerId = crypto.randomUUID();
+    setStatusText(uiText.joiningRoom);
 
     await subscribeToRoom(roomId, playerId, false, async () => {
       setScreen("multi-lobby");
@@ -489,13 +609,17 @@ export default function App() {
       return;
     }
 
+    if (currentState.snapshot.status !== "playing") {
+      return;
+    }
+
     if (currentState.isHost) {
       const nextSnapshot = applyBattlePrimeSelection(
         currentState.snapshot,
         currentState.playerId,
         prime,
       );
-      updateSnapshot(nextSnapshot);
+      updateSnapshot(nextSnapshot, "");
       await broadcastMessage({
         type: "room_state",
         snapshot: nextSnapshot,
@@ -508,6 +632,50 @@ export default function App() {
       type: "prime_selected",
       playerId: currentState.playerId,
       prime,
+    });
+  }
+
+  async function handleGuestReady() {
+    const currentState = latestMultiplayerRef.current;
+
+    if (!currentState.playerId || !currentState.snapshot || currentState.isHost || currentState.snapshot.status !== "waiting") {
+      return;
+    }
+
+    const currentPlayer = currentState.snapshot.players.find((player) => player.id === currentState.playerId);
+
+    if (currentPlayer?.ready) {
+      return;
+    }
+
+    const optimisticSnapshot = setPlayerReady(currentState.snapshot, currentState.playerId, true);
+    updateSnapshot(optimisticSnapshot, uiText.waitingForHost);
+
+    await broadcastMessage({
+      type: "player_ready",
+      playerId: currentState.playerId,
+      ready: true,
+    });
+  }
+
+  async function handleHostStart() {
+    const currentState = latestMultiplayerRef.current;
+
+    if (!currentState.playerId || !currentState.snapshot || !currentState.isHost) {
+      return;
+    }
+
+    if (!canStartRoomCountdown(currentState.snapshot)) {
+      setStatusText(uiText.opponentMustReady);
+      return;
+    }
+
+    const nextSnapshot = startRoomCountdown(currentState.snapshot, Date.now() + multiplayerCountdownDurationMs);
+    updateSnapshot(nextSnapshot, "");
+    await broadcastMessage({
+      type: "room_state",
+      snapshot: nextSnapshot,
+      sourcePlayerId: currentState.playerId,
     });
   }
 
@@ -623,8 +791,7 @@ export default function App() {
 
   if (screen === "multi-lobby") {
     const isJoinFlow = menuMode === "join-room";
-    const isCreateFlow = menuMode === "create-room";
-    const shouldShowWaitingRoom = isCreateFlow;
+    const shouldShowWaitingRoom = Boolean(multiplayer.roomId);
 
     if (!multiplayer.roomId && !shouldShowWaitingRoom) {
       return (
@@ -673,6 +840,10 @@ export default function App() {
 
     if (shouldShowWaitingRoom) {
       const waitingPlayers = [multiplayer.snapshot?.players[0] ?? null, multiplayer.snapshot?.players[1] ?? null];
+      const currentPlayer = multiplayer.snapshot?.players.find((player) => player.id === multiplayer.playerId) ?? null;
+      const canHostStart = multiplayer.isHost && multiplayer.snapshot ? canStartRoomCountdown(multiplayer.snapshot) : false;
+      const isCountdown = multiplayer.snapshot?.status === "countdown";
+      const readyButtonDisabled = !currentPlayer || currentPlayer.ready || isCountdown;
 
       return (
         <main className="app-shell fullscreen-shell">
@@ -722,9 +893,29 @@ export default function App() {
               </section>
 
               <div className="waiting-cta">
-                <ActionButton variant="primary" className="start-action" disabled>
-                  {uiText.start}
-                </ActionButton>
+                {isCountdown ? (
+                  <ActionButton variant="primary" className="start-action" disabled>
+                    {`${uiText.countdownPrefix} ${multiplayerCountdownValue ?? 3}`}
+                  </ActionButton>
+                ) : multiplayer.isHost ? (
+                  <ActionButton
+                    variant="primary"
+                    className="start-action"
+                    onClick={() => void handleHostStart()}
+                    disabled={!canHostStart}
+                  >
+                    {uiText.start}
+                  </ActionButton>
+                ) : (
+                  <ActionButton
+                    variant="secondary"
+                    className="start-action"
+                    onClick={() => void handleGuestReady()}
+                    disabled={readyButtonDisabled}
+                  >
+                    {currentPlayer?.ready ? uiText.readyWaiting : uiText.ready}
+                  </ActionButton>
+                )}
               </div>
 
               {multiplayerFooterText !== uiText.waitingForPlayer ? (
@@ -735,52 +926,12 @@ export default function App() {
         </main>
       );
     }
-
-    return (
-      <main className="app-shell fullscreen-shell">
-        <section className="screen lobby-screen">
-          <header className="top-bar">
-            <button
-              type="button"
-              className="icon-action"
-              onClick={() => void returnToMenu()}
-              aria-label={uiText.back}
-            >
-              <ArrowLeft className="control-icon" aria-hidden="true" />
-            </button>
-          </header>
-
-          <div className="lobby-stack">
-            <div className="code-panel">
-              <p className="label">{uiText.roomCode}</p>
-              <strong>{multiplayer.roomId || "----"}</strong>
-            </div>
-
-            <section className="scoreboard player-scoreboard lobby-scoreboard">
-              {multiplayer.snapshot?.players.map((player) => {
-                const isCurrentPlayer = player.id === multiplayer.playerId;
-
-                return (
-                  <div key={player.id} className={isCurrentPlayer ? "player-card active" : "player-card"}>
-                    <p className="label">{isCurrentPlayer ? "You" : "Opponent"}</p>
-                    <strong>{player.name}</strong>
-                    <span>{player.connected ? "Connected" : uiText.waitingForPlayer}</span>
-                  </div>
-                );
-              })}
-            </section>
-
-            <footer className="minimal-footer minimal-footer-bottom">{multiplayerFooterText}</footer>
-          </div>
-        </section>
-      </main>
-    );
   }
 
   return (
     <main className="app-shell fullscreen-shell">
-      <section className="screen game-screen">
-        <header className="top-bar">
+      <section className="screen game-screen single-game-screen multiplayer-game-screen">
+        <header className="top-bar single-top-bar multiplayer-top-bar">
           <button
             type="button"
             className="icon-action"
@@ -789,35 +940,64 @@ export default function App() {
           >
             <ArrowLeft className="control-icon" aria-hidden="true" />
           </button>
-          <span className="status-pill">Room {multiplayer.roomId}</span>
+
+          <div
+            className="single-timer-shell multiplayer-status-shell"
+            aria-label={`${uiText.battle}: ${Math.round(multiplayerStageProgress)}%`}
+          >
+            <div className="single-timer-bar">
+              <span
+                className="single-timer-fill multiplayer-status-fill"
+                style={{ width: `${multiplayerStageProgress}%` }}
+              />
+            </div>
+            <span className="single-timer-text multiplayer-status-text">
+              {uiText.room} {multiplayer.roomId || uiText.roomPlaceholder} • {multiplayerStageFactorCount - multiplayerRemainingFactorCount}/{multiplayerStageFactorCount || "-"}
+            </span>
+          </div>
+
+          <div
+            className="single-score-pill multiplayer-score-pill"
+            aria-label={`${uiText.combo}: ${currentMultiplayerPlayer?.combo ?? 0}`}
+          >
+            <span className="single-score-label">{uiText.combo}</span>
+            <strong>{currentMultiplayerPlayer?.combo ?? 0}</strong>
+          </div>
         </header>
 
-        <section className="scoreboard player-scoreboard">
-          {multiplayer.snapshot?.players.map((player) => {
-            const isCurrentPlayer = player.id === multiplayer.playerId;
+        <section className="multiplayer-battle-strip" aria-live="polite">
+          <div className="multiplayer-stat-pill multiplayer-stat-pill-active">
+            <span className="single-score-label">{uiText.you}</span>
+            <strong>{currentMultiplayerPlayer?.hp ?? "--"} {uiText.health}</strong>
+            <span className="multiplayer-stat-meta">{uiText.combo} {currentMultiplayerPlayer?.combo ?? 0}</span>
+          </div>
 
-            return (
-              <div key={player.id} className={isCurrentPlayer ? "player-card active" : "player-card"}>
-                <p className="label">{isCurrentPlayer ? "You" : "Opponent"}</p>
-                <strong>{player.name}</strong>
-                <span>Combo {player.combo}</span>
-              </div>
-            );
-          })}
+          <div className="multiplayer-stat-pill">
+            <span className="single-score-label">{opponentMultiplayerPlayer?.name ?? uiText.opponent}</span>
+            <strong>{opponentMultiplayerPlayer?.hp ?? "--"} {uiText.health}</strong>
+            <span className="multiplayer-stat-meta">{uiText.combo} {opponentMultiplayerPlayer?.combo ?? 0}</span>
+          </div>
         </section>
 
-        <section className="value-panel">
-          <p className="label">Target</p>
+        <section className="single-value-display multiplayer-value-display" aria-live="polite">
           <strong>{multiplayer.snapshot?.stage.remainingValue ?? "--"}</strong>
-          <p>{multiplayerStageSummary}</p>
+          <p className="multiplayer-stage-caption">{multiplayerStageSummary}</p>
         </section>
 
-        <section className="keypad">
+        <section className="combo-panel multiplayer-info-panel" aria-live="polite">
+          <div className="combo-bar multiplayer-meta-bar">
+            <span>{uiText.target}</span>
+            <span>{multiplayer.snapshot?.stage.targetValue ?? "--"}</span>
+          </div>
+        </section>
+
+        <section className="keypad solo-keypad multiplayer-keypad">
           {playablePrimes.map((prime) => (
             <button
               key={`room-${prime}`}
               type="button"
               onClick={() => void handleMultiplayerPrimeTap(prime)}
+              disabled={isMultiplayerInputDisabled}
             >
               {prime}
             </button>

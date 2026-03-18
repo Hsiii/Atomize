@@ -7,6 +7,7 @@ export type RoomPlayer = {
   hp: number;
   combo: number;
   connected: boolean;
+  ready: boolean;
 };
 
 export type RoomSnapshot = {
@@ -15,7 +16,8 @@ export type RoomSnapshot = {
   stageIndex: number;
   stage: StageState;
   players: RoomPlayer[];
-  status: "waiting" | "playing" | "finished";
+  countdownEndsAt: number | null;
+  status: "waiting" | "countdown" | "playing" | "finished";
 };
 
 export type ClientMessage =
