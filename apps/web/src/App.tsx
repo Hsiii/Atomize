@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ButtonHTMLAttributes } from 
 import type { RealtimeChannel, SupabaseClient } from "@supabase/supabase-js";
 import {
   PRIME_POOL,
+  applyPrimeSelection,
   advanceSoloState,
   createInitialSoloState,
   type Prime,
@@ -21,6 +22,7 @@ import {
 const soloSeed = "solo-mvp-seed";
 const soloDurationSeconds = 60;
 const playablePrimes = PRIME_POOL.slice(0, 9);
+const soloComboStepDelayMs = 280;
 type MenuMode = "default" | "create-room" | "join-room";
 
 const uiText = {
@@ -39,6 +41,7 @@ const uiText = {
   enterCode: "Enter Code",
   enterCombo: "Enter",
   comboPlaceholder: "Tap numbers to build a combo",
+  comboSending: "Sending combo...",
   start: "Start",
   roomHint: "Tap create to open a room, or join with a 4-digit code.",
   configHint: "Server setup required for multiplayer.",
@@ -84,6 +87,8 @@ export default function App() {
   const [soloState, setSoloState] = useState(() => createInitialSoloState(soloSeed));
   const [soloTimeLeft, setSoloTimeLeft] = useState(soloDurationSeconds);
   const [soloPrimeQueue, setSoloPrimeQueue] = useState<Prime[]>([]);
+  const [isSoloComboRunning, setIsSoloComboRunning] = useState(false);
+  const [soloComboFeedback, setSoloComboFeedback] = useState<string | null>(null);
   const [multiplayer, setMultiplayer] = useState<MultiplayerState>({
     playerId: null,
     snapshot: null,
@@ -94,6 +99,7 @@ export default function App() {
   const [roomIdInput, setRoomIdInput] = useState("");
   const channelRef = useRef<RealtimeChannel | null>(null);
   const supabaseRef = useRef<SupabaseClient | null>(null);
+  const latestSoloStateRef = useRef(soloState);
   const latestMultiplayerRef = useRef(multiplayer);
   const supabaseConfig = useMemo(() => getSupabaseConfig(), []);
 
@@ -118,6 +124,10 @@ export default function App() {
 
     return uiText.serverOnline;
   }, [multiplayer.roomId, multiplayer.statusText, supabaseConfig]);
+
+  useEffect(() => {
+    latestSoloStateRef.current = soloState;
+  }, [soloState]);
 
   useEffect(() => {
     latestMultiplayerRef.current = multiplayer;
@@ -153,6 +163,48 @@ export default function App() {
   }, [screen]);
 
   useEffect(() => {
+    if (screen !== "single" || !isSoloComboRunning) {
+      return;
+    }
+
+    if (soloTimeLeft === 0) {
+      setIsSoloComboRunning(false);
+      setSoloComboFeedback("Time up");
+      return;
+    }
+
+    if (soloPrimeQueue.length === 0) {
+      setIsSoloComboRunning(false);
+      setSoloComboFeedback("Combo sent");
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      const currentState = latestSoloStateRef.current;
+      const nextPrime = soloPrimeQueue[0];
+      const outcome = applyPrimeSelection(currentState.currentStage, nextPrime);
+
+      setSoloState(advanceSoloState(currentState, soloSeed, nextPrime));
+      setSoloPrimeQueue((currentQueue) => currentQueue.slice(1));
+
+      if (outcome.kind === "wrong") {
+        setIsSoloComboRunning(false);
+        setSoloComboFeedback(`Stopped on ${nextPrime}: not a factor`);
+        return;
+      }
+
+      if (outcome.cleared) {
+        setIsSoloComboRunning(false);
+        setSoloComboFeedback(`Stopped on ${nextPrime}: stage cleared`);
+      }
+    }, soloComboStepDelayMs);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [isSoloComboRunning, screen, soloPrimeQueue, soloTimeLeft]);
+
+  useEffect(() => {
     supabaseRef.current = createRealtimeClient();
 
     return () => {
@@ -163,29 +215,28 @@ export default function App() {
   }, []);
 
   function handlePrimeTap(prime: Prime) {
-    if (soloTimeLeft === 0) {
+    if (soloTimeLeft === 0 || isSoloComboRunning) {
       return;
     }
 
+    setSoloComboFeedback(null);
     setSoloPrimeQueue((currentQueue) => [...currentQueue, prime]);
   }
 
   function handleSoloComboSubmit() {
-    if (soloTimeLeft === 0 || soloPrimeQueue.length === 0) {
+    if (soloTimeLeft === 0 || soloPrimeQueue.length === 0 || isSoloComboRunning) {
       return;
     }
 
-    setSoloState((currentState) => {
-      return soloPrimeQueue.reduce((nextState, queuedPrime) => {
-        return advanceSoloState(nextState, soloSeed, queuedPrime);
-      }, currentState);
-    });
-    setSoloPrimeQueue([]);
+    setSoloComboFeedback(uiText.comboSending);
+    setIsSoloComboRunning(true);
   }
 
   function startSingleGame() {
     setSoloState(createInitialSoloState(soloSeed));
     setSoloPrimeQueue([]);
+    setIsSoloComboRunning(false);
+    setSoloComboFeedback(null);
     setScreen("single");
   }
 
@@ -209,6 +260,8 @@ export default function App() {
   async function returnToMenu() {
     await closeActiveChannel();
     setSoloPrimeQueue([]);
+    setIsSoloComboRunning(false);
+    setSoloComboFeedback(null);
     setMultiplayer({
       playerId: null,
       snapshot: null,
@@ -520,15 +573,21 @@ export default function App() {
               variant="secondary"
               className="combo-enter-button"
               onClick={handleSoloComboSubmit}
-              disabled={soloTimeLeft === 0 || soloPrimeQueue.length === 0}
+              disabled={soloTimeLeft === 0 || soloPrimeQueue.length === 0 || isSoloComboRunning}
             >
               {uiText.enterCombo}
             </ActionButton>
+            {soloComboFeedback ? <p className="helper-copy combo-feedback">{soloComboFeedback}</p> : null}
           </section>
 
           <section className="keypad solo-keypad">
             {playablePrimes.map((prime) => (
-              <button key={prime} type="button" onClick={() => handlePrimeTap(prime)} disabled={soloTimeLeft === 0}>
+              <button
+                key={prime}
+                type="button"
+                onClick={() => handlePrimeTap(prime)}
+                disabled={soloTimeLeft === 0 || isSoloComboRunning}
+              >
                 {prime}
               </button>
             ))}
@@ -560,7 +619,6 @@ export default function App() {
 
             <div className="lobby-stack waiting-room-stack">
               <label className="code-panel waiting-code-panel compact-code-panel room-code-input-panel">
-                <span className="label">{uiText.roomCode}</span>
                 <input
                   className="room-code-block-input"
                   inputMode="numeric"

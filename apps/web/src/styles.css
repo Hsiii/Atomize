@@ -452,6 +452,11 @@ input {
   opacity: 0.55;
 }
 
+.combo-feedback {
+  text-align: center;
+  min-height: 1.4rem;
+}
+
 .keypad {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -517,12 +522,7 @@ input {
   margin: 0 auto;
 }
 
-.room-code-input-panel .label {
-  display: block;
-}
-
 .room-code-block-input {
-  margin-top: var(--space-4);
   border: 0;
   padding: 0;
   background: transparent;
