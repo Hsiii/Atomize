@@ -404,6 +404,10 @@ input {
 
 .waiting-player-card strong {
   margin-top: auto;
+  min-height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .waiting-player-card.active {
@@ -411,20 +415,24 @@ input {
 }
 
 .waiting-placeholder-card {
-  background: var(--color-surface-muted);
+  background: var(--color-surface-base);
   color: var(--color-ink-soft);
   justify-content: space-between;
 }
 
 .waiting-placeholder-mark {
-  display: grid;
-  place-items: center;
-  min-height: 3rem;
-  margin-top: var(--space-4);
-  border-radius: calc(var(--radius-panel) - 8px);
-  background: rgba(8, 17, 28, 0.06);
-  font-family: var(--font-family-display);
-  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 5.5rem;
+  min-height: 1.5rem;
+  margin-top: auto;
+  padding: 0 0.9rem;
+  border-radius: var(--radius-pill);
+  background: rgba(24, 78, 119, 0.08);
+  color: rgba(11, 34, 53, 0.28);
+  font-family: var(--font-family-base);
+  font-size: 1.25rem;
   font-weight: 700;
   line-height: 1;
 }
