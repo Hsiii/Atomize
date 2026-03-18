@@ -512,12 +512,14 @@ input {
 
 .waiting-placeholder-mark {
   display: flex;
-  flex: 1;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   width: 100%;
   min-width: 5.5rem;
-  min-height: 1.5rem;
+  min-height: 1.1rem;
+  margin-top: auto;
+  margin-bottom: auto;
   padding: 0 0.9rem;
   border-radius: var(--radius-pill);
   background: rgba(24, 78, 119, 0.08);
