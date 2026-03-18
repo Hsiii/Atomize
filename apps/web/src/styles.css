@@ -1,0 +1,240 @@
+:root {
+  color: #08111c;
+  background:
+    radial-gradient(circle at top left, rgba(203, 213, 225, 0.95), transparent 35%),
+    linear-gradient(145deg, #f4efe2 0%, #d8e0d2 52%, #b6c4d8 100%);
+  font-family: "Avenir Next", "Helvetica Neue", sans-serif;
+  line-height: 1.4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  border-radius: 18px;
+  background: #08111c;
+  color: #f8fafc;
+  padding: 1rem;
+}
+
+input {
+  width: 100%;
+  border: 1px solid rgba(8, 17, 28, 0.18);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.fullscreen-shell {
+  width: 100%;
+}
+
+.screen {
+  min-height: 100vh;
+  padding: max(1rem, env(safe-area-inset-top)) 1rem max(1.25rem, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+}
+
+.eyebrow,
+.label {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.75rem;
+}
+
+.top-bar,
+.scoreboard,
+.action-stack {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.status-pill {
+  font-size: 0.9rem;
+}
+
+.status-pill {
+  padding: 0.5rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(8, 17, 28, 0.08);
+}
+
+.status-pill.muted {
+  background: rgba(8, 17, 28, 0.04);
+}
+
+.menu-stack,
+.lobby-stack,
+.value-panel,
+.field {
+  width: 100%;
+}
+
+.screen-menu {
+  justify-content: center;
+  align-items: stretch;
+}
+
+.menu-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.menu-stack h1 {
+  margin: 0;
+  font-size: clamp(2.8rem, 14vw, 4.8rem);
+  line-height: 0.9;
+}
+
+.action-stack {
+  margin-top: 1rem;
+  flex-direction: column;
+}
+
+.primary-action,
+.secondary-action,
+.ghost-action {
+  width: 100%;
+}
+
+.secondary-action {
+  background: rgba(8, 17, 28, 0.12);
+  color: #08111c;
+}
+
+.ghost-action {
+  width: auto;
+  padding: 0.75rem 1rem;
+  background: rgba(8, 17, 28, 0.08);
+  color: #08111c;
+}
+
+.game-screen,
+.lobby-screen {
+  gap: 1rem;
+}
+
+.scoreboard {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.scoreboard > div,
+.player-card,
+.value-panel,
+.code-panel {
+  padding: 1rem;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.56);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 18px 42px rgba(8, 17, 28, 0.08);
+}
+
+.scoreboard strong,
+.player-card strong,
+.code-panel strong {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 1.25rem;
+}
+
+.player-scoreboard {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.player-card.active {
+  outline: 2px solid rgba(8, 17, 28, 0.5);
+}
+
+.value-panel {
+  margin-top: auto;
+  text-align: center;
+}
+
+.value-panel strong {
+  display: block;
+  font-size: clamp(4rem, 22vw, 7rem);
+  line-height: 1;
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.keypad button {
+  min-height: 4.5rem;
+  font-size: 1.15rem;
+}
+
+.lobby-stack {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field span {
+  display: block;
+  margin-bottom: 0.45rem;
+}
+
+.code-panel {
+  text-align: center;
+}
+
+.code-panel strong {
+  font-size: clamp(2.4rem, 16vw, 4rem);
+  letter-spacing: 0.16em;
+  text-indent: 0.16em;
+}
+
+.helper-copy {
+  margin: 0;
+  color: rgba(8, 17, 28, 0.76);
+}
+
+@media (min-width: 700px) {
+  .screen {
+    width: min(430px, 100%);
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 380px) {
+  .scoreboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .keypad {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
