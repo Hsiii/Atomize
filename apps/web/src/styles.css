@@ -410,40 +410,6 @@ input {
   min-width: 5.5rem;
 }
 
-.multiplayer-battle-strip {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-4);
-}
-
-.multiplayer-stat-pill {
-  padding: 0.8rem 0.9rem;
-  border: 1px solid var(--color-border-soft);
-  border-radius: 1rem;
-  background: var(--color-surface-base);
-  backdrop-filter: blur(var(--blur-panel));
-  box-shadow: var(--shadow-panel);
-}
-
-.multiplayer-stat-pill-active {
-  border-color: var(--color-outline-strong);
-}
-
-.multiplayer-stat-pill strong {
-  display: block;
-  margin-top: 0.2rem;
-  font-size: 1.1rem;
-  line-height: 1.1;
-}
-
-.multiplayer-stat-meta {
-  display: block;
-  margin-top: 0.35rem;
-  color: var(--color-ink-soft);
-  font-size: 0.78rem;
-  line-height: 1;
-}
-
 .multiplayer-value-display {
   gap: var(--space-4);
 }
@@ -454,20 +420,6 @@ input {
   font-size: 1rem;
   line-height: 1.35;
   text-align: center;
-}
-
-.multiplayer-info-panel {
-  gap: 0;
-}
-
-.multiplayer-meta-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  min-height: 0;
-  padding: 0.1rem 0;
-  font-size: 0.9rem;
-  color: var(--color-ink-soft);
 }
 
 .multiplayer-keypad {
@@ -765,9 +717,5 @@ input {
 @media (max-width: 380px) {
   .scoreboard {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .multiplayer-battle-strip {
-    grid-template-columns: minmax(0, 1fr);
   }
 }

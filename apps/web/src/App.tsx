@@ -35,8 +35,6 @@ const uiText = {
   back: "Back",
   timer: "Time",
   score: "Score",
-  room: "Room",
-  target: "Target",
   health: "HP",
   combo: "Combo",
   you: "You",
@@ -135,12 +133,12 @@ export default function App() {
 
   const multiplayerPlayers = multiplayer.snapshot?.players ?? [];
   const currentMultiplayerPlayer = multiplayerPlayers.find((player) => player.id === multiplayer.playerId) ?? null;
-  const opponentMultiplayerPlayer = multiplayerPlayers.find((player) => player.id !== multiplayer.playerId) ?? null;
   const multiplayerStageFactorCount = multiplayer.snapshot?.stage.factors.length ?? 0;
   const multiplayerRemainingFactorCount = multiplayer.snapshot?.stage.remainingFactors.length ?? 0;
   const multiplayerStageProgress = multiplayerStageFactorCount > 0
     ? ((multiplayerStageFactorCount - multiplayerRemainingFactorCount) / multiplayerStageFactorCount) * 100
     : 0;
+  const multiplayerScore = currentMultiplayerPlayer?.combo ?? 0;
   const isMultiplayerInputDisabled = !multiplayer.snapshot || multiplayer.snapshot.status !== "playing";
 
   const soloCountdownProgress = (soloTimeLeft / soloDurationSeconds) * 100;
@@ -952,43 +950,22 @@ export default function App() {
               />
             </div>
             <span className="single-timer-text multiplayer-status-text">
-              {uiText.room} {multiplayer.roomId || uiText.roomPlaceholder} • {multiplayerStageFactorCount - multiplayerRemainingFactorCount}/{multiplayerStageFactorCount || "-"}
+              {Math.round(multiplayerStageProgress)}% complete
             </span>
           </div>
 
           <div
             className="single-score-pill multiplayer-score-pill"
-            aria-label={`${uiText.combo}: ${currentMultiplayerPlayer?.combo ?? 0}`}
+            aria-label={`${uiText.score}: ${multiplayerScore}`}
           >
-            <span className="single-score-label">{uiText.combo}</span>
-            <strong>{currentMultiplayerPlayer?.combo ?? 0}</strong>
+            <span className="single-score-label">{uiText.score}</span>
+            <strong>{multiplayerScore}</strong>
           </div>
         </header>
-
-        <section className="multiplayer-battle-strip" aria-live="polite">
-          <div className="multiplayer-stat-pill multiplayer-stat-pill-active">
-            <span className="single-score-label">{uiText.you}</span>
-            <strong>{currentMultiplayerPlayer?.hp ?? "--"} {uiText.health}</strong>
-            <span className="multiplayer-stat-meta">{uiText.combo} {currentMultiplayerPlayer?.combo ?? 0}</span>
-          </div>
-
-          <div className="multiplayer-stat-pill">
-            <span className="single-score-label">{opponentMultiplayerPlayer?.name ?? uiText.opponent}</span>
-            <strong>{opponentMultiplayerPlayer?.hp ?? "--"} {uiText.health}</strong>
-            <span className="multiplayer-stat-meta">{uiText.combo} {opponentMultiplayerPlayer?.combo ?? 0}</span>
-          </div>
-        </section>
 
         <section className="single-value-display multiplayer-value-display" aria-live="polite">
           <strong>{multiplayer.snapshot?.stage.remainingValue ?? "--"}</strong>
           <p className="multiplayer-stage-caption">{multiplayerStageSummary}</p>
-        </section>
-
-        <section className="combo-panel multiplayer-info-panel" aria-live="polite">
-          <div className="combo-bar multiplayer-meta-bar">
-            <span>{uiText.target}</span>
-            <span>{multiplayer.snapshot?.stage.targetValue ?? "--"}</span>
-          </div>
         </section>
 
         <section className="keypad solo-keypad multiplayer-keypad">
