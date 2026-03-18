@@ -29,20 +29,15 @@ const uiText = {
   title: "Atomize",
   eyebrow: "Prime factor battle",
   singlePlayer: "Single Player",
-  multiPlayer: "Multi Player",
   createRoom: "Create Room",
   joinRoom: "Join Room",
   roomCode: "Room Code",
   enterCode: "Enter Code",
   playerName: "Name",
-  roomHint: "Choose a room flow to get started.",
-  createHint: "Start a room, get a code, and wait for the second player to arrive.",
-  joinHint: "Enter a room code to connect directly to an existing match.",
   shareHint: "Share the code. The game opens automatically when another player joins.",
   configHint: "Server setup required for multiplayer.",
   idleStatus: "Server idle",
   roomPlaceholder: "ABCD",
-  cancel: "Cancel",
   waitingForPlayer: "Waiting for the second player to join.",
 } as const;
 type Screen = "menu" | "single" | "multi-lobby" | "multi-game";
@@ -142,6 +137,18 @@ export default function App() {
   function startSingleGame() {
     setSoloState(createInitialSoloState(soloSeed));
     setScreen("single");
+  }
+
+  function startCreateRoomFlow() {
+    setMenuMode("create-room");
+    setStatusText(uiText.idleStatus);
+    setScreen("multi-lobby");
+  }
+
+  function startJoinRoomFlow() {
+    setMenuMode("join-room");
+    setStatusText(uiText.idleStatus);
+    setScreen("multi-lobby");
   }
 
   async function returnToMenu() {
@@ -385,85 +392,22 @@ export default function App() {
   }
 
   if (screen === "menu") {
-    const isCreateFlow = menuMode === "create-room";
-    const isJoinFlow = menuMode === "join-room";
-
     return (
       <main className="app-shell fullscreen-shell">
         <section className="screen screen-menu">
           <div className="menu-stack">
             <p className="eyebrow">{uiText.eyebrow}</p>
             <h1 className="hero-title">{uiText.title}</h1>
-            <div className="menu-actions">
+            <div className="action-stack menu-actions">
               <button type="button" className="mode-action" onClick={startSingleGame}>
                 {uiText.singlePlayer}
               </button>
-
-              <section className="multiplayer-panel">
-                <p className="label">{uiText.multiPlayer}</p>
-                <div className="multiplayer-actions">
-                  <button
-                    type="button"
-                    className={isCreateFlow ? "mode-action selected" : "mode-action"}
-                    onClick={() => setMenuMode("create-room")}
-                  >
-                    {uiText.createRoom}
-                  </button>
-                  <button
-                    type="button"
-                    className={isJoinFlow ? "mode-action selected" : "mode-action"}
-                    onClick={() => setMenuMode("join-room")}
-                  >
-                    {uiText.joinRoom}
-                  </button>
-                </div>
-
-                {menuMode === "default" ? (
-                  <p className="helper-copy">{supabaseConfig ? uiText.roomHint : uiText.configHint}</p>
-                ) : (
-                  <div className="setup-panel">
-                    <p className="helper-copy">{isCreateFlow ? uiText.createHint : uiText.joinHint}</p>
-
-                    <label className="field">
-                      <span>{uiText.playerName}</span>
-                      <input value={playerName} onChange={(event) => setPlayerName(event.target.value)} />
-                    </label>
-
-                    {isJoinFlow ? (
-                      <label className="field">
-                        <span>{uiText.enterCode}</span>
-                        <input
-                          value={roomIdInput}
-                          onChange={(event) => setRoomIdInput(event.target.value.toUpperCase())}
-                          placeholder={uiText.roomPlaceholder}
-                        />
-                      </label>
-                    ) : null}
-
-                    <div className="setup-actions">
-                      <button
-                        type="button"
-                        className="primary-action"
-                        onClick={() => void (isCreateFlow ? createRoom() : joinRoom())}
-                      >
-                        {isCreateFlow ? uiText.createRoom : uiText.joinRoom}
-                      </button>
-                      <button
-                        type="button"
-                        className="ghost-action"
-                        onClick={() => {
-                          setMenuMode("default");
-                          setStatusText(uiText.idleStatus);
-                        }}
-                      >
-                        {uiText.cancel}
-                      </button>
-                    </div>
-
-                    <p className="helper-copy status-copy">{multiplayer.statusText}</p>
-                  </div>
-                )}
-              </section>
+              <button type="button" className="mode-action" onClick={startCreateRoomFlow}>
+                {uiText.createRoom}
+              </button>
+              <button type="button" className="mode-action" onClick={startJoinRoomFlow}>
+                {uiText.joinRoom}
+              </button>
             </div>
           </div>
         </section>
@@ -520,6 +464,57 @@ export default function App() {
   }
 
   if (screen === "multi-lobby") {
+    const isCreateFlow = menuMode === "create-room";
+    const isJoinFlow = menuMode === "join-room";
+
+    if (!multiplayer.roomId) {
+      return (
+        <main className="app-shell fullscreen-shell">
+          <section className="screen lobby-screen">
+            <header className="top-bar">
+              <button
+                type="button"
+                className="icon-action"
+                onClick={() => void returnToMenu()}
+                aria-label={uiText.back}
+              >
+                <span aria-hidden="true">&#8592;</span>
+              </button>
+              <span className="status-pill muted">{serverStatusLabel}</span>
+            </header>
+
+            <div className="lobby-stack">
+              <label className="field">
+                <span>{uiText.playerName}</span>
+                <input value={playerName} onChange={(event) => setPlayerName(event.target.value)} />
+              </label>
+
+              {isJoinFlow ? (
+                <label className="field">
+                  <span>{uiText.enterCode}</span>
+                  <input
+                    value={roomIdInput}
+                    onChange={(event) => setRoomIdInput(event.target.value.toUpperCase())}
+                    placeholder={uiText.roomPlaceholder}
+                  />
+                </label>
+              ) : null}
+
+              <button
+                type="button"
+                className="primary-action"
+                onClick={() => void (isCreateFlow ? createRoom() : joinRoom())}
+              >
+                {isCreateFlow ? uiText.createRoom : uiText.joinRoom}
+              </button>
+
+              <p className="server-meta">{supabaseConfig ? multiplayer.statusText : uiText.configHint}</p>
+            </div>
+          </section>
+        </main>
+      );
+    }
+
     return (
       <main className="app-shell fullscreen-shell">
         <section className="screen lobby-screen">
@@ -536,8 +531,6 @@ export default function App() {
           </header>
 
           <div className="lobby-stack">
-            <p className="eyebrow">{uiText.multiPlayer}</p>
-
             <div className="code-panel">
               <p className="label">{uiText.roomCode}</p>
               <strong>{multiplayer.roomId || "----"}</strong>
