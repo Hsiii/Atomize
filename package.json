@@ -1,5 +1,5 @@
 {
-  "name": "wallprime",
+  "name": "atomize",
   "private": true,
   "packageManager": "bun@1.2.5",
   "workspaces": [

@@ -5,7 +5,7 @@ import {
   type Prime,
   type RoomPlayer,
   type RoomSnapshot,
-} from "@wallprime/game-core";
+} from "@atomize/game-core";
 
 const STARTING_HP = 40;
 const WRONG_SELECTION_DAMAGE = 3;

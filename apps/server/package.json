@@ -1,5 +1,5 @@
 {
-  "name": "@wallprime/server",
+  "name": "@atomize/server",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -9,7 +9,7 @@
     "check": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@wallprime/game-core": "workspace:*",
+    "@atomize/game-core": "workspace:*",
     "ws": "^8.18.1"
   },
   "devDependencies": {

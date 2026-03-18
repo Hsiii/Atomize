@@ -6,7 +6,7 @@ import {
   createInitialSoloState,
   type Prime,
   type RoomSnapshot,
-} from "@wallprime/game-core";
+} from "@atomize/game-core";
 import {
   addPlayerToRoom,
   applyBattlePrimeSelection,
@@ -175,7 +175,7 @@ export default function App() {
 
     await closeActiveChannel();
 
-    const channel = supabase.channel(`wallprime:${roomId}`, {
+    const channel = supabase.channel(`atomize:${roomId}`, {
       config: {
         broadcast: {
           self: true,
@@ -347,7 +347,7 @@ export default function App() {
       <main className="app-shell fullscreen-shell">
         <section className="screen screen-menu">
           <div className="menu-stack">
-            <p className="eyebrow">WallPrime</p>
+            <p className="eyebrow">Atomize</p>
             <h1>Choose mode.</h1>
             <div className="action-stack">
               <button type="button" className="primary-action" onClick={startSingleGame}>

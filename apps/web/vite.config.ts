@@ -8,8 +8,8 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
-        name: "WallPrime",
-        short_name: "WallPrime",
+        name: "Atomize",
+        short_name: "Atomize",
         description: "Prime factorization battle PWA",
         theme_color: "#0f172a",
         background_color: "#f4efe2",

@@ -10,7 +10,7 @@ import {
   type RoomPlayer,
   type RoomSnapshot,
   type ServerMessage,
-} from "@wallprime/game-core";
+} from "@atomize/game-core";
 
 type PlayerSession = {
   id: string;
@@ -237,4 +237,4 @@ function createRoomId(): string {
   return Math.random().toString(36).slice(2, 6).toUpperCase();
 }
 
-console.log(`WallPrime room server running on ws://localhost:${port}`);
+console.log(`Atomize room server running on ws://localhost:${port}`);
