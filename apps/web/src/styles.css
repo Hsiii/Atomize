@@ -545,20 +545,20 @@ input {
 }
 
 .combo-actions-column {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: repeat(3, minmax(4.5rem, 1fr));
   gap: var(--space-4);
 }
 
 .combo-backspace-button,
 .combo-enter-button {
-  min-height: 4.5rem;
+  min-height: 100%;
   display: grid;
   place-items: center;
 }
 
 .combo-enter-button {
-  margin-top: auto;
+  grid-row: span 2;
 }
 
 .lobby-stack {
