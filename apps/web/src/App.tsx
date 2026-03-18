@@ -462,7 +462,6 @@ export default function App() {
     const roomId = normalizeRoomId(roomIdInput);
 
     if (roomId.length !== 4) {
-      setStatusText("Enter a 4-digit room code");
       return;
     }
 

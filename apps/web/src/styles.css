@@ -523,6 +523,8 @@ input {
 }
 
 .room-code-block-input {
+  width: 4ch;
+  margin: 0 auto;
   border: 0;
   padding: 0;
   background: transparent;
@@ -530,6 +532,8 @@ input {
   font-family: var(--font-family-display);
   font-size: clamp(2.4rem, 16vw, 4rem);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
   letter-spacing: 0.16em;
   text-indent: 0.16em;
   color: var(--color-ink);
