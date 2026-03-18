@@ -25,7 +25,6 @@ const uiText = {
   back: "Back",
   serverOnline: "Server online",
   serverOffline: "Server offline",
-  serverSyncing: "Syncing",
   title: "Atomize",
   eyebrow: "Prime factor battle",
   singlePlayer: "Single Player",
@@ -34,7 +33,6 @@ const uiText = {
   joinRoom: "Join Room",
   roomCode: "Room Code",
   enterCode: "Enter Code",
-  shareHint: "Share the code below. The game opens automatically when another player joins.",
   roomHint: "Tap create to open a room, or join with a 4-digit code.",
   configHint: "Server setup required for multiplayer.",
   idleStatus: "Server idle",
@@ -102,12 +100,8 @@ export default function App() {
       return uiText.serverOffline;
     }
 
-    if (multiplayer.playerId || multiplayer.snapshot) {
-      return uiText.serverSyncing;
-    }
-
     return uiText.serverOnline;
-  }, [multiplayer.playerId, multiplayer.snapshot, supabaseConfig]);
+  }, [supabaseConfig]);
 
   useEffect(() => {
     latestMultiplayerRef.current = multiplayer;
@@ -199,12 +193,12 @@ export default function App() {
     }
   }
 
-  function updateSnapshot(snapshot: RoomSnapshot, statusText: string) {
+  function updateSnapshot(snapshot: RoomSnapshot, statusText?: string) {
     setMultiplayer((currentState) => ({
       ...currentState,
       snapshot,
       roomId: snapshot.roomId,
-      statusText,
+      statusText: statusText ?? currentState.statusText,
     }));
   }
 
@@ -248,7 +242,7 @@ export default function App() {
           return;
         }
 
-        updateSnapshot(message.snapshot, `Room ${message.snapshot.roomId} synced`);
+        updateSnapshot(message.snapshot);
       })
       .on("broadcast", { event: "join_request" }, async ({ payload }) => {
         const message = payload as RoomBroadcastMessage;
@@ -272,7 +266,7 @@ export default function App() {
           return;
         }
 
-        updateSnapshot(nextSnapshot, "Player 2 joined");
+        updateSnapshot(nextSnapshot);
         await broadcastMessage({
           type: "room_state",
           snapshot: nextSnapshot,
@@ -293,7 +287,7 @@ export default function App() {
           message.prime,
         );
 
-        updateSnapshot(nextSnapshot, `Prime ${message.prime} resolved`);
+        updateSnapshot(nextSnapshot);
         await broadcastMessage({
           type: "room_state",
           snapshot: nextSnapshot,
@@ -317,7 +311,7 @@ export default function App() {
       playerId,
       roomId,
       isHost,
-      statusText: `Connecting to room ${roomId}`,
+      statusText: "",
     }));
 
     channel.subscribe(async (status) => {
@@ -337,7 +331,7 @@ export default function App() {
     const snapshot = createRoomSnapshot(roomId, playerId);
 
     await subscribeToRoom(roomId, playerId, true, async () => {
-      updateSnapshot(snapshot, `Room ${roomId} created`);
+      updateSnapshot(snapshot);
       await broadcastMessage({
         type: "room_state",
         snapshot,
@@ -358,7 +352,6 @@ export default function App() {
 
     await subscribeToRoom(roomId, playerId, false, async () => {
       setScreen("multi-lobby");
-      setStatusText(`Requested to join room ${roomId}`);
       await broadcastMessage({
         type: "join_request",
         playerId,
@@ -380,7 +373,7 @@ export default function App() {
         currentState.playerId,
         prime,
       );
-      updateSnapshot(nextSnapshot, `Prime ${prime} resolved locally`);
+      updateSnapshot(nextSnapshot);
       await broadcastMessage({
         type: "room_state",
         snapshot: nextSnapshot,
@@ -421,8 +414,8 @@ export default function App() {
                     <p className="label">{uiText.roomCode}</p>
                     <strong>{multiplayer.roomId || uiText.roomPlaceholder}</strong>
                   </div>
-                  <p className="helper-copy">{supabaseConfig ? uiText.shareHint : uiText.configHint}</p>
-                  <p className="server-meta">{multiplayer.statusText}</p>
+                  {!supabaseConfig ? <p className="server-meta">{uiText.configHint}</p> : null}
+                  {multiplayer.statusText ? <p className="server-meta">{multiplayer.statusText}</p> : null}
                 </>
               ) : null}
             </div>
@@ -522,7 +515,11 @@ export default function App() {
                 {isJoinFlow ? uiText.joinRoom : uiText.createRoom}
               </button>
 
-              <p className="server-meta">{supabaseConfig ? multiplayer.statusText : uiText.configHint}</p>
+              {supabaseConfig ? (
+                multiplayer.statusText ? <p className="server-meta">{multiplayer.statusText}</p> : null
+              ) : (
+                <p className="server-meta">{uiText.configHint}</p>
+              )}
             </div>
           </section>
         </main>
@@ -566,7 +563,7 @@ export default function App() {
               })}
             </section>
 
-            <p className="helper-copy">{supabaseConfig ? uiText.shareHint : uiText.configHint}</p>
+            {!supabaseConfig ? <p className="server-meta">{uiText.configHint}</p> : null}
             <p className="server-meta">{multiplayer.statusText || uiText.waitingForPlayer}</p>
           </div>
         </section>
