@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ButtonHTMLAttributes } from "react";
 import type { RealtimeChannel, SupabaseClient } from "@supabase/supabase-js";
+import { ArrowLeft, Delete, Swords } from "lucide-react";
 import {
   PRIME_POOL,
   applyPrimeSelection,
@@ -551,7 +552,7 @@ export default function App() {
               onClick={() => void returnToMenu()}
               aria-label={uiText.back}
             >
-              <span aria-hidden="true">&#8592;</span>
+              <ArrowLeft className="control-icon" aria-hidden="true" />
             </button>
 
             <div className="single-timer-shell" aria-label={`${uiText.timer}: ${formatCountdown(soloTimeLeft)}`}>
@@ -601,8 +602,9 @@ export default function App() {
                 className="combo-backspace-button"
                 onClick={handleSoloComboBackspace}
                 disabled={soloPrimeQueue.length === 0 || isSoloComboRunning}
+                aria-label={uiText.backspace}
               >
-                {uiText.backspace}
+                <Delete className="control-icon" aria-hidden="true" />
               </ActionButton>
 
               <ActionButton
@@ -610,8 +612,9 @@ export default function App() {
                 className="combo-enter-button"
                 onClick={handleSoloComboSubmit}
                 disabled={soloTimeLeft === 0 || soloPrimeQueue.length === 0 || isSoloComboRunning}
+                aria-label={uiText.enterCombo}
               >
-                {uiText.enterCombo}
+                <Swords className="control-icon" aria-hidden="true" />
               </ActionButton>
             </div>
           </section>
@@ -636,12 +639,13 @@ export default function App() {
                 onClick={() => void returnToMenu()}
                 aria-label={uiText.back}
               >
-                <span aria-hidden="true">&#8592;</span>
+                <ArrowLeft className="control-icon" aria-hidden="true" />
               </button>
             </header>
 
             <div className="lobby-stack waiting-room-stack">
-              <label className="code-panel waiting-code-panel compact-code-panel room-code-input-panel">
+              <label className="code-panel waiting-code-panel room-code-input-panel">
+                <p className="label">{uiText.roomCode}</p>
                 <input
                   className="room-code-block-input"
                   inputMode="numeric"
@@ -682,7 +686,7 @@ export default function App() {
                 onClick={() => void returnToMenu()}
                 aria-label={uiText.back}
               >
-                <span aria-hidden="true">&#8592;</span>
+                <ArrowLeft className="control-icon" aria-hidden="true" />
               </button>
             </header>
 
@@ -744,7 +748,7 @@ export default function App() {
               onClick={() => void returnToMenu()}
               aria-label={uiText.back}
             >
-              <span aria-hidden="true">&#8592;</span>
+              <ArrowLeft className="control-icon" aria-hidden="true" />
             </button>
           </header>
 
@@ -785,7 +789,7 @@ export default function App() {
             onClick={() => void returnToMenu()}
             aria-label={uiText.back}
           >
-            <span aria-hidden="true">&#8592;</span>
+            <ArrowLeft className="control-icon" aria-hidden="true" />
           </button>
           <span className="status-pill">Room {multiplayer.roomId}</span>
         </header>
