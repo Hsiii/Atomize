@@ -409,15 +409,6 @@ input {
   line-height: 1;
 }
 
-.connection-dot {
-  display: inline-block;
-  width: 0.7rem;
-  height: 0.7rem;
-  margin-top: var(--space-4);
-  border-radius: 50%;
-  background: #2fa66a;
-}
-
 .value-panel {
   margin-top: auto;
   text-align: center;
@@ -590,9 +581,13 @@ input {
 }
 
 .start-action:disabled {
-  border: 1px solid var(--color-border-soft);
-  background: var(--color-disabled-bg);
-  color: var(--color-disabled-text);
+  border: 1px dashed rgba(24, 78, 119, 0.32);
+  background: rgba(24, 78, 119, 0.08);
+  color: rgba(11, 34, 53, 0.5);
+  box-shadow: none;
+  cursor: not-allowed;
+  filter: saturate(0.35);
+  opacity: 0.8;
 }
 
 @media (min-width: 700px) {

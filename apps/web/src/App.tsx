@@ -612,7 +612,6 @@ export default function App() {
                     >
                       <p className="label">{isCurrentPlayer ? "You" : "Opponent"}</p>
                       <strong>{player.name}</strong>
-                      {player.connected ? <span className="connection-dot" aria-label="Connected" /> : null}
                     </div>
                   );
                 })}
