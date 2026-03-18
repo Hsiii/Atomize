@@ -372,6 +372,20 @@ input {
   color: var(--color-ink-soft);
 }
 
+.minimal-footer {
+  width: 100%;
+  max-width: 22rem;
+  margin: 0 auto;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--color-ink-soft);
+}
+
+.minimal-footer-bottom {
+  margin-top: auto;
+}
+
 @media (min-width: 700px) {
   .screen {
     width: min(430px, 100%);

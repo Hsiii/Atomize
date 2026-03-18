@@ -95,13 +95,21 @@ export default function App() {
     return multiplayer.snapshot?.stage.remainingFactors.join(" × ") || "waiting";
   }, [multiplayer.snapshot]);
 
-  const serverStatusLabel = useMemo(() => {
+  const multiplayerFooterText = useMemo(() => {
     if (!supabaseConfig) {
-      return uiText.serverOffline;
+      return uiText.configHint;
+    }
+
+    if (multiplayer.statusText) {
+      return multiplayer.statusText;
+    }
+
+    if (multiplayer.roomId) {
+      return uiText.waitingForPlayer;
     }
 
     return uiText.serverOnline;
-  }, [supabaseConfig]);
+  }, [multiplayer.roomId, multiplayer.statusText, supabaseConfig]);
 
   useEffect(() => {
     latestMultiplayerRef.current = multiplayer;
@@ -472,39 +480,34 @@ export default function App() {
               >
                 <span aria-hidden="true">&#8592;</span>
               </button>
-              <span className="status-pill muted">{serverStatusLabel}</span>
             </header>
 
             <div className="lobby-stack lobby-stack-centered">
               <div className="join-room-panel">
-              {isJoinFlow ? (
-                <label className="field">
-                  <span>{uiText.enterCode}</span>
-                  <input
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    maxLength={4}
-                    value={roomIdInput}
-                    onChange={(event) => handleRoomIdInputChange(event.target.value)}
-                    placeholder={uiText.roomPlaceholder}
-                  />
-                </label>
-              ) : null}
+                {isJoinFlow ? (
+                  <label className="field">
+                    <span>{uiText.enterCode}</span>
+                    <input
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={4}
+                      value={roomIdInput}
+                      onChange={(event) => handleRoomIdInputChange(event.target.value)}
+                      placeholder={uiText.roomPlaceholder}
+                    />
+                  </label>
+                ) : null}
 
-              <button
-                type="button"
-                className="primary-action"
-                onClick={() => void (isJoinFlow ? joinRoom() : createRoom())}
-              >
-                {isJoinFlow ? uiText.joinRoom : uiText.createRoom}
-              </button>
-
-              {supabaseConfig ? (
-                multiplayer.statusText ? <p className="server-meta">{multiplayer.statusText}</p> : null
-              ) : (
-                <p className="server-meta">{uiText.configHint}</p>
-              )}
+                <button
+                  type="button"
+                  className="primary-action"
+                  onClick={() => void (isJoinFlow ? joinRoom() : createRoom())}
+                >
+                  {isJoinFlow ? uiText.joinRoom : uiText.createRoom}
+                </button>
               </div>
+
+              <footer className="minimal-footer">{multiplayerFooterText}</footer>
             </div>
           </section>
         </main>
@@ -523,7 +526,6 @@ export default function App() {
             >
               <span aria-hidden="true">&#8592;</span>
             </button>
-            <span className="status-pill muted">{serverStatusLabel}</span>
           </header>
 
           <div className="lobby-stack">
@@ -548,8 +550,7 @@ export default function App() {
               })}
             </section>
 
-            {!supabaseConfig ? <p className="server-meta">{uiText.configHint}</p> : null}
-            <p className="server-meta">{multiplayer.statusText || uiText.waitingForPlayer}</p>
+            <footer className="minimal-footer minimal-footer-bottom">{multiplayerFooterText}</footer>
           </div>
         </section>
       </main>
