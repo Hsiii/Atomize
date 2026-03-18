@@ -373,7 +373,7 @@ input {
 }
 
 .player-card.active {
-  outline: 2px solid var(--color-outline-strong);
+  border-color: var(--color-outline-strong);
 }
 
 .waiting-code-panel,
