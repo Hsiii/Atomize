@@ -558,34 +558,22 @@ export default function App() {
               </button>
             </header>
 
-            <div className="lobby-stack lobby-stack-centered">
-              <div className="code-panel join-code-panel compact-code-panel">
-                <p className="label">{uiText.roomCode}</p>
-                <div className="room-code-preview" aria-live="polite">
-                  {getRoomCodePreviewDigits(roomIdInput).map((digit, index) => (
-                    <span
-                      key={`room-preview-${index}`}
-                      className={digit.filled ? "room-code-digit" : "room-code-digit empty"}
-                    >
-                      {digit.value}
-                    </span>
-                  ))}
-                </div>
-              </div>
+            <div className="lobby-stack waiting-room-stack">
+              <label className="code-panel waiting-code-panel compact-code-panel room-code-input-panel">
+                <span className="label">{uiText.roomCode}</span>
+                <input
+                  className="room-code-block-input"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={4}
+                  value={roomIdInput}
+                  onChange={(event) => handleRoomIdInputChange(event.target.value)}
+                  placeholder={uiText.roomPlaceholder}
+                  aria-label={uiText.enterCode}
+                />
+              </label>
 
-              <div className="join-room-panel join-entry-panel">
-                <label className="field">
-                  <span>{uiText.enterCode}</span>
-                  <input
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    maxLength={4}
-                    value={roomIdInput}
-                    onChange={(event) => handleRoomIdInputChange(event.target.value)}
-                    placeholder={uiText.roomPlaceholder}
-                  />
-                </label>
-
+              <div className="waiting-cta">
                 <ActionButton variant="secondary" onClick={() => void (isJoinFlow ? joinRoom() : createRoom())}>
                   {isJoinFlow ? uiText.joinRoom : uiText.createRoom}
                 </ActionButton>
@@ -782,11 +770,4 @@ function ActionButton({ variant, className, type = "button", ...props }: ActionB
     .join(" ");
 
   return <button type={type} className={classes} {...props} />;
-}
-
-function getRoomCodePreviewDigits(value: string): Array<{ value: string; filled: boolean }> {
-  return Array.from({ length: 4 }, (_, index) => ({
-    value: value[index] ?? uiText.roomPlaceholder[index],
-    filled: index < value.length,
-  }));
 }
