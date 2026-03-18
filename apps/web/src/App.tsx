@@ -34,10 +34,11 @@ const uiText = {
   joinRoom: "Join Room",
   roomCode: "Room Code",
   enterCode: "Enter Code",
-  shareHint: "Share the code. The game opens automatically when another player joins.",
+  shareHint: "Share the code below. The game opens automatically when another player joins.",
+  roomHint: "Tap create to open a room, or join with a 4-digit code.",
   configHint: "Server setup required for multiplayer.",
   idleStatus: "Server idle",
-  roomPlaceholder: "ABCD",
+  roomPlaceholder: "0000",
   waitingForPlayer: "Waiting for the second player to join.",
 } as const;
 type Screen = "menu" | "single" | "multi-lobby" | "multi-game";
@@ -140,13 +141,22 @@ export default function App() {
   function startCreateRoomFlow() {
     setMenuMode("create-room");
     setStatusText(uiText.idleStatus);
-    setScreen("multi-lobby");
+
+    if (multiplayer.roomId && multiplayer.isHost) {
+      return;
+    }
+
+    void createRoom();
   }
 
   function startJoinRoomFlow() {
     setMenuMode("join-room");
     setStatusText(uiText.idleStatus);
     setScreen("multi-lobby");
+  }
+
+  function handleRoomIdInputChange(value: string) {
+    setRoomIdInput(normalizeRoomId(value));
   }
 
   async function returnToMenu() {
@@ -327,7 +337,6 @@ export default function App() {
     const snapshot = createRoomSnapshot(roomId, playerId);
 
     await subscribeToRoom(roomId, playerId, true, async () => {
-      setScreen("multi-lobby");
       updateSnapshot(snapshot, `Room ${roomId} created`);
       await broadcastMessage({
         type: "room_state",
@@ -338,10 +347,10 @@ export default function App() {
   }
 
   async function joinRoom() {
-    const roomId = roomIdInput.toUpperCase().trim();
+    const roomId = normalizeRoomId(roomIdInput);
 
-    if (!roomId) {
-      setStatusText("Enter a room code first");
+    if (roomId.length !== 4) {
+      setStatusText("Enter a 4-digit room code");
       return;
     }
 
@@ -404,6 +413,20 @@ export default function App() {
               <button type="button" className="mode-action" onClick={startJoinRoomFlow}>
                 {uiText.joinRoom}
               </button>
+            </div>
+            <div className="menu-room-slot">
+              {menuMode === "create-room" ? (
+                <>
+                  <div className="code-panel compact-code-panel">
+                    <p className="label">{uiText.roomCode}</p>
+                    <strong>{multiplayer.roomId || uiText.roomPlaceholder}</strong>
+                  </div>
+                  <p className="helper-copy">{supabaseConfig ? uiText.shareHint : uiText.configHint}</p>
+                  <p className="server-meta">{multiplayer.statusText}</p>
+                </>
+              ) : (
+                <p className="helper-copy">{supabaseConfig ? uiText.roomHint : uiText.configHint}</p>
+              )}
             </div>
           </div>
         </section>
@@ -483,8 +506,11 @@ export default function App() {
                 <label className="field">
                   <span>{uiText.enterCode}</span>
                   <input
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={4}
                     value={roomIdInput}
-                    onChange={(event) => setRoomIdInput(event.target.value.toUpperCase())}
+                    onChange={(event) => handleRoomIdInputChange(event.target.value)}
                     placeholder={uiText.roomPlaceholder}
                   />
                 </label>
@@ -536,7 +562,7 @@ export default function App() {
                   <div key={player.id} className={isCurrentPlayer ? "player-card active" : "player-card"}>
                     <p className="label">{isCurrentPlayer ? "You" : "Opponent"}</p>
                     <strong>{player.name}</strong>
-                    <span>{player.hp} HP</span>
+                    <span>{player.connected ? "Connected" : uiText.waitingForPlayer}</span>
                   </div>
                 );
               })}
@@ -572,7 +598,7 @@ export default function App() {
             return (
               <div key={player.id} className={isCurrentPlayer ? "player-card active" : "player-card"}>
                 <p className="label">{isCurrentPlayer ? "You" : "Opponent"}</p>
-                <strong>{player.hp} HP</strong>
+                <strong>{player.name}</strong>
                 <span>Combo {player.combo}</span>
               </div>
             );
@@ -602,5 +628,9 @@ export default function App() {
 }
 
 function createRoomId(): string {
-  return Math.random().toString(36).slice(2, 6).toUpperCase();
+  return String(Math.floor(1000 + Math.random() * 9000));
+}
+
+function normalizeRoomId(value: string): string {
+  return value.replace(/\D/g, "").slice(0, 4);
 }
