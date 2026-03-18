@@ -6,3 +6,4 @@ coverage
 .vite
 *.tsbuildinfo
 apps/web/.env.local
+.vercel
