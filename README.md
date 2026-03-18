@@ -1,6 +1,6 @@
-# WallPrime MVP
+# Atomize MVP
 
-WallPrime is an iOS-friendly PWA math game built around fast prime factorization. The MVP prioritizes a polished solo loop and a minimal real-time multiplayer foundation.
+Atomize is an iOS-friendly PWA math game built around fast prime factorization. The MVP prioritizes a polished solo loop and a minimal real-time multiplayer foundation.
 
 ## MVP scope
 
@@ -58,7 +58,7 @@ Without these variables, solo mode still works but multiplayer stays disabled.
 
 ## Deploy to Vercel
 
-Deploy from the repository root, not from `apps/web`, so the workspace dependency on `@wallprime/game-core` resolves correctly.
+Deploy from the repository root, not from `apps/web`, so the workspace dependency on `@atomize/game-core` resolves correctly.
 
 ### Vercel project settings
 
