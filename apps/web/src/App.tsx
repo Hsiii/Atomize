@@ -139,39 +139,6 @@ export default function App() {
 
   const soloCountdownProgress = (soloTimeLeft / soloDurationSeconds) * 100;
 
-  const multiplayerFooterText = useMemo(() => {
-    if (!supabaseConfig) {
-      return uiText.configHint;
-    }
-
-    const snapshot = multiplayer.snapshot;
-
-    if (snapshot?.status === "countdown") {
-      return `${uiText.countdownPrefix} ${multiplayerCountdownValue ?? 3}`;
-    }
-
-    if (multiplayer.statusText) {
-      return multiplayer.statusText;
-    }
-
-    if (!multiplayer.roomId) {
-      return uiText.serverOnline;
-    }
-
-    if (!snapshot || snapshot.players.length < 2) {
-      return uiText.waitingForPlayer;
-    }
-
-    const currentPlayer = snapshot.players.find((player) => player.id === multiplayer.playerId);
-    const opponentReady = snapshot.players.some((player) => player.id !== multiplayer.playerId && player.ready);
-
-    if (multiplayer.isHost) {
-      return opponentReady ? uiText.start : uiText.opponentMustReady;
-    }
-
-    return currentPlayer?.ready ? uiText.waitingForHost : uiText.pressReady;
-  }, [multiplayer.roomId, multiplayer.statusText, multiplayer.snapshot, multiplayer.playerId, multiplayer.isHost, multiplayerCountdownValue, supabaseConfig]);
-
   useEffect(() => {
     latestSoloStateRef.current = soloState;
   }, [soloState]);
@@ -889,10 +856,6 @@ export default function App() {
                   {isJoinFlow ? uiText.go : uiText.createRoom}
                 </ActionButton>
               </div>
-
-              {multiplayerFooterText !== uiText.idleStatus ? (
-                <footer className="minimal-footer">{multiplayerFooterText}</footer>
-              ) : null}
             </div>
           </section>
         </main>
@@ -978,10 +941,6 @@ export default function App() {
                   </ActionButton>
                 )}
               </div>
-
-              {!isCountdown && multiplayerFooterText !== uiText.waitingForPlayer ? (
-                <footer className="minimal-footer minimal-footer-bottom">{multiplayerFooterText}</footer>
-              ) : null}
             </div>
           </section>
         </main>
