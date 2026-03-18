@@ -387,10 +387,16 @@ input {
   min-height: 6.75rem;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .waiting-player-card strong {
   margin-top: auto;
+}
+
+.waiting-player-card.active {
+  border-color: var(--color-border-soft);
 }
 
 .waiting-placeholder-card {
