@@ -108,7 +108,7 @@ export function MultiplayerGameScreen({
         return () => {
             window.clearTimeout(timer);
         };
-    }, [blobRevealTotalMs, currentMultiplayerPlayer, currentStageIndex]);
+    }, [blobRevealTotalMs, currentStageIndex]);
 
     function updateVisibleQueue(nextQueue: readonly Prime[]) {
         const normalizedQueue = [...nextQueue];

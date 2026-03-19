@@ -46,7 +46,7 @@
     border-radius: 43% 57% 55% 45% / 44% 42% 58% 56%;
     background: var(--number-blob-stage-color);
     transform: translateY(0) rotate(-1deg) scale(1);
-    transition: opacity 140ms ease, transform 180ms ease;
+    transition: opacity 140ms ease;
     animation: number-blob-idle 7.5s ease-in-out infinite;
 }
 
@@ -78,12 +78,12 @@
     --number-blob-stage-color: var(--color-primary-strong);
 }
 
-.number-blob-display.is-combo-running .number-main-blob {
-    animation-duration: 4.2s;
-}
-
 .number-main-blob-shell.is-impact-active {
     animation: number-blob-impact 520ms cubic-bezier(0.18, 0.85, 0.26, 1);
+}
+
+.number-main-blob-shell.is-impact-active > .number-main-blob {
+    animation-play-state: paused;
 }
 
 .number-blob-display.is-combo-running .number-main-blob-shell.is-impact-active {
