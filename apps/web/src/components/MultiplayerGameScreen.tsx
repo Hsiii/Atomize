@@ -37,7 +37,7 @@ export function MultiplayerGameScreen({
     multiplayerCountdownProgress,
     multiplayerScore,
     currentMultiplayerPlayer,
-    multiplayerSnapshot: _multiplayerSnapshot,
+    multiplayerSnapshot,
     multiplayerPrimeQueue,
     isMultiplayerInputDisabled,
     isMultiplayerComboRunning,
@@ -49,6 +49,7 @@ export function MultiplayerGameScreen({
     const blobRevealTotalMs = 3000;
     const keyboardDigitBufferWindowMs = 250;
     const isTimeUp = multiplayerTimeLeft === 0;
+    const isMatchFinished = multiplayerSnapshot?.status === 'finished';
     const [isBlobRevealActive, setIsBlobRevealActive] = useState(false);
     const hasInitializedStageRef = useRef(false);
     const isInputDisabled = isMultiplayerInputDisabled || isBlobRevealActive;
@@ -403,7 +404,7 @@ export function MultiplayerGameScreen({
                     </div>
                 </section>
 
-                {isTimeUp ? (
+                {isTimeUp || isMatchFinished ? (
                     <ScoreDialog
                         onReturnHome={onBack}
                         score={multiplayerScore}
