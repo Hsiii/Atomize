@@ -765,17 +765,22 @@ input {
     }
 
     .menu-actions {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-3);
     }
 
-    .menu-actions .menu-blob-button:last-child {
-        grid-column: 1 / -1;
+    .menu-blob-button {
+        width: min(100%, 6.5rem);
+        min-height: 6.5rem;
     }
 }
 
 @media (max-width: 26rem) {
     .screen-menu .menu-stack {
         width: min(100%, 21rem);
+    }
+
+    .menu-title-orb {
+        width: min(64vw, 12.5rem);
     }
 
     .menu-actions {
@@ -800,20 +805,12 @@ input {
 
 @media (max-width: 22rem), (max-height: 42rem) {
     .screen-menu .menu-stack {
-        width: min(100%, 16rem);
+        width: min(100%, 18rem);
         gap: var(--space-7);
     }
 
     .menu-title-orb {
         width: min(62vw, 11.5rem);
-    }
-
-    .menu-actions {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    .menu-actions .menu-blob-button:last-child {
-        grid-column: auto;
     }
 
     .menu-blob-button {
