@@ -699,10 +699,10 @@ input {
 }
 
 .room-code-visual {
-  display: inline-grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1ch;
-  column-gap: 0.16em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.16em;
   margin-top: var(--space-1);
   font-weight: 700;
   line-height: 1;
@@ -713,11 +713,13 @@ input {
 }
 
 .room-code-character {
-  display: inline-grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
   width: 1ch;
-  justify-self: center;
+  height: 1em;
+  flex: 0 0 1ch;
   color: rgba(11, 34, 53, 0.42);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1, "lnum" 1;
