@@ -300,14 +300,16 @@ export default function App() {
             );
 
             setSoloState(advanceSoloState(currentState, soloSeed, nextPrime));
-            setSoloPrimeQueue((currentQueue) => currentQueue.slice(1));
 
             if (outcome.kind === 'wrong') {
+                setSoloPrimeQueue([]);
                 setSoloTimeLeft((currentTime) => Math.max(0, currentTime - 1));
                 setSoloTimerPenaltyPopKey((currentKey) => currentKey + 1);
                 setIsSoloComboRunning(false);
                 return;
             }
+
+            setSoloPrimeQueue((currentQueue) => currentQueue.slice(1));
 
             if (outcome.cleared) {
                 setIsSoloComboRunning(false);
@@ -770,6 +772,22 @@ export default function App() {
                     !currentState.snapshot ||
                     currentState.snapshot.status !== 'playing'
                 ) {
+                    break;
+                }
+
+                const currentPlayer = currentState.snapshot.players.find(
+                    (player) => player.id === currentState.playerId
+                );
+
+                if (!currentPlayer) {
+                    break;
+                }
+
+                const outcome = applyPrimeSelection(currentPlayer.stage, prime);
+
+                if (outcome.kind === 'wrong') {
+                    setMultiplayerPrimeQueue([]);
+                    await sendMultiplayerPrime(prime);
                     break;
                 }
 
