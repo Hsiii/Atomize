@@ -904,12 +904,10 @@ input {
 
 .waiting-toast-layer {
   position: fixed;
-  left: 50%;
-  bottom: max(1.5rem, calc(env(safe-area-inset-bottom) + 0.75rem));
-  transform: translateX(-50%);
-  display: flex;
-  justify-content: center;
-  width: min(calc(100vw - 2rem), 22rem);
+  inset: 0;
+  display: grid;
+  place-items: center;
+  width: 100%;
   padding: var(--space-7);
   pointer-events: none;
   z-index: 20;
