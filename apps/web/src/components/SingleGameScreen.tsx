@@ -78,12 +78,16 @@ export function SingleGameScreen({
 
         setIsBlobRevealActive(true);
 
-        const timer = window.setTimeout(() => {
-            setIsBlobRevealActive(false);
-        }, blobRevealTotalMs);
+        const timer = globalThis.setTimeout(
+            () => {
+                setIsBlobRevealActive(false);
+            },
+            blobRevealTotalMs,
+            undefined
+        );
 
         return () => {
-            window.clearTimeout(timer);
+            globalThis.clearTimeout(timer);
         };
     }, [blobRevealTotalMs, currentStageIndex]);
 
@@ -144,9 +148,9 @@ export function SingleGameScreen({
                     />
                 </section>
 
-                <ComboQueuePanel queue={visibleQueue} />
-
                 <section className='single-controls-grid'>
+                    <ComboQueuePanel queue={visibleQueue} />
+
                     <div className='keypad solo-keypad'>
                         {playablePrimes.map((prime) => (
                             <PrimeKeyButton

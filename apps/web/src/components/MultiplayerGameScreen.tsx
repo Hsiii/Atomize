@@ -354,9 +354,9 @@ export function MultiplayerGameScreen({
                     />
                 </section>
 
-                <ComboQueuePanel queue={visibleQueue} />
-
                 <section className='single-controls-grid multiplayer-controls-grid'>
+                    <ComboQueuePanel queue={visibleQueue} />
+
                     <div className='keypad solo-keypad multiplayer-keypad'>
                         {playablePrimes.map((prime) => (
                             <PrimeKeyButton
