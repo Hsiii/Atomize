@@ -351,10 +351,6 @@ export default function App() {
         };
     }, []);
 
-    function handleSoloPrimeQueueChange(queue: readonly Prime[]) {
-        setSoloPrimeQueue([...queue]);
-    }
-
     function handleSoloComboSubmit(queue: readonly Prime[]) {
         if (
             soloTimeLeft === 0 ||
@@ -829,10 +825,6 @@ export default function App() {
         });
     }
 
-    function handleMultiplayerPrimeQueueChange(queue: readonly Prime[]) {
-        setMultiplayerPrimeQueue([...queue]);
-    }
-
     async function handleMultiplayerComboSubmit(queue: readonly Prime[]) {
         if (
             isMultiplayerInputDisabled ||
@@ -983,7 +975,6 @@ export default function App() {
                 isSoloComboRunning={isSoloComboRunning}
                 soloTimerPenaltyPopKey={soloTimerPenaltyPopKey}
                 onBack={returnToMenu}
-                onQueueChange={handleSoloPrimeQueueChange}
                 onSubmit={handleSoloComboSubmit}
                 formatCountdown={formatCountdown}
             />
@@ -1028,7 +1019,6 @@ export default function App() {
             isMultiplayerComboRunning={isMultiplayerComboRunning}
             roomId={multiplayer.roomId}
             onBack={returnToMenu}
-            onQueueChange={handleMultiplayerPrimeQueueChange}
             onSubmit={handleMultiplayerComboSubmit}
             formatCountdown={formatCountdown}
         />

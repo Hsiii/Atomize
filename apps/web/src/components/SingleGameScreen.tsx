@@ -23,7 +23,6 @@ type SingleGameScreenProps = {
     isSoloComboRunning: boolean;
     soloTimerPenaltyPopKey: number;
     onBack: () => void | Promise<void>;
-    onQueueChange: (queue: readonly Prime[]) => void;
     onSubmit: (queue: readonly Prime[]) => void;
     formatCountdown: (totalSeconds: number) => string;
 };
@@ -37,7 +36,6 @@ export function SingleGameScreen({
     isSoloComboRunning,
     soloTimerPenaltyPopKey,
     onBack,
-    onQueueChange,
     onSubmit,
     formatCountdown,
 }: SingleGameScreenProps): JSX.Element {
@@ -87,12 +85,11 @@ export function SingleGameScreen({
         };
     }, [blobRevealTotalMs, currentStageIndex]);
 
-    function updateVisibleQueue(nextQueue: readonly Prime[]) {
+    function setLocalQueue(nextQueue: readonly Prime[]) {
         const normalizedQueue = [...nextQueue];
 
         visibleQueueRef.current = normalizedQueue;
         setVisibleQueue(normalizedQueue);
-        onQueueChange(normalizedQueue);
     }
 
     function handlePrimeTap(prime: Prime) {
@@ -100,7 +97,7 @@ export function SingleGameScreen({
             return;
         }
 
-        updateVisibleQueue([...visibleQueueRef.current, prime]);
+        setLocalQueue([...visibleQueueRef.current, prime]);
     }
 
     function handleBackspace() {
@@ -108,7 +105,7 @@ export function SingleGameScreen({
             return;
         }
 
-        updateVisibleQueue(visibleQueueRef.current.slice(0, -1));
+        setLocalQueue(visibleQueueRef.current.slice(0, -1));
     }
 
     function handleSubmit() {

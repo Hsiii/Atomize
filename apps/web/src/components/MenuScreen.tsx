@@ -55,6 +55,7 @@ type ActiveDrag = {
 };
 
 const COLLISION_GAP = 2;
+const TITLE_ORB_CLEARANCE = 12;
 const WALL_PADDING = 6;
 const MIN_SPEED = 0.16;
 const MAX_SPEED = 0.48;
@@ -263,7 +264,7 @@ function resolveTitleOrbCollision(
         const deltaY = particleCenterY - collider.centerY;
         const distance = Math.hypot(deltaX, deltaY) || 0.001;
         const minimumDistance =
-            collider.radius + particle.radius + COLLISION_GAP;
+            collider.radius + particle.radius + TITLE_ORB_CLEARANCE;
 
         if (distance >= minimumDistance) {
             continue;
@@ -317,7 +318,7 @@ function clampParticleOutsideCollider(
     const deltaX = centerX - collider.centerX;
     const deltaY = centerY - collider.centerY;
     const distance = Math.hypot(deltaX, deltaY) || 0.001;
-    const minimumDistance = collider.radius + radius + COLLISION_GAP;
+    const minimumDistance = collider.radius + radius + TITLE_ORB_CLEARANCE;
 
     if (distance >= minimumDistance) {
         return { x, y };

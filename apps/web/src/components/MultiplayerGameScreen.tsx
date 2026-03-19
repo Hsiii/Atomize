@@ -27,7 +27,6 @@ type MultiplayerGameScreenProps = {
     isMultiplayerComboRunning: boolean;
     roomId: string;
     onBack: () => void | Promise<void>;
-    onQueueChange: (queue: readonly Prime[]) => void;
     onSubmit: (queue: readonly Prime[]) => Promise<void>;
     formatCountdown: (totalSeconds: number) => string;
 };
@@ -44,7 +43,6 @@ export function MultiplayerGameScreen({
     isMultiplayerComboRunning,
     roomId: _roomId,
     onBack,
-    onQueueChange,
     onSubmit,
     formatCountdown,
 }: MultiplayerGameScreenProps): JSX.Element {
@@ -124,12 +122,11 @@ export function MultiplayerGameScreen({
         };
     }, [blobRevealTotalMs, currentStageIndex]);
 
-    function updateVisibleQueue(nextQueue: readonly Prime[]) {
+    function setLocalQueue(nextQueue: readonly Prime[]) {
         const normalizedQueue = [...nextQueue];
 
         visibleQueueRef.current = normalizedQueue;
         setVisibleQueue(normalizedQueue);
-        onQueueChange(normalizedQueue);
     }
 
     function clearDigitBuffer() {
@@ -148,7 +145,7 @@ export function MultiplayerGameScreen({
             return;
         }
 
-        updateVisibleQueue([...visibleQueueRef.current, prime]);
+        setLocalQueue([...visibleQueueRef.current, prime]);
     }
 
     function scheduleBufferedPrimeCommit(nextBuffer: string) {
@@ -239,7 +236,7 @@ export function MultiplayerGameScreen({
             return;
         }
 
-        updateVisibleQueue(visibleQueueRef.current.slice(0, -1));
+        setLocalQueue(visibleQueueRef.current.slice(0, -1));
     }
 
     async function submitVisibleQueue() {
