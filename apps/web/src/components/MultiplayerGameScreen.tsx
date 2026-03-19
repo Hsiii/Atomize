@@ -1,6 +1,6 @@
 import type { JSX } from 'react';
 import type { Prime, RoomPlayer, RoomSnapshot } from '@atomize/game-core';
-import { Delete, Swords } from 'lucide-react';
+import { CircleArrowUp, Delete } from 'lucide-react';
 
 import { uiText } from '../app-state';
 import { ActionButton } from './ActionButton';
@@ -142,7 +142,7 @@ export function MultiplayerGameScreen({
                             onClick={handleSubmitClick}
                             variant='secondary'
                         >
-                            <Swords
+                            <CircleArrowUp
                                 aria-hidden='true'
                                 className='control-icon'
                             />

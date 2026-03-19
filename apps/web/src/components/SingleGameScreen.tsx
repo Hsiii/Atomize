@@ -1,5 +1,6 @@
+import type { JSX } from 'react';
 import type { Prime, SoloState } from '@atomize/game-core';
-import { Delete, Swords } from 'lucide-react';
+import { CircleArrowUp, Delete } from 'lucide-react';
 
 import { uiText } from '../app-state';
 import { ActionButton } from './ActionButton';
@@ -37,7 +38,7 @@ export function SingleGameScreen({
     onBackspace,
     onSubmit,
     formatCountdown,
-}: SingleGameScreenProps) {
+}: SingleGameScreenProps): JSX.Element {
     const isCountdownActive = soloStartCountdownValue !== null;
     const isTimeUp = soloTimeLeft === 0;
 
@@ -47,8 +48,8 @@ export function SingleGameScreen({
             <section className='screen game-screen single-game-screen'>
                 <header className='top-bar single-top-bar'>
                     <div
-                        className='single-timer-shell'
                         aria-label={`${uiText.timer}: ${formatCountdown(soloTimeLeft)}`}
+                        className='single-timer-shell'
                     >
                         <div className='single-timer-bar'>
                             <span
@@ -61,18 +62,18 @@ export function SingleGameScreen({
                         </span>
                         {soloTimerPenaltyPopKey > 0 ? (
                             <span
-                                key={soloTimerPenaltyPopKey}
-                                className='single-timer-penalty'
                                 aria-hidden='true'
+                                className='single-timer-penalty'
+                                key={soloTimerPenaltyPopKey}
                             >
                                 -1s
                             </span>
-                        ) : null}
+                        ) : undefined}
                     </div>
 
                     <div
-                        className='single-score-pill'
                         aria-label={`${uiText.score}: ${soloState.score}`}
+                        className='single-score-pill'
                     >
                         <span className='single-score-label'>
                             {uiText.score}
@@ -81,19 +82,19 @@ export function SingleGameScreen({
                     </div>
                 </header>
 
-                <section className='single-value-display' aria-live='polite'>
+                <section aria-live='polite' className='single-value-display'>
                     <strong>
                         {soloStartCountdownValue === null
                             ? soloState.currentStage.remainingValue
-                            : null}
+                            : undefined}
                     </strong>
                 </section>
 
-                <section className='combo-panel' aria-live='polite'>
+                <section aria-live='polite' className='combo-panel'>
                     <div className='combo-bar'>
                         {soloPrimeQueue.length > 0
                             ? soloPrimeQueue.join(' x ')
-                            : null}
+                            : undefined}
                     </div>
                 </section>
 
@@ -101,14 +102,14 @@ export function SingleGameScreen({
                     <div className='keypad solo-keypad'>
                         {playablePrimes.map((prime) => (
                             <PrimeKeyButton
-                                key={prime}
-                                prime={prime}
                                 disabled={
                                     isTimeUp ||
                                     isSoloComboRunning ||
                                     isCountdownActive
                                 }
+                                key={prime}
                                 onPress={onPrimeTap}
+                                prime={prime}
                             >
                                 {prime}
                             </PrimeKeyButton>
@@ -117,38 +118,38 @@ export function SingleGameScreen({
 
                     <div className='combo-actions-column'>
                         <ActionButton
-                            variant='secondary'
+                            aria-label={uiText.backspace}
                             className='combo-backspace-button'
-                            onClick={onBackspace}
                             disabled={
                                 soloPrimeQueue.length === 0 ||
                                 isSoloComboRunning ||
                                 isCountdownActive ||
                                 isTimeUp
                             }
-                            aria-label={uiText.backspace}
+                            onClick={onBackspace}
+                            variant='secondary'
                         >
                             <Delete
-                                className='control-icon'
                                 aria-hidden='true'
+                                className='control-icon'
                             />
                         </ActionButton>
 
                         <ActionButton
-                            variant='secondary'
+                            aria-label={uiText.enterCombo}
                             className='combo-enter-button'
-                            onClick={onSubmit}
                             disabled={
                                 isTimeUp ||
                                 soloPrimeQueue.length === 0 ||
                                 isSoloComboRunning ||
                                 isCountdownActive
                             }
-                            aria-label={uiText.enterCombo}
+                            onClick={onSubmit}
+                            variant='secondary'
                         >
-                            <Swords
-                                className='control-icon'
+                            <CircleArrowUp
                                 aria-hidden='true'
+                                className='control-icon'
                             />
                         </ActionButton>
                     </div>
@@ -156,25 +157,25 @@ export function SingleGameScreen({
 
                 {isTimeUp ? (
                     <ScoreDialog
-                        score={soloState.score}
                         onReturnHome={onBack}
+                        score={soloState.score}
                     />
-                ) : null}
+                ) : undefined}
 
-                {soloStartCountdownValue !== null ? (
+                {soloStartCountdownValue === null ? undefined : (
                     <div
-                        className='single-start-countdown'
-                        aria-live='assertive'
                         aria-atomic='true'
+                        aria-live='assertive'
+                        className='single-start-countdown'
                     >
                         <span
-                            key={soloStartCountdownValue}
                             className='single-start-countdown-value'
+                            key={soloStartCountdownValue}
                         >
                             {soloStartCountdownValue}
                         </span>
                     </div>
-                ) : null}
+                )}
             </section>
         </main>
     );

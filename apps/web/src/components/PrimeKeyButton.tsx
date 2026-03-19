@@ -1,4 +1,4 @@
-import type { KeyboardEvent, PointerEvent, ReactNode } from 'react';
+import type { JSX, KeyboardEvent, PointerEvent, ReactNode } from 'react';
 import type { Prime } from '@atomize/game-core';
 
 type PrimeKeyButtonProps = {
@@ -13,7 +13,7 @@ export function PrimeKeyButton({
     disabled,
     onPress,
     children,
-}: PrimeKeyButtonProps) {
+}: PrimeKeyButtonProps): JSX.Element {
     function handlePointerDown(event: PointerEvent<HTMLButtonElement>) {
         if (disabled) {
             return;
@@ -42,10 +42,11 @@ export function PrimeKeyButton({
 
     return (
         <button
-            type='button'
-            onPointerDown={handlePointerDown}
-            onKeyDown={handleKeyDown}
+            className='prime-key-button'
             disabled={disabled}
+            onKeyDown={handleKeyDown}
+            onPointerDown={handlePointerDown}
+            type='button'
         >
             {children}
         </button>
