@@ -23,7 +23,6 @@
     --color-page-bg: #f4f7fb;
     --color-track: rgba(16, 27, 46, 0.12);
     --color-danger: #c43a3a;
-    --color-success: #2f9e44;
     --color-overlay-soft: rgba(16, 27, 46, 0.2);
     --color-overlay-strong: rgba(16, 27, 46, 0.26);
     --color-placeholder: rgba(16, 27, 46, 0.28);
@@ -80,8 +79,8 @@
     --size-score-dialog-width: 18rem;
     --size-room-panel-width: 22rem;
     --size-buffer-strip-min-height: 4rem;
-    --font-size-keypad-digit: clamp(3.075rem, 9.375vw, 4.65rem);
-    --font-size-keypad-digit-mobile: clamp(2.7rem, 11.25vw, 3.75rem);
+    --font-size-keypad-digit: clamp(2rem, 9.375vw, 4.65rem);
+    --font-size-keypad-digit-mobile: clamp(1.2rem, 11.25vw, 2rem);
     --font-size-buffer-strip: clamp(1.65rem, 6vw, 2.45rem);
     --size-menu-title-orb: 17rem;
     --size-menu-blob-min-height: 7.2rem;
