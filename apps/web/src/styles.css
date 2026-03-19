@@ -698,12 +698,28 @@ input {
 }
 
 .room-code-visual {
-  display: block;
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1ch;
+  column-gap: 0.16em;
   margin-top: var(--space-1);
   font-weight: 700;
   line-height: 1;
-  color: rgba(11, 34, 53, 0.42);
+  color: var(--color-ink);
   pointer-events: none;
+}
+
+.room-code-character {
+  display: inline-grid;
+  place-items: center;
+  width: 1ch;
+  color: rgba(11, 34, 53, 0.42);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+.room-code-character.filled {
+  color: var(--color-ink);
 }
 
 .room-code-block-input {

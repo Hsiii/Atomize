@@ -77,7 +77,7 @@ export function MultiplayerLobbyScreen({
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
       onRoomIdInputChange(event.target.value);
     };
-    const roomCodePreview = Array.from({ length: 4 }, (_, index) => roomIdInput[index] ?? "-").join("");
+    const roomCodePreview = Array.from({ length: 4 }, (_, index) => roomIdInput[index] ?? "-");
     const focusRoomCodeInput = () => {
       roomCodeInputRef.current?.focus();
     };
@@ -89,7 +89,16 @@ export function MultiplayerLobbyScreen({
           <div className="lobby-stack waiting-room-stack">
             <label className="code-panel waiting-code-panel room-code-input-panel" onClick={focusRoomCodeInput}>
               <p className="label">{uiText.roomCode}</p>
-              <strong className="room-code-visual" aria-hidden="true">{roomCodePreview}</strong>
+              <strong className="room-code-visual" aria-hidden="true">
+                {roomCodePreview.map((character, index) => (
+                  <span
+                    key={`room-code-character-${index}`}
+                    className={roomIdInput[index] ? "room-code-character filled" : "room-code-character"}
+                  >
+                    {character}
+                  </span>
+                ))}
+              </strong>
               <input
                 ref={roomCodeInputRef}
                 className="room-code-block-input"
