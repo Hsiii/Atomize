@@ -25,11 +25,28 @@
     text-align: center;
 }
 
+.score-dialog-value {
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: var(--space-1);
+    white-space: nowrap;
+}
+
 .score-dialog strong {
     display: block;
+    font-family: var(--font-family-display);
     font-size: clamp(3.25rem, 16vw, 4.75rem);
     line-height: 0.95;
-    color: var(--color-secondary);
+    color: var(--color-primary);
+}
+
+.score-dialog-unit {
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1;
+    text-transform: lowercase;
+    color: var(--color-ink-soft);
 }
 
 .score-dialog .app-action-button {

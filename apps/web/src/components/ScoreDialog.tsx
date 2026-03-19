@@ -30,7 +30,15 @@ export function ScoreDialog({
                 <span className='label' id='score-dialog-title'>
                     {uiText.score}
                 </span>
-                <strong>{score}</strong>
+                <div
+                    aria-label={`${uiText.score}: ${score} ${uiText.scoreUnit}`}
+                    className='score-dialog-value'
+                >
+                    <strong>{score}</strong>
+                    <span className='score-dialog-unit'>
+                        {uiText.scoreUnit}
+                    </span>
+                </div>
                 <ActionButton onClick={handleReturnHomeClick} variant='primary'>
                     {uiText.returnHome}
                 </ActionButton>
