@@ -120,9 +120,13 @@ export function MultiplayerLobbyScreen({
               <ActionButton variant="secondary" onClick={() => void (isJoinFlow ? onJoinRoom() : onCreateRoom())}>
                 {isJoinFlow ? uiText.go : uiText.createRoom}
               </ActionButton>
-
-              {activeToastMessage ? <div className="waiting-toast">{activeToastMessage}</div> : null}
             </div>
+
+            {activeToastMessage ? (
+              <div className="waiting-toast-layer" aria-live="polite">
+                <div className="waiting-toast">{activeToastMessage}</div>
+              </div>
+            ) : null}
           </div>
         </section>
       </main>
@@ -212,9 +216,13 @@ export function MultiplayerLobbyScreen({
                 {guestButtonText}
               </ActionButton>
             )}
-
-            {activeToastMessage ? <div className="waiting-toast">{activeToastMessage}</div> : null}
           </div>
+
+          {activeToastMessage ? (
+            <div className="waiting-toast-layer" aria-live="polite">
+              <div className="waiting-toast">{activeToastMessage}</div>
+            </div>
+          ) : null}
         </div>
       </section>
     </main>

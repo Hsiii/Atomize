@@ -762,6 +762,10 @@ input {
   align-items: center;
 }
 
+.waiting-room-stack {
+  position: relative;
+}
+
 .waiting-copy {
   text-align: center;
 }
@@ -791,6 +795,16 @@ input {
   line-height: 1.35;
   text-align: center;
   box-shadow: var(--shadow-panel);
+}
+
+.waiting-toast-layer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-7);
+  pointer-events: none;
+  z-index: 2;
 }
 
 .start-action:disabled,
