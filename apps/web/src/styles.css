@@ -166,13 +166,21 @@ input {
   text-align: center;
 }
 
+.menu-player-name {
+  margin: 0;
+  color: var(--color-ink-soft);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
 .hero-title {
   margin: var(--space-0);
   font-family: var(--font-family-title);
-  font-size: clamp(4.5rem, 22vw, 7rem);
-  line-height: 0.84;
+  max-width: 100%;
+  font-size: clamp(2.35rem, 13vw, 4.8rem);
+  line-height: 1.02;
   font-weight: 900;
-  letter-spacing: -0.05em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
@@ -281,6 +289,65 @@ input {
   height: 2.9rem;
   z-index: 5;
   box-shadow: none;
+}
+
+.floating-settings-button {
+  position: fixed;
+  top: max(var(--space-7), env(safe-area-inset-top));
+  right: max(var(--space-7), env(safe-area-inset-right));
+  z-index: 5;
+}
+
+.settings-modal-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding:
+    max(var(--space-7), env(safe-area-inset-top))
+    max(var(--space-7), env(safe-area-inset-right))
+    max(var(--space-8), env(safe-area-inset-bottom))
+    max(var(--space-7), env(safe-area-inset-left));
+  background: rgba(11, 34, 53, 0.26);
+  backdrop-filter: blur(10px);
+}
+
+.settings-modal {
+  width: min(100%, 24rem);
+  padding: var(--space-7);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface-base);
+  box-shadow: var(--shadow-panel);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+.settings-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.settings-modal-header strong {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: 1.15rem;
+}
+
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.settings-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
 .control-icon {
@@ -892,6 +959,11 @@ input {
 }
 
 @media (max-width: 380px) {
+  .hero-title {
+    font-size: clamp(1.7rem, 10vw, 2.35rem);
+    line-height: 1.14;
+  }
+
   .scoreboard {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
