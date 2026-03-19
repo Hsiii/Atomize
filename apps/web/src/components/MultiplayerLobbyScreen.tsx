@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { ActionButton } from "./ActionButton";
 import { BackButton } from "./BackButton";
 import type { MenuMode, MultiplayerState } from "../app-state";
@@ -37,6 +37,7 @@ export function MultiplayerLobbyScreen({
 }: MultiplayerLobbyScreenProps) {
   const [showStartBlockedToast, setShowStartBlockedToast] = useState(false);
   const [visibleTransientToastMessage, setVisibleTransientToastMessage] = useState<string | null>(null);
+  const roomCodeInputRef = useRef<HTMLInputElement | null>(null);
   const isJoinFlow = menuMode === "join-room";
   const shouldShowWaitingRoom = Boolean(multiplayer.roomId);
   const activeToastMessage = showStartBlockedToast ? uiText.startBlockedToast : visibleTransientToastMessage;
@@ -77,16 +78,20 @@ export function MultiplayerLobbyScreen({
       onRoomIdInputChange(event.target.value);
     };
     const roomCodePreview = Array.from({ length: 4 }, (_, index) => roomIdInput[index] ?? "-").join("");
+    const focusRoomCodeInput = () => {
+      roomCodeInputRef.current?.focus();
+    };
 
     return (
       <main className="app-shell fullscreen-shell">
         <BackButton onBack={onBack} />
         <section className="screen lobby-screen">
           <div className="lobby-stack waiting-room-stack">
-            <label className="code-panel waiting-code-panel room-code-input-panel">
+            <label className="code-panel waiting-code-panel room-code-input-panel" onClick={focusRoomCodeInput}>
               <p className="label">{uiText.roomCode}</p>
               <strong className="room-code-visual" aria-hidden="true">{roomCodePreview}</strong>
               <input
+                ref={roomCodeInputRef}
                 className="room-code-block-input"
                 inputMode="numeric"
                 pattern="[0-9]*"
