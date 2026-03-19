@@ -84,6 +84,7 @@ function seedParticles(
     blobs: readonly BlobDefinition[],
     phase: MenuPhase,
     field: Readonly<HTMLDivElement>,
+    titleAtom: Readonly<HTMLSpanElement> | null,
     buttons: ReadonlyMap<BlobId, HTMLButtonElement>,
     previousParticles: readonly BlobParticle[],
     splitSourceId: BlobId | undefined
@@ -138,6 +139,30 @@ function seedParticles(
         const velocityY = sourceParticle
             ? sourceParticle.vy + seed.vy * 0.7
             : seed.vy;
+
+        if (
+            !sourceParticle &&
+            phase === 'play' &&
+            blob.id === 'play' &&
+            titleAtom
+        ) {
+            const titleAtomRect = titleAtom.getBoundingClientRect();
+            const titleAtomCenterX =
+                titleAtomRect.left - fieldRect.left + titleAtomRect.width / 2;
+            const titleAtomBottom =
+                titleAtomRect.bottom -
+                fieldRect.top +
+                clamp(fieldRect.height * 0.02, 12, 22);
+
+            return {
+                id: blob.id,
+                radius,
+                x: clamp(titleAtomCenterX - radius, WALL_PADDING, maxX),
+                y: clamp(titleAtomBottom - radius, WALL_PADDING, maxY),
+                vx: 0,
+                vy: Math.abs(seed.vy) * 0.55,
+            };
+        }
 
         return {
             id: blob.id,
@@ -287,8 +312,10 @@ export function MenuScreen({
     onStartJoinRoomFlow,
 }: MenuScreenProps): JSX.Element {
     const [phase, setPhase] = useState<MenuPhase>('play');
+    const [isPlayIntroActive, setIsPlayIntroActive] = useState(true);
     const fieldRef = useRef<HTMLDivElement | null>(null);
     const titleOrbRef = useRef<HTMLDivElement | null>(null);
+    const titleAtomRef = useRef<HTMLSpanElement | null>(null);
     const buttonRefs = useRef(new Map<BlobId, HTMLButtonElement>());
     const particlesRef = useRef<BlobParticle[]>([]);
     const frameRef = useRef<number | undefined>(undefined);
@@ -523,6 +550,7 @@ export function MenuScreen({
                     blobs,
                     phase,
                     field,
+                    titleAtomRef.current,
                     buttons,
                     particlesRef.current,
                     splitSourceRef.current
@@ -651,6 +679,7 @@ export function MenuScreen({
                             <span
                                 aria-hidden='true'
                                 className='hero-title-filled-o'
+                                ref={titleAtomRef}
                             />
                             <span>{uiText.titleTail}</span>
                         </h1>
@@ -668,8 +697,19 @@ export function MenuScreen({
 
                                 return (
                                     <button
-                                        className={`menu-blob-button menu-blob-${blob.tone}`}
+                                        className={`menu-blob-button menu-blob-${blob.tone}${
+                                            blob.id === 'play' &&
+                                            phase === 'play' &&
+                                            isPlayIntroActive
+                                                ? ' menu-blob-play-intro'
+                                                : ''
+                                        }`}
                                         key={blob.id}
+                                        onAnimationEnd={() => {
+                                            if (blob.id === 'play') {
+                                                setIsPlayIntroActive(false);
+                                            }
+                                        }}
                                         onClick={(event) => {
                                             if (
                                                 suppressClickRef.current ===
