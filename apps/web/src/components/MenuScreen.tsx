@@ -56,7 +56,7 @@ type ActiveDrag = {
 
 const COLLISION_GAP = 2;
 const TITLE_ORB_CLEARANCE = 4;
-const WALL_PADDING = 6;
+const WALL_PADDING = 0;
 const MIN_SPEED = 0.16;
 const MAX_SPEED = 0.48;
 const DRAG_THRESHOLD_PX = 10;

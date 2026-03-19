@@ -1,4 +1,5 @@
-.screen-menu {
+.screen.screen-menu {
+    padding: 0;
     justify-content: flex-start;
     align-items: center;
     background: var(--color-page-bg);
@@ -66,14 +67,12 @@
 
 .menu-actions-shell {
     position: absolute;
-    inset: clamp(12.5rem, 31vh, 19rem) clamp(0.75rem, 4vw, 2rem)
-        clamp(0.75rem, 7vh, 3rem);
+    inset: clamp(12.5rem, 31vh, 19rem) 0 clamp(0.75rem, 7vh, 3rem);
     z-index: 1;
 }
 
 .menu-actions-shell-play {
-    inset: clamp(10.85rem, 27.5vh, 16.5rem) clamp(0.75rem, 4vw, 2rem)
-        clamp(0.75rem, 7vh, 3rem);
+    inset: clamp(10.85rem, 27.5vh, 16.5rem) 0 clamp(0.75rem, 7vh, 3rem);
 }
 
 .menu-actions {
