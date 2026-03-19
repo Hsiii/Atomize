@@ -4,7 +4,6 @@ import { CircleArrowUp, Delete } from 'lucide-react';
 
 import { uiText } from '../app-state';
 import { ActionButton } from './ActionButton';
-import { BackButton } from './BackButton';
 import { ComboQueuePanel } from './ComboQueuePanel';
 import { GameStatusHeader } from './GameStatusHeader';
 import { PrimeKeyButton } from './PrimeKeyButton';
@@ -55,12 +54,12 @@ export function MultiplayerGameScreen({
 
     return (
         <main className='app-shell fullscreen-shell'>
-            <BackButton onBack={onBack} />
             <section className='screen game-screen single-game-screen multiplayer-game-screen'>
                 <GameStatusHeader
                     countdownProgress={multiplayerCountdownProgress}
                     formatCountdown={formatCountdown}
                     headerClassName='multiplayer-top-bar'
+                    onBack={onBack}
                     score={multiplayerScore}
                     scoreClassName='multiplayer-score-pill'
                     timeLeft={multiplayerTimeLeft}
@@ -102,10 +101,12 @@ export function MultiplayerGameScreen({
                             onClick={onBackspace}
                             variant='secondary'
                         >
-                            <Delete
-                                aria-hidden='true'
-                                className='control-icon'
-                            />
+                            <span className='control-button-content'>
+                                <Delete
+                                    aria-hidden='true'
+                                    className='control-icon'
+                                />
+                            </span>
                         </ActionButton>
 
                         <ActionButton
@@ -118,10 +119,12 @@ export function MultiplayerGameScreen({
                             onClick={handleSubmitClick}
                             variant='secondary'
                         >
-                            <CircleArrowUp
-                                aria-hidden='true'
-                                className='control-icon'
-                            />
+                            <span className='control-button-content'>
+                                <CircleArrowUp
+                                    aria-hidden='true'
+                                    className='control-icon'
+                                />
+                            </span>
                         </ActionButton>
                     </div>
                 </section>

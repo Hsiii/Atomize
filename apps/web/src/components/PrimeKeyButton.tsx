@@ -48,7 +48,7 @@ export function PrimeKeyButton({
             onPointerDown={handlePointerDown}
             type='button'
         >
-            {children}
+            <span className='prime-key-button-label'>{children}</span>
         </button>
     );
 }
