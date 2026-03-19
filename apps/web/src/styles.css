@@ -412,14 +412,22 @@ input {
   inset: 0;
   display: grid;
   place-items: center;
-  pointer-events: none;
+  padding: var(--space-8);
+  background:
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.84) 32%, rgba(255, 255, 255, 0.72) 58%, rgba(255, 255, 255, 0.6) 100%);
+  backdrop-filter: blur(10px);
+  pointer-events: auto;
+  z-index: 2;
 }
 
 .single-start-countdown-value {
   display: inline-grid;
   place-items: center;
   min-width: 4.25rem;
-  padding: 0.2rem 0.6rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: 0 24px 60px rgba(24, 78, 119, 0.14);
   font-family: var(--font-family-display);
   font-size: clamp(6rem, 30vw, 10rem);
   font-weight: 900;
@@ -765,7 +773,8 @@ input {
   box-shadow: var(--shadow-panel);
 }
 
-.start-action:disabled {
+.start-action:disabled,
+.start-action.is-disabled {
   border: 1px dashed rgba(24, 78, 119, 0.32);
   background: rgba(24, 78, 119, 0.08);
   color: rgba(11, 34, 53, 0.5);

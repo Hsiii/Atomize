@@ -1,5 +1,5 @@
 import { ArrowLeft } from "lucide-react";
-import type { ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { ActionButton } from "./ActionButton";
 import type { MenuMode, MultiplayerState } from "../app-state";
 import { uiText } from "../app-state";
@@ -31,8 +31,23 @@ export function MultiplayerLobbyScreen({
   onHostStart,
   canStartRoomCountdown,
 }: MultiplayerLobbyScreenProps) {
+  const [showStartBlockedToast, setShowStartBlockedToast] = useState(false);
   const isJoinFlow = menuMode === "join-room";
   const shouldShowWaitingRoom = Boolean(multiplayer.roomId);
+
+  useEffect(() => {
+    if (!showStartBlockedToast) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setShowStartBlockedToast(false);
+    }, 1000);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [showStartBlockedToast]);
 
   if (!multiplayer.roomId && !shouldShowWaitingRoom) {
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -83,10 +98,18 @@ export function MultiplayerLobbyScreen({
   const opponentPlayer = multiplayer.snapshot?.players.find((player) => player.id !== multiplayer.playerId) ?? null;
   const isCountdown = multiplayer.snapshot?.status === "countdown";
   const readyButtonDisabled = !currentPlayer || currentPlayer.ready || isCountdown;
-  const isHostBlocked = multiplayer.isHost && !isCountdown && !canStartRoomCountdown;
   const guestButtonText = currentPlayer?.ready
     ? `${uiText.readyWaiting} ${opponentPlayer?.name ?? uiText.opponent}`
     : uiText.ready;
+
+  function handleHostStartClick() {
+    if (!canStartRoomCountdown) {
+      setShowStartBlockedToast(true);
+      return;
+    }
+
+    void onHostStart();
+  }
 
   return (
     <main className="app-shell fullscreen-shell">
@@ -138,9 +161,9 @@ export function MultiplayerLobbyScreen({
             ) : multiplayer.isHost ? (
               <ActionButton
                 variant="primary"
-                className="start-action"
-                onClick={() => void onHostStart()}
-                disabled={!canStartRoomCountdown}
+                className={!canStartRoomCountdown ? "start-action is-disabled" : "start-action"}
+                onClick={handleHostStartClick}
+                aria-disabled={!canStartRoomCountdown}
               >
                 {uiText.start}
               </ActionButton>
@@ -155,7 +178,7 @@ export function MultiplayerLobbyScreen({
               </ActionButton>
             )}
 
-            {isHostBlocked ? <div className="waiting-toast">{uiText.startBlockedToast}</div> : null}
+            {showStartBlockedToast ? <div className="waiting-toast">{uiText.startBlockedToast}</div> : null}
           </div>
         </div>
       </section>
