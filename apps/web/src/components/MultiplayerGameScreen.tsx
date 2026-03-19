@@ -58,6 +58,7 @@ export function MultiplayerGameScreen({
     const keyboardDigitBufferWindowMs = 250;
     const isTimeUp = multiplayerTimeLeft === 0;
     const [isBlobRevealActive, setIsBlobRevealActive] = useState(false);
+    const hasInitializedStageRef = useRef(false);
     const isInputDisabled = isMultiplayerInputDisabled || isBlobRevealActive;
     const showKeypadDisabledState =
         (isMultiplayerInputDisabled && !isMultiplayerComboRunning) ||
@@ -88,13 +89,22 @@ export function MultiplayerGameScreen({
 
     useLayoutEffect(() => {
         if (!currentMultiplayerPlayer) {
+            hasInitializedStageRef.current = false;
             previousStageIndexRef.current = undefined;
             setIsBlobRevealActive(false);
             return undefined;
         }
 
         if (currentStageIndex < 0) {
+            hasInitializedStageRef.current = false;
             previousStageIndexRef.current = undefined;
+            setIsBlobRevealActive(false);
+            return undefined;
+        }
+
+        if (!hasInitializedStageRef.current) {
+            hasInitializedStageRef.current = true;
+            previousStageIndexRef.current = currentStageIndex;
             setIsBlobRevealActive(false);
             return undefined;
         }

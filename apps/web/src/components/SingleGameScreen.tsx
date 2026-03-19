@@ -51,6 +51,7 @@ export function SingleGameScreen({
     const isTimeUp = soloTimeLeft === 0;
     const currentStageIndex = soloState.currentStage.stageIndex;
     const [isBlobRevealActive, setIsBlobRevealActive] = useState(false);
+    const hasInitializedStageRef = useRef(false);
     const previousStageIndexRef = useRef<number | null>(null);
     const isInputDisabled =
         isTimeUp || isSoloComboRunning || isBlobRevealActive;
@@ -64,6 +65,13 @@ export function SingleGameScreen({
     }, [soloPrimeQueue]);
 
     useLayoutEffect(() => {
+        if (!hasInitializedStageRef.current) {
+            hasInitializedStageRef.current = true;
+            previousStageIndexRef.current = currentStageIndex;
+            setIsBlobRevealActive(false);
+            return undefined;
+        }
+
         if (previousStageIndexRef.current === currentStageIndex) {
             return undefined;
         }
