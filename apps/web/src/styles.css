@@ -775,13 +775,13 @@ input {
 
 .start-action:disabled,
 .start-action.is-disabled {
-  border: 1px dashed rgba(24, 78, 119, 0.32);
-  background: rgba(24, 78, 119, 0.08);
-  color: rgba(11, 34, 53, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(24, 78, 119, 0.84);
+  color: rgba(255, 255, 255, 0.9);
   box-shadow: none;
   cursor: not-allowed;
-  filter: saturate(0.35);
-  opacity: 0.8;
+  filter: saturate(0.7);
+  opacity: 0.88;
 }
 
 @media (max-width: 380px) {
