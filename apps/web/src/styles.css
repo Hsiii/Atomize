@@ -304,21 +304,20 @@ input {
     position: fixed;
     inset: 0;
     z-index: 10;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding: calc(max(var(--space-7), env(safe-area-inset-top)) + 4.25rem)
-        max(var(--space-7), env(safe-area-inset-right))
-        max(var(--space-8), env(safe-area-inset-bottom))
-        max(var(--space-7), env(safe-area-inset-left));
+    display: grid;
+    place-items: center;
+    padding: var(--space-7);
     background: rgba(11, 34, 53, 0.26);
     backdrop-filter: blur(10px);
     overflow: hidden;
 }
 
 .settings-modal {
-    width: min(100%, 22rem);
-    max-height: 100%;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: min(calc(100vw - 2rem), 22rem);
+    max-height: min(calc(100dvh - 2rem), 28rem);
     padding: var(--space-7);
     border-radius: var(--radius-panel);
     background: var(--color-surface-base);
@@ -327,6 +326,7 @@ input {
     flex-direction: column;
     gap: var(--space-7);
     overflow: hidden;
+    transform: translate(-50%, -50%);
 }
 
 .settings-modal-header {
@@ -344,6 +344,11 @@ input {
 
 .settings-field input {
     font-size: 16px;
+}
+
+.settings-modal,
+.settings-modal input {
+    overscroll-behavior: none;
 }
 
 .settings-actions {
@@ -382,12 +387,6 @@ input {
 
 .waiting-room-stack {
     justify-content: center;
-}
-
-.join-keyboard-stack {
-    --join-keyboard-offset: 0px;
-    transition: transform 180ms ease-out;
-    transform: translateY(calc(var(--join-keyboard-offset) * -1));
 }
 
 .waiting-room-grid {
