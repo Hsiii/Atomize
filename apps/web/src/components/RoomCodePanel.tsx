@@ -5,9 +5,10 @@ type RoomCodePanelProps = {
   value: string;
   editable?: boolean;
   onChange?: (value: string) => void;
+  onFocusChange?: (isFocused: boolean) => void;
 };
 
-export function RoomCodePanel({ value, editable = false, onChange }: RoomCodePanelProps) {
+export function RoomCodePanel({ value, editable = false, onChange, onFocusChange }: RoomCodePanelProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   if (!editable) {
@@ -50,6 +51,8 @@ export function RoomCodePanel({ value, editable = false, onChange }: RoomCodePan
         maxLength={4}
         value={value}
         onChange={handleInputChange}
+        onFocus={() => onFocusChange?.(true)}
+        onBlur={() => onFocusChange?.(false)}
         aria-label={uiText.enterCode}
       />
     </label>

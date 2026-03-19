@@ -384,6 +384,12 @@ input {
     justify-content: center;
 }
 
+.join-keyboard-stack {
+    --join-keyboard-offset: 0px;
+    transition: transform 180ms ease-out;
+    transform: translateY(calc(var(--join-keyboard-offset) * -1));
+}
+
 .waiting-room-grid {
     align-self: stretch;
 }

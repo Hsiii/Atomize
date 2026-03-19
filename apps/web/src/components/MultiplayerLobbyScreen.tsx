@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { ActionButton } from "./ActionButton";
 import { BackButton } from "./BackButton";
 import { RoomCodePanel } from "./RoomCodePanel";
@@ -40,6 +40,8 @@ export function MultiplayerLobbyScreen({
 }: MultiplayerLobbyScreenProps) {
   const [localToastMessage, setLocalToastMessage] = useState<string | null>(null);
   const [visibleTransientToastMessage, setVisibleTransientToastMessage] = useState<string | null>(null);
+  const [isRoomCodeFocused, setIsRoomCodeFocused] = useState(false);
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
   const isJoinFlow = menuMode === "join-room";
   const shouldShowWaitingRoom = Boolean(multiplayer.roomId);
   const isJoinButtonReady = roomIdInput.length === 4;
@@ -77,6 +79,33 @@ export function MultiplayerLobbyScreen({
     };
   }, [transientToastId, transientToastMessage]);
 
+  useEffect(() => {
+    if (!isJoinFlow || shouldShowWaitingRoom || !isRoomCodeFocused) {
+      setKeyboardOffset(0);
+      return;
+    }
+
+    const viewport = window.visualViewport;
+
+    if (!viewport) {
+      return;
+    }
+
+    const updateKeyboardOffset = () => {
+      const nextOffset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+      setKeyboardOffset(nextOffset > 0 ? Math.min(220, Math.round(nextOffset * 0.55)) : 0);
+    };
+
+    updateKeyboardOffset();
+    viewport.addEventListener("resize", updateKeyboardOffset);
+    viewport.addEventListener("scroll", updateKeyboardOffset);
+
+    return () => {
+      viewport.removeEventListener("resize", updateKeyboardOffset);
+      viewport.removeEventListener("scroll", updateKeyboardOffset);
+    };
+  }, [isJoinFlow, isRoomCodeFocused, shouldShowWaitingRoom]);
+
   function handleCreateOrJoinClick() {
     if (!isJoinFlow) {
       void onCreateRoom();
@@ -100,8 +129,16 @@ export function MultiplayerLobbyScreen({
       <main className="app-shell fullscreen-shell">
         <BackButton onBack={onBack} />
         <section className="screen lobby-screen">
-          <div className="lobby-stack waiting-room-stack">
-            <RoomCodePanel value={roomIdInput} editable onChange={onRoomIdInputChange} />
+          <div
+            className={isJoinFlow ? "lobby-stack waiting-room-stack join-keyboard-stack" : "lobby-stack waiting-room-stack"}
+            style={isJoinFlow ? ({ "--join-keyboard-offset": `${keyboardOffset}px` } as CSSProperties) : undefined}
+          >
+            <RoomCodePanel
+              value={roomIdInput}
+              editable
+              onChange={onRoomIdInputChange}
+              onFocusChange={setIsRoomCodeFocused}
+            />
 
             <div className="waiting-cta">
               <ActionButton
