@@ -250,20 +250,20 @@ function createSnapshot(room: RoomState): RoomSnapshot {
     };
 }
 
-function parseSocketMessage(raw: Buffer | ArrayBuffer | Buffer[]): string {
-    if (typeof raw === 'string') {
-        return raw;
-    }
-
+function parseSocketMessage(
+    raw: Buffer | ArrayBuffer | readonly Uint8Array[]
+): string {
     if (Buffer.isBuffer(raw)) {
         return raw.toString('utf8');
     }
 
-    if (isArray(raw)) {
-        return Buffer.concat(raw).toString('utf8');
+    if (raw instanceof ArrayBuffer) {
+        return Buffer.from(new Uint8Array(raw)).toString('utf8');
     }
 
-    return Buffer.from(raw).toString('utf8');
+    return Buffer.concat(raw.map((chunk) => Buffer.from(chunk))).toString(
+        'utf8'
+    );
 }
 
 function broadcast(room: RoomState, message: ServerMessage) {
