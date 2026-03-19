@@ -9,12 +9,11 @@ import {
 
 const STARTING_HP = 40;
 const WRONG_SELECTION_DAMAGE = 3;
-const HOST_NAME = "Player 1";
-const GUEST_NAME = "Player 2";
 
 export function createRoomSnapshot(
   roomId: string,
   hostId: string,
+  hostName: string,
 ): RoomSnapshot {
   const initialStage = generateStage(roomId, 0);
 
@@ -23,7 +22,7 @@ export function createRoomSnapshot(
     seed: roomId,
     stageIndex: 0,
     stage: initialStage,
-    players: [createPlayer(hostId, HOST_NAME, roomId)],
+    players: [createPlayer(hostId, hostName, roomId)],
     countdownEndsAt: null,
     status: "waiting",
   };
@@ -32,6 +31,7 @@ export function createRoomSnapshot(
 export function addPlayerToRoom(
   snapshot: RoomSnapshot,
   playerId: string,
+  playerName: string,
 ): RoomSnapshot | null {
   if (snapshot.players.some((player) => player.id === playerId)) {
     return snapshot;
@@ -43,7 +43,7 @@ export function addPlayerToRoom(
 
   return {
     ...snapshot,
-    players: [...snapshot.players, createPlayer(playerId, GUEST_NAME, snapshot.seed)],
+    players: [...snapshot.players, createPlayer(playerId, playerName, snapshot.seed)],
     countdownEndsAt: null,
     status: "waiting",
   };
