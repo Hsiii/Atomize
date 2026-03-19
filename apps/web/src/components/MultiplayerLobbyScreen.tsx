@@ -94,6 +94,17 @@ export function MultiplayerLobbyScreen({
           <div className="lobby-stack waiting-room-stack">
             <label className="code-panel waiting-code-panel room-code-input-panel">
               <p className="label">{uiText.roomCode}</p>
+              <div className="room-code-display" aria-hidden="true">
+                {Array.from({ length: 4 }, (_, index) => {
+                  const digit = roomIdInput[index];
+
+                  return (
+                    <span key={`room-code-slot-${index}`} className={digit ? "room-code-slot filled" : "room-code-slot"}>
+                      {digit ?? "-"}
+                    </span>
+                  );
+                })}
+              </div>
               <input
                 className="room-code-block-input"
                 inputMode="numeric"
@@ -101,7 +112,6 @@ export function MultiplayerLobbyScreen({
                 maxLength={4}
                 value={roomIdInput}
                 onChange={handleInputChange}
-                placeholder={uiText.roomPlaceholder}
                 aria-label={uiText.enterCode}
               />
             </label>
