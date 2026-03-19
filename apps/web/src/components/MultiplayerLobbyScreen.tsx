@@ -77,7 +77,7 @@ export function MultiplayerLobbyScreen({
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
       onRoomIdInputChange(event.target.value);
     };
-    const roomCodePreview = Array.from({ length: 4 }, (_, index) => roomIdInput[index] ?? "-");
+    const roomCodePreview = Array.from({ length: 4 }, (_, index) => roomIdInput[index] ?? "");
     const focusRoomCodeInput = () => {
       roomCodeInputRef.current?.focus();
     };

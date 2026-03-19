@@ -712,14 +712,27 @@ input {
 .room-code-character {
   display: inline-grid;
   place-items: center;
+  position: relative;
   width: 1ch;
   color: rgba(11, 34, 53, 0.42);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1, "lnum" 1;
 }
 
+.room-code-character::before {
+  content: "";
+  width: 0.7ch;
+  height: 0.08em;
+  border-radius: var(--radius-pill);
+  background: currentColor;
+}
+
 .room-code-character.filled {
   color: var(--color-ink);
+}
+
+.room-code-character.filled::before {
+  content: none;
 }
 
 .room-code-block-input {
