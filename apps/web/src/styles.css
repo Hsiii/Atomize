@@ -137,12 +137,12 @@ input {
 }
 
 .menu-title-orb {
-    width: min(152vw, 43rem);
+    width: min(186vw, 64rem);
     aspect-ratio: 1;
-    margin-top: clamp(-21rem, -52vw, -13rem);
-    margin-bottom: clamp(-4.5rem, -10vw, -2.5rem);
-    padding: clamp(1.5rem, 5vw, 2.5rem);
-    padding-bottom: clamp(4.6rem, 11vw, 7rem);
+    margin-top: clamp(-31rem, -74vw, -20rem);
+    margin-bottom: clamp(-8rem, -18vw, -4.75rem);
+    padding: clamp(1.75rem, 6vw, 3rem);
+    padding-bottom: clamp(7rem, 15vw, 10.5rem);
     border: 0.2rem solid var(--color-outline-strong);
     border-radius: 50%;
     background: var(--color-primary);
@@ -154,12 +154,12 @@ input {
 .hero-title {
     margin: var(--space-0);
     font-family: var(--font-family-display);
-    width: min(100%, 20rem);
+    width: min(100%, 29rem);
     max-width: 100%;
-    font-size: clamp(3.15rem, 11vw, 5.65rem);
-    line-height: 0.84;
+    font-size: clamp(4.5rem, 13.5vw, 8rem);
+    line-height: 0.82;
     font-weight: 900;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     color: var(--color-text-inverse);
 }
@@ -786,15 +786,15 @@ input {
     }
 
     .menu-title-orb {
-        width: min(148vw, 36rem);
-        margin-top: clamp(-18rem, -48vw, -11rem);
-        margin-bottom: clamp(-3.6rem, -9vw, -2rem);
-        padding-bottom: clamp(4rem, 10vw, 5.7rem);
+        width: min(178vw, 52rem);
+        margin-top: clamp(-26rem, -68vw, -16rem);
+        margin-bottom: clamp(-6rem, -14vw, -3.5rem);
+        padding-bottom: clamp(6rem, 13vw, 8.5rem);
     }
 
     .hero-title {
-        width: min(100%, 17.5rem);
-        font-size: clamp(2.8rem, 11vw, 4.9rem);
+        width: min(100%, 23rem);
+        font-size: clamp(3.7rem, 12vw, 6.4rem);
     }
 
     .menu-actions {
@@ -814,15 +814,15 @@ input {
     }
 
     .menu-title-orb {
-        width: min(144vw, 31rem);
-        margin-top: clamp(-15.5rem, -44vw, -10rem);
-        margin-bottom: clamp(-3rem, -7vw, -1.6rem);
-        padding-bottom: 3.5rem;
+        width: min(170vw, 44rem);
+        margin-top: clamp(-22rem, -62vw, -14rem);
+        margin-bottom: clamp(-4.6rem, -11vw, -2.4rem);
+        padding-bottom: 5.4rem;
     }
 
     .hero-title {
-        width: min(100%, 15.5rem);
-        font-size: clamp(2.45rem, 10.5vw, 4.3rem);
+        width: min(100%, 19rem);
+        font-size: clamp(3.1rem, 11.5vw, 5.35rem);
     }
 
     .menu-actions {
@@ -853,15 +853,15 @@ input {
     }
 
     .menu-title-orb {
-        width: min(140vw, 25rem);
-        margin-top: clamp(-12.5rem, -40vw, -8.5rem);
-        margin-bottom: clamp(-2.3rem, -6vw, -1.25rem);
-        padding-bottom: 2.8rem;
+        width: min(162vw, 35rem);
+        margin-top: clamp(-17rem, -54vw, -11.5rem);
+        margin-bottom: clamp(-3.2rem, -8vw, -1.7rem);
+        padding-bottom: 4.2rem;
     }
 
     .hero-title {
-        width: min(100%, 13rem);
-        font-size: clamp(2.1rem, 9.5vw, 3.7rem);
+        width: min(100%, 15.5rem);
+        font-size: clamp(2.6rem, 10.5vw, 4.5rem);
     }
 
     .menu-actions {
