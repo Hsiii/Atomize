@@ -76,7 +76,7 @@ export function MultiplayerLobbyScreen({
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
       onRoomIdInputChange(event.target.value);
     };
-    const roomCodePreview = Array.from({ length: 4 }, (_, index) => roomIdInput[index] ?? "‒").join(" ");
+    const roomCodePreview = Array.from({ length: 4 }, (_, index) => roomIdInput[index] ?? "-").join("");
 
     return (
       <main className="app-shell fullscreen-shell">

@@ -702,9 +702,6 @@ input {
   margin-top: var(--space-1);
   font-weight: 700;
   line-height: 1;
-  white-space: pre;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1, "lnum" 1;
   color: rgba(11, 34, 53, 0.42);
   pointer-events: none;
 }
