@@ -306,6 +306,34 @@ function clampParticlePosition(
     };
 }
 
+function clampParticleOutsideCollider(
+    x: number,
+    y: number,
+    radius: number,
+    collider: Readonly<CircleCollider>
+): { x: number; y: number } {
+    const centerX = x + radius;
+    const centerY = y + radius;
+    const deltaX = centerX - collider.centerX;
+    const deltaY = centerY - collider.centerY;
+    const distance = Math.hypot(deltaX, deltaY) || 0.001;
+    const minimumDistance = collider.radius + radius + COLLISION_GAP;
+
+    if (distance >= minimumDistance) {
+        return { x, y };
+    }
+
+    const normalX = deltaX / distance;
+    const normalY = deltaY / distance;
+    const pushedCenterX = collider.centerX + normalX * minimumDistance;
+    const pushedCenterY = collider.centerY + normalY * minimumDistance;
+
+    return {
+        x: pushedCenterX - radius,
+        y: pushedCenterY - radius,
+    };
+}
+
 export function MenuScreen({
     onStartSingleGame,
     onStartCreateRoomFlow,
@@ -413,22 +441,31 @@ export function MenuScreen({
         const fieldRect = field.getBoundingClientRect();
         const nextX = clientX - fieldRect.left - activeDrag.offsetX;
         const nextY = clientY - fieldRect.top - activeDrag.offsetY;
+        const titleOrb = titleOrbRef.current;
         const clampedPosition = clampParticlePosition(
             nextX,
             nextY,
             particle.radius,
             fieldRect
         );
+        const constrainedPosition = titleOrb
+            ? clampParticleOutsideCollider(
+                  clampedPosition.x,
+                  clampedPosition.y,
+                  particle.radius,
+                  getTitleOrbCollider(field, titleOrb)
+              )
+            : clampedPosition;
         const elapsed = Math.max(timestamp - activeDrag.lastTimestamp, 16);
         const deltaScale = 16.667 / elapsed;
 
-        particle.x = clampedPosition.x;
-        particle.y = clampedPosition.y;
+        particle.x = constrainedPosition.x;
+        particle.y = constrainedPosition.y;
         particle.vx = (clientX - activeDrag.lastClientX) * 0.06 * deltaScale;
         particle.vy = (clientY - activeDrag.lastClientY) * 0.06 * deltaScale;
 
-        activeDrag.x = clampedPosition.x;
-        activeDrag.y = clampedPosition.y;
+        activeDrag.x = constrainedPosition.x;
+        activeDrag.y = constrainedPosition.y;
         activeDrag.moved ||=
             Math.hypot(
                 clientX - activeDrag.startClientX,
@@ -457,6 +494,7 @@ export function MenuScreen({
 
         const fieldRect = field.getBoundingClientRect();
         const buttonRect = button.getBoundingClientRect();
+        const titleOrb = titleOrbRef.current;
 
         activeDragRef.current = {
             blobId,
@@ -480,11 +518,22 @@ export function MenuScreen({
             particle.radius,
             fieldRect
         );
+        const constrainedPosition = titleOrb
+            ? clampParticleOutsideCollider(
+                  clampedPosition.x,
+                  clampedPosition.y,
+                  particle.radius,
+                  getTitleOrbCollider(field, titleOrb)
+              )
+            : clampedPosition;
 
-        particle.x = clampedPosition.x;
-        particle.y = clampedPosition.y;
+        particle.x = constrainedPosition.x;
+        particle.y = constrainedPosition.y;
         particle.vx = 0;
         particle.vy = 0;
+
+        activeDragRef.current.x = constrainedPosition.x;
+        activeDragRef.current.y = constrainedPosition.y;
 
         button.setPointerCapture(event.pointerId);
         writeParticleStyles(particlesRef.current, buttonRefs.current);
