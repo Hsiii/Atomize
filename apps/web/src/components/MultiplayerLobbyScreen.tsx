@@ -89,16 +89,16 @@ export function MultiplayerLobbyScreen({
           <div className="lobby-stack waiting-room-stack">
             <label className="code-panel waiting-code-panel room-code-input-panel" onClick={focusRoomCodeInput}>
               <p className="label">{uiText.roomCode}</p>
-              <strong className="room-code-visual" aria-hidden="true">
+              <div className="room-code-visual" aria-hidden="true">
                 {roomCodePreview.map((character, index) => (
-                  <span
+                  <div
                     key={`room-code-character-${index}`}
                     className={roomIdInput[index] ? "room-code-character filled" : "room-code-character"}
                   >
                     {character}
-                  </span>
+                  </div>
                 ))}
-              </strong>
+              </div>
               <input
                 ref={roomCodeInputRef}
                 className="room-code-block-input"

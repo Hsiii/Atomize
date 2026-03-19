@@ -699,10 +699,11 @@ input {
 }
 
 .room-code-visual {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.16em;
+  width: 100%;
   margin-top: var(--space-1);
   font-weight: 700;
   line-height: 1;
@@ -713,7 +714,7 @@ input {
 }
 
 .room-code-character {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
