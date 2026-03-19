@@ -99,12 +99,6 @@ export function MultiplayerGameScreen({
             return undefined;
         }
 
-        if (previousStageIndexRef.current === undefined) {
-            previousStageIndexRef.current = currentStageIndex;
-            setIsBlobRevealActive(false);
-            return undefined;
-        }
-
         if (previousStageIndexRef.current === currentStageIndex) {
             return undefined;
         }

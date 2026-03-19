@@ -64,12 +64,6 @@ export function SingleGameScreen({
     }, [soloPrimeQueue]);
 
     useLayoutEffect(() => {
-        if (previousStageIndexRef.current === null) {
-            previousStageIndexRef.current = currentStageIndex;
-            setIsBlobRevealActive(false);
-            return undefined;
-        }
-
         if (previousStageIndexRef.current === currentStageIndex) {
             return undefined;
         }
