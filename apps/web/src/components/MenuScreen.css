@@ -54,12 +54,12 @@
 }
 
 .hero-title-filled-o {
-    width: 0.76em;
-    height: 0.76em;
-    flex: 0 0 0.76em;
+    width: 0.66em;
+    height: 0.66em;
+    flex: 0 0 0.66em;
     border-radius: 50%;
     background: currentColor;
-    transform: translateY(0.03em);
+    transform: translateY(-0.015em);
 }
 
 .menu-actions-shell {
