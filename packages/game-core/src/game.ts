@@ -35,6 +35,14 @@ const MIN_FACTOR_COUNT = 2;
 const MAX_STAGE_VALUE = 1_000_000;
 const MIN_PRIME = PRIME_POOL[0];
 
+export function applySoloPenalty(state: SoloState): SoloState {
+    return {
+        ...state,
+        hp: Math.max(0, state.hp - 1),
+        combo: 0,
+    };
+}
+
 export function generateStage(seed: string, stageIndex: number): StageState {
     const rng = createRng(`${seed}:${stageIndex}`);
     const factorCount = Math.min(
@@ -124,11 +132,7 @@ export function advanceSoloState(
     const outcome = applyPrimeSelection(state.currentStage, selectedPrime);
 
     if (outcome.kind === 'wrong') {
-        return {
-            ...state,
-            hp: Math.max(0, state.hp - 1),
-            combo: 0,
-        };
+        return applySoloPenalty(state);
     }
 
     if (!outcome.cleared) {

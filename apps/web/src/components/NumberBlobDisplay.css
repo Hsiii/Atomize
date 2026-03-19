@@ -70,7 +70,9 @@
     font-weight: var(--font-weight-number-emphasis);
     letter-spacing: 0.02em;
     color: var(--color-text-inverse);
-    transition: opacity 120ms ease;
+    transition:
+        opacity 120ms ease,
+        transform 120ms ease;
 }
 
 .number-blob-display-multiplayer .number-main-blob,

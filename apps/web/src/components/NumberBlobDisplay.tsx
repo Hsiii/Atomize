@@ -29,6 +29,7 @@ type NumberBlobDisplayProps = {
 };
 
 const echoAngles = [-58, -26, 18, 52];
+const clearPopPrepDurationMs = 140;
 const stageRevealDelayMs = 1000;
 const stageRevealDurationMs = 2000;
 const stageRevealTotalMs = stageRevealDelayMs + stageRevealDurationMs;
@@ -115,6 +116,7 @@ export function NumberBlobDisplay({
     const previousValueRef = useRef<number | undefined>(undefined);
     const previousStageIndexRef = useRef<number | undefined>(undefined);
     const echoIdRef = useRef(0);
+    const clearPrepTimerRef = useRef<number | undefined>(undefined);
     const clearEchoTimerRef = useRef<number | undefined>(undefined);
     const clearPopTimerRef = useRef<number | undefined>(undefined);
     const valueTimerRef = useRef<number | undefined>(undefined);
@@ -123,6 +125,7 @@ export function NumberBlobDisplay({
 
     useEffect(() => {
         return () => {
+            clearTimer(clearPrepTimerRef);
             clearTimer(clearEchoTimerRef);
             clearTimer(clearPopTimerRef);
             clearTimer(valueTimerRef);
@@ -133,6 +136,7 @@ export function NumberBlobDisplay({
 
     useEffect(() => {
         if (typeof value !== 'number') {
+            clearTimer(clearPrepTimerRef);
             clearTimer(clearEchoTimerRef);
             clearTimer(clearPopTimerRef);
             clearTimer(valueTimerRef);
@@ -158,6 +162,7 @@ export function NumberBlobDisplay({
             stageIndex > (previousStageIndex ?? stageIndex);
 
         if (didStageAdvance && previousValue > 1) {
+            clearTimer(clearPrepTimerRef);
             clearTimer(clearEchoTimerRef);
             clearTimer(clearPopTimerRef);
             const clearEchoes = createClearSplitEchoes(
@@ -166,40 +171,47 @@ export function NumberBlobDisplay({
             );
             const nextClearPop: ClearPop = {
                 id: echoIdRef.current + clearEchoes.length,
-                value: previousValue,
+                value: 1,
             };
 
             echoIdRef.current += clearEchoes.length + 1;
-            if (clearEchoes.length > 0) {
-                setSplitEchos((currentEchos) => [
-                    ...currentEchos,
-                    ...clearEchoes,
-                ]);
-            }
-            setClearPop(nextClearPop);
             setIsImpactActive(false);
-            setDisplayedValue(value);
+            setDisplayedValue(1);
 
-            clearEchoTimerRef.current = window.setTimeout(() => {
-                setSplitEchos((currentEchos) =>
-                    currentEchos.filter(
-                        (currentEcho) =>
-                            !clearEchoes.some(
-                                (clearEcho) => clearEcho.id === currentEcho.id
-                            )
-                    )
-                );
-                clearEchoTimerRef.current = undefined;
-            }, 820);
+            clearPrepTimerRef.current = window.setTimeout(() => {
+                if (clearEchoes.length > 0) {
+                    setSplitEchos((currentEchos) => [
+                        ...currentEchos,
+                        ...clearEchoes,
+                    ]);
+                }
+                setClearPop(nextClearPop);
+                setDisplayedValue(value);
 
-            clearPopTimerRef.current = window.setTimeout(() => {
-                setClearPop((currentClearPop) =>
-                    currentClearPop?.id === nextClearPop.id
-                        ? null
-                        : currentClearPop
-                );
-                clearPopTimerRef.current = undefined;
-            }, 260);
+                clearEchoTimerRef.current = window.setTimeout(() => {
+                    setSplitEchos((currentEchos) =>
+                        currentEchos.filter(
+                            (currentEcho) =>
+                                !clearEchoes.some(
+                                    (clearEcho) =>
+                                        clearEcho.id === currentEcho.id
+                                )
+                        )
+                    );
+                    clearEchoTimerRef.current = undefined;
+                }, 820);
+
+                clearPopTimerRef.current = window.setTimeout(() => {
+                    setClearPop((currentClearPop) =>
+                        currentClearPop?.id === nextClearPop.id
+                            ? null
+                            : currentClearPop
+                    );
+                    clearPopTimerRef.current = undefined;
+                }, 260);
+
+                clearPrepTimerRef.current = undefined;
+            }, clearPopPrepDurationMs);
 
             previousValueRef.current = value;
             previousStageIndexRef.current = stageIndex;

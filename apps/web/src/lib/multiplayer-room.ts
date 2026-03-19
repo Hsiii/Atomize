@@ -129,20 +129,7 @@ export function applyBattlePrimeSelection(
     const selection = applyPrimeSelection(actingPlayer.stage, prime);
 
     if (selection.kind === 'wrong') {
-        return withPlayers(
-            snapshot,
-            snapshot.players.map((player) => {
-                if (player.id !== playerId) {
-                    return player;
-                }
-
-                return {
-                    ...player,
-                    hp: Math.max(0, player.hp - WRONG_SELECTION_DAMAGE),
-                    combo: 0,
-                };
-            })
-        );
+        return applyBattlePenalty(snapshot, playerId);
     }
 
     if (!selection.cleared) {
@@ -189,6 +176,30 @@ export function applyBattlePrimeSelection(
             return {
                 ...player,
                 hp: Math.max(0, player.hp - damage),
+            };
+        })
+    );
+}
+
+export function applyBattlePenalty(
+    snapshot: RoomSnapshot,
+    playerId: string
+): RoomSnapshot {
+    if (snapshot.status !== 'playing') {
+        return snapshot;
+    }
+
+    return withPlayers(
+        snapshot,
+        snapshot.players.map((player) => {
+            if (player.id !== playerId) {
+                return player;
+            }
+
+            return {
+                ...player,
+                hp: Math.max(0, player.hp - WRONG_SELECTION_DAMAGE),
+                combo: 0,
             };
         })
     );

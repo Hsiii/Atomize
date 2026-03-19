@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
+    applySoloPenalty,
     advanceSoloState,
     applyPrimeSelection,
     createInitialSoloState,
@@ -21,6 +22,7 @@ import { MultiplayerLobbyScreen } from './components/MultiplayerLobbyScreen';
 import { SingleGameScreen } from './components/SingleGameScreen';
 import {
     addPlayerToRoom,
+    applyBattlePenalty,
     applyBattlePrimeSelection,
     beginRoomMatch,
     canStartRoomCountdown,
@@ -77,6 +79,10 @@ type RoomBroadcastMessage =
           playerId: string;
           prime: Prime;
       }
+        | {
+                    type: 'combo_penalty';
+                    playerId: string;
+            }
     | {
           type: 'player_ready';
           playerId: string;
@@ -299,15 +305,29 @@ export default function App() {
                 nextPrime
             );
 
-            setSoloState(advanceSoloState(currentState, soloSeed, nextPrime));
-
             if (outcome.kind === 'wrong') {
+                setSoloState(applySoloPenalty(currentState));
                 setSoloPrimeQueue([]);
                 setSoloTimeLeft((currentTime) => Math.max(0, currentTime - 1));
                 setSoloTimerPenaltyPopKey((currentKey) => currentKey + 1);
                 setIsSoloComboRunning(false);
                 return;
             }
+
+            const nextState = advanceSoloState(currentState, soloSeed, nextPrime);
+            const hasRedundantBufferedPrimes =
+                outcome.cleared && soloPrimeQueue.length > 1;
+
+            if (hasRedundantBufferedPrimes) {
+                setSoloState(applySoloPenalty(nextState));
+                setSoloPrimeQueue([]);
+                setSoloTimeLeft((currentTime) => Math.max(0, currentTime - 1));
+                setSoloTimerPenaltyPopKey((currentKey) => currentKey + 1);
+                setIsSoloComboRunning(false);
+                return;
+            }
+
+            setSoloState(nextState);
 
             setSoloPrimeQueue((currentQueue) => currentQueue.slice(1));
 
@@ -604,6 +624,30 @@ export default function App() {
                     });
                 }
             )
+            .on('broadcast', { event: 'combo_penalty' }, async ({ payload }) => {
+                const message = payload as RoomBroadcastMessage;
+                const currentState = latestMultiplayerRef.current;
+
+                if (
+                    message.type !== 'combo_penalty' ||
+                    !currentState.isHost ||
+                    !currentState.snapshot
+                ) {
+                    return;
+                }
+
+                const nextSnapshot = applyBattlePenalty(
+                    currentState.snapshot,
+                    message.playerId
+                );
+
+                updateSnapshot(nextSnapshot, '');
+                await broadcastMessage({
+                    type: 'room_state',
+                    snapshot: nextSnapshot,
+                    sourcePlayerId: playerId,
+                });
+            })
             .on('broadcast', { event: 'room_error' }, ({ payload }) => {
                 const message = payload as RoomBroadcastMessage;
 
@@ -712,16 +756,18 @@ export default function App() {
         });
     }
 
-    async function sendMultiplayerPrime(prime: Prime) {
+    async function sendMultiplayerPrime(
+        prime: Prime
+    ): Promise<RoomSnapshot | undefined> {
         const currentState = latestMultiplayerRef.current;
 
         if (!currentState.playerId || !currentState.snapshot) {
             setStatusText('Create or join a room first');
-            return;
+            return undefined;
         }
 
         if (currentState.snapshot.status !== 'playing') {
-            return;
+            return undefined;
         }
 
         if (currentState.isHost) {
@@ -736,13 +782,50 @@ export default function App() {
                 snapshot: nextSnapshot,
                 sourcePlayerId: currentState.playerId,
             });
-            return;
+            return nextSnapshot;
         }
 
         await broadcastMessage({
             type: 'prime_selected',
             playerId: currentState.playerId,
             prime,
+        });
+
+        return undefined;
+    }
+
+    async function sendMultiplayerPenalty(
+        snapshotOverride?: RoomSnapshot
+    ): Promise<void> {
+        const currentState = latestMultiplayerRef.current;
+
+        if (!currentState.playerId) {
+            return;
+        }
+
+        if (currentState.isHost) {
+            const snapshot = snapshotOverride ?? currentState.snapshot;
+
+            if (!snapshot) {
+                return;
+            }
+
+            const nextSnapshot = applyBattlePenalty(
+                snapshot,
+                currentState.playerId
+            );
+            updateSnapshot(nextSnapshot, '');
+            await broadcastMessage({
+                type: 'room_state',
+                snapshot: nextSnapshot,
+                sourcePlayerId: currentState.playerId,
+            });
+            return;
+        }
+
+        await broadcastMessage({
+            type: 'combo_penalty',
+            playerId: currentState.playerId,
         });
     }
 
@@ -765,7 +848,7 @@ export default function App() {
         setMultiplayerPrimeQueue(queuedPrimes);
 
         try {
-            for (const prime of queuedPrimes) {
+            for (const [index, prime] of queuedPrimes.entries()) {
                 const currentState = latestMultiplayerRef.current;
 
                 if (
@@ -788,6 +871,16 @@ export default function App() {
                 if (outcome.kind === 'wrong') {
                     setMultiplayerPrimeQueue([]);
                     await sendMultiplayerPrime(prime);
+                    break;
+                }
+
+                const hasRedundantBufferedPrimes =
+                    outcome.cleared && index < queuedPrimes.length - 1;
+
+                if (hasRedundantBufferedPrimes) {
+                    setMultiplayerPrimeQueue([]);
+                    const nextSnapshot = await sendMultiplayerPrime(prime);
+                    await sendMultiplayerPenalty(nextSnapshot);
                     break;
                 }
 
