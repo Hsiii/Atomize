@@ -113,7 +113,7 @@ input {
 .field {
   width: 100%;
 }
-
+  font-family: var(--font-family-base);
 .screen {
   width: 100%;
   height: 100%;
