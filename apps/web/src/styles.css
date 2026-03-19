@@ -271,6 +271,16 @@ input {
   flex: 0 0 auto;
 }
 
+.floating-back-button {
+  position: fixed;
+  top: max(var(--space-7), env(safe-area-inset-top));
+  left: max(var(--space-7), env(safe-area-inset-left));
+  width: 2.9rem;
+  height: 2.9rem;
+  z-index: 5;
+  box-shadow: 0 14px 24px rgba(11, 34, 53, 0.14);
+}
+
 .control-icon {
   width: 1.1rem;
   height: 1.1rem;
@@ -280,6 +290,10 @@ input {
 .game-screen,
 .lobby-screen {
   gap: var(--space-7);
+}
+
+.lobby-screen {
+  justify-content: center;
 }
 
 .single-game-screen {

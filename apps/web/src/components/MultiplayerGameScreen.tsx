@@ -1,6 +1,7 @@
-import { ArrowLeft, Delete, Swords } from "lucide-react";
+import { Delete, Swords } from "lucide-react";
 import type { Prime, RoomPlayer, RoomSnapshot } from "@atomize/game-core";
 import { ActionButton } from "./ActionButton";
+import { BackButton } from "./BackButton";
 import { uiText } from "../app-state";
 
 type MultiplayerGameScreenProps = {
@@ -40,17 +41,9 @@ export function MultiplayerGameScreen({
 }: MultiplayerGameScreenProps) {
   return (
     <main className="app-shell fullscreen-shell">
+      <BackButton onBack={onBack} />
       <section className="screen game-screen single-game-screen multiplayer-game-screen">
         <header className="top-bar single-top-bar multiplayer-top-bar">
-          <button
-            type="button"
-            className="icon-action"
-            onClick={() => void onBack()}
-            aria-label={uiText.back}
-          >
-            <ArrowLeft className="control-icon" aria-hidden="true" />
-          </button>
-
           <div className="single-timer-shell" aria-label={`${uiText.timer}: ${formatCountdown(multiplayerTimeLeft)}`}>
             <div className="single-timer-bar">
               <span

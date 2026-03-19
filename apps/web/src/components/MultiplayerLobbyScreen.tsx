@@ -1,6 +1,6 @@
-import { ArrowLeft } from "lucide-react";
 import { useEffect, useState, type ChangeEvent } from "react";
 import { ActionButton } from "./ActionButton";
+import { BackButton } from "./BackButton";
 import type { MenuMode, MultiplayerState } from "../app-state";
 import { uiText } from "../app-state";
 
@@ -80,18 +80,8 @@ export function MultiplayerLobbyScreen({
 
     return (
       <main className="app-shell fullscreen-shell">
+        <BackButton onBack={onBack} />
         <section className="screen lobby-screen">
-          <header className="top-bar">
-            <button
-              type="button"
-              className="icon-action"
-              onClick={() => void onBack()}
-              aria-label={uiText.back}
-            >
-              <ArrowLeft className="control-icon" aria-hidden="true" />
-            </button>
-          </header>
-
           <div className="lobby-stack waiting-room-stack">
             <label className="code-panel waiting-code-panel room-code-input-panel">
               <p className="label">{uiText.roomCode}</p>
@@ -143,18 +133,8 @@ export function MultiplayerLobbyScreen({
 
   return (
     <main className="app-shell fullscreen-shell">
+      <BackButton onBack={onBack} />
       <section className="screen lobby-screen">
-        <header className="top-bar">
-          <button
-            type="button"
-            className="icon-action"
-            onClick={() => void onBack()}
-            aria-label={uiText.back}
-          >
-            <ArrowLeft className="control-icon" aria-hidden="true" />
-          </button>
-        </header>
-
         <div className="lobby-stack waiting-room-stack">
           <div className="code-panel waiting-code-panel">
             <p className="label">{uiText.roomCode}</p>
