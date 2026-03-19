@@ -36,6 +36,7 @@ export default defineConfig(
             '@typescript-eslint/no-unsafe-return': 'off',
             '@typescript-eslint/strict-boolean-expressions': 'off',
             'n/file-extension-in-import': 'off',
+            'import-x/no-default-export': 'off',
             '@typescript-eslint/restrict-plus-operands': 'off',
             'import-x/no-unassigned-import': [
                 'error',
