@@ -114,7 +114,7 @@ input {
 }
 
 .screen-menu {
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     background: var(--color-page-bg);
 }
@@ -123,34 +123,40 @@ input {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-8);
+    gap: var(--space-5);
 }
 
 .screen-menu .menu-stack {
-    width: min(100%, 26rem);
-    margin: auto 0;
+    width: min(100%, 28rem);
+    margin: 0 auto;
+    padding-top: max(env(safe-area-inset-top), var(--space-0));
     text-align: center;
 }
 
 .menu-title-orb {
-    width: min(78vw, var(--size-menu-title-orb));
+    width: min(132vw, 35rem);
     aspect-ratio: 1;
-    padding: clamp(1.25rem, 5vw, 2rem);
+    margin-top: clamp(-16rem, -40vw, -10rem);
+    margin-bottom: clamp(-6.75rem, -16vw, -4.25rem);
+    padding: clamp(1.5rem, 5vw, 2.5rem);
+    padding-bottom: clamp(3rem, 8vw, 4.75rem);
     border: 0.2rem solid var(--color-outline-strong);
     border-radius: 50%;
     background: var(--color-primary);
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
 }
 
 .hero-title {
     margin: var(--space-0);
     font-family: var(--font-family-display);
+    width: min(100%, 16rem);
     max-width: 100%;
-    font-size: clamp(2.7rem, 14vw, 5.2rem);
+    font-size: clamp(2.6rem, 10vw, 4.4rem);
     line-height: 0.88;
     font-weight: 900;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--color-text-inverse);
 }
@@ -171,7 +177,7 @@ input {
 }
 
 .menu-actions {
-    width: 100%;
+    width: min(100%, 18rem);
     margin-inline: auto;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -181,8 +187,11 @@ input {
 }
 
 .menu-blob-button {
-    width: min(100%, var(--size-menu-blob-min-height));
-    min-height: var(--size-menu-blob-min-height);
+    --menu-float-x: 0rem;
+    --menu-float-y: 0rem;
+    --menu-rotate: 0deg;
+    width: min(100%, 5.85rem);
+    min-height: 5.85rem;
     aspect-ratio: 1;
     padding: 0.85rem 0.65rem;
     border: 1px solid var(--color-border-soft);
@@ -194,14 +203,37 @@ input {
     align-items: center;
     justify-content: center;
     gap: 0.45rem;
+    transform: translate(var(--menu-float-x), var(--menu-float-y))
+        rotate(var(--menu-rotate));
     transition:
         transform 160ms ease,
         border-color 160ms ease;
 }
 
+.menu-blob-button:nth-child(1) {
+    --menu-float-x: 0.5rem;
+    --menu-float-y: 1rem;
+    --menu-rotate: -8deg;
+}
+
+.menu-blob-button:nth-child(2) {
+    --menu-float-y: -0.4rem;
+    --menu-rotate: -2deg;
+}
+
+.menu-blob-button:nth-child(3) {
+    --menu-float-x: -0.45rem;
+    --menu-float-y: 1.25rem;
+    --menu-rotate: 7deg;
+}
+
 .menu-blob-button:hover,
 .menu-blob-button:focus-visible {
-    transform: translateY(-0.18rem) scale(1.02);
+    transform: translate(
+            var(--menu-float-x),
+            calc(var(--menu-float-y) - 0.18rem)
+        )
+        rotate(var(--menu-rotate)) scale(1.02);
     border-color: var(--color-outline-strong);
 }
 
@@ -760,7 +792,10 @@ input {
     }
 
     .menu-title-orb {
-        width: min(70vw, 14rem);
+        width: min(128vw, 30rem);
+        margin-top: clamp(-13.5rem, -38vw, -9rem);
+        margin-bottom: clamp(-5.5rem, -14vw, -4rem);
+        padding-bottom: clamp(2.6rem, 7vw, 4rem);
     }
 
     .menu-actions {
@@ -768,8 +803,8 @@ input {
     }
 
     .menu-blob-button {
-        width: min(100%, 6.5rem);
-        min-height: 6.5rem;
+        width: min(100%, 5.35rem);
+        min-height: 5.35rem;
     }
 }
 
@@ -779,7 +814,10 @@ input {
     }
 
     .menu-title-orb {
-        width: min(64vw, 12.5rem);
+        width: min(125vw, 27rem);
+        margin-top: clamp(-11.5rem, -36vw, -8.5rem);
+        margin-bottom: clamp(-5rem, -13vw, -3.5rem);
+        padding-bottom: 2.8rem;
     }
 
     .menu-actions {
@@ -787,8 +825,8 @@ input {
     }
 
     .menu-blob-button {
-        width: min(100%, 6.25rem);
-        min-height: 6.25rem;
+        width: min(100%, 4.95rem);
+        min-height: 4.95rem;
         padding-inline: 0.55rem;
     }
 
@@ -809,12 +847,15 @@ input {
     }
 
     .menu-title-orb {
-        width: min(62vw, 11.5rem);
+        width: min(122vw, 24rem);
+        margin-top: clamp(-10rem, -34vw, -7.5rem);
+        margin-bottom: clamp(-4.4rem, -11vw, -3rem);
+        padding-bottom: 2.35rem;
     }
 
     .menu-blob-button {
-        width: min(100%, 5.8rem);
-        min-height: 5.8rem;
+        width: min(100%, 4.45rem);
+        min-height: 4.45rem;
     }
 
     .menu-blob-icon {
