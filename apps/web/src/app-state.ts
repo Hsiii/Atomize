@@ -15,6 +15,8 @@ export const uiText = {
     serverOnline: 'Server online',
     serverOffline: 'Server offline',
     title: 'Atomize',
+    titleLead: 'At',
+    titleTail: 'mize',
     eyebrow: 'Prime factor battle',
     menuPlay: 'Play',
     menuSolo: 'Solo',

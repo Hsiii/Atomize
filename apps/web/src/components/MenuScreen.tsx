@@ -646,7 +646,14 @@ export function MenuScreen({
                         className='menu-title-orb'
                         ref={titleOrbRef}
                     >
-                        <h1 className='hero-title'>{uiText.title}</h1>
+                        <h1 className='hero-title'>
+                            <span>{uiText.titleLead}</span>
+                            <span
+                                aria-hidden='true'
+                                className='hero-title-filled-o'
+                            />
+                            <span>{uiText.titleTail}</span>
+                        </h1>
                     </div>
 
                     <div className='menu-actions-shell'>
