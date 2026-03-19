@@ -199,6 +199,12 @@ input {
 
 .menu-actions {
   margin-top: var(--space-7);
+  width: min(100%, 80vw);
+  margin-inline: auto;
+}
+
+.menu-actions .app-action-button {
+  max-width: 80vw;
 }
 
 .app-action-button {
