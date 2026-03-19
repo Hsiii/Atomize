@@ -71,7 +71,7 @@ export function SingleGameScreen({
         </header>
 
         <section className="single-value-display" aria-live="polite">
-          <strong>{soloState.currentStage.remainingValue}</strong>
+          <strong>{soloStartCountdownValue === null ? soloState.currentStage.remainingValue : null}</strong>
         </section>
 
         <section className="combo-panel" aria-live="polite">
