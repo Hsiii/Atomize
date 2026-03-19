@@ -55,10 +55,10 @@ export function MultiplayerGameScreen({
     formatCountdown,
 }: MultiplayerGameScreenProps): JSX.Element {
     const blobRevealTotalMs = 3000;
+    const keyboardDigitBufferWindowMs = 250;
     const isTimeUp = multiplayerTimeLeft === 0;
     const [isBlobRevealActive, setIsBlobRevealActive] = useState(false);
-    const isInputDisabled =
-        isMultiplayerInputDisabled || isBlobRevealActive;
+    const isInputDisabled = isMultiplayerInputDisabled || isBlobRevealActive;
     const showKeypadDisabledState =
         (isMultiplayerInputDisabled && !isMultiplayerComboRunning) ||
         isBlobRevealActive;
@@ -66,7 +66,9 @@ export function MultiplayerGameScreen({
         multiplayerPrimeQueue
     );
     const visibleQueueRef = useRef(visibleQueue);
-    const previousStageIndexRef = useRef<number | null>(null);
+    const digitBufferRef = useRef('');
+    const digitBufferTimerRef = useRef<number | undefined>(undefined);
+    const previousStageIndexRef = useRef<number | undefined>(undefined);
     const currentStageIndex = currentMultiplayerPlayer?.stage.stageIndex ?? -1;
 
     useEffect(() => {
@@ -74,20 +76,30 @@ export function MultiplayerGameScreen({
         setVisibleQueue(multiplayerPrimeQueue);
     }, [multiplayerPrimeQueue]);
 
+    useEffect(() => {
+        if (!isInputDisabled) {
+            return;
+        }
+
+        clearDigitBuffer();
+    }, [isInputDisabled]);
+
+    useEffect(() => clearDigitBuffer, []);
+
     useLayoutEffect(() => {
         if (!currentMultiplayerPlayer) {
-            previousStageIndexRef.current = null;
+            previousStageIndexRef.current = undefined;
             setIsBlobRevealActive(false);
             return undefined;
         }
 
         if (currentStageIndex < 0) {
-            previousStageIndexRef.current = null;
+            previousStageIndexRef.current = undefined;
             setIsBlobRevealActive(false);
             return undefined;
         }
 
-        if (previousStageIndexRef.current === null) {
+        if (previousStageIndexRef.current === undefined) {
             previousStageIndexRef.current = currentStageIndex;
             setIsBlobRevealActive(false);
             return undefined;
@@ -101,12 +113,16 @@ export function MultiplayerGameScreen({
 
         setIsBlobRevealActive(true);
 
-        const timer = window.setTimeout(() => {
-            setIsBlobRevealActive(false);
-        }, blobRevealTotalMs);
+        const timer = globalThis.setTimeout(
+            () => {
+                setIsBlobRevealActive(false);
+            },
+            blobRevealTotalMs,
+            undefined
+        );
 
         return () => {
-            window.clearTimeout(timer);
+            globalThis.clearTimeout(timer);
         };
     }, [blobRevealTotalMs, currentStageIndex]);
 
@@ -120,12 +136,106 @@ export function MultiplayerGameScreen({
         });
     }
 
-    function handlePrimeTap(prime: Prime) {
+    function clearDigitBuffer() {
+        const timerId = digitBufferTimerRef.current;
+
+        if (timerId !== undefined) {
+            globalThis.clearTimeout(timerId);
+            digitBufferTimerRef.current = undefined;
+        }
+
+        digitBufferRef.current = '';
+    }
+
+    function queuePrime(prime: Prime) {
         if (isInputDisabled) {
             return;
         }
 
         updateVisibleQueue([...visibleQueueRef.current, prime]);
+    }
+
+    function scheduleBufferedPrimeCommit(nextBuffer: string) {
+        digitBufferRef.current = nextBuffer;
+
+        const timerId = digitBufferTimerRef.current;
+
+        if (timerId !== undefined) {
+            globalThis.clearTimeout(timerId);
+        }
+
+        digitBufferTimerRef.current = globalThis.setTimeout(
+            () => {
+                const bufferedPrime = playablePrimes.find(
+                    (prime) => String(prime) === digitBufferRef.current
+                );
+
+                clearDigitBuffer();
+
+                if (bufferedPrime !== undefined) {
+                    queuePrime(bufferedPrime);
+                }
+            },
+            keyboardDigitBufferWindowMs,
+            undefined
+        );
+    }
+
+    function handleDigitKey(digit: string) {
+        if (isInputDisabled) {
+            return;
+        }
+
+        const nextBuffer = `${digitBufferRef.current}${digit}`;
+        const matchingPrimes = playablePrimes.filter((prime) =>
+            String(prime).startsWith(nextBuffer)
+        );
+
+        if (matchingPrimes.length === 0) {
+            clearDigitBuffer();
+
+            const restartedMatches = playablePrimes.filter((prime) =>
+                String(prime).startsWith(digit)
+            );
+
+            if (restartedMatches.length === 0) {
+                return;
+            }
+
+            const restartedPrime = restartedMatches.find(
+                (prime) => String(prime) === digit
+            );
+            const hasLongerRestartMatch = restartedMatches.some(
+                (prime) => String(prime).length > digit.length
+            );
+
+            if (restartedPrime !== undefined && !hasLongerRestartMatch) {
+                queuePrime(restartedPrime);
+                return;
+            }
+
+            scheduleBufferedPrimeCommit(digit);
+            return;
+        }
+
+        const exactPrime = matchingPrimes.find(
+            (prime) => String(prime) === nextBuffer
+        );
+        const hasLongerMatch = matchingPrimes.some(
+            (prime) => String(prime).length > nextBuffer.length
+        );
+
+        if (exactPrime !== undefined && !hasLongerMatch) {
+            clearDigitBuffer();
+            queuePrime(exactPrime);
+            return;
+        }
+
+        scheduleBufferedPrimeCommit(nextBuffer);
+    }
+
+    function handlePrimeTap(prime: Prime) {
+        queuePrime(prime);
     }
 
     function handleBackspace() {
@@ -137,10 +247,7 @@ export function MultiplayerGameScreen({
     }
 
     async function submitVisibleQueue() {
-        if (
-            isInputDisabled ||
-            visibleQueueRef.current.length === 0
-        ) {
+        if (isInputDisabled || visibleQueueRef.current.length === 0) {
             return;
         }
 
@@ -154,6 +261,72 @@ export function MultiplayerGameScreen({
     function handleSubmitClick() {
         submitVisibleQueue().catch(() => undefined);
     }
+
+    useEffect(() => {
+        function handleWindowKeyDown(event: KeyboardEvent) {
+            const { target } = event;
+
+            if (
+                target instanceof HTMLElement &&
+                (target.isContentEditable ||
+                    target.tagName === 'INPUT' ||
+                    target.tagName === 'SELECT' ||
+                    target.tagName === 'TEXTAREA')
+            ) {
+                return;
+            }
+
+            if (event.altKey || event.ctrlKey || event.metaKey) {
+                return;
+            }
+
+            if (event.key === 'Backspace') {
+                if (
+                    isBlobRevealActive ||
+                    isMultiplayerComboRunning ||
+                    visibleQueueRef.current.length === 0
+                ) {
+                    return;
+                }
+
+                event.preventDefault();
+                clearDigitBuffer();
+                handleBackspace();
+                return;
+            }
+
+            if (event.key === 'Enter') {
+                if (isInputDisabled || visibleQueueRef.current.length === 0) {
+                    return;
+                }
+
+                event.preventDefault();
+                clearDigitBuffer();
+                submitVisibleQueue().catch(() => undefined);
+                return;
+            }
+
+            if (!/^\d$/.test(event.key) || event.repeat) {
+                return;
+            }
+
+            event.preventDefault();
+            handleDigitKey(event.key);
+        }
+
+        globalThis.addEventListener('keydown', handleWindowKeyDown);
+
+        return () => {
+            globalThis.removeEventListener('keydown', handleWindowKeyDown);
+        };
+    }, [
+        handleBackspace,
+        handleDigitKey,
+        isBlobRevealActive,
+        isInputDisabled,
+        isMultiplayerComboRunning,
+        submitVisibleQueue,
+    ]);
 
     return (
         <main className='app-shell fullscreen-shell'>
@@ -222,8 +395,7 @@ export function MultiplayerGameScreen({
                             aria-label={uiText.enterCombo}
                             className='combo-enter-button'
                             disabled={
-                                isInputDisabled ||
-                                visibleQueue.length === 0
+                                isInputDisabled || visibleQueue.length === 0
                             }
                             onClick={handleSubmitClick}
                             variant='secondary'
