@@ -3,7 +3,7 @@
     --font-family-display:
         'Avenir Next Condensed', 'Avenir Next', 'Helvetica Neue', sans-serif;
     --font-family-numeric: var(--font-family-base);
-    --font-weight-number-emphasis: 600;
+    --font-weight-number-emphasis: 700;
     --line-height-base: 1.4;
 
     --color-primary: #184e77;
