@@ -1,6 +1,8 @@
 import type { JSX, KeyboardEvent, PointerEvent, ReactNode } from 'react';
 import type { Prime } from '@atomize/game-core';
 
+import './PrimeKeyButton.css';
+
 type PrimeKeyButtonProps = {
     prime: Prime;
     disabled: boolean;

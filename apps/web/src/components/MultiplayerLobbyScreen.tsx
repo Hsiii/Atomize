@@ -3,6 +3,9 @@ import type { JSX } from 'react';
 
 import type { MenuMode, MultiplayerState } from '../app-state';
 import { uiText } from '../app-state';
+
+import './MultiplayerLobbyScreen.css';
+
 import { ActionButton } from './ActionButton';
 import { BackButton } from './BackButton';
 import { RoomCodePanel } from './RoomCodePanel';

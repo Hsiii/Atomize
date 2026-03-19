@@ -3,6 +3,8 @@ import { Plus, Search, UserRound } from 'lucide-react';
 
 import { uiText } from '../app-state';
 
+import './MenuScreen.css';
+
 type MenuScreenProps = {
     onStartSingleGame: () => void;
     onStartCreateRoomFlow: () => void;
@@ -18,17 +20,24 @@ export function MenuScreen({
         <main className='app-shell fullscreen-shell'>
             <section className='screen screen-menu'>
                 <div className='menu-stack'>
-                    <div className='menu-title-orb' aria-label={uiText.title}>
+                    <div aria-label={uiText.title} className='menu-title-orb'>
                         <h1 className='hero-title'>{uiText.title}</h1>
                     </div>
 
-                    <div className='menu-actions' role='group' aria-label={uiText.title}>
+                    <div
+                        aria-label={uiText.title}
+                        className='menu-actions'
+                        role='group'
+                    >
                         <button
                             className='menu-blob-button menu-blob-button-solo'
                             onClick={onStartSingleGame}
                             type='button'
                         >
-                            <UserRound aria-hidden='true' className='menu-blob-icon' />
+                            <UserRound
+                                aria-hidden='true'
+                                className='menu-blob-icon'
+                            />
                             <span className='menu-blob-text'>
                                 {uiText.menuSolo}
                             </span>
@@ -38,7 +47,10 @@ export function MenuScreen({
                             onClick={onStartCreateRoomFlow}
                             type='button'
                         >
-                            <Plus aria-hidden='true' className='menu-blob-icon' />
+                            <Plus
+                                aria-hidden='true'
+                                className='menu-blob-icon'
+                            />
                             <span className='menu-blob-text'>
                                 {uiText.menuNewRoom}
                             </span>
@@ -48,7 +60,10 @@ export function MenuScreen({
                             onClick={onStartJoinRoomFlow}
                             type='button'
                         >
-                            <Search aria-hidden='true' className='menu-blob-icon' />
+                            <Search
+                                aria-hidden='true'
+                                className='menu-blob-icon'
+                            />
                             <span className='menu-blob-text'>
                                 {uiText.menuJoinRoom}
                             </span>

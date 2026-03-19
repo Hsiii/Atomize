@@ -1,5 +1,7 @@
 import type { JSX } from 'react';
 
+import './ComboQueuePanel.css';
+
 type ComboQueuePanelProps = {
     queue: readonly number[];
 };

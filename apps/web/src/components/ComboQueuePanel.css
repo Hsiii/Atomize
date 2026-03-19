@@ -1,0 +1,14 @@
+.combo-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.combo-bar {
+    min-height: 3.25rem;
+    padding: 0;
+    color: var(--color-secondary);
+    font-size: 1rem;
+    line-height: 1.4;
+    text-align: center;
+}

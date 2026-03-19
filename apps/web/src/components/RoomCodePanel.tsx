@@ -1,6 +1,9 @@
-import { useRef, type ChangeEvent } from 'react';
+import { useRef } from 'react';
+import type { ChangeEvent, JSX } from 'react';
 
 import { uiText } from '../app-state';
+
+import './RoomCodePanel.css';
 
 type RoomCodePanelProps = {
     value: string;
@@ -12,7 +15,7 @@ export function RoomCodePanel({
     value,
     editable = false,
     onChange,
-}: RoomCodePanelProps) {
+}: RoomCodePanelProps): JSX.Element {
     const inputRef = useRef<HTMLInputElement | null>(null);
 
     if (!editable) {
@@ -43,29 +46,29 @@ export function RoomCodePanel({
             onClick={focusInput}
         >
             <p className='label'>{uiText.roomCode}</p>
-            <div className='room-code-visual' aria-hidden='true'>
+            <div aria-hidden='true' className='room-code-visual'>
                 {roomCodePreview.map((character, index) => (
                     <div
-                        key={`room-code-character-${index}`}
                         className={
                             value[index]
                                 ? 'room-code-character filled'
                                 : 'room-code-character'
                         }
+                        key={`room-code-character-${index}`}
                     >
                         {character}
                     </div>
                 ))}
             </div>
             <input
-                ref={inputRef}
+                aria-label={uiText.enterCode}
                 className='room-code-block-input'
                 inputMode='numeric'
-                pattern='[0-9]*'
                 maxLength={4}
-                value={value}
                 onChange={handleInputChange}
-                aria-label={uiText.enterCode}
+                pattern='[0-9]*'
+                ref={inputRef}
+                value={value}
             />
         </label>
     );

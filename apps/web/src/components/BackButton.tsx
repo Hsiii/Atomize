@@ -2,6 +2,9 @@ import type { JSX } from 'react';
 import { ArrowLeft } from 'lucide-react';
 
 import { uiText } from '../app-state';
+
+import './BackButton.css';
+
 import { IconButton } from './IconButton';
 
 type BackButtonProps = {

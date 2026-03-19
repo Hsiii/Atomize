@@ -1,0 +1,9 @@
+.floating-back-button {
+    position: fixed;
+    top: max(var(--space-7), env(safe-area-inset-top));
+    left: max(var(--space-7), env(safe-area-inset-left));
+    width: var(--size-control-floating);
+    height: var(--size-control-floating);
+    z-index: 5;
+    box-shadow: none;
+}

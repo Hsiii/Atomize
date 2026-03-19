@@ -1,4 +1,6 @@
-import type { ButtonHTMLAttributes } from 'react';
+import type { ButtonHTMLAttributes, JSX } from 'react';
+
+import './ActionButton.css';
 
 type ActionButtonProps = {
     variant: 'primary' | 'secondary';
@@ -9,7 +11,7 @@ export function ActionButton({
     className,
     type = 'button',
     ...props
-}: ActionButtonProps) {
+}: ActionButtonProps): JSX.Element {
     const classes = [
         'app-action-button',
         variant === 'primary' ? 'primary-action' : 'secondary-action',
@@ -18,5 +20,5 @@ export function ActionButton({
         .filter(Boolean)
         .join(' ');
 
-    return <button type={type} className={classes} {...props} />;
+    return <button className={classes} type={type} {...props} />;
 }

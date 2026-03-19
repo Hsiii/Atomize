@@ -1,0 +1,170 @@
+.game-screen {
+    gap: var(--space-7);
+}
+
+.single-game-screen {
+    flex: 1;
+    position: relative;
+}
+
+.single-value-display {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    text-align: center;
+}
+
+.single-value-display strong {
+    display: block;
+    font-size: clamp(5rem, 28vw, 8rem);
+    line-height: 0.92;
+    font-variant-numeric: tabular-nums;
+}
+
+.single-controls-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(
+            var(--size-control-rail-min),
+            0.26fr
+        );
+    gap: var(--space-3);
+    align-items: stretch;
+}
+
+.keypad {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-7);
+}
+
+.keypad button {
+    min-height: var(--size-keypad-button-min);
+    font-size: 1.15rem;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.solo-keypad {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 0;
+    gap: var(--space-keypad-gap-compact);
+    align-content: stretch;
+}
+
+.combo-actions-column {
+    display: grid;
+    grid-template-rows: repeat(3, minmax(var(--size-keypad-button-min), 1fr));
+    gap: var(--space-3);
+}
+
+.combo-backspace-button,
+.combo-enter-button {
+    min-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+}
+
+.combo-backspace-button {
+    aspect-ratio: 1;
+    border-radius: var(--radius-orb);
+    background: var(--color-secondary);
+}
+
+.combo-enter-button {
+    grid-row: span 2;
+    border-radius: var(--radius-pill);
+    background: var(--color-primary-strong);
+}
+
+.combo-enter-button:disabled {
+    opacity: 0.55;
+}
+
+.combo-actions-column .control-icon {
+    width: 1.9rem;
+    height: 1.9rem;
+    stroke-width: 2.35;
+}
+
+.control-button-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+}
+
+.combo-enter-button .control-icon {
+    width: 2.2rem;
+    height: 2.2rem;
+}
+
+.single-start-countdown {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: var(--space-8);
+    background: radial-gradient(
+        circle at center,
+        rgba(255, 255, 255, 0.92) 0%,
+        rgba(255, 255, 255, 0.84) 32%,
+        rgba(244, 247, 251, 0.76) 58%,
+        rgba(244, 247, 251, 0.62) 100%
+    );
+    backdrop-filter: blur(var(--blur-overlay));
+    pointer-events: auto;
+    z-index: 2;
+}
+
+.single-start-countdown-value {
+    display: inline-grid;
+    place-items: center;
+    font-family: var(--font-family-display);
+    font-size: clamp(6rem, 30vw, 10rem);
+    font-weight: 900;
+    line-height: 0.85;
+    color: var(--color-secondary);
+    text-shadow: 0 14px 30px rgba(32, 53, 83, 0.16);
+    animation: single-start-countdown-pop 0.9s ease-out;
+}
+
+@keyframes single-start-countdown-pop {
+    0% {
+        opacity: 0;
+        transform: scale(0.72);
+    }
+
+    18% {
+        opacity: 1;
+        transform: scale(1.02);
+    }
+
+    100% {
+        opacity: 0.92;
+        transform: scale(1);
+    }
+}
+
+@media (max-width: 420px) {
+    .single-controls-grid {
+        grid-template-columns: minmax(0, 1fr) minmax(
+                var(--size-control-rail-min-mobile),
+                0.24fr
+            );
+    }
+
+    .solo-keypad {
+        gap: var(--space-keypad-gap-mobile);
+    }
+
+    .prime-key-button {
+        font-size: clamp(1.8rem, 7.5vw, 2.5rem);
+    }
+}

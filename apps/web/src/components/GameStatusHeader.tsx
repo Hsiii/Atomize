@@ -3,6 +3,8 @@ import { ArrowLeft } from 'lucide-react';
 
 import { uiText } from '../app-state';
 
+import './GameStatusHeader.css';
+
 type GameStatusHeaderProps = {
     onBack?: () => void | Promise<void>;
     countdownProgress: number;

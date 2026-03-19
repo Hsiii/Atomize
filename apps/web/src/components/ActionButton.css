@@ -1,0 +1,27 @@
+.app-action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-7);
+    border: 1px solid var(--color-border-contrast);
+    border-radius: var(--radius-button);
+    color: var(--color-text-inverse);
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    box-shadow: none;
+}
+
+.app-action-button.primary-action {
+    background: var(--color-primary-strong);
+}
+
+.app-action-button.secondary-action {
+    background: var(--color-secondary);
+    color: var(--color-text-inverse);
+}
+
+.primary-action,
+.secondary-action {
+    width: 100%;
+}

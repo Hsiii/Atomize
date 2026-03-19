@@ -1,0 +1,11 @@
+.multiplayer-game-screen {
+    flex: 1;
+}
+
+.multiplayer-value-display {
+    gap: var(--space-4);
+}
+
+.multiplayer-keypad {
+    margin-top: 0;
+}

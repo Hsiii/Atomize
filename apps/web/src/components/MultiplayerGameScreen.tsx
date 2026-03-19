@@ -4,6 +4,10 @@ import type { Prime, RoomPlayer, RoomSnapshot } from '@atomize/game-core';
 import { CircleArrowUp, Delete } from 'lucide-react';
 
 import { uiText } from '../app-state';
+
+import './GamePlayScreen.css';
+import './MultiplayerGameScreen.css';
+
 import { ActionButton } from './ActionButton';
 import { ComboQueuePanel } from './ComboQueuePanel';
 import { GameStatusHeader } from './GameStatusHeader';

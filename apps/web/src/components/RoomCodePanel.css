@@ -1,0 +1,95 @@
+.code-panel {
+    padding: var(--space-7);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface-base);
+    text-align: center;
+}
+
+.code-panel strong,
+.room-code-visual {
+    font-size: clamp(2.4rem, 16vw, 4rem);
+    letter-spacing: 0.16em;
+    text-indent: 0.16em;
+}
+
+.room-code-panel {
+    position: relative;
+    width: 100%;
+    max-width: var(--size-room-panel-width);
+    margin: 0 auto;
+}
+
+.room-code-panel-editable {
+    cursor: text;
+}
+
+.room-code-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.16em;
+    width: 100%;
+    margin-top: var(--space-1);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0;
+    text-indent: 0;
+    color: var(--color-ink);
+    pointer-events: none;
+}
+
+.room-code-character {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 1ch;
+    height: 1em;
+    flex: 0 0 1ch;
+    color: rgba(16, 27, 46, 0.42);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings:
+        'tnum' 1,
+        'lnum' 1;
+}
+
+.room-code-character::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0.7ch;
+    height: 0.08em;
+    border-radius: var(--radius-pill);
+    background: currentColor;
+    transform: translate(-50%, -50%);
+}
+
+.room-code-character.filled {
+    color: var(--color-ink);
+}
+
+.room-code-character.filled::before {
+    content: none;
+}
+
+.room-code-block-input {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    caret-color: transparent;
+    opacity: 0;
+    appearance: none;
+}
+
+.room-code-block-input:focus {
+    outline: none;
+}

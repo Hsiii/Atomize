@@ -1,5 +1,7 @@
 import type { ButtonHTMLAttributes, JSX, ReactNode } from 'react';
 
+import './IconButton.css';
+
 type IconButtonProps = {
     label: string;
     icon: ReactNode;
