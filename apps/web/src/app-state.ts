@@ -57,6 +57,8 @@ export const uiText = {
     roomPlaceholder: '0000',
     openingRoom: 'Opening room...',
     waitingForPlayer: 'Waiting for the second player to join.',
+    multiplayerSyncStalled:
+        'Realtime sync stalled. Input unlocked, but room sync may lag.',
 } as const;
 
 export type MenuMode = 'default' | 'create-room' | 'join-room';

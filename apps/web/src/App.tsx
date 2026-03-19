@@ -40,6 +40,7 @@ const playablePrimes = PRIME_POOL.slice(0, 9);
 const soloComboStepDelayMs = 280;
 const multiplayerComboStepDelayMs = 220;
 const multiplayerCountdownDurationMs = 3000;
+const realtimeSendTimeoutMs = 1500;
 const joinRoomLookupTimeoutMs = 1000;
 const playerNameStorageKey = 'atomize.playerName';
 const usedPlayerNamesStorageKey = 'atomize.usedPlayerNames';
@@ -93,6 +94,11 @@ type RoomBroadcastMessage =
           targetPlayerId: string;
           message: string;
       };
+
+type MultiplayerSendResult = {
+    snapshot?: RoomSnapshot;
+    didBroadcast: boolean;
+};
 
 export default function App() {
     const initialSoloSeedRef = useRef(createSoloRunSeed());
@@ -446,22 +452,49 @@ export default function App() {
         });
     }
 
-    async function broadcastMessage(message: RoomBroadcastMessage) {
+    async function broadcastMessage(
+        message: RoomBroadcastMessage
+    ): Promise<boolean> {
         const channel = channelRef.current;
 
         if (!channel) {
             setStatusText('No active server channel');
-            return;
+            return false;
         }
 
-        const response = await channel.send({
-            type: 'broadcast',
-            event: message.type,
-            payload: message,
-        });
+        let timeoutId: number | undefined;
 
-        if (response !== 'ok') {
-            setStatusText(`Server send failed: ${response}`);
+        try {
+            const response = await Promise.race<
+                'ok' | 'timed out' | 'error'
+            >([
+                channel.send({
+                    type: 'broadcast',
+                    event: message.type,
+                    payload: message,
+                }),
+                new Promise<'timed out'>((resolve) => {
+                    timeoutId = window.setTimeout(
+                        () => resolve('timed out'),
+                        realtimeSendTimeoutMs
+                    );
+                }),
+            ]);
+
+            if (response !== 'ok') {
+                setStatusText(
+                    response === 'timed out'
+                        ? uiText.multiplayerSyncStalled
+                        : `Server send failed: ${response}`
+                );
+                return false;
+            }
+
+            return true;
+        } finally {
+            if (timeoutId !== undefined) {
+                window.clearTimeout(timeoutId);
+            }
         }
     }
 
@@ -754,16 +787,16 @@ export default function App() {
 
     async function sendMultiplayerPrime(
         prime: Prime
-    ): Promise<RoomSnapshot | undefined> {
+    ): Promise<MultiplayerSendResult> {
         const currentState = latestMultiplayerRef.current;
 
         if (!currentState.playerId || !currentState.snapshot) {
             setStatusText('Create or join a room first');
-            return undefined;
+            return { didBroadcast: false };
         }
 
         if (currentState.snapshot.status !== 'playing') {
-            return undefined;
+            return { didBroadcast: false };
         }
 
         if (currentState.isHost) {
@@ -773,37 +806,41 @@ export default function App() {
                 prime
             );
             updateSnapshot(nextSnapshot, '');
-            await broadcastMessage({
+            const didBroadcast = await broadcastMessage({
                 type: 'room_state',
                 snapshot: nextSnapshot,
                 sourcePlayerId: currentState.playerId,
             });
-            return nextSnapshot;
+
+            return {
+                snapshot: nextSnapshot,
+                didBroadcast,
+            };
         }
 
-        await broadcastMessage({
+        const didBroadcast = await broadcastMessage({
             type: 'prime_selected',
             playerId: currentState.playerId,
             prime,
         });
 
-        return undefined;
+        return { didBroadcast };
     }
 
     async function sendMultiplayerPenalty(
         snapshotOverride?: RoomSnapshot
-    ): Promise<void> {
+    ): Promise<boolean> {
         const currentState = latestMultiplayerRef.current;
 
         if (!currentState.playerId) {
-            return;
+            return false;
         }
 
         if (currentState.isHost) {
             const snapshot = snapshotOverride ?? currentState.snapshot;
 
             if (!snapshot) {
-                return;
+                return false;
             }
 
             const nextSnapshot = applyBattlePenalty(
@@ -811,15 +848,14 @@ export default function App() {
                 currentState.playerId
             );
             updateSnapshot(nextSnapshot, '');
-            await broadcastMessage({
+            return broadcastMessage({
                 type: 'room_state',
                 snapshot: nextSnapshot,
                 sourcePlayerId: currentState.playerId,
             });
-            return;
         }
 
-        await broadcastMessage({
+        return broadcastMessage({
             type: 'combo_penalty',
             playerId: currentState.playerId,
         });
@@ -862,7 +898,13 @@ export default function App() {
 
                 if (outcome.kind === 'wrong') {
                     setMultiplayerPrimeQueue([]);
-                    await sendMultiplayerPrime(prime);
+
+                    const sendResult = await sendMultiplayerPrime(prime);
+
+                    if (!sendResult.didBroadcast) {
+                        break;
+                    }
+
                     break;
                 }
 
@@ -871,15 +913,28 @@ export default function App() {
 
                 if (hasRedundantBufferedPrimes) {
                     setMultiplayerPrimeQueue([]);
-                    const nextSnapshot = await sendMultiplayerPrime(prime);
-                    await sendMultiplayerPenalty(nextSnapshot);
+
+                    const sendResult = await sendMultiplayerPrime(prime);
+
+                    if (!sendResult.didBroadcast) {
+                        break;
+                    }
+
+                    await sendMultiplayerPenalty(sendResult.snapshot);
                     break;
                 }
 
                 setMultiplayerPrimeQueue((currentQueue) =>
                     currentQueue.slice(1)
                 );
-                await sendMultiplayerPrime(prime);
+
+                const sendResult = await sendMultiplayerPrime(prime);
+
+                if (!sendResult.didBroadcast) {
+                    setMultiplayerPrimeQueue([]);
+                    break;
+                }
+
                 await wait(multiplayerComboStepDelayMs);
             }
         } finally {
