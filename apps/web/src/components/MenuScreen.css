@@ -86,9 +86,17 @@
     overflow: hidden;
     transform: scale(var(--blob-scale));
     transform-origin: center;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
     transition:
         transform 160ms ease,
         border-color 160ms ease;
+}
+
+.menu-blob-button:active {
+    cursor: grabbing;
 }
 
 .menu-blob-button:hover,

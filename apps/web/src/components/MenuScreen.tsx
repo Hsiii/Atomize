@@ -39,10 +39,26 @@ type CircleCollider = {
     radius: number;
 };
 
+type ActiveDrag = {
+    blobId: BlobId;
+    pointerId: number;
+    x: number;
+    y: number;
+    offsetX: number;
+    offsetY: number;
+    startClientX: number;
+    startClientY: number;
+    lastClientX: number;
+    lastClientY: number;
+    lastTimestamp: number;
+    moved: boolean;
+};
+
 const COLLISION_GAP = 2;
 const WALL_PADDING = 6;
 const MIN_SPEED = 0.16;
 const MAX_SPEED = 0.48;
+const DRAG_THRESHOLD_PX = 10;
 
 const phaseSeeds: Record<
     MenuPhase,
@@ -244,6 +260,27 @@ function resolveTitleOrbCollision(
     }
 }
 
+function clampParticlePosition(
+    x: number,
+    y: number,
+    radius: number,
+    fieldRect: Readonly<DOMRect>
+): { x: number; y: number } {
+    const maxX = Math.max(
+        WALL_PADDING,
+        fieldRect.width - radius * 2 - WALL_PADDING
+    );
+    const maxY = Math.max(
+        WALL_PADDING,
+        fieldRect.height - radius * 2 - WALL_PADDING
+    );
+
+    return {
+        x: clamp(x, WALL_PADDING, maxX),
+        y: clamp(y, WALL_PADDING, maxY),
+    };
+}
+
 export function MenuScreen({
     onStartSingleGame,
     onStartCreateRoomFlow,
@@ -257,6 +294,8 @@ export function MenuScreen({
     const frameRef = useRef<number | undefined>(undefined);
     const lastTimeRef = useRef<number>(0);
     const splitSourceRef = useRef<BlobId | undefined>(undefined);
+    const activeDragRef = useRef<ActiveDrag | undefined>(undefined);
+    const suppressClickRef = useRef<BlobId | undefined>(undefined);
 
     const transitionToPhase = (
         nextPhase: MenuPhase,
@@ -323,6 +362,153 @@ export function MenuScreen({
         ];
     }, [phase, onStartCreateRoomFlow, onStartJoinRoomFlow, onStartSingleGame]);
 
+    const updateDraggedParticle = (
+        blobId: BlobId,
+        clientX: number,
+        clientY: number,
+        timestamp: number
+    ): void => {
+        const field = fieldRef.current;
+        const activeDrag = activeDragRef.current;
+
+        if (!field || !activeDrag || activeDrag.blobId !== blobId) {
+            return;
+        }
+
+        const particle = particlesRef.current.find(
+            (currentParticle) => currentParticle.id === blobId
+        );
+
+        if (!particle) {
+            return;
+        }
+
+        const fieldRect = field.getBoundingClientRect();
+        const nextX = clientX - fieldRect.left - activeDrag.offsetX;
+        const nextY = clientY - fieldRect.top - activeDrag.offsetY;
+        const clampedPosition = clampParticlePosition(
+            nextX,
+            nextY,
+            particle.radius,
+            fieldRect
+        );
+        const elapsed = Math.max(timestamp - activeDrag.lastTimestamp, 16);
+        const deltaScale = 16.667 / elapsed;
+
+        particle.x = clampedPosition.x;
+        particle.y = clampedPosition.y;
+        particle.vx = (clientX - activeDrag.lastClientX) * 0.06 * deltaScale;
+        particle.vy = (clientY - activeDrag.lastClientY) * 0.06 * deltaScale;
+
+        activeDrag.x = clampedPosition.x;
+        activeDrag.y = clampedPosition.y;
+        activeDrag.moved ||=
+            Math.hypot(
+                clientX - activeDrag.startClientX,
+                clientY - activeDrag.startClientY
+            ) >= DRAG_THRESHOLD_PX;
+        activeDrag.lastClientX = clientX;
+        activeDrag.lastClientY = clientY;
+        activeDrag.lastTimestamp = timestamp;
+
+        writeParticleStyles(particlesRef.current, buttonRefs.current);
+    };
+
+    const handleBlobPointerDown = (
+        blobId: BlobId,
+        event: React.PointerEvent<HTMLButtonElement>
+    ): void => {
+        const field = fieldRef.current;
+        const button = buttonRefs.current.get(blobId);
+        const particle = particlesRef.current.find(
+            (currentParticle) => currentParticle.id === blobId
+        );
+
+        if (!field || !button || !particle) {
+            return;
+        }
+
+        const fieldRect = field.getBoundingClientRect();
+        const buttonRect = button.getBoundingClientRect();
+
+        activeDragRef.current = {
+            blobId,
+            pointerId: event.pointerId,
+            x: particle.x,
+            y: particle.y,
+            offsetX: event.clientX - buttonRect.left,
+            offsetY: event.clientY - buttonRect.top,
+            startClientX: event.clientX,
+            startClientY: event.clientY,
+            lastClientX: event.clientX,
+            lastClientY: event.clientY,
+            lastTimestamp: event.timeStamp,
+            moved: false,
+        };
+        suppressClickRef.current = undefined;
+
+        const clampedPosition = clampParticlePosition(
+            buttonRect.left - fieldRect.left,
+            buttonRect.top - fieldRect.top,
+            particle.radius,
+            fieldRect
+        );
+
+        particle.x = clampedPosition.x;
+        particle.y = clampedPosition.y;
+        particle.vx = 0;
+        particle.vy = 0;
+
+        button.setPointerCapture(event.pointerId);
+        writeParticleStyles(particlesRef.current, buttonRefs.current);
+    };
+
+    const handleBlobPointerMove = (
+        blobId: BlobId,
+        event: React.PointerEvent<HTMLButtonElement>
+    ): void => {
+        const activeDrag = activeDragRef.current;
+
+        if (!activeDrag || activeDrag.blobId !== blobId) {
+            return;
+        }
+
+        if (activeDrag.pointerId !== event.pointerId) {
+            return;
+        }
+
+        event.preventDefault();
+        updateDraggedParticle(
+            blobId,
+            event.clientX,
+            event.clientY,
+            event.timeStamp
+        );
+    };
+
+    const endBlobDrag = (
+        blobId: BlobId,
+        pointerId: number,
+        releasePointerCapture: (() => void) | undefined
+    ): void => {
+        const activeDrag = activeDragRef.current;
+
+        if (!activeDrag || activeDrag.blobId !== blobId) {
+            return;
+        }
+
+        if (activeDrag.pointerId !== pointerId) {
+            return;
+        }
+
+        if (activeDrag.moved) {
+            suppressClickRef.current = blobId;
+        }
+
+        releasePointerCapture?.();
+        activeDragRef.current = undefined;
+    };
+
     useLayoutEffect(() => {
         const field = fieldRef.current;
 
@@ -368,8 +554,15 @@ export function MenuScreen({
                 currentField,
                 currentTitleOrb
             );
+            const activeDrag = activeDragRef.current;
 
             for (const particle of particles) {
+                if (activeDrag && particle.id === activeDrag.blobId) {
+                    particle.x = activeDrag.x;
+                    particle.y = activeDrag.y;
+                    continue;
+                }
+
                 const particleCenterX = particle.x + particle.radius;
                 const particleCenterY = particle.y + particle.radius;
                 const pullX = (centerX - particleCenterX) / fieldRect.width;
@@ -408,6 +601,18 @@ export function MenuScreen({
 
             resolveTitleOrbCollision(particles, titleOrbCollider);
             resolveCollisions(particles);
+
+            if (activeDrag) {
+                const draggedParticle = particles.find(
+                    (particle) => particle.id === activeDrag.blobId
+                );
+
+                if (draggedParticle) {
+                    draggedParticle.x = activeDrag.x;
+                    draggedParticle.y = activeDrag.y;
+                }
+            }
+
             writeParticleStyles(particles, buttonRefs.current);
             frameRef.current = globalThis.requestAnimationFrame(tick);
         };
@@ -458,7 +663,53 @@ export function MenuScreen({
                                     <button
                                         className={`menu-blob-button menu-blob-${blob.tone}`}
                                         key={blob.id}
-                                        onClick={blob.onClick}
+                                        onClick={(event) => {
+                                            if (
+                                                suppressClickRef.current ===
+                                                blob.id
+                                            ) {
+                                                suppressClickRef.current =
+                                                    undefined;
+                                                event.preventDefault();
+                                                return;
+                                            }
+
+                                            blob.onClick();
+                                        }}
+                                        onPointerCancel={(event) => {
+                                            endBlobDrag(
+                                                blob.id,
+                                                event.pointerId,
+                                                () => {
+                                                    event.currentTarget.releasePointerCapture(
+                                                        event.pointerId
+                                                    );
+                                                }
+                                            );
+                                        }}
+                                        onPointerDown={(event) => {
+                                            handleBlobPointerDown(
+                                                blob.id,
+                                                event
+                                            );
+                                        }}
+                                        onPointerMove={(event) => {
+                                            handleBlobPointerMove(
+                                                blob.id,
+                                                event
+                                            );
+                                        }}
+                                        onPointerUp={(event) => {
+                                            endBlobDrag(
+                                                blob.id,
+                                                event.pointerId,
+                                                () => {
+                                                    event.currentTarget.releasePointerCapture(
+                                                        event.pointerId
+                                                    );
+                                                }
+                                            );
+                                        }}
                                         ref={(element) => {
                                             if (element) {
                                                 buttonRefs.current.set(
