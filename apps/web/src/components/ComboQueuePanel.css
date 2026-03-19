@@ -10,12 +10,13 @@
     min-height: var(--size-buffer-strip-min-height);
     padding: 0 var(--space-buffer-strip-x);
     border-radius: var(--radius-button);
-    background: var(--color-secondary);
+    border: 3px solid var(--color-secondary);
+    background: transparent;
     text-align: center;
 }
 
 .combo-bar-value {
-    color: var(--color-text-inverse);
+    color: var(--color-secondary);
     font-size: var(--font-size-buffer-strip);
     font-weight: 600;
     line-height: 1.2;
