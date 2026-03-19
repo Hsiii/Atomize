@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useRef, useState, type ButtonHTMLAttributes } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { RealtimeChannel, SupabaseClient } from "@supabase/supabase-js";
-import { ArrowLeft, Delete, Swords } from "lucide-react";
 import {
   PRIME_POOL,
   applyPrimeSelection,
@@ -23,6 +22,11 @@ import {
   getMissingSupabaseEnvVars,
   getSupabaseConfig,
 } from "./lib/supabase";
+import { MenuScreen } from "./components/MenuScreen";
+import { SingleGameScreen } from "./components/SingleGameScreen";
+import { MultiplayerLobbyScreen } from "./components/MultiplayerLobbyScreen";
+import { MultiplayerGameScreen } from "./components/MultiplayerGameScreen";
+import { type MenuMode, type MultiplayerState, type Screen, uiText } from "./app-state";
 
 const soloSeed = "solo-mvp-seed";
 const soloDurationSeconds = 60;
@@ -30,54 +34,6 @@ const playablePrimes = PRIME_POOL.slice(0, 9);
 const soloComboStepDelayMs = 280;
 const multiplayerComboStepDelayMs = 220;
 const multiplayerCountdownDurationMs = 3000;
-type MenuMode = "default" | "create-room" | "join-room";
-
-const uiText = {
-  back: "Back",
-  timer: "Time",
-  score: "Score",
-  health: "HP",
-  combo: "Combo",
-  you: "You",
-  opponent: "Opponent",
-  battle: "Battle",
-  serverOnline: "Server online",
-  serverOffline: "Server offline",
-  title: "Atomize",
-  eyebrow: "Prime factor battle",
-  singlePlayer: "Single Player",
-  multiPlayer: "Multi Player",
-  createRoom: "Create Room",
-  joinRoom: "Join Room",
-  go: "Go!",
-  roomCode: "Room Code",
-  enterCode: "Enter Code",
-  backspace: "Backspace",
-  enterCombo: "Enter",
-  ready: "Ready",
-  readyWaiting: "Ready",
-  waitingForHost: "Waiting for host to start.",
-  opponentMustReady: "Opponent must press ready first.",
-  pressReady: "Press ready when you are set.",
-  countdownPrefix: "Starting in",
-  joiningRoom: "Joining room...",
-  start: "Start",
-  roomHint: "Tap create to open a room, or join with a 4-digit code.",
-  configHint: "Server setup required for multiplayer.",
-  idleStatus: "Server idle",
-  roomPlaceholder: "0000",
-  openingRoom: "Opening room...",
-  waitingForPlayer: "Waiting for the second player to join.",
-} as const;
-type Screen = "menu" | "single" | "multi-lobby" | "multi-game";
-
-type MultiplayerState = {
-  playerId: string | null;
-  snapshot: RoomSnapshot | null;
-  statusText: string;
-  roomId: string;
-  isHost: boolean;
-};
 
 type RoomBroadcastMessage =
   | {
@@ -138,6 +94,38 @@ export default function App() {
   const isMultiplayerInputDisabled = !multiplayer.snapshot || multiplayer.snapshot.status !== "playing" || isMultiplayerComboRunning || multiplayerTimeLeft === 0;
 
   const soloCountdownProgress = (soloTimeLeft / soloDurationSeconds) * 100;
+  const multiplayerFooterText = useMemo(() => {
+    if (!supabaseConfig) {
+      return uiText.configHint;
+    }
+
+    const snapshot = multiplayer.snapshot;
+
+    if (snapshot?.status === "countdown") {
+      return `${uiText.countdownPrefix} ${multiplayerCountdownValue ?? 3}`;
+    }
+
+    if (multiplayer.statusText) {
+      return multiplayer.statusText;
+    }
+
+    if (!multiplayer.roomId) {
+      return uiText.serverOnline;
+    }
+
+    if (!snapshot || snapshot.players.length < 2) {
+      return uiText.waitingForPlayer;
+    }
+
+    const currentPlayer = snapshot.players.find((player) => player.id === multiplayer.playerId);
+    const opponentReady = snapshot.players.some((player) => player.id !== multiplayer.playerId && player.ready);
+
+    if (multiplayer.isHost) {
+      return opponentReady ? uiText.start : uiText.opponentMustReady;
+    }
+
+    return currentPlayer?.ready ? uiText.waitingForHost : uiText.pressReady;
+  }, [multiplayer.roomId, multiplayer.statusText, multiplayer.snapshot, multiplayer.playerId, multiplayer.isHost, multiplayerCountdownValue, supabaseConfig]);
 
   useEffect(() => {
     latestSoloStateRef.current = soloState;
@@ -709,325 +697,70 @@ export default function App() {
 
   if (screen === "menu") {
     return (
-      <main className="app-shell fullscreen-shell">
-        <section className="screen screen-menu">
-          <div className="menu-stack">
-            <p className="eyebrow">{uiText.eyebrow}</p>
-            <h1 className="hero-title">{uiText.title}</h1>
-            <div className="action-stack menu-actions">
-              <ActionButton variant="primary" onClick={startSingleGame}>
-                {uiText.singlePlayer}
-              </ActionButton>
-              <ActionButton variant="secondary" onClick={startCreateRoomFlow}>
-                {uiText.createRoom}
-              </ActionButton>
-              <ActionButton variant="secondary" onClick={startJoinRoomFlow}>
-                {uiText.joinRoom}
-              </ActionButton>
-            </div>
-          </div>
-        </section>
-      </main>
+      <MenuScreen
+        onStartSingleGame={startSingleGame}
+        onStartCreateRoomFlow={startCreateRoomFlow}
+        onStartJoinRoomFlow={startJoinRoomFlow}
+      />
     );
   }
 
   if (screen === "single") {
     return (
-      <main className="app-shell fullscreen-shell">
-        <section className="screen game-screen single-game-screen">
-          <header className="top-bar single-top-bar">
-            <button
-              type="button"
-              className="icon-action"
-              onClick={() => void returnToMenu()}
-              aria-label={uiText.back}
-            >
-              <ArrowLeft className="control-icon" aria-hidden="true" />
-            </button>
-
-            <div className="single-timer-shell" aria-label={`${uiText.timer}: ${formatCountdown(soloTimeLeft)}`}>
-              <div className="single-timer-bar">
-                <span
-                  className="single-timer-fill"
-                  style={{ width: `${soloCountdownProgress}%` }}
-                />
-              </div>
-              <span className="single-timer-text">{formatCountdown(soloTimeLeft)}</span>
-              {soloTimerPenaltyPopKey > 0 ? (
-                <span key={soloTimerPenaltyPopKey} className="single-timer-penalty" aria-hidden="true">
-                  -1s
-                </span>
-              ) : null}
-            </div>
-
-            <div className="single-score-pill" aria-label={`${uiText.score}: ${soloState.score}`}>
-              <span className="single-score-label">{uiText.score}</span>
-              <strong>{soloState.score}</strong>
-            </div>
-          </header>
-
-          <section className="single-value-display" aria-live="polite">
-            <strong>{soloState.currentStage.remainingValue}</strong>
-          </section>
-
-          <section className="combo-panel" aria-live="polite">
-            <div className="combo-bar">
-              {soloPrimeQueue.length > 0 ? soloPrimeQueue.join(" x ") : null}
-            </div>
-          </section>
-
-          <section className="single-controls-grid">
-            <div className="keypad solo-keypad">
-              {playablePrimes.map((prime) => (
-                <button
-                  key={prime}
-                  type="button"
-                  onClick={() => handlePrimeTap(prime)}
-                  disabled={soloTimeLeft === 0 || isSoloComboRunning}
-                >
-                  {prime}
-                </button>
-              ))}
-            </div>
-
-            <div className="combo-actions-column">
-              <ActionButton
-                variant="secondary"
-                className="combo-backspace-button"
-                onClick={handleSoloComboBackspace}
-                disabled={soloPrimeQueue.length === 0 || isSoloComboRunning}
-                aria-label={uiText.backspace}
-              >
-                <Delete className="control-icon" aria-hidden="true" />
-              </ActionButton>
-
-              <ActionButton
-                variant="secondary"
-                className="combo-enter-button"
-                onClick={handleSoloComboSubmit}
-                disabled={soloTimeLeft === 0 || soloPrimeQueue.length === 0 || isSoloComboRunning}
-                aria-label={uiText.enterCombo}
-              >
-                <Swords className="control-icon" aria-hidden="true" />
-              </ActionButton>
-            </div>
-          </section>
-        </section>
-      </main>
+      <SingleGameScreen
+        playablePrimes={playablePrimes}
+        soloState={soloState}
+        soloTimeLeft={soloTimeLeft}
+        soloCountdownProgress={soloCountdownProgress}
+        soloPrimeQueue={soloPrimeQueue}
+        isSoloComboRunning={isSoloComboRunning}
+        soloTimerPenaltyPopKey={soloTimerPenaltyPopKey}
+        onBack={returnToMenu}
+        onPrimeTap={handlePrimeTap}
+        onBackspace={handleSoloComboBackspace}
+        onSubmit={handleSoloComboSubmit}
+        formatCountdown={formatCountdown}
+      />
     );
   }
 
   if (screen === "multi-lobby") {
-    const isJoinFlow = menuMode === "join-room";
-    const shouldShowWaitingRoom = Boolean(multiplayer.roomId);
-
-    if (!multiplayer.roomId && !shouldShowWaitingRoom) {
-      return (
-        <main className="app-shell fullscreen-shell">
-          <section className="screen lobby-screen">
-            <header className="top-bar">
-              <button
-                type="button"
-                className="icon-action"
-                onClick={() => void returnToMenu()}
-                aria-label={uiText.back}
-              >
-                <ArrowLeft className="control-icon" aria-hidden="true" />
-              </button>
-            </header>
-
-            <div className="lobby-stack waiting-room-stack">
-              <label className="code-panel waiting-code-panel room-code-input-panel">
-                <p className="label">{uiText.roomCode}</p>
-                <input
-                  className="room-code-block-input"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={4}
-                  value={roomIdInput}
-                  onChange={(event) => handleRoomIdInputChange(event.target.value)}
-                  placeholder={uiText.roomPlaceholder}
-                  aria-label={uiText.enterCode}
-                />
-              </label>
-
-              <div className="waiting-cta">
-                <ActionButton variant="secondary" onClick={() => void (isJoinFlow ? joinRoom() : createRoom())}>
-                  {isJoinFlow ? uiText.go : uiText.createRoom}
-                </ActionButton>
-              </div>
-            </div>
-          </section>
-        </main>
-      );
-    }
-
-    if (shouldShowWaitingRoom) {
-      const waitingPlayers = [multiplayer.snapshot?.players[0] ?? null, multiplayer.snapshot?.players[1] ?? null];
-      const currentPlayer = multiplayer.snapshot?.players.find((player) => player.id === multiplayer.playerId) ?? null;
-      const canHostStart = multiplayer.isHost && multiplayer.snapshot ? canStartRoomCountdown(multiplayer.snapshot) : false;
-      const isCountdown = multiplayer.snapshot?.status === "countdown";
-      const readyButtonDisabled = !currentPlayer || currentPlayer.ready || isCountdown;
-
-      return (
-        <main className="app-shell fullscreen-shell">
-          <section className="screen lobby-screen">
-            <header className="top-bar">
-              <button
-                type="button"
-                className="icon-action"
-                onClick={() => void returnToMenu()}
-                aria-label={uiText.back}
-              >
-                <ArrowLeft className="control-icon" aria-hidden="true" />
-              </button>
-            </header>
-
-            <div className="lobby-stack waiting-room-stack">
-              <div className="code-panel waiting-code-panel">
-                <p className="label">{uiText.roomCode}</p>
-                <strong>{multiplayer.roomId || uiText.roomPlaceholder}</strong>
-              </div>
-
-              <section className="scoreboard player-scoreboard lobby-scoreboard waiting-room-grid">
-                {waitingPlayers.map((player, index) => {
-                  if (!player) {
-                    return (
-                      <div key={`waiting-slot-${index}`} className="player-card waiting-player-card waiting-placeholder-card">
-                        <p className="label">Opponent</p>
-                        <div className="waiting-placeholder-mark" aria-hidden="true">
-                          ?
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  const isCurrentPlayer = player.id === multiplayer.playerId;
-
-                  return (
-                    <div
-                      key={player.id}
-                      className={isCurrentPlayer ? "player-card waiting-player-card active" : "player-card waiting-player-card"}
-                    >
-                      <p className="label">{isCurrentPlayer ? "You" : "Opponent"}</p>
-                      <strong>{player.name}</strong>
-                    </div>
-                  );
-                })}
-              </section>
-
-              <div className="waiting-cta">
-                {isCountdown ? (
-                  <ActionButton variant="primary" className="start-action" disabled>
-                    {`${uiText.countdownPrefix} ${multiplayerCountdownValue ?? 3}`}
-                  </ActionButton>
-                ) : multiplayer.isHost ? (
-                  <ActionButton
-                    variant="primary"
-                    className="start-action"
-                    onClick={() => void handleHostStart()}
-                    disabled={!canHostStart}
-                  >
-                    {uiText.start}
-                  </ActionButton>
-                ) : (
-                  <ActionButton
-                    variant="secondary"
-                    className="start-action"
-                    onClick={() => void handleGuestReady()}
-                    disabled={readyButtonDisabled}
-                  >
-                    {currentPlayer?.ready ? uiText.readyWaiting : uiText.ready}
-                  </ActionButton>
-                )}
-              </div>
-            </div>
-          </section>
-        </main>
-      );
-    }
+    return (
+      <MultiplayerLobbyScreen
+        menuMode={menuMode}
+        multiplayer={multiplayer}
+        multiplayerCountdownValue={multiplayerCountdownValue}
+        multiplayerFooterText={multiplayerFooterText}
+        roomIdInput={roomIdInput}
+        onBack={returnToMenu}
+        onRoomIdInputChange={handleRoomIdInputChange}
+        onJoinRoom={joinRoom}
+        onCreateRoom={createRoom}
+        onGuestReady={handleGuestReady}
+        onHostStart={handleHostStart}
+        canStartRoomCountdown={multiplayer.isHost && multiplayer.snapshot ? canStartRoomCountdown(multiplayer.snapshot) : false}
+      />
+    );
   }
 
   return (
-    <main className="app-shell fullscreen-shell">
-      <section className="screen game-screen single-game-screen multiplayer-game-screen">
-        <header className="top-bar single-top-bar multiplayer-top-bar">
-          <button
-            type="button"
-            className="icon-action"
-            onClick={() => void returnToMenu()}
-            aria-label={uiText.back}
-          >
-            <ArrowLeft className="control-icon" aria-hidden="true" />
-          </button>
-
-          <div className="single-timer-shell" aria-label={`${uiText.timer}: ${formatCountdown(multiplayerTimeLeft)}`}>
-            <div className="single-timer-bar">
-              <span
-                className="single-timer-fill"
-                style={{ width: `${multiplayerCountdownProgress}%` }}
-              />
-            </div>
-            <span className="single-timer-text">{formatCountdown(multiplayerTimeLeft)}</span>
-          </div>
-
-          <div
-            className="single-score-pill multiplayer-score-pill"
-            aria-label={`${uiText.score}: ${multiplayerScore}`}
-          >
-            <span className="single-score-label">{uiText.score}</span>
-            <strong>{multiplayerScore}</strong>
-          </div>
-        </header>
-
-        <section className="single-value-display multiplayer-value-display" aria-live="polite">
-          <strong>{currentMultiplayerPlayer?.stage.remainingValue ?? "--"}</strong>
-        </section>
-
-        <section className="combo-panel" aria-live="polite">
-          <div className="combo-bar">
-            {multiplayerPrimeQueue.length > 0 ? multiplayerPrimeQueue.join(" x ") : null}
-          </div>
-        </section>
-
-        <section className="single-controls-grid multiplayer-controls-grid">
-          <div className="keypad solo-keypad multiplayer-keypad">
-            {playablePrimes.map((prime) => (
-              <button
-                key={`room-${prime}`}
-                type="button"
-                onClick={() => handleMultiplayerPrimeTap(prime)}
-                disabled={isMultiplayerInputDisabled}
-              >
-                {prime}
-              </button>
-            ))}
-          </div>
-
-          <div className="combo-actions-column">
-            <ActionButton
-              variant="secondary"
-              className="combo-backspace-button"
-              onClick={handleMultiplayerComboBackspace}
-              disabled={isMultiplayerComboRunning || multiplayerPrimeQueue.length === 0}
-              aria-label={uiText.backspace}
-            >
-              <Delete className="control-icon" aria-hidden="true" />
-            </ActionButton>
-
-            <ActionButton
-              variant="secondary"
-              className="combo-enter-button"
-              onClick={() => void handleMultiplayerComboSubmit()}
-              disabled={isMultiplayerInputDisabled || multiplayerPrimeQueue.length === 0}
-              aria-label={uiText.enterCombo}
-            >
-              <Swords className="control-icon" aria-hidden="true" />
-            </ActionButton>
-          </div>
-        </section>
-      </section>
-    </main>
+    <MultiplayerGameScreen
+      playablePrimes={playablePrimes}
+      multiplayerTimeLeft={multiplayerTimeLeft}
+      multiplayerCountdownProgress={multiplayerCountdownProgress}
+      multiplayerScore={multiplayerScore}
+      currentMultiplayerPlayer={currentMultiplayerPlayer}
+      multiplayerSnapshot={multiplayer.snapshot}
+      multiplayerPrimeQueue={multiplayerPrimeQueue}
+      isMultiplayerInputDisabled={isMultiplayerInputDisabled}
+      isMultiplayerComboRunning={isMultiplayerComboRunning}
+      roomId={multiplayer.roomId}
+      onBack={returnToMenu}
+      onPrimeTap={handleMultiplayerPrimeTap}
+      onBackspace={handleMultiplayerComboBackspace}
+      onSubmit={handleMultiplayerComboSubmit}
+      formatCountdown={formatCountdown}
+    />
   );
 }
 
@@ -1050,16 +783,4 @@ function formatCountdown(totalSeconds: number): string {
   const seconds = totalSeconds % 60;
 
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-}
-
-type ActionButtonProps = {
-  variant: "primary" | "secondary";
-} & ButtonHTMLAttributes<HTMLButtonElement>;
-
-function ActionButton({ variant, className, type = "button", ...props }: ActionButtonProps) {
-  const classes = ["app-action-button", variant === "primary" ? "primary-action" : "secondary-action", className]
-    .filter(Boolean)
-    .join(" ");
-
-  return <button type={type} className={classes} {...props} />;
 }
