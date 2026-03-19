@@ -684,22 +684,25 @@ input {
 }
 
 .room-code-display {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, 1ch);
+  column-gap: 0.8rem;
   justify-content: center;
-  gap: 0.8rem;
   margin-top: var(--space-1);
   pointer-events: none;
 }
 
 .room-code-slot {
-  display: inline-flex;
+  display: inline-grid;
   align-items: center;
   justify-content: center;
-  min-width: 1ch;
+  width: 1ch;
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  letter-spacing: 0;
+  text-indent: 0;
   color: rgba(11, 34, 53, 0.32);
 }
 

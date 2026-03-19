@@ -100,7 +100,7 @@ export function MultiplayerLobbyScreen({
 
                   return (
                     <span key={`room-code-slot-${index}`} className={digit ? "room-code-slot filled" : "room-code-slot"}>
-                      {digit ?? "-"}
+                      {digit ?? "‒"}
                     </span>
                   );
                 })}
