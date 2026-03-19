@@ -19,7 +19,8 @@
 - Always directly read the editor for lint error status, never use commands.
 - Always follow conventional commits when writing commit messages, don't use `style` type wrongly, it's for formatting changes.
 - Always assume there're other agents working, so when committing, only commit the part you changed, never commit all files.
-- Always ask the user to check the change before committing, never commit without confirmation.
+- Always commit your changes
+- Always check the change you've made in the browser before committing, never commit without confirmation.
 
 ## Planing
 
