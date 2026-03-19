@@ -725,6 +725,10 @@ input {
 .keypad button {
   min-height: 4.5rem;
   font-size: 1.15rem;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .solo-keypad {

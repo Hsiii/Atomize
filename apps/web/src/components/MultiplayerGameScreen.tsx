@@ -2,6 +2,7 @@ import { Delete, Swords } from "lucide-react";
 import type { Prime, RoomPlayer, RoomSnapshot } from "@atomize/game-core";
 import { ActionButton } from "./ActionButton";
 import { BackButton } from "./BackButton";
+import { PrimeKeyButton } from "./PrimeKeyButton";
 import { ScoreDialog } from "./ScoreDialog";
 import { uiText } from "../app-state";
 
@@ -79,14 +80,14 @@ export function MultiplayerGameScreen({
         <section className="single-controls-grid multiplayer-controls-grid">
           <div className="keypad solo-keypad multiplayer-keypad">
             {playablePrimes.map((prime) => (
-              <button
+              <PrimeKeyButton
                 key={`room-${prime}`}
-                type="button"
-                onClick={() => onPrimeTap(prime)}
+                prime={prime}
                 disabled={isMultiplayerInputDisabled}
+                onPress={onPrimeTap}
               >
                 {prime}
-              </button>
+              </PrimeKeyButton>
             ))}
           </div>
 

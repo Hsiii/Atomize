@@ -2,6 +2,7 @@ import { Delete, Swords } from "lucide-react";
 import type { Prime, SoloState } from "@atomize/game-core";
 import { ActionButton } from "./ActionButton";
 import { BackButton } from "./BackButton";
+import { PrimeKeyButton } from "./PrimeKeyButton";
 import { ScoreDialog } from "./ScoreDialog";
 import { uiText } from "../app-state";
 
@@ -78,14 +79,14 @@ export function SingleGameScreen({
         <section className="single-controls-grid">
           <div className="keypad solo-keypad">
             {playablePrimes.map((prime) => (
-              <button
+              <PrimeKeyButton
                 key={prime}
-                type="button"
-                onClick={() => onPrimeTap(prime)}
+                prime={prime}
                 disabled={isTimeUp || isSoloComboRunning || isCountdownActive}
+                onPress={onPrimeTap}
               >
                 {prime}
-              </button>
+              </PrimeKeyButton>
             ))}
           </div>
 
