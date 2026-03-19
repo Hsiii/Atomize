@@ -4,21 +4,21 @@
         'Avenir Next Condensed', 'Avenir Next', 'Helvetica Neue', sans-serif;
     --line-height-base: 1.4;
 
-    --color-primary: #203553;
-    --color-primary-strong: #203553;
-    --color-secondary: #203553;
+    --color-primary: #184e77;
+    --color-primary-strong: #168aad;
+    --color-secondary: #34a0a4;
     --color-ink: #101b2e;
     --color-ink-soft: rgba(16, 27, 46, 0.72);
     --color-text-inverse: #ffffff;
     --color-surface-base: rgba(255, 255, 255, 0.94);
     --color-surface-strong: #ffffff;
-    --color-surface-muted: rgba(32, 53, 83, 0.08);
-    --color-surface-subtle: rgba(32, 53, 83, 0.12);
-    --color-surface-accent: rgba(32, 53, 83, 0.18);
-    --color-border-soft: rgba(32, 53, 83, 0.2);
+    --color-surface-muted: rgba(24, 78, 119, 0.08);
+    --color-surface-subtle: rgba(24, 78, 119, 0.12);
+    --color-surface-accent: rgba(22, 138, 173, 0.18);
+    --color-border-soft: rgba(24, 78, 119, 0.2);
     --color-border-contrast: rgba(255, 255, 255, 0.26);
-    --color-outline-strong: rgba(32, 53, 83, 0.44);
-    --color-disabled-bg: rgba(32, 53, 83, 0.12);
+    --color-outline-strong: rgba(24, 78, 119, 0.44);
+    --color-disabled-bg: rgba(24, 78, 119, 0.12);
     --color-disabled-text: rgba(16, 27, 46, 0.54);
     --color-page-bg: #f4f7fb;
     --color-track: rgba(16, 27, 46, 0.12);
@@ -26,8 +26,8 @@
     --color-overlay-soft: rgba(16, 27, 46, 0.2);
     --color-overlay-strong: rgba(16, 27, 46, 0.26);
     --color-placeholder: rgba(16, 27, 46, 0.28);
-    --color-placeholder-mark: rgba(32, 53, 83, 0.08);
-    --color-toast-bg: rgba(32, 53, 83, 0.96);
+    --color-placeholder-mark: rgba(24, 78, 119, 0.08);
+    --color-toast-bg: rgba(24, 78, 119, 0.96);
     --color-toast-text: rgba(255, 255, 255, 0.96);
 
     --space-0: 0;
