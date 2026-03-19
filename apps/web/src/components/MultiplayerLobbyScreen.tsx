@@ -8,7 +8,6 @@ type MultiplayerLobbyScreenProps = {
   menuMode: MenuMode;
   multiplayer: MultiplayerState;
   multiplayerCountdownValue: number | null;
-  multiplayerFooterText: string;
   roomIdInput: string;
   onBack: () => void | Promise<void>;
   onRoomIdInputChange: (value: string) => void;
@@ -23,7 +22,6 @@ export function MultiplayerLobbyScreen({
   menuMode,
   multiplayer,
   multiplayerCountdownValue,
-  multiplayerFooterText,
   roomIdInput,
   onBack,
   onRoomIdInputChange,
@@ -85,6 +83,10 @@ export function MultiplayerLobbyScreen({
   const opponentPlayer = multiplayer.snapshot?.players.find((player) => player.id !== multiplayer.playerId) ?? null;
   const isCountdown = multiplayer.snapshot?.status === "countdown";
   const readyButtonDisabled = !currentPlayer || currentPlayer.ready || isCountdown;
+  const isHostBlocked = multiplayer.isHost && !isCountdown && !canStartRoomCountdown;
+  const guestButtonText = currentPlayer?.ready
+    ? `${uiText.readyWaiting} ${opponentPlayer?.name ?? uiText.opponent}`
+    : uiText.ready;
 
   return (
     <main className="app-shell fullscreen-shell">
@@ -116,6 +118,7 @@ export function MultiplayerLobbyScreen({
               <div className="player-card waiting-player-card">
                 <p className="label">OPPONENT</p>
                 <strong>{opponentPlayer.name}</strong>
+                {opponentPlayer.ready ? <span className="waiting-ready-badge">{uiText.readyBadge}</span> : null}
               </div>
             ) : (
               <div className="player-card waiting-player-card waiting-placeholder-card">
@@ -148,14 +151,12 @@ export function MultiplayerLobbyScreen({
                 onClick={() => void onGuestReady()}
                 disabled={readyButtonDisabled}
               >
-                {currentPlayer?.ready ? uiText.readyWaiting : uiText.ready}
+                {guestButtonText}
               </ActionButton>
             )}
-          </div>
 
-          {!isCountdown && multiplayerFooterText !== uiText.waitingForPlayer ? (
-            <footer className="minimal-footer minimal-footer-bottom">{multiplayerFooterText}</footer>
-          ) : null}
+            {isHostBlocked ? <div className="waiting-toast">{uiText.startBlockedToast}</div> : null}
+          </div>
         </div>
       </section>
     </main>
