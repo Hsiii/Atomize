@@ -81,8 +81,8 @@ export function MultiplayerLobbyScreen({
     );
   }
 
-  const waitingPlayers = [multiplayer.snapshot?.players[0] ?? null, multiplayer.snapshot?.players[1] ?? null];
   const currentPlayer = multiplayer.snapshot?.players.find((player) => player.id === multiplayer.playerId) ?? null;
+  const opponentPlayer = multiplayer.snapshot?.players.find((player) => player.id !== multiplayer.playerId) ?? null;
   const isCountdown = multiplayer.snapshot?.status === "countdown";
   const readyButtonDisabled = !currentPlayer || currentPlayer.ready || isCountdown;
 
@@ -107,30 +107,24 @@ export function MultiplayerLobbyScreen({
           </div>
 
           <section className="scoreboard player-scoreboard lobby-scoreboard waiting-room-grid">
-            {waitingPlayers.map((player, index) => {
-              if (!player) {
-                return (
-                  <div key={`waiting-slot-${index}`} className="player-card waiting-player-card waiting-placeholder-card">
-                    <p className="label">Opponent</p>
-                    <div className="waiting-placeholder-mark" aria-hidden="true">
-                      ?
-                    </div>
-                  </div>
-                );
-              }
+            <div className="player-card waiting-player-card active">
+              <p className="label">YOU</p>
+              <strong>{currentPlayer?.name ?? "-"}</strong>
+            </div>
 
-              const isCurrentPlayer = player.id === multiplayer.playerId;
-
-              return (
-                <div
-                  key={player.id}
-                  className={isCurrentPlayer ? "player-card waiting-player-card active" : "player-card waiting-player-card"}
-                >
-                  <p className="label">{isCurrentPlayer ? "You" : "Opponent"}</p>
-                  <strong>{player.name}</strong>
+            {opponentPlayer ? (
+              <div className="player-card waiting-player-card">
+                <p className="label">OPPONENT</p>
+                <strong>{opponentPlayer.name}</strong>
+              </div>
+            ) : (
+              <div className="player-card waiting-player-card waiting-placeholder-card">
+                <p className="label">OPPONENT</p>
+                <div className="waiting-placeholder-mark" aria-hidden="true">
+                  ?
                 </div>
-              );
-            })}
+              </div>
+            )}
           </section>
 
           <div className="waiting-cta">
