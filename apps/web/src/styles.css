@@ -407,20 +407,25 @@ input {
 .single-timer-shell {
     flex: 1;
     display: flex;
-    flex-direction: column;
-    gap: var(--space-timer-gap);
-    justify-content: center;
+    align-items: center;
     min-width: 0;
+    position: relative;
 }
 
 .single-timer-penalty-lane {
+    position: absolute;
+    right: 0;
+    left: 0;
+    bottom: calc(50% + (var(--size-timer-bar) / 2) + var(--space-timer-gap));
     min-height: var(--size-timer-penalty-lane);
     display: flex;
     align-items: flex-start;
     justify-content: flex-end;
+    pointer-events: none;
 }
 
 .single-timer-bar {
+    width: 100%;
     position: relative;
     height: var(--size-timer-bar);
     overflow: hidden;
