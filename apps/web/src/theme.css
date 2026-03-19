@@ -45,6 +45,8 @@
     --space-score-pill-y: 0.45rem;
     --space-score-pill-x: 0.7rem;
     --space-score-label-gap: 0.2rem;
+    --space-top-bar-y: 0.8rem;
+    --space-top-bar-x: 0.95rem;
     --space-keypad-gap-compact: 0.4rem;
     --space-keypad-gap-mobile: 0.35rem;
     --space-ready-badge-top: 0.6rem;
@@ -65,6 +67,7 @@
     --size-icon-lg: 1.5rem;
     --size-icon-xl: 1.75rem;
     --size-timer-bar: 0.5rem;
+    --size-timer-penalty-lane: 0.9rem;
     --size-score-pill-min: 4.75rem;
     --size-score-pill-min-wide: 5.5rem;
     --size-keypad-button-min: 4.5rem;

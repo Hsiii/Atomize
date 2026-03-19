@@ -338,11 +338,7 @@ input {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
-    padding: var(--space-top-bar-y) var(--space-top-bar-x);
-    border-radius: var(--radius-panel);
-    background: var(--color-surface-base);
-    backdrop-filter: blur(var(--blur-panel));
-    box-shadow: var(--shadow-panel);
+    padding: 0;
 }
 
 .top-bar-back-button {

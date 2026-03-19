@@ -1,8 +1,10 @@
 import type { JSX } from 'react';
+import { ArrowLeft } from 'lucide-react';
 
 import { uiText } from '../app-state';
 
 type GameStatusHeaderProps = {
+    onBack?: () => void | Promise<void>;
     countdownProgress: number;
     timeLeft: number;
     score: number;
@@ -14,6 +16,7 @@ type GameStatusHeaderProps = {
 };
 
 export function GameStatusHeader({
+    onBack,
     countdownProgress,
     timeLeft,
     score,
@@ -30,38 +33,52 @@ export function GameStatusHeader({
         .filter(Boolean)
         .join(' ');
 
+    function handleBackClick() {
+        if (!onBack) {
+            return;
+        }
+
+        Promise.resolve(onBack()).catch(() => undefined);
+    }
+
     return (
         <header className={headerClasses}>
+            {onBack ? (
+                <button
+                    aria-label={uiText.back}
+                    className='top-bar-back-button'
+                    onClick={handleBackClick}
+                    type='button'
+                >
+                    <ArrowLeft aria-hidden='true' className='control-icon' />
+                </button>
+            ) : undefined}
+
             <div
                 aria-label={`${uiText.timer}: ${formatCountdown(timeLeft)}`}
                 className='single-timer-shell'
             >
+                <span aria-hidden='true' className='single-timer-penalty-lane'>
+                    {penaltyKey && penaltyText ? (
+                        <span className='single-timer-penalty' key={penaltyKey}>
+                            {penaltyText}
+                        </span>
+                    ) : undefined}
+                </span>
                 <div className='single-timer-bar'>
                     <span
                         className='single-timer-fill'
                         style={{ width: `${countdownProgress}%` }}
                     />
                 </div>
-                <span className='single-timer-text'>
-                    {formatCountdown(timeLeft)}
-                </span>
-                {penaltyKey && penaltyText ? (
-                    <span
-                        aria-hidden='true'
-                        className='single-timer-penalty'
-                        key={penaltyKey}
-                    >
-                        {penaltyText}
-                    </span>
-                ) : undefined}
             </div>
 
             <div
-                aria-label={`${uiText.score}: ${score}`}
+                aria-label={`${uiText.score}: ${score} ${uiText.scoreUnit}`}
                 className={scoreClasses}
             >
-                <span className='single-score-label'>{uiText.score}</span>
                 <strong>{score}</strong>
+                <span className='single-score-unit'>{uiText.scoreUnit}</span>
             </div>
         </header>
     );
