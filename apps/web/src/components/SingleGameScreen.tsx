@@ -1,10 +1,4 @@
-import {
-    startTransition,
-    useEffect,
-    useLayoutEffect,
-    useRef,
-    useState,
-} from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { JSX } from 'react';
 import type { Prime, SoloState } from '@atomize/game-core';
 import { CircleArrowUp, Delete } from 'lucide-react';
@@ -98,9 +92,7 @@ export function SingleGameScreen({
 
         visibleQueueRef.current = normalizedQueue;
         setVisibleQueue(normalizedQueue);
-        startTransition(() => {
-            onQueueChange(normalizedQueue);
-        });
+        onQueueChange(normalizedQueue);
     }
 
     function handlePrimeTap(prime: Prime) {
