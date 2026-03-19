@@ -1,15 +1,33 @@
 {
-  "name": "atomize",
-  "private": true,
-  "packageManager": "bun@1.2.5",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-  "scripts": {
-    "dev:web": "cd apps/web && bun run dev",
-    "dev:server": "cd apps/server && bun run dev",
-    "build": "bun run --cwd packages/game-core build && bun run --cwd apps/server build && bun run --cwd apps/web build",
-    "check": "bun run --cwd packages/game-core check && bun run --cwd apps/server check && bun run --cwd apps/web check"
-  }
+    "name": "atomize",
+    "private": true,
+    "packageManager": "bun@1.2.5",
+    "workspaces": [
+        "apps/*",
+        "packages/*"
+    ],
+    "scripts": {
+        "dev:web": "cd apps/web && bun run dev",
+        "dev:server": "cd apps/server && bun run dev",
+        "build": "bun run --cwd packages/game-core build && bun run --cwd apps/server build && bun run --cwd apps/web build",
+        "check": "bun run --cwd packages/game-core check && bun run --cwd apps/server check && bun run --cwd apps/web check",
+        "lint": "eslint .",
+        "format": "prettier --write .",
+        "prepare": "husky"
+    },
+    "lint-staged": {
+        "*.{js,jsx,ts,tsx,mjs,cjs}": [
+            "eslint --fix",
+            "prettier --write"
+        ],
+        "*.{json,md,css,html,yml,yaml}": "prettier --write"
+    },
+    "devDependencies": {
+        "@ianvs/prettier-plugin-sort-imports": "^4.7.1",
+        "eslint": "^10.0.3",
+        "eslint-config-complete": "^4.6.0",
+        "husky": "^9.1.7",
+        "lint-staged": "^16.4.0",
+        "prettier": "^3.8.1"
+    }
 }
