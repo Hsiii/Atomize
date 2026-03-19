@@ -76,6 +76,7 @@ export function MultiplayerLobbyScreen({
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
       onRoomIdInputChange(event.target.value);
     };
+    const roomCodePreview = Array.from({ length: 4 }, (_, index) => roomIdInput[index] ?? "‒").join(" ");
 
     return (
       <main className="app-shell fullscreen-shell">
@@ -94,17 +95,7 @@ export function MultiplayerLobbyScreen({
           <div className="lobby-stack waiting-room-stack">
             <label className="code-panel waiting-code-panel room-code-input-panel">
               <p className="label">{uiText.roomCode}</p>
-              <div className="room-code-display" aria-hidden="true">
-                {Array.from({ length: 4 }, (_, index) => {
-                  const digit = roomIdInput[index];
-
-                  return (
-                    <span key={`room-code-slot-${index}`} className={digit ? "room-code-slot filled" : "room-code-slot"}>
-                      {digit ?? "‒"}
-                    </span>
-                  );
-                })}
-              </div>
+              <strong className="room-code-visual" aria-hidden="true">{roomCodePreview}</strong>
               <input
                 className="room-code-block-input"
                 inputMode="numeric"

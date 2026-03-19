@@ -652,7 +652,7 @@ input {
 }
 
 .code-panel strong,
-.room-code-slot {
+.room-code-visual {
   font-size: clamp(2.4rem, 16vw, 4rem);
   letter-spacing: 0.16em;
   text-indent: 0.16em;
@@ -683,31 +683,16 @@ input {
   cursor: text;
 }
 
-.room-code-display {
-  display: grid;
-  grid-template-columns: repeat(4, 1.35ch);
-  column-gap: 0.8rem;
-  justify-content: center;
+.room-code-visual {
+  display: block;
   margin-top: var(--space-1);
-  pointer-events: none;
-}
-
-.room-code-slot {
-  display: inline-grid;
-  align-items: center;
-  justify-content: center;
-  width: 1.35ch;
   font-weight: 700;
   line-height: 1;
+  white-space: pre;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1, "lnum" 1;
-  letter-spacing: 0;
-  text-indent: 0;
-  color: rgba(11, 34, 53, 0.32);
-}
-
-.room-code-slot.filled {
-  color: var(--color-ink);
+  color: rgba(11, 34, 53, 0.42);
+  pointer-events: none;
 }
 
 .room-code-block-input {
