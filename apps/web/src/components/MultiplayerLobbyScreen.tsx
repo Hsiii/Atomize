@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { JSX } from 'react';
 
 import type { MenuMode, MultiplayerState } from '../app-state';
 import { uiText } from '../app-state';
@@ -38,53 +39,86 @@ export function MultiplayerLobbyScreen({
     onGuestReady,
     onHostStart,
     canStartRoomCountdown,
-}: MultiplayerLobbyScreenProps) {
-    const [localToastMessage, setLocalToastMessage] = useState<string | null>(
-        null
-    );
+}: MultiplayerLobbyScreenProps): JSX.Element {
+    const [localToastMessage, setLocalToastMessage] = useState<
+        string | undefined
+    >(undefined);
     const [visibleTransientToastMessage, setVisibleTransientToastMessage] =
-        useState<string | null>(null);
+        useState<string | undefined>(undefined);
     const isJoinFlow = menuMode === 'join-room';
     const shouldShowWaitingRoom = Boolean(multiplayer.roomId);
     const isJoinButtonReady = roomIdInput.length === 4;
     const isJoinButtonDisabled = isJoinPending || !isJoinButtonReady;
     const activeToastMessage =
         localToastMessage ?? visibleTransientToastMessage;
+    let createOrJoinButtonText: string = uiText.createRoom;
+
+    if (isJoinFlow) {
+        createOrJoinButtonText = isJoinPending ? uiText.findingRoom : uiText.go;
+    }
+
+    const currentPlayer = multiplayer.snapshot?.players.find(
+        (player) => player.id === multiplayer.playerId
+    );
+    const opponentPlayer = multiplayer.snapshot?.players.find(
+        (player) => player.id !== multiplayer.playerId
+    );
+    const isCountdown = multiplayer.snapshot?.status === 'countdown';
+    const readyButtonDisabled = !currentPlayer || isCountdown;
+    const guestButtonText = currentPlayer?.ready
+        ? `${uiText.readyWaiting} ${opponentPlayer?.name ?? uiText.opponent}`
+        : uiText.ready;
+
+    function handleActionError() {
+        setLocalToastMessage(uiText.serverOffline);
+    }
+
+    function runAsyncAction(action: () => void | Promise<void>) {
+        Promise.resolve().then(action).catch(handleActionError);
+    }
 
     useEffect(() => {
         if (!localToastMessage) {
-            return;
+            return undefined;
         }
 
-        const timer = window.setTimeout(() => {
-            setLocalToastMessage(null);
-        }, 2200);
+        const timer = globalThis.setTimeout(
+            (nextMessage: undefined) => {
+                setLocalToastMessage(nextMessage);
+            },
+            2200,
+            undefined
+        );
 
         return () => {
-            window.clearTimeout(timer);
+            globalThis.clearTimeout(timer);
         };
     }, [localToastMessage]);
 
     useEffect(() => {
         if (!transientToastMessage) {
-            setVisibleTransientToastMessage(null);
-            return;
+            setVisibleTransientToastMessage(undefined);
+            return undefined;
         }
 
         setVisibleTransientToastMessage(transientToastMessage);
 
-        const timer = window.setTimeout(() => {
-            setVisibleTransientToastMessage(null);
-        }, 2200);
+        const timer = globalThis.setTimeout(
+            (nextMessage: undefined) => {
+                setVisibleTransientToastMessage(nextMessage);
+            },
+            2200,
+            undefined
+        );
 
         return () => {
-            window.clearTimeout(timer);
+            globalThis.clearTimeout(timer);
         };
     }, [transientToastId, transientToastMessage]);
 
     function handleCreateOrJoinClick() {
         if (!isJoinFlow) {
-            void onCreateRoom();
+            runAsyncAction(onCreateRoom);
             return;
         }
 
@@ -97,7 +131,7 @@ export function MultiplayerLobbyScreen({
             return;
         }
 
-        void onJoinRoom();
+        runAsyncAction(onJoinRoom);
     }
 
     if (!multiplayer.roomId && !shouldShowWaitingRoom) {
@@ -107,61 +141,43 @@ export function MultiplayerLobbyScreen({
                 <section className='screen lobby-screen'>
                     <div className='lobby-stack waiting-room-stack'>
                         <RoomCodePanel
-                            value={roomIdInput}
                             editable
                             onChange={onRoomIdInputChange}
+                            value={roomIdInput}
                         />
 
                         <div className='waiting-cta'>
                             <ActionButton
-                                variant='secondary'
+                                aria-disabled={
+                                    isJoinFlow && isJoinButtonDisabled
+                                }
                                 className={
                                     isJoinFlow && isJoinButtonDisabled
                                         ? 'start-action is-disabled'
                                         : 'start-action'
                                 }
                                 onClick={handleCreateOrJoinClick}
-                                aria-disabled={
-                                    isJoinFlow && isJoinButtonDisabled
-                                }
+                                variant='secondary'
                             >
-                                {isJoinFlow
-                                    ? isJoinPending
-                                        ? uiText.findingRoom
-                                        : uiText.go
-                                    : uiText.createRoom}
+                                {createOrJoinButtonText}
                             </ActionButton>
                         </div>
 
                         {activeToastMessage ? (
                             <div
-                                className='waiting-toast-layer'
                                 aria-live='polite'
+                                className='waiting-toast-layer'
                             >
                                 <div className='waiting-toast'>
                                     {activeToastMessage}
                                 </div>
                             </div>
-                        ) : null}
+                        ) : undefined}
                     </div>
                 </section>
             </main>
         );
     }
-
-    const currentPlayer =
-        multiplayer.snapshot?.players.find(
-            (player) => player.id === multiplayer.playerId
-        ) ?? null;
-    const opponentPlayer =
-        multiplayer.snapshot?.players.find(
-            (player) => player.id !== multiplayer.playerId
-        ) ?? null;
-    const isCountdown = multiplayer.snapshot?.status === 'countdown';
-    const readyButtonDisabled = !currentPlayer || isCountdown;
-    const guestButtonText = currentPlayer?.ready
-        ? `${uiText.readyWaiting} ${opponentPlayer?.name ?? uiText.opponent}`
-        : uiText.ready;
 
     function handleHostStartClick() {
         if (!canStartRoomCountdown) {
@@ -169,7 +185,47 @@ export function MultiplayerLobbyScreen({
             return;
         }
 
-        void onHostStart();
+        runAsyncAction(onHostStart);
+    }
+
+    function handleGuestReadyClick() {
+        runAsyncAction(onGuestReady);
+    }
+
+    let waitingRoomAction: JSX.Element;
+
+    if (isCountdown) {
+        waitingRoomAction = (
+            <ActionButton className='start-action' disabled variant='secondary'>
+                {`${uiText.countdownPrefix} ${multiplayerCountdownValue ?? 3}`}
+            </ActionButton>
+        );
+    } else if (multiplayer.isHost) {
+        waitingRoomAction = (
+            <ActionButton
+                aria-disabled={!canStartRoomCountdown}
+                className={
+                    canStartRoomCountdown
+                        ? 'start-action'
+                        : 'start-action is-disabled'
+                }
+                onClick={handleHostStartClick}
+                variant='secondary'
+            >
+                {uiText.start}
+            </ActionButton>
+        );
+    } else {
+        waitingRoomAction = (
+            <ActionButton
+                className='start-action'
+                disabled={readyButtonDisabled}
+                onClick={handleGuestReadyClick}
+                variant='secondary'
+            >
+                {guestButtonText}
+            </ActionButton>
+        );
     }
 
     return (
@@ -193,14 +249,14 @@ export function MultiplayerLobbyScreen({
                                     <span className='waiting-ready-badge'>
                                         {uiText.readyBadge}
                                     </span>
-                                ) : null}
+                                ) : undefined}
                             </div>
                         ) : (
                             <div className='player-card waiting-player-card waiting-placeholder-card'>
                                 <p className='label'>OPPONENT</p>
                                 <div
-                                    className='waiting-placeholder-mark'
                                     aria-hidden='true'
+                                    className='waiting-placeholder-mark'
                                 >
                                     ?
                                 </div>
@@ -208,47 +264,15 @@ export function MultiplayerLobbyScreen({
                         )}
                     </section>
 
-                    <div className='waiting-cta'>
-                        {isCountdown ? (
-                            <ActionButton
-                                variant='secondary'
-                                className='start-action'
-                                disabled
-                            >
-                                {`${uiText.countdownPrefix} ${multiplayerCountdownValue ?? 3}`}
-                            </ActionButton>
-                        ) : multiplayer.isHost ? (
-                            <ActionButton
-                                variant='secondary'
-                                className={
-                                    !canStartRoomCountdown
-                                        ? 'start-action is-disabled'
-                                        : 'start-action'
-                                }
-                                onClick={handleHostStartClick}
-                                aria-disabled={!canStartRoomCountdown}
-                            >
-                                {uiText.start}
-                            </ActionButton>
-                        ) : (
-                            <ActionButton
-                                variant='secondary'
-                                className='start-action'
-                                onClick={() => void onGuestReady()}
-                                disabled={readyButtonDisabled}
-                            >
-                                {guestButtonText}
-                            </ActionButton>
-                        )}
-                    </div>
+                    <div className='waiting-cta'>{waitingRoomAction}</div>
 
                     {activeToastMessage ? (
-                        <div className='waiting-toast-layer' aria-live='polite'>
+                        <div aria-live='polite' className='waiting-toast-layer'>
                             <div className='waiting-toast'>
                                 {activeToastMessage}
                             </div>
                         </div>
-                    ) : null}
+                    ) : undefined}
                 </div>
             </section>
         </main>

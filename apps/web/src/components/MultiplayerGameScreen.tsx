@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import type { Prime, RoomPlayer, RoomSnapshot } from '@atomize/game-core';
 import { Delete, Swords } from 'lucide-react';
 
@@ -31,18 +32,24 @@ export function MultiplayerGameScreen({
     multiplayerCountdownProgress,
     multiplayerScore,
     currentMultiplayerPlayer,
-    multiplayerSnapshot,
+    multiplayerSnapshot: _multiplayerSnapshot,
     multiplayerPrimeQueue,
     isMultiplayerInputDisabled,
     isMultiplayerComboRunning,
-    roomId,
+    roomId: _roomId,
     onBack,
     onPrimeTap,
     onBackspace,
     onSubmit,
     formatCountdown,
-}: MultiplayerGameScreenProps) {
+}: MultiplayerGameScreenProps): JSX.Element {
     const isTimeUp = multiplayerTimeLeft === 0;
+
+    function handleSubmitClick() {
+        Promise.resolve()
+            .then(onSubmit)
+            .catch(() => undefined);
+    }
 
     return (
         <main className='app-shell fullscreen-shell'>
@@ -50,8 +57,8 @@ export function MultiplayerGameScreen({
             <section className='screen game-screen single-game-screen multiplayer-game-screen'>
                 <header className='top-bar single-top-bar multiplayer-top-bar'>
                     <div
-                        className='single-timer-shell'
                         aria-label={`${uiText.timer}: ${formatCountdown(multiplayerTimeLeft)}`}
+                        className='single-timer-shell'
                     >
                         <div className='single-timer-bar'>
                             <span
@@ -67,8 +74,8 @@ export function MultiplayerGameScreen({
                     </div>
 
                     <div
-                        className='single-score-pill multiplayer-score-pill'
                         aria-label={`${uiText.score}: ${multiplayerScore}`}
+                        className='single-score-pill multiplayer-score-pill'
                     >
                         <span className='single-score-label'>
                             {uiText.score}
@@ -78,19 +85,19 @@ export function MultiplayerGameScreen({
                 </header>
 
                 <section
-                    className='single-value-display multiplayer-value-display'
                     aria-live='polite'
+                    className='single-value-display multiplayer-value-display'
                 >
                     <strong>
                         {currentMultiplayerPlayer?.stage.remainingValue ?? '--'}
                     </strong>
                 </section>
 
-                <section className='combo-panel' aria-live='polite'>
+                <section aria-live='polite' className='combo-panel'>
                     <div className='combo-bar'>
                         {multiplayerPrimeQueue.length > 0
                             ? multiplayerPrimeQueue.join(' x ')
-                            : null}
+                            : undefined}
                     </div>
                 </section>
 
@@ -98,10 +105,10 @@ export function MultiplayerGameScreen({
                     <div className='keypad solo-keypad multiplayer-keypad'>
                         {playablePrimes.map((prime) => (
                             <PrimeKeyButton
-                                key={`room-${prime}`}
-                                prime={prime}
                                 disabled={isMultiplayerInputDisabled}
+                                key={`room-${prime}`}
                                 onPress={onPrimeTap}
+                                prime={prime}
                             >
                                 {prime}
                             </PrimeKeyButton>
@@ -110,34 +117,34 @@ export function MultiplayerGameScreen({
 
                     <div className='combo-actions-column'>
                         <ActionButton
-                            variant='secondary'
+                            aria-label={uiText.backspace}
                             className='combo-backspace-button'
-                            onClick={onBackspace}
                             disabled={
                                 isMultiplayerComboRunning ||
                                 multiplayerPrimeQueue.length === 0
                             }
-                            aria-label={uiText.backspace}
+                            onClick={onBackspace}
+                            variant='secondary'
                         >
                             <Delete
-                                className='control-icon'
                                 aria-hidden='true'
+                                className='control-icon'
                             />
                         </ActionButton>
 
                         <ActionButton
-                            variant='secondary'
+                            aria-label={uiText.enterCombo}
                             className='combo-enter-button'
-                            onClick={() => void onSubmit()}
                             disabled={
                                 isMultiplayerInputDisabled ||
                                 multiplayerPrimeQueue.length === 0
                             }
-                            aria-label={uiText.enterCombo}
+                            onClick={handleSubmitClick}
+                            variant='secondary'
                         >
                             <Swords
-                                className='control-icon'
                                 aria-hidden='true'
+                                className='control-icon'
                             />
                         </ActionButton>
                     </div>
@@ -145,10 +152,10 @@ export function MultiplayerGameScreen({
 
                 {isTimeUp ? (
                     <ScoreDialog
-                        score={multiplayerScore}
                         onReturnHome={onBack}
+                        score={multiplayerScore}
                     />
-                ) : null}
+                ) : undefined}
             </section>
         </main>
     );
