@@ -685,7 +685,11 @@ export function MenuScreen({
                         </h1>
                     </div>
 
-                    <div className='menu-actions-shell'>
+                    <div
+                        className={`menu-actions-shell${
+                            phase === 'play' ? ' menu-actions-shell-play' : ''
+                        }`}
+                    >
                         <div
                             aria-label={uiText.title}
                             className='menu-actions'
