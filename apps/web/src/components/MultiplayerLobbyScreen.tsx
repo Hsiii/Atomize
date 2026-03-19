@@ -49,7 +49,7 @@ export function MultiplayerLobbyScreen({
 
     const timer = window.setTimeout(() => {
       setShowStartBlockedToast(false);
-    }, 1000);
+    }, 2200);
 
     return () => {
       window.clearTimeout(timer);
@@ -66,7 +66,7 @@ export function MultiplayerLobbyScreen({
 
     const timer = window.setTimeout(() => {
       setVisibleTransientToastMessage(null);
-    }, 1000);
+    }, 2200);
 
     return () => {
       window.clearTimeout(timer);

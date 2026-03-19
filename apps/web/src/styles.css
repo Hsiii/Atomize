@@ -899,17 +899,20 @@ input {
   text-align: center;
   box-shadow: 0 18px 34px rgba(11, 34, 53, 0.22);
   backdrop-filter: blur(12px);
-  animation: waiting-toast-pop 1s ease forwards;
+  animation: waiting-toast-pop 2.2s ease forwards;
 }
 
 .waiting-toast-layer {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
+  position: fixed;
+  left: 50%;
+  bottom: max(1.5rem, calc(env(safe-area-inset-bottom) + 0.75rem));
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  width: min(calc(100vw - 2rem), 22rem);
   padding: var(--space-7);
   pointer-events: none;
-  z-index: 2;
+  z-index: 20;
 }
 
 @keyframes waiting-toast-pop {
