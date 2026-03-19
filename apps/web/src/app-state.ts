@@ -4,6 +4,7 @@ export const uiText = {
   back: "Back",
   timer: "Time",
   score: "Score",
+  returnHome: "Return Home",
   health: "HP",
   combo: "Combo",
   you: "You",

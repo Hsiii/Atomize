@@ -2,6 +2,7 @@ import { Delete, Swords } from "lucide-react";
 import type { Prime, RoomPlayer, RoomSnapshot } from "@atomize/game-core";
 import { ActionButton } from "./ActionButton";
 import { BackButton } from "./BackButton";
+import { ScoreDialog } from "./ScoreDialog";
 import { uiText } from "../app-state";
 
 type MultiplayerGameScreenProps = {
@@ -39,6 +40,8 @@ export function MultiplayerGameScreen({
   onSubmit,
   formatCountdown,
 }: MultiplayerGameScreenProps) {
+  const isTimeUp = multiplayerTimeLeft === 0;
+
   return (
     <main className="app-shell fullscreen-shell">
       <BackButton onBack={onBack} />
@@ -109,6 +112,8 @@ export function MultiplayerGameScreen({
             </ActionButton>
           </div>
         </section>
+
+        {isTimeUp ? <ScoreDialog score={multiplayerScore} onReturnHome={onBack} /> : null}
       </section>
     </main>
   );

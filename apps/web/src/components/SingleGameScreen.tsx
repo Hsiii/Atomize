@@ -2,6 +2,7 @@ import { Delete, Swords } from "lucide-react";
 import type { Prime, SoloState } from "@atomize/game-core";
 import { ActionButton } from "./ActionButton";
 import { BackButton } from "./BackButton";
+import { ScoreDialog } from "./ScoreDialog";
 import { uiText } from "../app-state";
 
 type SingleGameScreenProps = {
@@ -36,6 +37,7 @@ export function SingleGameScreen({
   formatCountdown,
 }: SingleGameScreenProps) {
   const isCountdownActive = soloStartCountdownValue !== null;
+  const isTimeUp = soloTimeLeft === 0;
 
   return (
     <main className="app-shell fullscreen-shell">
@@ -80,7 +82,7 @@ export function SingleGameScreen({
                 key={prime}
                 type="button"
                 onClick={() => onPrimeTap(prime)}
-                disabled={soloTimeLeft === 0 || isSoloComboRunning || isCountdownActive}
+                disabled={isTimeUp || isSoloComboRunning || isCountdownActive}
               >
                 {prime}
               </button>
@@ -92,7 +94,7 @@ export function SingleGameScreen({
               variant="secondary"
               className="combo-backspace-button"
               onClick={onBackspace}
-              disabled={soloPrimeQueue.length === 0 || isSoloComboRunning || isCountdownActive}
+              disabled={soloPrimeQueue.length === 0 || isSoloComboRunning || isCountdownActive || isTimeUp}
               aria-label={uiText.backspace}
             >
               <Delete className="control-icon" aria-hidden="true" />
@@ -102,13 +104,15 @@ export function SingleGameScreen({
               variant="secondary"
               className="combo-enter-button"
               onClick={onSubmit}
-              disabled={soloTimeLeft === 0 || soloPrimeQueue.length === 0 || isSoloComboRunning || isCountdownActive}
+              disabled={isTimeUp || soloPrimeQueue.length === 0 || isSoloComboRunning || isCountdownActive}
               aria-label={uiText.enterCombo}
             >
               <Swords className="control-icon" aria-hidden="true" />
             </ActionButton>
           </div>
         </section>
+
+        {isTimeUp ? <ScoreDialog score={soloState.score} onReturnHome={onBack} /> : null}
 
         {soloStartCountdownValue !== null ? (
           <div className="single-start-countdown" aria-live="assertive" aria-atomic="true">

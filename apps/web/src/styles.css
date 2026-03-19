@@ -520,6 +520,41 @@ input {
   animation: single-start-countdown-pop 0.9s ease-out;
 }
 
+.score-dialog-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  padding: var(--space-8);
+  background: rgba(11, 34, 53, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.score-dialog {
+  width: min(100%, 18rem);
+  padding: 1.1rem;
+  border-radius: var(--radius-panel);
+  background: var(--color-surface-base);
+  box-shadow: var(--shadow-panel);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-7);
+  text-align: center;
+}
+
+.score-dialog strong {
+  display: block;
+  font-size: clamp(3.25rem, 16vw, 4.75rem);
+  line-height: 0.95;
+  color: var(--color-secondary);
+}
+
+.score-dialog .app-action-button {
+  width: 100%;
+}
+
 .multiplayer-game-screen {
   flex: 1;
 }
