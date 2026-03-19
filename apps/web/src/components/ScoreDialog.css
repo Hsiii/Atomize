@@ -1,10 +1,13 @@
 .score-dialog-scrim {
-    position: absolute;
+    position: fixed;
     inset: 0;
     z-index: 3;
     display: grid;
     place-items: center;
-    padding: var(--space-8);
+    padding: max(var(--space-8), env(safe-area-inset-top))
+        max(var(--space-8), env(safe-area-inset-right))
+        max(var(--space-8), env(safe-area-inset-bottom))
+        max(var(--space-8), env(safe-area-inset-left));
     background: var(--color-overlay-soft);
     backdrop-filter: blur(var(--blur-overlay));
 }
