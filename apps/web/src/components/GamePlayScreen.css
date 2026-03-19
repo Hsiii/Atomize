@@ -86,10 +86,6 @@
     background: var(--color-primary-strong);
 }
 
-.combo-enter-button:disabled {
-    opacity: 0.55;
-}
-
 .combo-actions-column .control-icon {
     width: 1.9rem;
     height: 1.9rem;
