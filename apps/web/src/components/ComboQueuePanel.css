@@ -1,14 +1,23 @@
 .combo-panel {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
+    width: 100%;
 }
 
 .combo-bar {
-    min-height: 3.25rem;
-    padding: 0;
-    color: var(--color-secondary);
-    font-size: 1rem;
-    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: var(--size-buffer-strip-min-height);
+    padding: 0 var(--space-buffer-strip-x);
+    border-radius: var(--radius-button);
+    background: var(--color-buffer-strip);
     text-align: center;
+}
+
+.combo-bar-value {
+    color: var(--color-text-inverse);
+    font-size: var(--font-size-buffer-strip);
+    font-weight: 600;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
 }

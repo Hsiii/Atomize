@@ -7,10 +7,12 @@ type ComboQueuePanelProps = {
 };
 
 export function ComboQueuePanel({ queue }: ComboQueuePanelProps): JSX.Element {
+    const bufferedValue = queue.length > 0 ? queue.join(' x ') : '\u00A0';
+
     return (
         <section aria-live='polite' className='combo-panel'>
             <div className='combo-bar'>
-                {queue.length > 0 ? queue.join(' x ') : undefined}
+                <span className='combo-bar-value'>{bufferedValue}</span>
             </div>
         </section>
     );
