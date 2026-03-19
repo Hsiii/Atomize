@@ -754,25 +754,16 @@ input {
     min-height: 0;
     width: 100%;
     padding: 0;
-    border: 1px solid var(--color-prime-border);
+    border: 0;
     border-radius: var(--radius-orb);
-    background:
-        radial-gradient(
-            circle at 30% 28%,
-            rgba(255, 255, 255, 0.92) 0%,
-            rgba(255, 255, 255, 0.45) 20%,
-            transparent 21%
-        ),
-        linear-gradient(180deg, #72d2d0 0%, #34a0a4 62%, #248089 100%);
+    background: var(--color-primary);
     color: var(--color-text-inverse);
     font-family: var(--font-family-display);
     font-size: clamp(1.65rem, 5vw, 2.5rem);
     font-weight: 800;
     line-height: 1;
     font-variant-numeric: tabular-nums;
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.45),
-        0 10px 24px rgba(24, 78, 119, 0.18);
+    box-shadow: none;
 }
 
 .solo-keypad .prime-key-button:disabled {
@@ -793,18 +784,20 @@ input {
     display: grid;
     place-items: center;
     padding: 0;
-    border: 1px solid rgba(255, 255, 255, 0.26);
-    box-shadow: 0 12px 28px rgba(24, 78, 119, 0.18);
+    border: 0;
+    box-shadow: none;
 }
 
 .combo-backspace-button {
     aspect-ratio: 1;
     border-radius: var(--radius-orb);
+    background: var(--color-secondary);
 }
 
 .combo-enter-button {
     grid-row: span 2;
     border-radius: var(--radius-pill);
+    background: var(--color-primary-strong);
 }
 
 .combo-actions-column .control-icon {
