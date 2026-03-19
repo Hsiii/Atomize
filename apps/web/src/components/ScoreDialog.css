@@ -37,6 +37,7 @@
     display: block;
     font-family: var(--font-family-display);
     font-size: clamp(3.25rem, 16vw, 4.75rem);
+    font-weight: var(--font-weight-number-emphasis);
     line-height: 0.95;
     color: var(--color-primary);
 }

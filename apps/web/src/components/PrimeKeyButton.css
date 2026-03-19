@@ -12,7 +12,7 @@
     color: var(--color-disabled-text);
     font-family: var(--font-family-display);
     font-size: var(--font-size-keypad-digit);
-    font-weight: 600;
+    font-weight: var(--font-weight-number-emphasis);
     line-height: 1;
     font-variant-numeric: tabular-nums;
     box-shadow: none;

@@ -93,6 +93,7 @@
     margin-top: var(--space-0);
     font-family: var(--font-family-display);
     font-size: clamp(1.15rem, 4vw, 1.45rem);
+    font-weight: var(--font-weight-number-emphasis);
     line-height: 1;
     color: var(--color-primary);
 }
