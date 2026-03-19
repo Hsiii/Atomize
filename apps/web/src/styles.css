@@ -153,7 +153,6 @@ input {
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--color-text-inverse);
-    text-indent: 0.12em;
 }
 
 .action-stack {
