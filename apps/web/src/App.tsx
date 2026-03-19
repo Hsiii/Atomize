@@ -382,6 +382,7 @@ export default function App() {
   }
 
   async function failPendingJoin(message: string) {
+    showLobbyToast(message);
     clearJoinLookupTimeout();
     await closeActiveChannel();
     setMultiplayer({
@@ -391,7 +392,6 @@ export default function App() {
       roomId: "",
       isHost: false,
     });
-    showLobbyToast(message);
   }
 
   async function broadcastMessage(message: RoomBroadcastMessage) {
@@ -548,7 +548,7 @@ export default function App() {
 
         const currentState = latestMultiplayerRef.current;
 
-        if (!currentState.isHost && !currentState.roomId && !currentState.snapshot) {
+        if (isPendingGuestJoin(currentState)) {
           void failPendingJoin(message.message);
           return;
         }
@@ -572,6 +572,13 @@ export default function App() {
       }
 
       if (status === "CHANNEL_ERROR") {
+        const currentState = latestMultiplayerRef.current;
+
+        if (isPendingGuestJoin(currentState)) {
+          void failPendingJoin(uiText.joinMissingRoomToast);
+          return;
+        }
+
         setStatusText("Server connection failed");
       }
     });
@@ -627,7 +634,7 @@ export default function App() {
        joinLookupTimeoutRef.current = window.setTimeout(() => {
          const currentState = latestMultiplayerRef.current;
 
-         if (currentState.isHost || currentState.roomId || currentState.snapshot) {
+         if (!isPendingGuestJoin(currentState)) {
            return;
          }
 
@@ -848,4 +855,8 @@ function formatCountdown(totalSeconds: number): string {
   const seconds = totalSeconds % 60;
 
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function isPendingGuestJoin(multiplayer: MultiplayerState): boolean {
+  return !multiplayer.isHost && Boolean(multiplayer.playerId) && !multiplayer.roomId && !multiplayer.snapshot;
 }
