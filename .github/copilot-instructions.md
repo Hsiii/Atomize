@@ -24,3 +24,7 @@
 ## Planing
 
 When Planning, always ask questions beforehand for the details if the prompt from the user wasn't clear enough.
+
+## Style
+
+- When design game components, always use flat color and prevent adding gradients and shadows, to keep the style consistent and simple.
