@@ -34,6 +34,7 @@ const playablePrimes = PRIME_POOL.slice(0, 9);
 const soloComboStepDelayMs = 280;
 const multiplayerComboStepDelayMs = 220;
 const multiplayerCountdownDurationMs = 3000;
+const joinRoomLookupTimeoutMs = 1000;
 
 type RoomBroadcastMessage =
   | {
@@ -74,6 +75,7 @@ export default function App() {
   const [multiplayerPrimeQueue, setMultiplayerPrimeQueue] = useState<Prime[]>([]);
   const [isMultiplayerComboRunning, setIsMultiplayerComboRunning] = useState(false);
   const [multiplayerCountdownValue, setMultiplayerCountdownValue] = useState<number | null>(null);
+  const [lobbyToastMessage, setLobbyToastMessage] = useState<string | null>(null);
   const [multiplayer, setMultiplayer] = useState<MultiplayerState>({
     playerId: null,
     snapshot: null,
@@ -86,6 +88,7 @@ export default function App() {
   const supabaseRef = useRef<SupabaseClient | null>(null);
   const latestSoloStateRef = useRef(soloState);
   const latestMultiplayerRef = useRef(multiplayer);
+  const joinLookupTimeoutRef = useRef<number | null>(null);
   const multiplayerPlayers = multiplayer.snapshot?.players ?? [];
   const currentMultiplayerPlayer = multiplayerPlayers.find((player) => player.id === multiplayer.playerId) ?? null;
   const multiplayerCountdownProgress = (multiplayerTimeLeft / soloDurationSeconds) * 100;
@@ -101,6 +104,20 @@ export default function App() {
   useEffect(() => {
     latestMultiplayerRef.current = multiplayer;
   }, [multiplayer]);
+
+  useEffect(() => {
+    if (!lobbyToastMessage) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setLobbyToastMessage(null);
+    }, 1000);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [lobbyToastMessage]);
 
   useEffect(() => {
     if (multiplayer.snapshot?.status === "playing") {
@@ -356,6 +373,30 @@ export default function App() {
     }));
   }
 
+  function showLobbyToast(message: string) {
+    setLobbyToastMessage(message);
+  }
+
+  function clearJoinLookupTimeout() {
+    if (joinLookupTimeoutRef.current !== null) {
+      window.clearTimeout(joinLookupTimeoutRef.current);
+      joinLookupTimeoutRef.current = null;
+    }
+  }
+
+  async function failPendingJoin(message: string) {
+    clearJoinLookupTimeout();
+    await closeActiveChannel();
+    setMultiplayer({
+      playerId: null,
+      snapshot: null,
+      statusText: uiText.idleStatus,
+      roomId: "",
+      isHost: false,
+    });
+    showLobbyToast(message);
+  }
+
   async function broadcastMessage(message: RoomBroadcastMessage) {
     const channel = channelRef.current;
 
@@ -385,6 +426,8 @@ export default function App() {
   }
 
   async function closeActiveChannel() {
+    clearJoinLookupTimeout();
+
     if (channelRef.current && supabaseRef.current) {
       await supabaseRef.current.removeChannel(channelRef.current);
       channelRef.current = null;
@@ -422,6 +465,12 @@ export default function App() {
 
         if (message.type !== "room_state") {
           return;
+        }
+
+        const currentState = latestMultiplayerRef.current;
+
+        if (!currentState.isHost && currentState.playerId && message.snapshot.players.some((player) => player.id === currentState.playerId)) {
+          clearJoinLookupTimeout();
         }
 
         updateSnapshot(message.snapshot, "");
@@ -500,6 +549,13 @@ export default function App() {
           return;
         }
 
+        const currentState = latestMultiplayerRef.current;
+
+        if (!currentState.isHost && !currentState.roomId && !currentState.snapshot) {
+          void failPendingJoin(message.message);
+          return;
+        }
+
         setStatusText(message.message);
       });
 
@@ -508,7 +564,7 @@ export default function App() {
     setMultiplayer((currentState) => ({
       ...currentState,
       playerId,
-      roomId,
+      roomId: isHost ? roomId : currentState.roomId,
       isHost,
       statusText: "",
     }));
@@ -558,7 +614,7 @@ export default function App() {
     }
 
     const playerId = crypto.randomUUID();
-    setStatusText(uiText.joiningRoom);
+    setLobbyToastMessage(null);
 
     await subscribeToRoom(roomId, playerId, false, async () => {
       setScreen("multi-lobby");
@@ -566,6 +622,17 @@ export default function App() {
         type: "join_request",
         playerId,
       });
+
+       clearJoinLookupTimeout();
+       joinLookupTimeoutRef.current = window.setTimeout(() => {
+         const currentState = latestMultiplayerRef.current;
+
+         if (currentState.isHost || currentState.roomId || currentState.snapshot) {
+           return;
+         }
+
+         void failPendingJoin(uiText.joinMissingRoomToast);
+       }, joinRoomLookupTimeoutMs);
     });
   }
 
@@ -654,17 +721,18 @@ export default function App() {
 
     const currentPlayer = currentState.snapshot.players.find((player) => player.id === currentState.playerId);
 
-    if (currentPlayer?.ready) {
+    if (!currentPlayer) {
       return;
     }
 
-    const optimisticSnapshot = setPlayerReady(currentState.snapshot, currentState.playerId, true);
-    updateSnapshot(optimisticSnapshot, uiText.waitingForHost);
+    const nextReady = !currentPlayer.ready;
+    const optimisticSnapshot = setPlayerReady(currentState.snapshot, currentState.playerId, nextReady);
+    updateSnapshot(optimisticSnapshot, nextReady ? uiText.waitingForHost : "");
 
     await broadcastMessage({
       type: "player_ready",
       playerId: currentState.playerId,
-      ready: true,
+      ready: nextReady,
     });
   }
 
@@ -676,18 +744,19 @@ export default function App() {
     }
 
     if (!canStartRoomCountdown(currentState.snapshot)) {
-      setStatusText(uiText.opponentMustReady);
-      return;
+
+    if (!currentPlayer) {
     }
 
     const nextSnapshot = startRoomCountdown(currentState.snapshot, Date.now() + multiplayerCountdownDurationMs);
-    updateSnapshot(nextSnapshot, "");
-    await broadcastMessage({
+    const nextReady = !currentPlayer.ready;
+    const optimisticSnapshot = setPlayerReady(currentState.snapshot, currentState.playerId, nextReady);
+    updateSnapshot(optimisticSnapshot, nextReady ? uiText.waitingForHost : "");
       type: "room_state",
       snapshot: nextSnapshot,
       sourcePlayerId: currentState.playerId,
     });
-  }
+      ready: nextReady,
 
   if (screen === "menu") {
     return (
@@ -725,6 +794,7 @@ export default function App() {
         menuMode={menuMode}
         multiplayer={multiplayer}
         multiplayerCountdownValue={multiplayerCountdownValue}
+        transientToastMessage={lobbyToastMessage}
         roomIdInput={roomIdInput}
         onBack={returnToMenu}
         onRoomIdInputChange={handleRoomIdInputChange}

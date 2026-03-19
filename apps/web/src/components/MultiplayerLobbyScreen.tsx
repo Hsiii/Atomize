@@ -8,6 +8,7 @@ type MultiplayerLobbyScreenProps = {
   menuMode: MenuMode;
   multiplayer: MultiplayerState;
   multiplayerCountdownValue: number | null;
+  transientToastMessage: string | null;
   roomIdInput: string;
   onBack: () => void | Promise<void>;
   onRoomIdInputChange: (value: string) => void;
@@ -22,6 +23,7 @@ export function MultiplayerLobbyScreen({
   menuMode,
   multiplayer,
   multiplayerCountdownValue,
+  transientToastMessage,
   roomIdInput,
   onBack,
   onRoomIdInputChange,
@@ -34,6 +36,7 @@ export function MultiplayerLobbyScreen({
   const [showStartBlockedToast, setShowStartBlockedToast] = useState(false);
   const isJoinFlow = menuMode === "join-room";
   const shouldShowWaitingRoom = Boolean(multiplayer.roomId);
+  const activeToastMessage = showStartBlockedToast ? uiText.startBlockedToast : transientToastMessage;
 
   useEffect(() => {
     if (!showStartBlockedToast) {
@@ -87,6 +90,8 @@ export function MultiplayerLobbyScreen({
               <ActionButton variant="secondary" onClick={() => void (isJoinFlow ? onJoinRoom() : onCreateRoom())}>
                 {isJoinFlow ? uiText.go : uiText.createRoom}
               </ActionButton>
+
+              {activeToastMessage ? <div className="waiting-toast">{activeToastMessage}</div> : null}
             </div>
           </div>
         </section>
@@ -97,7 +102,7 @@ export function MultiplayerLobbyScreen({
   const currentPlayer = multiplayer.snapshot?.players.find((player) => player.id === multiplayer.playerId) ?? null;
   const opponentPlayer = multiplayer.snapshot?.players.find((player) => player.id !== multiplayer.playerId) ?? null;
   const isCountdown = multiplayer.snapshot?.status === "countdown";
-  const readyButtonDisabled = !currentPlayer || currentPlayer.ready || isCountdown;
+  const readyButtonDisabled = !currentPlayer || isCountdown;
   const guestButtonText = currentPlayer?.ready
     ? `${uiText.readyWaiting} ${opponentPlayer?.name ?? uiText.opponent}`
     : uiText.ready;
@@ -155,12 +160,12 @@ export function MultiplayerLobbyScreen({
 
           <div className="waiting-cta">
             {isCountdown ? (
-              <ActionButton variant="primary" className="start-action" disabled>
+              <ActionButton variant="secondary" className="start-action" disabled>
                 {`${uiText.countdownPrefix} ${multiplayerCountdownValue ?? 3}`}
               </ActionButton>
             ) : multiplayer.isHost ? (
               <ActionButton
-                variant="primary"
+                variant="secondary"
                 className={!canStartRoomCountdown ? "start-action is-disabled" : "start-action"}
                 onClick={handleHostStartClick}
                 aria-disabled={!canStartRoomCountdown}
@@ -178,7 +183,7 @@ export function MultiplayerLobbyScreen({
               </ActionButton>
             )}
 
-            {showStartBlockedToast ? <div className="waiting-toast">{uiText.startBlockedToast}</div> : null}
+            {activeToastMessage ? <div className="waiting-toast">{activeToastMessage}</div> : null}
           </div>
         </div>
       </section>

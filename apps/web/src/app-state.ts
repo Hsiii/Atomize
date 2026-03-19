@@ -29,6 +29,7 @@ export const uiText = {
   pressReady: "Press ready when you are set.",
   readyBadge: "READY!",
   startBlockedToast: "Opponent isn't ready yet, so we can't start.",
+  joinMissingRoomToast: "That room doesn't exist.",
   countdownPrefix: "Starting in",
   joiningRoom: "Joining room...",
   start: "Start",
