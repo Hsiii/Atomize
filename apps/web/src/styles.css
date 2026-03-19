@@ -266,6 +266,7 @@ input {
   border-radius: 50%;
   background: var(--color-surface-strong);
   color: var(--color-secondary);
+  box-shadow: none;
   display: grid;
   place-items: center;
   flex: 0 0 auto;
@@ -278,7 +279,7 @@ input {
   width: 2.9rem;
   height: 2.9rem;
   z-index: 5;
-  box-shadow: 0 14px 24px rgba(11, 34, 53, 0.14);
+  box-shadow: none;
 }
 
 .control-icon {
