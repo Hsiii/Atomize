@@ -1,3 +1,4 @@
+import { startTransition, useEffect, useRef, useState } from 'react';
 import type { JSX } from 'react';
 import type { Prime, SoloState } from '@atomize/game-core';
 import { CircleArrowUp, Delete } from 'lucide-react';
@@ -19,9 +20,8 @@ type SingleGameScreenProps = {
     isSoloComboRunning: boolean;
     soloTimerPenaltyPopKey: number;
     onBack: () => void | Promise<void>;
-    onPrimeTap: (prime: Prime) => void;
-    onBackspace: () => void;
-    onSubmit: () => void;
+    onQueueChange: (queue: readonly Prime[]) => void;
+    onSubmit: (queue: readonly Prime[]) => void;
     formatCountdown: (totalSeconds: number) => string;
 };
 
@@ -35,13 +35,54 @@ export function SingleGameScreen({
     isSoloComboRunning,
     soloTimerPenaltyPopKey,
     onBack,
-    onPrimeTap,
-    onBackspace,
+    onQueueChange,
     onSubmit,
     formatCountdown,
 }: SingleGameScreenProps): JSX.Element {
     const isCountdownActive = soloStartCountdownValue !== null;
     const isTimeUp = soloTimeLeft === 0;
+    const isInputDisabled = isTimeUp || isSoloComboRunning || isCountdownActive;
+    const [visibleQueue, setVisibleQueue] = useState<Prime[]>(soloPrimeQueue);
+    const visibleQueueRef = useRef(visibleQueue);
+
+    useEffect(() => {
+        visibleQueueRef.current = soloPrimeQueue;
+        setVisibleQueue(soloPrimeQueue);
+    }, [soloPrimeQueue]);
+
+    function updateVisibleQueue(nextQueue: readonly Prime[]) {
+        const normalizedQueue = [...nextQueue];
+
+        visibleQueueRef.current = normalizedQueue;
+        setVisibleQueue(normalizedQueue);
+        startTransition(() => {
+            onQueueChange(normalizedQueue);
+        });
+    }
+
+    function handlePrimeTap(prime: Prime) {
+        if (isInputDisabled) {
+            return;
+        }
+
+        updateVisibleQueue([...visibleQueueRef.current, prime]);
+    }
+
+    function handleBackspace() {
+        if (visibleQueueRef.current.length === 0 || isSoloComboRunning) {
+            return;
+        }
+
+        updateVisibleQueue(visibleQueueRef.current.slice(0, -1));
+    }
+
+    function handleSubmit() {
+        if (isInputDisabled || visibleQueueRef.current.length === 0) {
+            return;
+        }
+
+        onSubmit(visibleQueueRef.current);
+    }
 
     return (
         <main className='app-shell fullscreen-shell'>
@@ -64,19 +105,15 @@ export function SingleGameScreen({
                     </strong>
                 </section>
 
-                <ComboQueuePanel queue={soloPrimeQueue} />
+                <ComboQueuePanel queue={visibleQueue} />
 
                 <section className='single-controls-grid'>
                     <div className='keypad solo-keypad'>
                         {playablePrimes.map((prime) => (
                             <PrimeKeyButton
-                                disabled={
-                                    isTimeUp ||
-                                    isSoloComboRunning ||
-                                    isCountdownActive
-                                }
+                                disabled={isInputDisabled}
                                 key={prime}
-                                onPress={onPrimeTap}
+                                onPress={handlePrimeTap}
                                 prime={prime}
                             >
                                 {prime}
@@ -89,12 +126,12 @@ export function SingleGameScreen({
                             aria-label={uiText.backspace}
                             className='combo-backspace-button'
                             disabled={
-                                soloPrimeQueue.length === 0 ||
+                                visibleQueue.length === 0 ||
                                 isSoloComboRunning ||
                                 isCountdownActive ||
                                 isTimeUp
                             }
-                            onClick={onBackspace}
+                            onClick={handleBackspace}
                             variant='secondary'
                         >
                             <span className='control-button-content'>
@@ -110,11 +147,11 @@ export function SingleGameScreen({
                             className='combo-enter-button'
                             disabled={
                                 isTimeUp ||
-                                soloPrimeQueue.length === 0 ||
+                                visibleQueue.length === 0 ||
                                 isSoloComboRunning ||
                                 isCountdownActive
                             }
-                            onClick={onSubmit}
+                            onClick={handleSubmit}
                             variant='secondary'
                         >
                             <span className='control-button-content'>

@@ -1,3 +1,4 @@
+import { startTransition, useEffect, useRef, useState } from 'react';
 import type { JSX } from 'react';
 import type { Prime, RoomPlayer, RoomSnapshot } from '@atomize/game-core';
 import { CircleArrowUp, Delete } from 'lucide-react';
@@ -21,9 +22,8 @@ type MultiplayerGameScreenProps = {
     isMultiplayerComboRunning: boolean;
     roomId: string;
     onBack: () => void | Promise<void>;
-    onPrimeTap: (prime: Prime) => void;
-    onBackspace: () => void;
-    onSubmit: () => void | Promise<void>;
+    onQueueChange: (queue: readonly Prime[]) => void;
+    onSubmit: (queue: readonly Prime[]) => Promise<void>;
     formatCountdown: (totalSeconds: number) => string;
 };
 
@@ -39,17 +39,64 @@ export function MultiplayerGameScreen({
     isMultiplayerComboRunning,
     roomId: _roomId,
     onBack,
-    onPrimeTap,
-    onBackspace,
+    onQueueChange,
     onSubmit,
     formatCountdown,
 }: MultiplayerGameScreenProps): JSX.Element {
     const isTimeUp = multiplayerTimeLeft === 0;
+    const [visibleQueue, setVisibleQueue] = useState<Prime[]>(
+        multiplayerPrimeQueue
+    );
+    const visibleQueueRef = useRef(visibleQueue);
+
+    useEffect(() => {
+        visibleQueueRef.current = multiplayerPrimeQueue;
+        setVisibleQueue(multiplayerPrimeQueue);
+    }, [multiplayerPrimeQueue]);
+
+    function updateVisibleQueue(nextQueue: readonly Prime[]) {
+        const normalizedQueue = [...nextQueue];
+
+        visibleQueueRef.current = normalizedQueue;
+        setVisibleQueue(normalizedQueue);
+        startTransition(() => {
+            onQueueChange(normalizedQueue);
+        });
+    }
+
+    function handlePrimeTap(prime: Prime) {
+        if (isMultiplayerInputDisabled) {
+            return;
+        }
+
+        updateVisibleQueue([...visibleQueueRef.current, prime]);
+    }
+
+    function handleBackspace() {
+        if (isMultiplayerComboRunning || visibleQueueRef.current.length === 0) {
+            return;
+        }
+
+        updateVisibleQueue(visibleQueueRef.current.slice(0, -1));
+    }
+
+    async function submitVisibleQueue() {
+        if (
+            isMultiplayerInputDisabled ||
+            visibleQueueRef.current.length === 0
+        ) {
+            return;
+        }
+
+        try {
+            await onSubmit(visibleQueueRef.current);
+        } catch {
+            // Ignore submit failures to keep the input responsive.
+        }
+    }
 
     function handleSubmitClick() {
-        Promise.resolve()
-            .then(onSubmit)
-            .catch(() => undefined);
+        submitVisibleQueue().catch(() => undefined);
     }
 
     return (
@@ -74,7 +121,7 @@ export function MultiplayerGameScreen({
                     </strong>
                 </section>
 
-                <ComboQueuePanel queue={multiplayerPrimeQueue} />
+                <ComboQueuePanel queue={visibleQueue} />
 
                 <section className='single-controls-grid multiplayer-controls-grid'>
                     <div className='keypad solo-keypad multiplayer-keypad'>
@@ -82,7 +129,7 @@ export function MultiplayerGameScreen({
                             <PrimeKeyButton
                                 disabled={isMultiplayerInputDisabled}
                                 key={`room-${prime}`}
-                                onPress={onPrimeTap}
+                                onPress={handlePrimeTap}
                                 prime={prime}
                             >
                                 {prime}
@@ -96,9 +143,9 @@ export function MultiplayerGameScreen({
                             className='combo-backspace-button'
                             disabled={
                                 isMultiplayerComboRunning ||
-                                multiplayerPrimeQueue.length === 0
+                                visibleQueue.length === 0
                             }
-                            onClick={onBackspace}
+                            onClick={handleBackspace}
                             variant='secondary'
                         >
                             <span className='control-button-content'>
@@ -114,7 +161,7 @@ export function MultiplayerGameScreen({
                             className='combo-enter-button'
                             disabled={
                                 isMultiplayerInputDisabled ||
-                                multiplayerPrimeQueue.length === 0
+                                visibleQueue.length === 0
                             }
                             onClick={handleSubmitClick}
                             variant='secondary'
