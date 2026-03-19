@@ -49,20 +49,24 @@
     transform: translate(-50%, -50%);
 }
 
+.menu-actions-shell {
+    position: absolute;
+    inset: clamp(12.5rem, 31vh, 19rem) clamp(0.75rem, 4vw, 2rem)
+        clamp(0.75rem, 7vh, 3rem);
+    z-index: 1;
+}
+
 .menu-actions {
     position: absolute;
-    left: 50%;
-    top: 77%;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-    width: clamp(13rem, 54vw, 18rem);
-    aspect-ratio: 1;
-    min-height: 0;
-    transform: translate(-50%, -50%);
+    inset: 0;
+    overflow: hidden;
+    pointer-events: auto;
 }
 
 .menu-blob-button {
+    --blob-x: 0px;
+    --blob-y: 0px;
+    --blob-scale: 1;
     width: clamp(4.6rem, 19vw, 6.3rem);
     min-height: clamp(4.6rem, 19vw, 6.3rem);
     aspect-ratio: 1;
@@ -72,44 +76,38 @@
     background: var(--color-primary);
     color: var(--color-text-inverse);
     position: absolute;
-    left: 50%;
-    top: 50%;
+    left: var(--blob-x);
+    top: var(--blob-y);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: clamp(0.4rem, 1.4vw, 0.65rem);
-    transform: translate(-50%, -50%);
+    overflow: hidden;
+    transform: scale(var(--blob-scale));
+    transform-origin: center;
     transition:
         transform 160ms ease,
         border-color 160ms ease;
 }
 
-.menu-blob-button:nth-child(1) {
-    left: 59%;
-    top: 21%;
-}
-
-.menu-blob-button:nth-child(2) {
-    left: 25%;
-    top: 59%;
-}
-
-.menu-blob-button:nth-child(3) {
-    left: 73%;
-    top: 74%;
-}
-
 .menu-blob-button:hover,
 .menu-blob-button:focus-visible {
-    transform: translate(-50%, calc(-50% - 0.18rem)) scale(1.02);
+    --blob-scale: 1.05;
     border-color: rgba(255, 255, 255, 0.6);
+}
+
+.menu-blob-button:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.64);
+    outline-offset: 0.18rem;
 }
 
 .menu-blob-icon {
     width: clamp(1.2rem, 5.2vw, 1.95rem);
     height: clamp(1.2rem, 5.2vw, 1.95rem);
     stroke-width: 1.9;
+    position: relative;
+    z-index: 1;
 }
 
 .menu-blob-text {
@@ -118,4 +116,26 @@
     line-height: 1.12;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+}
+
+.menu-blob-play {
+    background: var(--color-primary);
+}
+
+.menu-blob-solo,
+.menu-blob-dual {
+    background: var(--color-primary-strong);
+}
+
+.menu-blob-create,
+.menu-blob-join {
+    background: var(--color-secondary);
+}
+
+@media (max-width: 640px) {
+    .menu-actions-shell {
+        inset: 13.5rem 0 0.4rem;
+    }
 }
