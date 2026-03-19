@@ -36,6 +36,11 @@ const multiplayerComboStepDelayMs = 220;
 const multiplayerCountdownDurationMs = 3000;
 const joinRoomLookupTimeoutMs = 1000;
 
+type LobbyToastState = {
+  id: number;
+  message: string | null;
+};
+
 type RoomBroadcastMessage =
   | {
       type: "room_state";
@@ -75,7 +80,10 @@ export default function App() {
   const [multiplayerPrimeQueue, setMultiplayerPrimeQueue] = useState<Prime[]>([]);
   const [isMultiplayerComboRunning, setIsMultiplayerComboRunning] = useState(false);
   const [multiplayerCountdownValue, setMultiplayerCountdownValue] = useState<number | null>(null);
-  const [lobbyToastMessage, setLobbyToastMessage] = useState<string | null>(null);
+  const [lobbyToast, setLobbyToast] = useState<LobbyToastState>({
+    id: 0,
+    message: null,
+  });
   const [multiplayer, setMultiplayer] = useState<MultiplayerState>({
     playerId: null,
     snapshot: null,
@@ -104,20 +112,6 @@ export default function App() {
   useEffect(() => {
     latestMultiplayerRef.current = multiplayer;
   }, [multiplayer]);
-
-  useEffect(() => {
-    if (!lobbyToastMessage) {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      setLobbyToastMessage(null);
-    }, 1000);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [lobbyToastMessage]);
 
   useEffect(() => {
     if (multiplayer.snapshot?.status === "playing") {
@@ -374,7 +368,10 @@ export default function App() {
   }
 
   function showLobbyToast(message: string) {
-    setLobbyToastMessage(message);
+    setLobbyToast((currentToast) => ({
+      id: currentToast.id + 1,
+      message,
+    }));
   }
 
   function clearJoinLookupTimeout() {
@@ -614,7 +611,10 @@ export default function App() {
     }
 
     const playerId = crypto.randomUUID();
-    setLobbyToastMessage(null);
+    setLobbyToast((currentToast) => ({
+      id: currentToast.id,
+      message: null,
+    }));
 
     await subscribeToRoom(roomId, playerId, false, async () => {
       setScreen("multi-lobby");
@@ -744,19 +744,19 @@ export default function App() {
     }
 
     if (!canStartRoomCountdown(currentState.snapshot)) {
-
-    if (!currentPlayer) {
+      setStatusText(uiText.opponentMustReady);
+      return;
     }
 
     const nextSnapshot = startRoomCountdown(currentState.snapshot, Date.now() + multiplayerCountdownDurationMs);
-    const nextReady = !currentPlayer.ready;
-    const optimisticSnapshot = setPlayerReady(currentState.snapshot, currentState.playerId, nextReady);
-    updateSnapshot(optimisticSnapshot, nextReady ? uiText.waitingForHost : "");
+    updateSnapshot(nextSnapshot, "");
+
+    await broadcastMessage({
       type: "room_state",
       snapshot: nextSnapshot,
       sourcePlayerId: currentState.playerId,
     });
-      ready: nextReady,
+  }
 
   if (screen === "menu") {
     return (
@@ -794,7 +794,8 @@ export default function App() {
         menuMode={menuMode}
         multiplayer={multiplayer}
         multiplayerCountdownValue={multiplayerCountdownValue}
-        transientToastMessage={lobbyToastMessage}
+        transientToastId={lobbyToast.id}
+        transientToastMessage={lobbyToast.message}
         roomIdInput={roomIdInput}
         onBack={returnToMenu}
         onRoomIdInputChange={handleRoomIdInputChange}

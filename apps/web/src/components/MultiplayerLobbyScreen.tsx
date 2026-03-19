@@ -8,6 +8,7 @@ type MultiplayerLobbyScreenProps = {
   menuMode: MenuMode;
   multiplayer: MultiplayerState;
   multiplayerCountdownValue: number | null;
+  transientToastId: number;
   transientToastMessage: string | null;
   roomIdInput: string;
   onBack: () => void | Promise<void>;
@@ -23,6 +24,7 @@ export function MultiplayerLobbyScreen({
   menuMode,
   multiplayer,
   multiplayerCountdownValue,
+  transientToastId,
   transientToastMessage,
   roomIdInput,
   onBack,
@@ -34,9 +36,10 @@ export function MultiplayerLobbyScreen({
   canStartRoomCountdown,
 }: MultiplayerLobbyScreenProps) {
   const [showStartBlockedToast, setShowStartBlockedToast] = useState(false);
+  const [visibleTransientToastMessage, setVisibleTransientToastMessage] = useState<string | null>(null);
   const isJoinFlow = menuMode === "join-room";
   const shouldShowWaitingRoom = Boolean(multiplayer.roomId);
-  const activeToastMessage = showStartBlockedToast ? uiText.startBlockedToast : transientToastMessage;
+  const activeToastMessage = showStartBlockedToast ? uiText.startBlockedToast : visibleTransientToastMessage;
 
   useEffect(() => {
     if (!showStartBlockedToast) {
@@ -51,6 +54,23 @@ export function MultiplayerLobbyScreen({
       window.clearTimeout(timer);
     };
   }, [showStartBlockedToast]);
+
+  useEffect(() => {
+    if (!transientToastMessage) {
+      setVisibleTransientToastMessage(null);
+      return;
+    }
+
+    setVisibleTransientToastMessage(transientToastMessage);
+
+    const timer = window.setTimeout(() => {
+      setVisibleTransientToastMessage(null);
+    }, 1000);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [transientToastId, transientToastMessage]);
 
   if (!multiplayer.roomId && !shouldShowWaitingRoom) {
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
