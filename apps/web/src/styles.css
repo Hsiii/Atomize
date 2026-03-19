@@ -706,6 +706,8 @@ input {
   margin-top: var(--space-1);
   font-weight: 700;
   line-height: 1;
+  letter-spacing: 0;
+  text-indent: 0;
   color: var(--color-ink);
   pointer-events: none;
 }
@@ -715,6 +717,7 @@ input {
   place-items: center;
   position: relative;
   width: 1ch;
+  justify-self: center;
   color: rgba(11, 34, 53, 0.42);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1, "lnum" 1;
@@ -722,10 +725,14 @@ input {
 
 .room-code-character::before {
   content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
   width: 0.7ch;
   height: 0.08em;
   border-radius: var(--radius-pill);
   background: currentColor;
+  transform: translate(-50%, -50%);
 }
 
 .room-code-character.filled {
