@@ -10,7 +10,7 @@
     min-height: var(--size-buffer-strip-min-height);
     padding: 0 var(--space-buffer-strip-x);
     border-radius: var(--radius-button);
-    background: var(--color-buffer-strip);
+    background: var(--color-success);
     text-align: center;
 }
 
