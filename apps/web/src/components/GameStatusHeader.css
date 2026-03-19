@@ -83,7 +83,7 @@
     display: flex;
     align-items: baseline;
     justify-content: flex-end;
-    gap: var(--space-2);
+    gap: var(--space-score-label-gap);
     text-align: right;
     white-space: nowrap;
 }
@@ -94,6 +94,7 @@
     font-family: var(--font-family-display);
     font-size: clamp(1.15rem, 4vw, 1.45rem);
     line-height: 1;
+    color: var(--color-primary);
 }
 
 .single-score-unit {
