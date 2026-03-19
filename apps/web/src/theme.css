@@ -77,6 +77,8 @@
     --size-settings-height: 28rem;
     --size-score-dialog-width: 18rem;
     --size-room-panel-width: 22rem;
+    --font-size-keypad-digit: clamp(4.8rem, 14vw, 7.4rem);
+    --font-size-keypad-digit-mobile: clamp(4.2rem, 17vw, 5.8rem);
     --size-menu-title-orb: 17rem;
     --size-menu-blob-min-height: 7.2rem;
     --size-menu-blob-icon: 1.9rem;
