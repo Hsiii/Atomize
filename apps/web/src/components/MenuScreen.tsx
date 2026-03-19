@@ -1,8 +1,9 @@
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent, JSX } from 'react';
 import { Settings, X } from 'lucide-react';
 
 import { uiText } from '../app-state';
 import { ActionButton } from './ActionButton';
+import { IconButton } from './IconButton';
 
 type MenuScreenProps = {
     isSettingsOpen: boolean;
@@ -26,7 +27,7 @@ export function MenuScreen({
     onCloseSettings,
     onNameDraftChange,
     onSaveName,
-}: MenuScreenProps) {
+}: MenuScreenProps): JSX.Element {
     const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
         onNameDraftChange(event.target.value);
     };
@@ -34,34 +35,34 @@ export function MenuScreen({
     return (
         <main className='app-shell fullscreen-shell'>
             <section className='screen screen-menu'>
-                <button
-                    type='button'
-                    className='icon-action floating-settings-button'
+                <IconButton
+                    className='floating-settings-button'
+                    icon={
+                        <Settings aria-hidden='true' className='control-icon' />
+                    }
+                    label={uiText.settings}
                     onClick={onOpenSettings}
-                    aria-label={uiText.settings}
-                >
-                    <Settings className='control-icon' aria-hidden='true' />
-                </button>
+                />
 
                 <div className='menu-stack'>
                     <p className='eyebrow'>{uiText.eyebrow}</p>
                     <h1 className='hero-title'>{uiText.title}</h1>
                     <div className='action-stack menu-actions'>
                         <ActionButton
-                            variant='primary'
                             onClick={onStartSingleGame}
+                            variant='primary'
                         >
                             {uiText.singlePlayer}
                         </ActionButton>
                         <ActionButton
-                            variant='secondary'
                             onClick={onStartCreateRoomFlow}
+                            variant='secondary'
                         >
                             {uiText.createRoom}
                         </ActionButton>
                         <ActionButton
-                            variant='secondary'
                             onClick={onStartJoinRoomFlow}
+                            variant='secondary'
                         >
                             {uiText.joinRoom}
                         </ActionButton>
@@ -71,54 +72,55 @@ export function MenuScreen({
                 {isSettingsOpen ? (
                     <div
                         className='settings-modal-scrim'
-                        role='presentation'
                         onClick={onCloseSettings}
+                        role='presentation'
                     >
                         <section
-                            className='settings-modal'
-                            role='dialog'
-                            aria-modal='true'
                             aria-label={uiText.settings}
-                            onClick={(event) => event.stopPropagation()}
+                            aria-modal='true'
+                            className='settings-modal'
+                            onClick={(event) => {
+                                event.stopPropagation();
+                            }}
+                            role='dialog'
                         >
                             <header className='settings-modal-header'>
                                 <span className='label'>
                                     {uiText.playerName}
                                 </span>
-                                <button
-                                    type='button'
-                                    className='icon-action'
+                                <IconButton
+                                    icon={
+                                        <X
+                                            aria-hidden='true'
+                                            className='control-icon'
+                                        />
+                                    }
+                                    label={uiText.close}
                                     onClick={onCloseSettings}
-                                    aria-label={uiText.close}
-                                >
-                                    <X
-                                        className='control-icon'
-                                        aria-hidden='true'
-                                    />
-                                </button>
+                                />
                             </header>
 
                             <label className='field settings-field'>
                                 <input
-                                    value={nameDraft}
-                                    onChange={handleNameChange}
-                                    maxLength={24}
-                                    placeholder={uiText.namePlaceholder}
                                     autoFocus
+                                    maxLength={24}
+                                    onChange={handleNameChange}
+                                    placeholder={uiText.namePlaceholder}
+                                    value={nameDraft}
                                 />
                             </label>
 
                             <div className='settings-actions'>
                                 <ActionButton
-                                    variant='primary'
                                     onClick={onSaveName}
+                                    variant='primary'
                                 >
                                     {uiText.saveName}
                                 </ActionButton>
                             </div>
                         </section>
                     </div>
-                ) : null}
+                ) : undefined}
             </section>
         </main>
     );

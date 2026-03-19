@@ -5,6 +5,8 @@ import { CircleArrowUp, Delete } from 'lucide-react';
 import { uiText } from '../app-state';
 import { ActionButton } from './ActionButton';
 import { BackButton } from './BackButton';
+import { ComboQueuePanel } from './ComboQueuePanel';
+import { GameStatusHeader } from './GameStatusHeader';
 import { PrimeKeyButton } from './PrimeKeyButton';
 import { ScoreDialog } from './ScoreDialog';
 
@@ -46,41 +48,14 @@ export function SingleGameScreen({
         <main className='app-shell fullscreen-shell'>
             <BackButton onBack={onBack} />
             <section className='screen game-screen single-game-screen'>
-                <header className='top-bar single-top-bar'>
-                    <div
-                        aria-label={`${uiText.timer}: ${formatCountdown(soloTimeLeft)}`}
-                        className='single-timer-shell'
-                    >
-                        <div className='single-timer-bar'>
-                            <span
-                                className='single-timer-fill'
-                                style={{ width: `${soloCountdownProgress}%` }}
-                            />
-                        </div>
-                        <span className='single-timer-text'>
-                            {formatCountdown(soloTimeLeft)}
-                        </span>
-                        {soloTimerPenaltyPopKey > 0 ? (
-                            <span
-                                aria-hidden='true'
-                                className='single-timer-penalty'
-                                key={soloTimerPenaltyPopKey}
-                            >
-                                -1s
-                            </span>
-                        ) : undefined}
-                    </div>
-
-                    <div
-                        aria-label={`${uiText.score}: ${soloState.score}`}
-                        className='single-score-pill'
-                    >
-                        <span className='single-score-label'>
-                            {uiText.score}
-                        </span>
-                        <strong>{soloState.score}</strong>
-                    </div>
-                </header>
+                <GameStatusHeader
+                    countdownProgress={soloCountdownProgress}
+                    formatCountdown={formatCountdown}
+                    penaltyKey={soloTimerPenaltyPopKey}
+                    penaltyText='-1s'
+                    score={soloState.score}
+                    timeLeft={soloTimeLeft}
+                />
 
                 <section aria-live='polite' className='single-value-display'>
                     <strong>
@@ -90,13 +65,7 @@ export function SingleGameScreen({
                     </strong>
                 </section>
 
-                <section aria-live='polite' className='combo-panel'>
-                    <div className='combo-bar'>
-                        {soloPrimeQueue.length > 0
-                            ? soloPrimeQueue.join(' x ')
-                            : undefined}
-                    </div>
-                </section>
+                <ComboQueuePanel queue={soloPrimeQueue} />
 
                 <section className='single-controls-grid'>
                     <div className='keypad solo-keypad'>

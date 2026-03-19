@@ -1,0 +1,86 @@
+:root {
+    --font-family-base: 'Avenir Next', 'Helvetica Neue', sans-serif;
+    --font-family-display:
+        'Avenir Next Condensed', 'Avenir Next', 'Helvetica Neue', sans-serif;
+    --line-height-base: 1.4;
+
+    --color-primary: #203553;
+    --color-primary-strong: #203553;
+    --color-secondary: #203553;
+    --color-ink: #101b2e;
+    --color-ink-soft: rgba(16, 27, 46, 0.72);
+    --color-text-inverse: #ffffff;
+    --color-surface-base: rgba(255, 255, 255, 0.94);
+    --color-surface-strong: #ffffff;
+    --color-surface-muted: rgba(32, 53, 83, 0.08);
+    --color-surface-subtle: rgba(32, 53, 83, 0.12);
+    --color-surface-accent: rgba(32, 53, 83, 0.18);
+    --color-border-soft: rgba(32, 53, 83, 0.2);
+    --color-border-contrast: rgba(255, 255, 255, 0.26);
+    --color-outline-strong: rgba(32, 53, 83, 0.44);
+    --color-disabled-bg: rgba(32, 53, 83, 0.12);
+    --color-disabled-text: rgba(16, 27, 46, 0.54);
+    --color-page-bg: #f4f7fb;
+    --color-track: rgba(16, 27, 46, 0.12);
+    --color-danger: #c43a3a;
+    --color-overlay-soft: rgba(16, 27, 46, 0.2);
+    --color-overlay-strong: rgba(16, 27, 46, 0.26);
+    --color-placeholder: rgba(16, 27, 46, 0.28);
+    --color-placeholder-mark: rgba(32, 53, 83, 0.08);
+    --color-toast-bg: rgba(32, 53, 83, 0.96);
+    --color-toast-text: rgba(255, 255, 255, 0.96);
+
+    --space-0: 0;
+    --space-1: 0.3rem;
+    --space-2: 0.45rem;
+    --space-3: 0.5rem;
+    --space-4: 0.75rem;
+    --space-5: 0.8rem;
+    --space-6: 0.85rem;
+    --space-7: 1rem;
+    --space-8: 1.25rem;
+
+    --space-timer-gap: 0.35rem;
+    --space-penalty-offset: 0.35rem;
+    --space-score-pill-y: 0.45rem;
+    --space-score-pill-x: 0.7rem;
+    --space-score-label-gap: 0.2rem;
+    --space-keypad-gap-compact: 0.4rem;
+    --space-keypad-gap-mobile: 0.35rem;
+    --space-ready-badge-top: 0.6rem;
+    --space-ready-badge-y: 0.3rem;
+    --space-ready-badge-x: 0.7rem;
+    --space-toast-y: 0.8rem;
+    --space-toast-x: 1rem;
+
+    --radius-input: 14px;
+    --radius-button: 18px;
+    --radius-panel: 24px;
+    --radius-pill: 999px;
+    --radius-orb: 999px;
+
+    --size-control: 2.75rem;
+    --size-control-floating: 2.9rem;
+    --size-icon: 1.1rem;
+    --size-icon-lg: 1.5rem;
+    --size-icon-xl: 1.75rem;
+    --size-timer-bar: 0.5rem;
+    --size-score-pill-min: 4.75rem;
+    --size-score-pill-min-wide: 5.5rem;
+    --size-keypad-button-min: 4.5rem;
+    --size-control-rail-min: 4.9rem;
+    --size-control-rail-min-mobile: 4.4rem;
+    --size-settings-width: 22rem;
+    --size-settings-height: 28rem;
+    --size-score-dialog-width: 18rem;
+    --size-room-panel-width: 22rem;
+    --size-waiting-card-min-height: 6.75rem;
+    --size-waiting-mark-min-width: 5.5rem;
+    --size-waiting-mark-min-height: 1.62rem;
+    --size-toast-width: 18rem;
+
+    --shadow-panel: 0 18px 42px rgba(8, 17, 28, 0.08);
+    --shadow-toast: 0 18px 34px rgba(16, 27, 46, 0.22);
+    --blur-panel: 14px;
+    --blur-overlay: 10px;
+}

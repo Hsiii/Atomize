@@ -5,6 +5,8 @@ import { CircleArrowUp, Delete } from 'lucide-react';
 import { uiText } from '../app-state';
 import { ActionButton } from './ActionButton';
 import { BackButton } from './BackButton';
+import { ComboQueuePanel } from './ComboQueuePanel';
+import { GameStatusHeader } from './GameStatusHeader';
 import { PrimeKeyButton } from './PrimeKeyButton';
 import { ScoreDialog } from './ScoreDialog';
 
@@ -55,34 +57,14 @@ export function MultiplayerGameScreen({
         <main className='app-shell fullscreen-shell'>
             <BackButton onBack={onBack} />
             <section className='screen game-screen single-game-screen multiplayer-game-screen'>
-                <header className='top-bar single-top-bar multiplayer-top-bar'>
-                    <div
-                        aria-label={`${uiText.timer}: ${formatCountdown(multiplayerTimeLeft)}`}
-                        className='single-timer-shell'
-                    >
-                        <div className='single-timer-bar'>
-                            <span
-                                className='single-timer-fill'
-                                style={{
-                                    width: `${multiplayerCountdownProgress}%`,
-                                }}
-                            />
-                        </div>
-                        <span className='single-timer-text'>
-                            {formatCountdown(multiplayerTimeLeft)}
-                        </span>
-                    </div>
-
-                    <div
-                        aria-label={`${uiText.score}: ${multiplayerScore}`}
-                        className='single-score-pill multiplayer-score-pill'
-                    >
-                        <span className='single-score-label'>
-                            {uiText.score}
-                        </span>
-                        <strong>{multiplayerScore}</strong>
-                    </div>
-                </header>
+                <GameStatusHeader
+                    countdownProgress={multiplayerCountdownProgress}
+                    formatCountdown={formatCountdown}
+                    headerClassName='multiplayer-top-bar'
+                    score={multiplayerScore}
+                    scoreClassName='multiplayer-score-pill'
+                    timeLeft={multiplayerTimeLeft}
+                />
 
                 <section
                     aria-live='polite'
@@ -93,13 +75,7 @@ export function MultiplayerGameScreen({
                     </strong>
                 </section>
 
-                <section aria-live='polite' className='combo-panel'>
-                    <div className='combo-bar'>
-                        {multiplayerPrimeQueue.length > 0
-                            ? multiplayerPrimeQueue.join(' x ')
-                            : undefined}
-                    </div>
-                </section>
+                <ComboQueuePanel queue={multiplayerPrimeQueue} />
 
                 <section className='single-controls-grid multiplayer-controls-grid'>
                     <div className='keypad solo-keypad multiplayer-keypad'>
