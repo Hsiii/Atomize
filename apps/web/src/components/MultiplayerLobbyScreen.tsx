@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useState } from "react";
 import { ActionButton } from "./ActionButton";
 import { BackButton } from "./BackButton";
+import { RoomCodePanel } from "./RoomCodePanel";
 import type { MenuMode, MultiplayerState } from "../app-state";
 import { uiText } from "../app-state";
 
@@ -37,7 +38,6 @@ export function MultiplayerLobbyScreen({
 }: MultiplayerLobbyScreenProps) {
   const [showStartBlockedToast, setShowStartBlockedToast] = useState(false);
   const [visibleTransientToastMessage, setVisibleTransientToastMessage] = useState<string | null>(null);
-  const roomCodeInputRef = useRef<HTMLInputElement | null>(null);
   const isJoinFlow = menuMode === "join-room";
   const shouldShowWaitingRoom = Boolean(multiplayer.roomId);
   const activeToastMessage = showStartBlockedToast ? uiText.startBlockedToast : visibleTransientToastMessage;
@@ -74,42 +74,12 @@ export function MultiplayerLobbyScreen({
   }, [transientToastId, transientToastMessage]);
 
   if (!multiplayer.roomId && !shouldShowWaitingRoom) {
-    const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-      onRoomIdInputChange(event.target.value);
-    };
-    const roomCodePreview = Array.from({ length: 4 }, (_, index) => roomIdInput[index] ?? "");
-    const focusRoomCodeInput = () => {
-      roomCodeInputRef.current?.focus();
-    };
-
     return (
       <main className="app-shell fullscreen-shell">
         <BackButton onBack={onBack} />
         <section className="screen lobby-screen">
           <div className="lobby-stack waiting-room-stack">
-            <label className="code-panel waiting-code-panel room-code-input-panel" onClick={focusRoomCodeInput}>
-              <p className="label">{uiText.roomCode}</p>
-              <div className="room-code-visual" aria-hidden="true">
-                {roomCodePreview.map((character, index) => (
-                  <div
-                    key={`room-code-character-${index}`}
-                    className={roomIdInput[index] ? "room-code-character filled" : "room-code-character"}
-                  >
-                    {character}
-                  </div>
-                ))}
-              </div>
-              <input
-                ref={roomCodeInputRef}
-                className="room-code-block-input"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={4}
-                value={roomIdInput}
-                onChange={handleInputChange}
-                aria-label={uiText.enterCode}
-              />
-            </label>
+            <RoomCodePanel value={roomIdInput} editable onChange={onRoomIdInputChange} />
 
             <div className="waiting-cta">
               <ActionButton variant="secondary" onClick={() => void (isJoinFlow ? onJoinRoom() : onCreateRoom())}>
@@ -150,10 +120,7 @@ export function MultiplayerLobbyScreen({
       <BackButton onBack={onBack} />
       <section className="screen lobby-screen">
         <div className="lobby-stack waiting-room-stack">
-          <div className="code-panel waiting-code-panel">
-            <p className="label">{uiText.roomCode}</p>
-            <strong>{multiplayer.roomId || uiText.roomPlaceholder}</strong>
-          </div>
+          <RoomCodePanel value={multiplayer.roomId} />
 
           <section className="scoreboard player-scoreboard lobby-scoreboard waiting-room-grid">
             <div className="player-card waiting-player-card active">

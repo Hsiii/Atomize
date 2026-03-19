@@ -690,11 +690,14 @@ input {
   font-variant-numeric: tabular-nums;
 }
 
-.room-code-input-panel {
+.room-code-panel {
   position: relative;
   width: 100%;
   max-width: 22rem;
   margin: 0 auto;
+}
+
+.room-code-panel-editable {
   cursor: text;
 }
 
