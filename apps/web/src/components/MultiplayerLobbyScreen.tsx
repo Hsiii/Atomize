@@ -11,6 +11,7 @@ type MultiplayerLobbyScreenProps = {
   multiplayerCountdownValue: number | null;
   transientToastId: number;
   transientToastMessage: string | null;
+  isJoinPending: boolean;
   roomIdInput: string;
   onBack: () => void | Promise<void>;
   onRoomIdInputChange: (value: string) => void;
@@ -27,6 +28,7 @@ export function MultiplayerLobbyScreen({
   multiplayerCountdownValue,
   transientToastId,
   transientToastMessage,
+  isJoinPending,
   roomIdInput,
   onBack,
   onRoomIdInputChange,
@@ -41,6 +43,7 @@ export function MultiplayerLobbyScreen({
   const isJoinFlow = menuMode === "join-room";
   const shouldShowWaitingRoom = Boolean(multiplayer.roomId);
   const isJoinButtonReady = roomIdInput.length === 4;
+  const isJoinButtonDisabled = isJoinPending || !isJoinButtonReady;
   const activeToastMessage = localToastMessage ?? visibleTransientToastMessage;
 
   useEffect(() => {
@@ -85,6 +88,10 @@ export function MultiplayerLobbyScreen({
       return;
     }
 
+    if (isJoinPending) {
+      return;
+    }
+
     void onJoinRoom();
   }
 
@@ -99,11 +106,11 @@ export function MultiplayerLobbyScreen({
             <div className="waiting-cta">
               <ActionButton
                 variant="secondary"
-                className={isJoinFlow && !isJoinButtonReady ? "start-action is-disabled" : "start-action"}
+                className={isJoinFlow && isJoinButtonDisabled ? "start-action is-disabled" : "start-action"}
                 onClick={handleCreateOrJoinClick}
-                aria-disabled={isJoinFlow && !isJoinButtonReady}
+                aria-disabled={isJoinFlow && isJoinButtonDisabled}
               >
-                {isJoinFlow ? uiText.go : uiText.createRoom}
+                {isJoinFlow ? (isJoinPending ? uiText.findingRoom : uiText.go) : uiText.createRoom}
               </ActionButton>
             </div>
 

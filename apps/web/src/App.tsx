@@ -35,6 +35,22 @@ const soloComboStepDelayMs = 280;
 const multiplayerComboStepDelayMs = 220;
 const multiplayerCountdownDurationMs = 3000;
 const joinRoomLookupTimeoutMs = 1000;
+const playerNameStorageKey = "atomize.playerName";
+const usedPlayerNamesStorageKey = "atomize.usedPlayerNames";
+const fallbackPlayerNames = [
+  "Nova",
+  "Orbit",
+  "Pulse",
+  "Quark",
+  "Comet",
+  "Prism",
+  "Drift",
+  "Echo",
+  "Cipher",
+  "Flux",
+  "Ion",
+  "Pixel",
+] as const;
 
 type LobbyToastState = {
   id: number;
@@ -50,6 +66,7 @@ type RoomBroadcastMessage =
   | {
       type: "join_request";
       playerId: string;
+      playerName: string;
     }
   | {
       type: "prime_selected";
@@ -80,6 +97,9 @@ export default function App() {
   const [multiplayerPrimeQueue, setMultiplayerPrimeQueue] = useState<Prime[]>([]);
   const [isMultiplayerComboRunning, setIsMultiplayerComboRunning] = useState(false);
   const [multiplayerCountdownValue, setMultiplayerCountdownValue] = useState<number | null>(null);
+  const [playerName, setPlayerName] = useState(() => getInitialPlayerName());
+  const [nameDraft, setNameDraft] = useState("");
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [lobbyToast, setLobbyToast] = useState<LobbyToastState>({
     id: 0,
     message: null,
@@ -104,6 +124,10 @@ export default function App() {
   const isMultiplayerInputDisabled = !multiplayer.snapshot || multiplayer.snapshot.status !== "playing" || isMultiplayerComboRunning || multiplayerTimeLeft === 0;
 
   const soloCountdownProgress = (soloTimeLeft / soloDurationSeconds) * 100;
+
+  useEffect(() => {
+    persistPlayerName(playerName);
+  }, [playerName]);
 
   useEffect(() => {
     latestSoloStateRef.current = soloState;
@@ -340,6 +364,26 @@ export default function App() {
     setRoomIdInput(normalizeRoomId(value));
   }
 
+  function openSettings() {
+    setNameDraft(playerName);
+    setIsSettingsOpen(true);
+  }
+
+  function closeSettings() {
+    setIsSettingsOpen(false);
+  }
+
+  function randomizePlayerName() {
+    setNameDraft(getRandomUnusedPlayerName(playerName));
+  }
+
+  function savePlayerName() {
+    const normalizedName = normalizePlayerName(nameDraft) || getRandomUnusedPlayerName(playerName);
+    setPlayerName(normalizedName);
+    setNameDraft(normalizedName);
+    setIsSettingsOpen(false);
+  }
+
   async function returnToMenu() {
     await closeActiveChannel();
     setSoloPrimeQueue([]);
@@ -483,6 +527,7 @@ export default function App() {
         const nextSnapshot = addPlayerToRoom(
           currentState.snapshot,
           message.playerId,
+          message.playerName,
         );
 
         if (!nextSnapshot) {
@@ -587,7 +632,7 @@ export default function App() {
   async function createRoom() {
     const roomId = createRoomId();
     const playerId = crypto.randomUUID();
-    const snapshot = createRoomSnapshot(roomId, playerId);
+    const snapshot = createRoomSnapshot(roomId, playerId, playerName);
 
     if (supabaseRef.current) {
       setMultiplayer((currentState) => ({
@@ -628,6 +673,7 @@ export default function App() {
       await broadcastMessage({
         type: "join_request",
         playerId,
+        playerName,
       });
 
        clearJoinLookupTimeout();
@@ -768,9 +814,15 @@ export default function App() {
   if (screen === "menu") {
     return (
       <MenuScreen
+        isSettingsOpen={isSettingsOpen}
+        nameDraft={nameDraft}
         onStartSingleGame={startSingleGame}
         onStartCreateRoomFlow={startCreateRoomFlow}
         onStartJoinRoomFlow={startJoinRoomFlow}
+        onOpenSettings={openSettings}
+        onCloseSettings={closeSettings}
+        onNameDraftChange={setNameDraft}
+        onSaveName={savePlayerName}
       />
     );
   }
@@ -803,6 +855,7 @@ export default function App() {
         multiplayerCountdownValue={multiplayerCountdownValue}
         transientToastId={lobbyToast.id}
         transientToastMessage={lobbyToast.message}
+        isJoinPending={isPendingGuestJoin(multiplayer)}
         roomIdInput={roomIdInput}
         onBack={returnToMenu}
         onRoomIdInputChange={handleRoomIdInputChange}
@@ -840,6 +893,77 @@ function wait(durationMs: number): Promise<void> {
   return new Promise((resolve) => {
     window.setTimeout(resolve, durationMs);
   });
+}
+
+function getInitialPlayerName(): string {
+  if (typeof window === "undefined") {
+    return fallbackPlayerNames[0];
+  }
+
+  const storedName = normalizePlayerName(window.localStorage.getItem(playerNameStorageKey) ?? "");
+
+  if (storedName) {
+    return storedName;
+  }
+
+  return getRandomUnusedPlayerName();
+}
+
+function getRandomUnusedPlayerName(currentName?: string): string {
+  if (typeof window === "undefined") {
+    return fallbackPlayerNames[0];
+  }
+
+  const usedNames = new Set(getUsedPlayerNames().filter((name) => name !== currentName));
+  const availableNames = fallbackPlayerNames.filter((name) => !usedNames.has(name));
+  const sourceNames = availableNames.length > 0 ? availableNames : fallbackPlayerNames;
+  const randomIndex = Math.floor(Math.random() * sourceNames.length);
+
+  return sourceNames[randomIndex] ?? fallbackPlayerNames[0];
+}
+
+function getUsedPlayerNames(): string[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  const rawValue = window.localStorage.getItem(usedPlayerNamesStorageKey);
+
+  if (!rawValue) {
+    return [];
+  }
+
+  try {
+    const parsedValue = JSON.parse(rawValue) as string[];
+    return Array.isArray(parsedValue) ? parsedValue.map((name) => normalizePlayerName(name)).filter(Boolean) : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistPlayerName(playerName: string) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const normalizedName = normalizePlayerName(playerName);
+
+  if (!normalizedName) {
+    return;
+  }
+
+  window.localStorage.setItem(playerNameStorageKey, normalizedName);
+
+  const nextUsedNames = [
+    normalizedName,
+    ...getUsedPlayerNames().filter((name) => name !== normalizedName),
+  ].slice(0, fallbackPlayerNames.length);
+
+  window.localStorage.setItem(usedPlayerNamesStorageKey, JSON.stringify(nextUsedNames));
+}
+
+function normalizePlayerName(value: string): string {
+  return value.trim().replace(/\s+/g, " ").slice(0, 24);
 }
 
 function createRoomId(): string {

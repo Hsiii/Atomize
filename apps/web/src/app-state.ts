@@ -37,6 +37,7 @@ export const uiText = {
   startBlockedToast: "Opponent isn't ready yet, so we can't start.",
   joinIncompleteToast: "Enter the full 4-digit room code first.",
   joinMissingRoomToast: "That room doesn't exist.",
+  findingRoom: "Finding Room...",
   countdownPrefix: "Starting in",
   joiningRoom: "Joining room...",
   start: "Start",
