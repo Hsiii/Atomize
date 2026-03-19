@@ -36,25 +36,26 @@ export function MultiplayerLobbyScreen({
   onHostStart,
   canStartRoomCountdown,
 }: MultiplayerLobbyScreenProps) {
-  const [showStartBlockedToast, setShowStartBlockedToast] = useState(false);
+  const [localToastMessage, setLocalToastMessage] = useState<string | null>(null);
   const [visibleTransientToastMessage, setVisibleTransientToastMessage] = useState<string | null>(null);
   const isJoinFlow = menuMode === "join-room";
   const shouldShowWaitingRoom = Boolean(multiplayer.roomId);
-  const activeToastMessage = showStartBlockedToast ? uiText.startBlockedToast : visibleTransientToastMessage;
+  const isJoinButtonReady = roomIdInput.length === 4;
+  const activeToastMessage = localToastMessage ?? visibleTransientToastMessage;
 
   useEffect(() => {
-    if (!showStartBlockedToast) {
+    if (!localToastMessage) {
       return;
     }
 
     const timer = window.setTimeout(() => {
-      setShowStartBlockedToast(false);
+      setLocalToastMessage(null);
     }, 2200);
 
     return () => {
       window.clearTimeout(timer);
     };
-  }, [showStartBlockedToast]);
+  }, [localToastMessage]);
 
   useEffect(() => {
     if (!transientToastMessage) {
@@ -73,6 +74,20 @@ export function MultiplayerLobbyScreen({
     };
   }, [transientToastId, transientToastMessage]);
 
+  function handleCreateOrJoinClick() {
+    if (!isJoinFlow) {
+      void onCreateRoom();
+      return;
+    }
+
+    if (!isJoinButtonReady) {
+      setLocalToastMessage(uiText.joinIncompleteToast);
+      return;
+    }
+
+    void onJoinRoom();
+  }
+
   if (!multiplayer.roomId && !shouldShowWaitingRoom) {
     return (
       <main className="app-shell fullscreen-shell">
@@ -82,7 +97,12 @@ export function MultiplayerLobbyScreen({
             <RoomCodePanel value={roomIdInput} editable onChange={onRoomIdInputChange} />
 
             <div className="waiting-cta">
-              <ActionButton variant="secondary" onClick={() => void (isJoinFlow ? onJoinRoom() : onCreateRoom())}>
+              <ActionButton
+                variant="secondary"
+                className={isJoinFlow && !isJoinButtonReady ? "start-action is-disabled" : "start-action"}
+                onClick={handleCreateOrJoinClick}
+                aria-disabled={isJoinFlow && !isJoinButtonReady}
+              >
                 {isJoinFlow ? uiText.go : uiText.createRoom}
               </ActionButton>
             </div>
@@ -108,7 +128,7 @@ export function MultiplayerLobbyScreen({
 
   function handleHostStartClick() {
     if (!canStartRoomCountdown) {
-      setShowStartBlockedToast(true);
+      setLocalToastMessage(uiText.startBlockedToast);
       return;
     }
 
