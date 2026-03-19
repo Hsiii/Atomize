@@ -27,7 +27,6 @@ import { MultiplayerLobbyScreen } from "./components/MultiplayerLobbyScreen";
 import { MultiplayerGameScreen } from "./components/MultiplayerGameScreen";
 import { type MenuMode, type MultiplayerState, type Screen, uiText } from "./app-state";
 
-const soloSeed = "solo-mvp-seed";
 const soloDurationSeconds = 60;
 const soloStartCountdownSeconds = 3;
 const playablePrimes = PRIME_POOL.slice(0, 9);
@@ -85,9 +84,11 @@ type RoomBroadcastMessage =
     };
 
 export default function App() {
+  const initialSoloSeedRef = useRef(createSoloRunSeed());
   const [screen, setScreen] = useState<Screen>("menu");
   const [menuMode, setMenuMode] = useState<MenuMode>("default");
-  const [soloState, setSoloState] = useState(() => createInitialSoloState(soloSeed));
+  const [soloSeed, setSoloSeed] = useState(initialSoloSeedRef.current);
+  const [soloState, setSoloState] = useState(() => createInitialSoloState(initialSoloSeedRef.current));
   const [soloTimeLeft, setSoloTimeLeft] = useState(soloDurationSeconds);
   const [soloStartCountdownValue, setSoloStartCountdownValue] = useState<number | null>(null);
   const [multiplayerTimeLeft, setMultiplayerTimeLeft] = useState(soloDurationSeconds);
@@ -338,7 +339,10 @@ export default function App() {
   }
 
   function startSingleGame() {
-    setSoloState(createInitialSoloState(soloSeed));
+    const nextSoloSeed = createSoloRunSeed();
+
+    setSoloSeed(nextSoloSeed);
+    setSoloState(createInitialSoloState(nextSoloSeed));
     setSoloTimeLeft(soloDurationSeconds);
     setSoloStartCountdownValue(soloStartCountdownSeconds);
     setSoloPrimeQueue([]);
@@ -893,6 +897,10 @@ function wait(durationMs: number): Promise<void> {
   return new Promise((resolve) => {
     window.setTimeout(resolve, durationMs);
   });
+}
+
+function createSoloRunSeed(): string {
+  return `solo:${crypto.randomUUID()}`;
 }
 
 function getInitialPlayerName(): string {

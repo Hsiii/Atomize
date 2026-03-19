@@ -31,21 +31,30 @@ export type SelectionResult =
 
 const MAX_FACTOR_COUNT = 7;
 const MAX_PLAYABLE_PRIME_COUNT = 9;
+const MIN_FACTOR_COUNT = 2;
+const MAX_STAGE_VALUE = 1_000_000;
+const MIN_PRIME = PRIME_POOL[0];
 
 export function generateStage(seed: string, stageIndex: number): StageState {
   const rng = createRng(`${seed}:${stageIndex}`);
-  const factorCount = Math.min(MAX_FACTOR_COUNT, 2 + Math.floor(stageIndex / 2) + randomInt(rng, 0, 1));
+  const factorCount = Math.min(MAX_FACTOR_COUNT, MIN_FACTOR_COUNT + Math.floor(stageIndex / 2) + randomInt(rng, 0, 1));
   const primeCeiling = Math.min(PRIME_POOL.length, MAX_PLAYABLE_PRIME_COUNT, 4 + Math.floor(stageIndex / 2));
   const factors: Prime[] = [];
+  let targetValue = 1;
 
   for (let count = 0; count < factorCount; count += 1) {
-    const primeIndex = randomInt(rng, 0, primeCeiling - 1);
-    factors.push(PRIME_POOL[primeIndex]);
+    const remainingSlots = factorCount - count - 1;
+    const reservedValue = MIN_PRIME ** remainingSlots;
+    const maxPrimeValue = Math.floor(MAX_STAGE_VALUE / (targetValue * reservedValue));
+    const availablePrimes = PRIME_POOL.slice(0, primeCeiling).filter((prime) => prime <= maxPrimeValue);
+    const primeIndex = randomInt(rng, 0, availablePrimes.length - 1);
+    const selectedPrime = availablePrimes[primeIndex];
+
+    factors.push(selectedPrime);
+    targetValue *= selectedPrime;
   }
 
   factors.sort((left, right) => left - right);
-
-  const targetValue = factors.reduce((product, factor) => product * factor, 1);
 
   return {
     stageIndex,
