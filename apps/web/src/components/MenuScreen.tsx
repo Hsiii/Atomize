@@ -68,6 +68,7 @@ export function MenuScreen({
               onClick={(event) => event.stopPropagation()}
             >
               <header className="settings-modal-header">
+                <span className="label">{uiText.playerName}</span>
                 <button
                   type="button"
                   className="icon-action"
@@ -79,7 +80,6 @@ export function MenuScreen({
               </header>
 
               <label className="field settings-field">
-                <span>{uiText.playerName}</span>
                 <input
                   value={nameDraft}
                   onChange={handleNameChange}

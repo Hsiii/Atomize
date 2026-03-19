@@ -166,13 +166,6 @@ input {
   text-align: center;
 }
 
-.menu-player-name {
-  margin: 0;
-  color: var(--color-ink-soft);
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
-
 .hero-title {
   margin: var(--space-0);
   font-family: var(--font-family-title);
@@ -327,15 +320,9 @@ input {
 
 .settings-modal-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-}
-
-.settings-modal-header strong {
-  display: block;
-  margin-top: var(--space-1);
-  font-size: 1.15rem;
 }
 
 .settings-field {
