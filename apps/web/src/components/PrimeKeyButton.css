@@ -10,7 +10,7 @@
     border-radius: var(--radius-orb);
     background: var(--color-disabled-bg);
     color: var(--color-disabled-text);
-    font-family: var(--font-family-display);
+    font-family: var(--font-family-numeric);
     font-size: var(--font-size-keypad-digit);
     font-weight: var(--font-weight-number-emphasis);
     line-height: 1;

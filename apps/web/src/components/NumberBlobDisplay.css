@@ -63,7 +63,7 @@
     position: relative;
     z-index: 1;
     display: block;
-    font-family: var(--font-family-display);
+    font-family: var(--font-family-numeric);
     font-size: clamp(4.4rem, 22vw, 7.8rem);
     line-height: 0.84;
     font-variant-numeric: tabular-nums;
@@ -125,7 +125,7 @@
 
 .number-blob-clear-pop-value {
     display: block;
-    font-family: var(--font-family-display);
+    font-family: var(--font-family-numeric);
     font-size: clamp(4.4rem, 22vw, 7.8rem);
     line-height: 0.84;
     font-variant-numeric: tabular-nums;
@@ -168,7 +168,7 @@
 
 .number-blob-split-value {
     display: block;
-    font-family: var(--font-family-display);
+    font-family: var(--font-family-numeric);
     font-size: clamp(1.65rem, 5vw, 2.2rem);
     line-height: 0.88;
     font-variant-numeric: tabular-nums;
