@@ -719,8 +719,8 @@ input {
     background: var(--color-primary);
     color: var(--color-text-inverse);
     font-family: var(--font-family-display);
-    font-size: clamp(1.65rem, 5vw, 2.5rem);
-    font-weight: 800;
+    font-size: clamp(2.05rem, 6.25vw, 3.1rem);
+    font-weight: 600;
     line-height: 1;
     font-variant-numeric: tabular-nums;
     box-shadow: none;
@@ -761,14 +761,14 @@ input {
 }
 
 .combo-actions-column .control-icon {
-    width: var(--size-icon-lg);
-    height: var(--size-icon-lg);
+    width: 1.9rem;
+    height: 1.9rem;
     stroke-width: 2.35;
 }
 
 .combo-enter-button .control-icon {
-    width: var(--size-icon-xl);
-    height: var(--size-icon-xl);
+    width: 2.2rem;
+    height: 2.2rem;
 }
 
 @media (max-width: 420px) {
@@ -784,7 +784,7 @@ input {
     }
 
     .solo-keypad .prime-key-button {
-        font-size: clamp(1.45rem, 6vw, 2rem);
+        font-size: clamp(1.8rem, 7.5vw, 2.5rem);
     }
 }
 
