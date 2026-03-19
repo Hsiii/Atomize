@@ -1,4 +1,10 @@
-import { startTransition, useEffect, useRef, useState } from 'react';
+import {
+    startTransition,
+    useEffect,
+    useLayoutEffect,
+    useRef,
+    useState,
+} from 'react';
 import type { JSX } from 'react';
 import type { Prime, RoomPlayer, RoomSnapshot } from '@atomize/game-core';
 import { CircleArrowUp, Delete } from 'lucide-react';
@@ -11,6 +17,7 @@ import './MultiplayerGameScreen.css';
 import { ActionButton } from './ActionButton';
 import { ComboQueuePanel } from './ComboQueuePanel';
 import { GameStatusHeader } from './GameStatusHeader';
+import { NumberBlobDisplay } from './NumberBlobDisplay';
 import { PrimeKeyButton } from './PrimeKeyButton';
 import { ScoreDialog } from './ScoreDialog';
 
@@ -47,16 +54,61 @@ export function MultiplayerGameScreen({
     onSubmit,
     formatCountdown,
 }: MultiplayerGameScreenProps): JSX.Element {
+    const blobRevealTotalMs = 3000;
     const isTimeUp = multiplayerTimeLeft === 0;
+    const [isBlobRevealActive, setIsBlobRevealActive] = useState(false);
+    const isInputDisabled =
+        isMultiplayerInputDisabled || isBlobRevealActive;
+    const showKeypadDisabledState =
+        (isMultiplayerInputDisabled && !isMultiplayerComboRunning) ||
+        isBlobRevealActive;
     const [visibleQueue, setVisibleQueue] = useState<Prime[]>(
         multiplayerPrimeQueue
     );
     const visibleQueueRef = useRef(visibleQueue);
+    const previousStageIndexRef = useRef<number | null>(null);
+    const currentStageIndex = currentMultiplayerPlayer?.stage.stageIndex ?? -1;
 
     useEffect(() => {
         visibleQueueRef.current = multiplayerPrimeQueue;
         setVisibleQueue(multiplayerPrimeQueue);
     }, [multiplayerPrimeQueue]);
+
+    useLayoutEffect(() => {
+        if (!currentMultiplayerPlayer) {
+            previousStageIndexRef.current = null;
+            setIsBlobRevealActive(false);
+            return undefined;
+        }
+
+        if (currentStageIndex < 0) {
+            previousStageIndexRef.current = null;
+            setIsBlobRevealActive(false);
+            return undefined;
+        }
+
+        if (previousStageIndexRef.current === null) {
+            previousStageIndexRef.current = currentStageIndex;
+            setIsBlobRevealActive(false);
+            return undefined;
+        }
+
+        if (previousStageIndexRef.current === currentStageIndex) {
+            return undefined;
+        }
+
+        previousStageIndexRef.current = currentStageIndex;
+
+        setIsBlobRevealActive(true);
+
+        const timer = window.setTimeout(() => {
+            setIsBlobRevealActive(false);
+        }, blobRevealTotalMs);
+
+        return () => {
+            window.clearTimeout(timer);
+        };
+    }, [blobRevealTotalMs, currentMultiplayerPlayer, currentStageIndex]);
 
     function updateVisibleQueue(nextQueue: readonly Prime[]) {
         const normalizedQueue = [...nextQueue];
@@ -69,7 +121,7 @@ export function MultiplayerGameScreen({
     }
 
     function handlePrimeTap(prime: Prime) {
-        if (isMultiplayerInputDisabled) {
+        if (isInputDisabled) {
             return;
         }
 
@@ -86,7 +138,7 @@ export function MultiplayerGameScreen({
 
     async function submitVisibleQueue() {
         if (
-            isMultiplayerInputDisabled ||
+            isInputDisabled ||
             visibleQueueRef.current.length === 0
         ) {
             return;
@@ -120,9 +172,13 @@ export function MultiplayerGameScreen({
                     aria-live='polite'
                     className='single-value-display multiplayer-value-display'
                 >
-                    <strong>
-                        {currentMultiplayerPlayer?.stage.remainingValue ?? '--'}
-                    </strong>
+                    <NumberBlobDisplay
+                        isComboRunning={isMultiplayerComboRunning}
+                        isStageRevealActive={isBlobRevealActive}
+                        mode='multiplayer'
+                        stageIndex={currentMultiplayerPlayer?.stage.stageIndex}
+                        value={currentMultiplayerPlayer?.stage.remainingValue}
+                    />
                 </section>
 
                 <ComboQueuePanel queue={visibleQueue} />
@@ -131,10 +187,11 @@ export function MultiplayerGameScreen({
                     <div className='keypad solo-keypad multiplayer-keypad'>
                         {playablePrimes.map((prime) => (
                             <PrimeKeyButton
-                                disabled={isMultiplayerInputDisabled}
+                                interactionDisabled={isInputDisabled}
                                 key={`room-${prime}`}
                                 onPress={handlePrimeTap}
                                 prime={prime}
+                                visuallyDisabled={showKeypadDisabledState}
                             >
                                 {prime}
                             </PrimeKeyButton>
@@ -146,6 +203,7 @@ export function MultiplayerGameScreen({
                             aria-label={uiText.backspace}
                             className='combo-backspace-button'
                             disabled={
+                                isBlobRevealActive ||
                                 isMultiplayerComboRunning ||
                                 visibleQueue.length === 0
                             }
@@ -164,7 +222,7 @@ export function MultiplayerGameScreen({
                             aria-label={uiText.enterCombo}
                             className='combo-enter-button'
                             disabled={
-                                isMultiplayerInputDisabled ||
+                                isInputDisabled ||
                                 visibleQueue.length === 0
                             }
                             onClick={handleSubmitClick}

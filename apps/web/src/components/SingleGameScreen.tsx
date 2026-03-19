@@ -1,4 +1,10 @@
-import { startTransition, useEffect, useRef, useState } from 'react';
+import {
+    startTransition,
+    useEffect,
+    useLayoutEffect,
+    useRef,
+    useState,
+} from 'react';
 import type { JSX } from 'react';
 import type { Prime, SoloState } from '@atomize/game-core';
 import { CircleArrowUp, Delete } from 'lucide-react';
@@ -10,6 +16,7 @@ import './GamePlayScreen.css';
 import { ActionButton } from './ActionButton';
 import { ComboQueuePanel } from './ComboQueuePanel';
 import { GameStatusHeader } from './GameStatusHeader';
+import { NumberBlobDisplay } from './NumberBlobDisplay';
 import { PrimeKeyButton } from './PrimeKeyButton';
 import { ScoreDialog } from './ScoreDialog';
 
@@ -17,7 +24,6 @@ type SingleGameScreenProps = {
     playablePrimes: Prime[];
     soloState: SoloState;
     soloTimeLeft: number;
-    soloStartCountdownValue: number | null;
     soloCountdownProgress: number;
     soloPrimeQueue: Prime[];
     isSoloComboRunning: boolean;
@@ -32,7 +38,6 @@ export function SingleGameScreen({
     playablePrimes,
     soloState,
     soloTimeLeft,
-    soloStartCountdownValue,
     soloCountdownProgress,
     soloPrimeQueue,
     isSoloComboRunning,
@@ -42,9 +47,14 @@ export function SingleGameScreen({
     onSubmit,
     formatCountdown,
 }: SingleGameScreenProps): JSX.Element {
-    const isCountdownActive = soloStartCountdownValue !== null;
+    const blobRevealTotalMs = 3000;
     const isTimeUp = soloTimeLeft === 0;
-    const isInputDisabled = isTimeUp || isSoloComboRunning || isCountdownActive;
+    const currentStageIndex = soloState.currentStage.stageIndex;
+    const [isBlobRevealActive, setIsBlobRevealActive] = useState(false);
+    const previousStageIndexRef = useRef<number | null>(null);
+    const isInputDisabled =
+        isTimeUp || isSoloComboRunning || isBlobRevealActive;
+    const showKeypadDisabledState = isTimeUp || isBlobRevealActive;
     const [visibleQueue, setVisibleQueue] = useState<Prime[]>(soloPrimeQueue);
     const visibleQueueRef = useRef(visibleQueue);
 
@@ -52,6 +62,30 @@ export function SingleGameScreen({
         visibleQueueRef.current = soloPrimeQueue;
         setVisibleQueue(soloPrimeQueue);
     }, [soloPrimeQueue]);
+
+    useLayoutEffect(() => {
+        if (previousStageIndexRef.current === null) {
+            previousStageIndexRef.current = currentStageIndex;
+            setIsBlobRevealActive(false);
+            return undefined;
+        }
+
+        if (previousStageIndexRef.current === currentStageIndex) {
+            return undefined;
+        }
+
+        previousStageIndexRef.current = currentStageIndex;
+
+        setIsBlobRevealActive(true);
+
+        const timer = window.setTimeout(() => {
+            setIsBlobRevealActive(false);
+        }, blobRevealTotalMs);
+
+        return () => {
+            window.clearTimeout(timer);
+        };
+    }, [blobRevealTotalMs, currentStageIndex]);
 
     function updateVisibleQueue(nextQueue: readonly Prime[]) {
         const normalizedQueue = [...nextQueue];
@@ -101,11 +135,13 @@ export function SingleGameScreen({
                 />
 
                 <section aria-live='polite' className='single-value-display'>
-                    <strong>
-                        {soloStartCountdownValue === null
-                            ? soloState.currentStage.remainingValue
-                            : undefined}
-                    </strong>
+                    <NumberBlobDisplay
+                        isComboRunning={isSoloComboRunning}
+                        isStageRevealActive={isBlobRevealActive}
+                        mode='solo'
+                        stageIndex={currentStageIndex}
+                        value={soloState.currentStage.remainingValue}
+                    />
                 </section>
 
                 <ComboQueuePanel queue={visibleQueue} />
@@ -114,10 +150,11 @@ export function SingleGameScreen({
                     <div className='keypad solo-keypad'>
                         {playablePrimes.map((prime) => (
                             <PrimeKeyButton
-                                disabled={isInputDisabled}
+                                interactionDisabled={isInputDisabled}
                                 key={prime}
                                 onPress={handlePrimeTap}
                                 prime={prime}
+                                visuallyDisabled={showKeypadDisabledState}
                             >
                                 {prime}
                             </PrimeKeyButton>
@@ -131,7 +168,6 @@ export function SingleGameScreen({
                             disabled={
                                 visibleQueue.length === 0 ||
                                 isSoloComboRunning ||
-                                isCountdownActive ||
                                 isTimeUp
                             }
                             onClick={handleBackspace}
@@ -152,7 +188,7 @@ export function SingleGameScreen({
                                 isTimeUp ||
                                 visibleQueue.length === 0 ||
                                 isSoloComboRunning ||
-                                isCountdownActive
+                                isBlobRevealActive
                             }
                             onClick={handleSubmit}
                             variant='secondary'
@@ -173,21 +209,6 @@ export function SingleGameScreen({
                         score={soloState.score}
                     />
                 ) : undefined}
-
-                {soloStartCountdownValue === null ? undefined : (
-                    <div
-                        aria-atomic='true'
-                        aria-live='assertive'
-                        className='single-start-countdown'
-                    >
-                        <span
-                            className='single-start-countdown-value'
-                            key={soloStartCountdownValue}
-                        >
-                            {soloStartCountdownValue}
-                        </span>
-                    </div>
-                )}
             </section>
         </main>
     );

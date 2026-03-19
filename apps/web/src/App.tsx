@@ -34,7 +34,6 @@ import {
 } from './lib/supabase';
 
 const soloDurationSeconds = 60;
-const soloStartCountdownSeconds = 3;
 const playablePrimes = PRIME_POOL.slice(0, 9);
 const soloComboStepDelayMs = 280;
 const multiplayerComboStepDelayMs = 220;
@@ -98,9 +97,6 @@ export default function App() {
         createInitialSoloState(initialSoloSeedRef.current)
     );
     const [soloTimeLeft, setSoloTimeLeft] = useState(soloDurationSeconds);
-    const [soloStartCountdownValue, setSoloStartCountdownValue] = useState<
-        number | null
-    >(null);
     const [multiplayerTimeLeft, setMultiplayerTimeLeft] =
         useState(soloDurationSeconds);
     const [soloPrimeQueue, setSoloPrimeQueue] = useState<Prime[]>([]);
@@ -235,7 +231,7 @@ export default function App() {
     ]);
 
     useEffect(() => {
-        if (screen !== 'single' || soloStartCountdownValue !== null) {
+        if (screen !== 'single') {
             return;
         }
 
@@ -255,31 +251,7 @@ export default function App() {
         return () => {
             window.clearInterval(timer);
         };
-    }, [screen, soloStartCountdownValue]);
-
-    useEffect(() => {
-        if (screen !== 'single' || soloStartCountdownValue === null) {
-            return;
-        }
-
-        const timer = window.setTimeout(() => {
-            setSoloStartCountdownValue((currentValue) => {
-                if (currentValue === null) {
-                    return currentValue;
-                }
-
-                if (currentValue <= 1) {
-                    return null;
-                }
-
-                return currentValue - 1;
-            });
-        }, 1000);
-
-        return () => {
-            window.clearTimeout(timer);
-        };
-    }, [screen, soloStartCountdownValue]);
+    }, [screen]);
 
     useEffect(() => {
         if (screen !== 'multi-game') {
@@ -380,7 +352,6 @@ export default function App() {
         setSoloSeed(nextSoloSeed);
         setSoloState(createInitialSoloState(nextSoloSeed));
         setSoloTimeLeft(soloDurationSeconds);
-        setSoloStartCountdownValue(soloStartCountdownSeconds);
         setSoloPrimeQueue([]);
         setIsSoloComboRunning(false);
         setSoloTimerPenaltyPopKey(0);
@@ -408,7 +379,6 @@ export default function App() {
         await closeActiveChannel();
         setSoloPrimeQueue([]);
         setIsSoloComboRunning(false);
-        setSoloStartCountdownValue(null);
         setSoloTimerPenaltyPopKey(0);
         setMultiplayerPrimeQueue([]);
         setIsMultiplayerComboRunning(false);
@@ -897,7 +867,6 @@ export default function App() {
                 playablePrimes={playablePrimes}
                 soloState={soloState}
                 soloTimeLeft={soloTimeLeft}
-                soloStartCountdownValue={soloStartCountdownValue}
                 soloCountdownProgress={soloCountdownProgress}
                 soloPrimeQueue={soloPrimeQueue}
                 isSoloComboRunning={isSoloComboRunning}

@@ -8,8 +8,8 @@
     padding: 0;
     border: 0;
     border-radius: var(--radius-orb);
-    background: var(--color-primary);
-    color: var(--color-text-inverse);
+    background: var(--color-disabled-bg);
+    color: var(--color-disabled-text);
     font-family: var(--font-family-display);
     font-size: clamp(2.05rem, 6.25vw, 3.1rem);
     font-weight: 600;
@@ -26,7 +26,7 @@
     transform: translateY(-0.02em);
 }
 
-.prime-key-button:disabled {
+.prime-key-button[data-disabled='true'] {
     background: var(--color-disabled-bg);
     color: var(--color-disabled-text);
     box-shadow: none;
