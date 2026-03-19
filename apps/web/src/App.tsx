@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { RealtimeChannel, SupabaseClient } from "@supabase/supabase-js";
 import {
   PRIME_POOL,
@@ -20,7 +20,6 @@ import {
 import {
   createRealtimeClient,
   getMissingSupabaseEnvVars,
-  getSupabaseConfig,
 } from "./lib/supabase";
 import { MenuScreen } from "./components/MenuScreen";
 import { SingleGameScreen } from "./components/SingleGameScreen";
@@ -30,6 +29,7 @@ import { type MenuMode, type MultiplayerState, type Screen, uiText } from "./app
 
 const soloSeed = "solo-mvp-seed";
 const soloDurationSeconds = 60;
+const soloStartCountdownSeconds = 3;
 const playablePrimes = PRIME_POOL.slice(0, 9);
 const soloComboStepDelayMs = 280;
 const multiplayerComboStepDelayMs = 220;
@@ -66,6 +66,7 @@ export default function App() {
   const [menuMode, setMenuMode] = useState<MenuMode>("default");
   const [soloState, setSoloState] = useState(() => createInitialSoloState(soloSeed));
   const [soloTimeLeft, setSoloTimeLeft] = useState(soloDurationSeconds);
+  const [soloStartCountdownValue, setSoloStartCountdownValue] = useState<number | null>(null);
   const [multiplayerTimeLeft, setMultiplayerTimeLeft] = useState(soloDurationSeconds);
   const [soloPrimeQueue, setSoloPrimeQueue] = useState<Prime[]>([]);
   const [isSoloComboRunning, setIsSoloComboRunning] = useState(false);
@@ -85,8 +86,6 @@ export default function App() {
   const supabaseRef = useRef<SupabaseClient | null>(null);
   const latestSoloStateRef = useRef(soloState);
   const latestMultiplayerRef = useRef(multiplayer);
-  const supabaseConfig = useMemo(() => getSupabaseConfig(), []);
-
   const multiplayerPlayers = multiplayer.snapshot?.players ?? [];
   const currentMultiplayerPlayer = multiplayerPlayers.find((player) => player.id === multiplayer.playerId) ?? null;
   const multiplayerCountdownProgress = (multiplayerTimeLeft / soloDurationSeconds) * 100;
@@ -94,38 +93,6 @@ export default function App() {
   const isMultiplayerInputDisabled = !multiplayer.snapshot || multiplayer.snapshot.status !== "playing" || isMultiplayerComboRunning || multiplayerTimeLeft === 0;
 
   const soloCountdownProgress = (soloTimeLeft / soloDurationSeconds) * 100;
-  const multiplayerFooterText = useMemo(() => {
-    if (!supabaseConfig) {
-      return uiText.configHint;
-    }
-
-    const snapshot = multiplayer.snapshot;
-
-    if (snapshot?.status === "countdown") {
-      return `${uiText.countdownPrefix} ${multiplayerCountdownValue ?? 3}`;
-    }
-
-    if (multiplayer.statusText) {
-      return multiplayer.statusText;
-    }
-
-    if (!multiplayer.roomId) {
-      return uiText.serverOnline;
-    }
-
-    if (!snapshot || snapshot.players.length < 2) {
-      return uiText.waitingForPlayer;
-    }
-
-    const currentPlayer = snapshot.players.find((player) => player.id === multiplayer.playerId);
-    const opponentReady = snapshot.players.some((player) => player.id !== multiplayer.playerId && player.ready);
-
-    if (multiplayer.isHost) {
-      return opponentReady ? uiText.start : uiText.opponentMustReady;
-    }
-
-    return currentPlayer?.ready ? uiText.waitingForHost : uiText.pressReady;
-  }, [multiplayer.roomId, multiplayer.statusText, multiplayer.snapshot, multiplayer.playerId, multiplayer.isHost, multiplayerCountdownValue, supabaseConfig]);
 
   useEffect(() => {
     latestSoloStateRef.current = soloState;
@@ -192,7 +159,7 @@ export default function App() {
   }, [multiplayer.isHost, multiplayer.snapshot?.countdownEndsAt, multiplayer.snapshot?.status]);
 
   useEffect(() => {
-    if (screen !== "single") {
+    if (screen !== "single" || soloStartCountdownValue !== null) {
       return;
     }
 
@@ -212,7 +179,31 @@ export default function App() {
     return () => {
       window.clearInterval(timer);
     };
-  }, [screen]);
+  }, [screen, soloStartCountdownValue]);
+
+  useEffect(() => {
+    if (screen !== "single" || soloStartCountdownValue === null) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setSoloStartCountdownValue((currentValue) => {
+        if (currentValue === null) {
+          return currentValue;
+        }
+
+        if (currentValue <= 1) {
+          return null;
+        }
+
+        return currentValue - 1;
+      });
+    }, 1000);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [screen, soloStartCountdownValue]);
 
   useEffect(() => {
     if (screen !== "multi-game") {
@@ -313,6 +304,8 @@ export default function App() {
 
   function startSingleGame() {
     setSoloState(createInitialSoloState(soloSeed));
+    setSoloTimeLeft(soloDurationSeconds);
+    setSoloStartCountdownValue(soloStartCountdownSeconds);
     setSoloPrimeQueue([]);
     setIsSoloComboRunning(false);
     setSoloTimerPenaltyPopKey(0);
@@ -340,6 +333,7 @@ export default function App() {
     await closeActiveChannel();
     setSoloPrimeQueue([]);
     setIsSoloComboRunning(false);
+    setSoloStartCountdownValue(null);
     setSoloTimerPenaltyPopKey(0);
     setMultiplayerPrimeQueue([]);
     setIsMultiplayerComboRunning(false);
@@ -711,6 +705,7 @@ export default function App() {
         playablePrimes={playablePrimes}
         soloState={soloState}
         soloTimeLeft={soloTimeLeft}
+        soloStartCountdownValue={soloStartCountdownValue}
         soloCountdownProgress={soloCountdownProgress}
         soloPrimeQueue={soloPrimeQueue}
         isSoloComboRunning={isSoloComboRunning}
@@ -730,7 +725,6 @@ export default function App() {
         menuMode={menuMode}
         multiplayer={multiplayer}
         multiplayerCountdownValue={multiplayerCountdownValue}
-        multiplayerFooterText={multiplayerFooterText}
         roomIdInput={roomIdInput}
         onBack={returnToMenu}
         onRoomIdInputChange={handleRoomIdInputChange}

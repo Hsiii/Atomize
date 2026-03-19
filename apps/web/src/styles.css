@@ -284,6 +284,7 @@ input {
 
 .single-game-screen {
   flex: 1;
+  position: relative;
 }
 
 .single-top-bar {
@@ -404,6 +405,28 @@ input {
   margin-top: 0.2rem;
   font-size: 1.1rem;
   line-height: 1;
+}
+
+.single-start-countdown {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.single-start-countdown-value {
+  display: inline-grid;
+  place-items: center;
+  min-width: 4.25rem;
+  padding: 0.2rem 0.6rem;
+  font-family: var(--font-family-display);
+  font-size: clamp(6rem, 30vw, 10rem);
+  font-weight: 900;
+  line-height: 0.85;
+  color: var(--color-secondary);
+  text-shadow: 0 14px 30px rgba(24, 78, 119, 0.16);
+  animation: single-start-countdown-pop 0.9s ease-out;
 }
 
 .multiplayer-game-screen {
@@ -549,6 +572,23 @@ input {
   }
 }
 
+@keyframes single-start-countdown-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+
+  18% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+
+  100% {
+    opacity: 0.92;
+    transform: scale(1);
+  }
+}
+
 .keypad {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -691,10 +731,38 @@ input {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  align-items: center;
 }
 
 .waiting-copy {
   text-align: center;
+}
+
+.waiting-ready-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.6rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-secondary);
+  color: var(--color-text-inverse);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.waiting-toast {
+  max-width: 18rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--color-border-soft);
+  border-radius: 1rem;
+  background: var(--color-surface-base);
+  color: var(--color-ink-soft);
+  font-size: 0.82rem;
+  line-height: 1.35;
+  text-align: center;
+  box-shadow: var(--shadow-panel);
 }
 
 .start-action:disabled {

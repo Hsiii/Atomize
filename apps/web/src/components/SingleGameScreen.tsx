@@ -7,6 +7,7 @@ type SingleGameScreenProps = {
   playablePrimes: Prime[];
   soloState: SoloState;
   soloTimeLeft: number;
+  soloStartCountdownValue: number | null;
   soloCountdownProgress: number;
   soloPrimeQueue: Prime[];
   isSoloComboRunning: boolean;
@@ -22,6 +23,7 @@ export function SingleGameScreen({
   playablePrimes,
   soloState,
   soloTimeLeft,
+  soloStartCountdownValue,
   soloCountdownProgress,
   soloPrimeQueue,
   isSoloComboRunning,
@@ -32,6 +34,8 @@ export function SingleGameScreen({
   onSubmit,
   formatCountdown,
 }: SingleGameScreenProps) {
+  const isCountdownActive = soloStartCountdownValue !== null;
+
   return (
     <main className="app-shell fullscreen-shell">
       <section className="screen game-screen single-game-screen">
@@ -83,7 +87,7 @@ export function SingleGameScreen({
                 key={prime}
                 type="button"
                 onClick={() => onPrimeTap(prime)}
-                disabled={soloTimeLeft === 0 || isSoloComboRunning}
+                disabled={soloTimeLeft === 0 || isSoloComboRunning || isCountdownActive}
               >
                 {prime}
               </button>
@@ -95,7 +99,7 @@ export function SingleGameScreen({
               variant="secondary"
               className="combo-backspace-button"
               onClick={onBackspace}
-              disabled={soloPrimeQueue.length === 0 || isSoloComboRunning}
+              disabled={soloPrimeQueue.length === 0 || isSoloComboRunning || isCountdownActive}
               aria-label={uiText.backspace}
             >
               <Delete className="control-icon" aria-hidden="true" />
@@ -105,13 +109,21 @@ export function SingleGameScreen({
               variant="secondary"
               className="combo-enter-button"
               onClick={onSubmit}
-              disabled={soloTimeLeft === 0 || soloPrimeQueue.length === 0 || isSoloComboRunning}
+              disabled={soloTimeLeft === 0 || soloPrimeQueue.length === 0 || isSoloComboRunning || isCountdownActive}
               aria-label={uiText.enterCombo}
             >
               <Swords className="control-icon" aria-hidden="true" />
             </ActionButton>
           </div>
         </section>
+
+        {soloStartCountdownValue !== null ? (
+          <div className="single-start-countdown" aria-live="assertive" aria-atomic="true">
+            <span key={soloStartCountdownValue} className="single-start-countdown-value">
+              {soloStartCountdownValue}
+            </span>
+          </div>
+        ) : null}
       </section>
     </main>
   );
