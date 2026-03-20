@@ -1,15 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { JSX, KeyboardEvent } from 'react';
-import { ArrowLeft, Check, Copy } from 'lucide-react';
+import type { ChangeEvent, JSX, KeyboardEvent } from 'react';
+import { ArrowLeft, Check, Copy, Search } from 'lucide-react';
 
 import type { MenuMode, MultiplayerState, OnlineLobbyUser } from '../app-state';
 import { uiText } from '../app-state';
 
 import './MultiplayerLobbyScreen.css';
 
-import { ActionButton } from './ActionButton';
 import { BackButton } from './BackButton';
-import { RoomCodePanel } from './RoomCodePanel';
 
 type MultiplayerLobbyScreenProps = {
     menuMode: MenuMode;
@@ -167,6 +165,20 @@ export function MultiplayerLobbyScreen({
         }
     }
 
+    function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
+        onRoomIdInputChange(event.target.value);
+    }
+
+    function focusInput() {
+        inputRef.current?.focus();
+    }
+
+    const inputRef = useRef<HTMLInputElement | null>(null);
+    const roomCodeDigits = Array.from(
+        { length: 4 },
+        (_, index) => roomIdInput[index] ?? ''
+    );
+
     function handleCopyCode() {
         if (!multiplayer.roomId) {
             return;
@@ -198,7 +210,7 @@ export function MultiplayerLobbyScreen({
             <main className='app-shell fullscreen-shell'>
                 <BackButton onBack={onBack} />
                 <section className='screen lobby-screen'>
-                    <div className='lobby-stack waiting-room-stack'>
+                    <div className='join-layout'>
                         {activeToastMessage ? (
                             <div
                                 aria-live='polite'
@@ -210,22 +222,59 @@ export function MultiplayerLobbyScreen({
                             </div>
                         ) : undefined}
 
-                        <div onKeyDown={handleRoomCodeKeyDown} role='group'>
-                            <RoomCodePanel
-                                editable
-                                onChange={onRoomIdInputChange}
-                                value={roomIdInput}
-                            />
-                        </div>
+                        <div className='join-stage'>
+                            <p className='join-label'>{uiText.roomCode}</p>
 
-                        <div className='waiting-cta'>
-                            <ActionButton
-                                className='start-action'
-                                onClick={handleCreateOrJoinClick}
-                                variant='secondary'
+                            {/* The hidden input inside handles keyboard interaction. */}
+                            <div
+                                className='join-orb'
+                                onClick={focusInput}
+                                onKeyDown={handleRoomCodeKeyDown}
                             >
-                                {createOrJoinButtonText}
-                            </ActionButton>
+                                <div
+                                    aria-hidden='true'
+                                    className='join-orb-bars'
+                                >
+                                    {roomCodeDigits.map((character, index) => (
+                                        <span
+                                            className={
+                                                character
+                                                    ? 'join-bar filled'
+                                                    : 'join-bar'
+                                            }
+                                            key={`bar-${String(index)}`}
+                                        >
+                                            {character}
+                                        </span>
+                                    ))}
+                                </div>
+                                <input
+                                    aria-label={uiText.enterCode}
+                                    className='join-orb-input'
+                                    inputMode='numeric'
+                                    maxLength={4}
+                                    onChange={handleInputChange}
+                                    pattern='[0-9]*'
+                                    ref={inputRef}
+                                    value={roomIdInput}
+                                />
+                            </div>
+
+                            <button
+                                className={`join-go-blob${
+                                    isJoinPending ? ' join-go-blob-pending' : ''
+                                }`}
+                                onClick={handleCreateOrJoinClick}
+                                type='button'
+                            >
+                                <Search
+                                    aria-hidden='true'
+                                    className='join-go-icon'
+                                />
+                                <span className='join-go-text'>
+                                    {createOrJoinButtonText}
+                                </span>
+                            </button>
                         </div>
                     </div>
                 </section>
