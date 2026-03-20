@@ -883,33 +883,6 @@ export function MultiplayerGameScreen({
                 </button>
 
                 <section className='multiplayer-board' ref={overlayRef}>
-                    <div className='multiplayer-column multiplayer-column-enemy'>
-                        <BattleHpBar
-                            damagePop={damagePops.find(
-                                (damagePop) => damagePop.side === 'enemy'
-                            )}
-                            hp={displayedEnemyHp}
-                            impact={hpImpacts.enemy}
-                            label={opponentPlayer?.name ?? uiText.opponent}
-                            maxHp={multiplayerSnapshot?.maxHp ?? 1}
-                            outerRef={enemyHealthRef}
-                            side='enemy'
-                        />
-                        <div
-                            className='multiplayer-blob-anchor'
-                            ref={enemyBlobRef}
-                        >
-                            <NumberBlobDisplay
-                                isComboRunning={false}
-                                isStageRevealActive={isOpponentRevealActive}
-                                mode='multiplayer'
-                                size='enemy'
-                                stageIndex={opponentPlayer?.stage.stageIndex}
-                                value={opponentPlayer?.stage.remainingValue}
-                            />
-                        </div>
-                    </div>
-
                     <div className='multiplayer-column multiplayer-column-self'>
                         <BattleHpBar
                             damagePop={damagePops.find(
@@ -938,6 +911,33 @@ export function MultiplayerGameScreen({
                                     currentMultiplayerPlayer?.stage
                                         .remainingValue
                                 }
+                            />
+                        </div>
+                    </div>
+
+                    <div className='multiplayer-column multiplayer-column-enemy'>
+                        <BattleHpBar
+                            damagePop={damagePops.find(
+                                (damagePop) => damagePop.side === 'enemy'
+                            )}
+                            hp={displayedEnemyHp}
+                            impact={hpImpacts.enemy}
+                            label={opponentPlayer?.name ?? uiText.opponent}
+                            maxHp={multiplayerSnapshot?.maxHp ?? 1}
+                            outerRef={enemyHealthRef}
+                            side='enemy'
+                        />
+                        <div
+                            className='multiplayer-blob-anchor'
+                            ref={enemyBlobRef}
+                        >
+                            <NumberBlobDisplay
+                                isComboRunning={false}
+                                isStageRevealActive={isOpponentRevealActive}
+                                mode='multiplayer'
+                                size='enemy'
+                                stageIndex={opponentPlayer?.stage.stageIndex}
+                                value={opponentPlayer?.stage.remainingValue}
                             />
                         </div>
                     </div>

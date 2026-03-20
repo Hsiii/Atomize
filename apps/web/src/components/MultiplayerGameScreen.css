@@ -125,11 +125,11 @@
 }
 
 .multiplayer-hp-bar-self .multiplayer-hp-name {
-    color: var(--color-primary);
+    color: var(--color-secondary);
 }
 
 .multiplayer-hp-bar-enemy .multiplayer-hp-name {
-    color: var(--color-secondary);
+    color: var(--color-primary);
 }
 
 .multiplayer-hp-stat {
@@ -141,11 +141,11 @@
 }
 
 .multiplayer-hp-bar-self .multiplayer-hp-stat {
-    color: var(--color-primary);
+    color: var(--color-secondary);
 }
 
 .multiplayer-hp-bar-enemy .multiplayer-hp-stat {
-    color: var(--color-secondary);
+    color: var(--color-primary);
 }
 
 .multiplayer-hp-track {
@@ -172,11 +172,11 @@
 }
 
 .multiplayer-hp-bar-self .multiplayer-hp-track::after {
-    background: var(--color-primary-strong);
+    background: var(--color-secondary);
 }
 
 .multiplayer-hp-bar-enemy .multiplayer-hp-track::after {
-    background: var(--color-secondary);
+    background: var(--color-primary-strong);
 }
 
 .multiplayer-hp-fill {
@@ -187,11 +187,11 @@
 }
 
 .multiplayer-hp-bar-self .multiplayer-hp-fill {
-    background: var(--color-primary);
+    background: var(--color-secondary);
 }
 
 .multiplayer-hp-bar-enemy .multiplayer-hp-fill {
-    background: var(--color-secondary);
+    background: var(--color-primary);
 }
 
 .multiplayer-damage-pop {
@@ -206,11 +206,11 @@
 }
 
 .multiplayer-hp-bar-self .multiplayer-damage-pop {
-    color: var(--color-primary-strong);
+    color: var(--color-secondary);
 }
 
 .multiplayer-hp-bar-enemy .multiplayer-damage-pop {
-    color: var(--color-secondary);
+    color: var(--color-primary-strong);
 }
 
 .multiplayer-attack-layer {
@@ -235,11 +235,11 @@
 }
 
 .multiplayer-attack-particle-self {
-    background: var(--color-primary-strong);
+    background: var(--color-secondary);
 }
 
 .multiplayer-attack-particle-enemy {
-    background: var(--color-secondary);
+    background: var(--color-primary-strong);
 }
 
 .multiplayer-controls-grid {
