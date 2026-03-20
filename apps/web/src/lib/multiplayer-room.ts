@@ -1,12 +1,13 @@
 import {
+    type BattleEvent,
     applyPrimeSelection,
     computeBattleDamage,
     generateStage,
 } from '@atomize/game-core';
 import type { Prime, RoomPlayer, RoomSnapshot } from '@atomize/game-core';
 
-const STARTING_HP = 40;
-const WRONG_SELECTION_DAMAGE = 3;
+const STARTING_HP = 60;
+const WRONG_SELECTION_DAMAGE = 8;
 
 export function createRoomSnapshot(
     roomId: string,
@@ -18,9 +19,11 @@ export function createRoomSnapshot(
     return {
         roomId,
         seed: roomId,
+        maxHp: STARTING_HP,
         stageIndex: 0,
         stage: initialStage,
         players: [createPlayer(hostId, hostName, roomId)],
+        lastEvent: null,
         countdownEndsAt: undefined,
         status: 'waiting',
     };
@@ -46,6 +49,7 @@ export function addPlayerToRoom(
             createPlayer(playerId, playerName, snapshot.seed),
         ],
         countdownEndsAt: undefined,
+        lastEvent: null,
         status: 'waiting',
     };
 }
@@ -93,6 +97,7 @@ export function startRoomCountdown(
     return {
         ...snapshot,
         countdownEndsAt,
+        lastEvent: null,
         status: 'countdown',
     };
 }
@@ -105,6 +110,7 @@ export function beginRoomMatch(snapshot: RoomSnapshot): RoomSnapshot {
     return {
         ...snapshot,
         countdownEndsAt: undefined,
+        lastEvent: null,
         status: 'playing',
     };
 }
@@ -121,8 +127,9 @@ export function applyBattlePrimeSelection(
     const actingPlayer = snapshot.players.find(
         (player) => player.id === playerId
     );
+    const targetPlayer = snapshot.players.find((player) => player.id !== playerId);
 
-    if (!actingPlayer) {
+    if (!actingPlayer || !targetPlayer) {
         return snapshot;
     }
 
@@ -156,6 +163,59 @@ export function applyBattlePrimeSelection(
     const damage = computeBattleDamage(selection.stage, combo);
     const stageIndex = actingPlayer.stageIndex + 1;
     const nextStage = generateStage(snapshot.seed, stageIndex);
+    const nextPlayers = snapshot.players.map((player) => {
+        if (player.id === playerId) {
+            return {
+                ...player,
+                combo,
+                    maxCombo: Math.max(player.maxCombo ?? 0, combo),
+                stageIndex,
+                stage: nextStage,
+            };
+        }
+
+        return {
+            ...player,
+            hp: Math.max(0, player.hp - damage),
+        };
+    });
+    const nextActingPlayer = nextPlayers.find((player) => player.id === playerId);
+    const nextTargetPlayer = nextPlayers.find(
+        (player) => player.id === targetPlayer.id
+    );
+
+    if (!nextActingPlayer || !nextTargetPlayer) {
+        return snapshot;
+    }
+
+    const lastEvent: BattleEvent =
+        nextTargetPlayer.hp === 0
+            ? {
+                  id: getNextEventId(snapshot),
+                  type: 'finish',
+                  winnerPlayerId: nextActingPlayer.id,
+                  loserPlayerId: nextTargetPlayer.id,
+                  sourcePlayerId: playerId,
+                  damage,
+                  combo,
+                  cause: 'attack',
+                  sourceStageIndex: actingPlayer.stageIndex,
+                  nextStageIndex: stageIndex,
+                  winnerHp: nextActingPlayer.hp,
+                  loserHp: nextTargetPlayer.hp,
+              }
+            : {
+                  id: getNextEventId(snapshot),
+                  type: 'attack',
+                  sourcePlayerId: playerId,
+                  targetPlayerId: nextTargetPlayer.id,
+                  damage,
+                  combo,
+                  sourceStageIndex: actingPlayer.stageIndex,
+                  nextStageIndex: stageIndex,
+                  sourceHp: nextActingPlayer.hp,
+                  targetHp: nextTargetPlayer.hp,
+              };
 
     return withPlayers(
         {
@@ -163,21 +223,8 @@ export function applyBattlePrimeSelection(
             stageIndex,
             stage: nextStage,
         },
-        snapshot.players.map((player) => {
-            if (player.id === playerId) {
-                return {
-                    ...player,
-                    combo,
-                    stageIndex,
-                    stage: nextStage,
-                };
-            }
-
-            return {
-                ...player,
-                hp: Math.max(0, player.hp - damage),
-            };
-        })
+        nextPlayers,
+        lastEvent
     );
 }
 
@@ -189,19 +236,69 @@ export function applyBattlePenalty(
         return snapshot;
     }
 
-    return withPlayers(
-        snapshot,
-        snapshot.players.map((player) => {
-            if (player.id !== playerId) {
-                return player;
-            }
+    const actingPlayer = snapshot.players.find(
+        (player) => player.id === playerId
+    );
+    const targetPlayer = snapshot.players.find((player) => player.id !== playerId);
 
-            return {
-                ...player,
-                hp: Math.max(0, player.hp - WRONG_SELECTION_DAMAGE),
-                combo: 0,
-            };
-        })
+    if (!actingPlayer || !targetPlayer) {
+        return snapshot;
+    }
+
+    const resetStage = generateStage(snapshot.seed, actingPlayer.stageIndex);
+    const nextPlayers = snapshot.players.map((player) => {
+        if (player.id !== playerId) {
+            return player;
+        }
+
+        return {
+            ...player,
+            hp: Math.max(0, player.hp - WRONG_SELECTION_DAMAGE),
+            combo: 0,
+            stage: resetStage,
+        };
+    });
+    const nextActingPlayer = nextPlayers.find((player) => player.id === playerId);
+
+    if (!nextActingPlayer) {
+        return snapshot;
+    }
+
+    const lastEvent: BattleEvent =
+        nextActingPlayer.hp === 0
+            ? {
+                  id: getNextEventId(snapshot),
+                  type: 'finish',
+                  winnerPlayerId: targetPlayer.id,
+                  loserPlayerId: nextActingPlayer.id,
+                  sourcePlayerId: playerId,
+                  damage: WRONG_SELECTION_DAMAGE,
+                  combo: 0,
+                  cause: 'self-hit',
+                  sourceStageIndex: actingPlayer.stageIndex,
+                  nextStageIndex: actingPlayer.stageIndex,
+                  winnerHp: targetPlayer.hp,
+                  loserHp: nextActingPlayer.hp,
+              }
+            : {
+                  id: getNextEventId(snapshot),
+                  type: 'self-hit',
+                  sourcePlayerId: playerId,
+                  damage: WRONG_SELECTION_DAMAGE,
+                  combo: 0,
+                  sourceStageIndex: actingPlayer.stageIndex,
+                  nextStageIndex: actingPlayer.stageIndex,
+                  sourceHp: nextActingPlayer.hp,
+              };
+
+    return withPlayers(
+        {
+            ...snapshot,
+            stageIndex: actingPlayer.stageIndex,
+            stage: resetStage,
+        },
+        nextPlayers,
+        lastEvent
     );
 }
 
@@ -211,6 +308,7 @@ function createPlayer(id: string, name: string, seed: string): RoomPlayer {
         name,
         hp: STARTING_HP,
         combo: 0,
+        maxCombo: 0,
         stageIndex: 0,
         stage: generateStage(seed, 0),
         connected: true,
@@ -220,16 +318,22 @@ function createPlayer(id: string, name: string, seed: string): RoomPlayer {
 
 function withPlayers(
     snapshot: RoomSnapshot,
-    players: readonly RoomPlayer[]
+    players: readonly RoomPlayer[],
+    lastEvent: BattleEvent | null = snapshot.lastEvent
 ): RoomSnapshot {
     const hasDefeatedPlayer = players.some((player) => player.hp === 0);
 
     return {
         ...snapshot,
         players: [...players],
+        lastEvent,
         countdownEndsAt: hasDefeatedPlayer
             ? undefined
             : snapshot.countdownEndsAt,
         status: hasDefeatedPlayer ? 'finished' : snapshot.status,
     };
+}
+
+function getNextEventId(snapshot: RoomSnapshot): number {
+    return (snapshot.lastEvent?.id ?? 0) + 1;
 }

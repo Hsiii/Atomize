@@ -26,6 +26,7 @@ type NumberBlobDisplayProps = {
     isComboRunning?: boolean;
     isStageRevealActive?: boolean;
     mode?: BlobMode;
+    size?: 'enemy' | 'self';
 };
 
 const echoAngles = [-58, -26, 18, 52];
@@ -106,6 +107,7 @@ export function NumberBlobDisplay({
     isComboRunning = false,
     isStageRevealActive = false,
     mode = 'solo',
+    size = 'self',
 }: NumberBlobDisplayProps): JSX.Element {
     const [splitEchos, setSplitEchos] = useState<SplitEcho[]>([]);
     const [clearPop, setClearPop] = useState<ClearPop | null>(null);
@@ -298,7 +300,7 @@ export function NumberBlobDisplay({
         <div
             className={`number-blob-display number-blob-display-${mode}${
                 isComboRunning ? ' is-combo-running' : ''
-            }`}
+            } number-blob-display-size-${size}`}
         >
             <div
                 className={`number-blob-field${

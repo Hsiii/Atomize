@@ -109,8 +109,6 @@ export default function App() {
         createInitialSoloState(initialSoloSeedRef.current)
     );
     const [soloTimeLeft, setSoloTimeLeft] = useState(soloDurationSeconds);
-    const [multiplayerTimeLeft, setMultiplayerTimeLeft] =
-        useState(soloDurationSeconds);
     const [soloPrimeQueue, setSoloPrimeQueue] = useState<Prime[]>([]);
     const [isSoloComboRunning, setIsSoloComboRunning] = useState(false);
     const [soloTimerPenaltyPopKey, setSoloTimerPenaltyPopKey] = useState(0);
@@ -145,14 +143,10 @@ export default function App() {
         multiplayerPlayers.find(
             (player) => player.id === multiplayer.playerId
         ) ?? null;
-    const multiplayerCountdownProgress =
-        (multiplayerTimeLeft / soloDurationSeconds) * 100;
-    const multiplayerScore = currentMultiplayerPlayer?.combo ?? 0;
     const isMultiplayerInputDisabled =
         !multiplayer.snapshot ||
         multiplayer.snapshot.status !== 'playing' ||
-        isMultiplayerComboRunning ||
-        multiplayerTimeLeft === 0;
+        isMultiplayerComboRunning;
 
     const soloCountdownProgress = (soloTimeLeft / soloDurationSeconds) * 100;
 
@@ -266,27 +260,13 @@ export default function App() {
     }, [screen]);
 
     useEffect(() => {
-        if (screen !== 'multi-game') {
+        if (multiplayer.snapshot?.status === 'playing') {
             return;
         }
 
-        setMultiplayerTimeLeft(soloDurationSeconds);
-
-        const timer = window.setInterval(() => {
-            setMultiplayerTimeLeft((currentTime) => {
-                if (currentTime <= 1) {
-                    window.clearInterval(timer);
-                    return 0;
-                }
-
-                return currentTime - 1;
-            });
-        }, 1000);
-
-        return () => {
-            window.clearInterval(timer);
-        };
-    }, [multiplayer.roomId, screen]);
+        setMultiplayerPrimeQueue([]);
+        setIsMultiplayerComboRunning(false);
+    }, [multiplayer.snapshot?.status]);
 
     useEffect(() => {
         if (screen !== 'single' || !isSoloComboRunning) {
@@ -914,13 +894,7 @@ export default function App() {
                 if (hasRedundantBufferedPrimes) {
                     setMultiplayerPrimeQueue([]);
 
-                    const sendResult = await sendMultiplayerPrime(prime);
-
-                    if (!sendResult.didBroadcast) {
-                        break;
-                    }
-
-                    await sendMultiplayerPenalty(sendResult.snapshot);
+                    await sendMultiplayerPenalty();
                     break;
                 }
 
@@ -1064,18 +1038,13 @@ export default function App() {
     return (
         <MultiplayerGameScreen
             playablePrimes={playablePrimes}
-            multiplayerTimeLeft={multiplayerTimeLeft}
-            multiplayerCountdownProgress={multiplayerCountdownProgress}
-            multiplayerScore={multiplayerScore}
             currentMultiplayerPlayer={currentMultiplayerPlayer}
             multiplayerSnapshot={multiplayer.snapshot}
             multiplayerPrimeQueue={multiplayerPrimeQueue}
             isMultiplayerInputDisabled={isMultiplayerInputDisabled}
             isMultiplayerComboRunning={isMultiplayerComboRunning}
-            roomId={multiplayer.roomId}
             onBack={returnToMenu}
             onSubmit={handleMultiplayerComboSubmit}
-            formatCountdown={formatCountdown}
         />
     );
 }

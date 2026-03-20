@@ -25,6 +25,7 @@
     --color-page-bg: #f4f7fb;
     --color-track: rgba(16, 27, 46, 0.12);
     --color-danger: #c43a3a;
+    --color-success: #3d7a57;
     --color-overlay-soft: rgba(16, 27, 46, 0.2);
     --color-overlay-strong: rgba(16, 27, 46, 0.26);
     --color-placeholder: rgba(16, 27, 46, 0.28);
@@ -70,6 +71,7 @@
     --size-icon-lg: 1.5rem;
     --size-icon-xl: 1.75rem;
     --size-timer-bar: 0.5rem;
+    --size-health-bar: 0.65rem;
     --size-timer-penalty-lane: 0.9rem;
     --size-score-pill-min: 4.75rem;
     --size-score-pill-min-wide: 5.5rem;

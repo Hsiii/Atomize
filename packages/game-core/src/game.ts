@@ -12,6 +12,7 @@ export type StageState = {
 export type SoloState = {
     hp: number;
     combo: number;
+    maxCombo: number;
     score: number;
     clearedStages: number;
     currentStage: StageState;
@@ -118,6 +119,7 @@ export function createInitialSoloState(seed: string): SoloState {
     return {
         hp: 5,
         combo: 0,
+        maxCombo: 0,
         score: 0,
         clearedStages: 0,
         currentStage: generateStage(seed, 0),
@@ -150,6 +152,7 @@ export function advanceSoloState(
     return {
         hp: Math.min(5, state.hp + (nextStageIndex % 5 === 0 ? 1 : 0)),
         combo: nextCombo,
+        maxCombo: Math.max(state.maxCombo, nextCombo),
         score: state.score + 50 + comboBonus,
         clearedStages: nextStageIndex,
         currentStage: generateStage(seed, nextStageIndex),
@@ -160,5 +163,10 @@ export function computeBattleDamage(
     clearedStage: StageState,
     combo: number
 ): number {
-    return 8 + clearedStage.factors.length * 3 + combo * 2;
+    return (
+        6 +
+        clearedStage.factors.length * 4 +
+        Math.max(0, combo - 1) * 3 +
+        Math.min(clearedStage.stageIndex, 6)
+    );
 }

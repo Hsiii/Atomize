@@ -35,6 +35,8 @@ const rooms = new Map<string, RoomState>();
 const port = 8787;
 const HOST_NAME = 'Player 1';
 const GUEST_NAME = 'Player 2';
+const STARTING_HP = 60;
+const WRONG_SELECTION_DAMAGE = 8;
 
 const server = new WebSocketServer({ port });
 
@@ -76,8 +78,9 @@ function handleMessage(socket: WebSocket, message: ClientMessage) {
                     {
                         id: playerId,
                         name: HOST_NAME,
-                        hp: 40,
+                        hp: STARTING_HP,
                         combo: 0,
+                        maxCombo: 0,
                         stageIndex: 0,
                         stage: soloState.currentStage,
                         connected: true,
@@ -116,8 +119,9 @@ function handleMessage(socket: WebSocket, message: ClientMessage) {
         room.players.set(playerId, {
             id: playerId,
             name: GUEST_NAME,
-            hp: 40,
+            hp: STARTING_HP,
             combo: 0,
+            maxCombo: 0,
             stageIndex: room.stageIndex,
             stage: room.stage,
             connected: true,
@@ -171,7 +175,7 @@ function resolvePrimeSelection(
     const selection = applyPrimeSelection(player.stage, prime);
 
     if (selection.kind === 'wrong') {
-        player.hp = Math.max(0, player.hp - 3);
+        player.hp = Math.max(0, player.hp - WRONG_SELECTION_DAMAGE);
         player.combo = 0;
 
         broadcast(room, {
@@ -201,6 +205,7 @@ function resolvePrimeSelection(
         {
             hp: 5,
             combo: player.combo,
+            maxCombo: player.maxCombo,
             score: 0,
             clearedStages: player.stageIndex,
             currentStage: selection.stage,
@@ -212,6 +217,7 @@ function resolvePrimeSelection(
     mutableRoom.stageIndex = nextState.clearedStages;
     mutableRoom.stage = nextState.currentStage;
     player.combo = nextState.combo;
+    player.maxCombo = nextState.maxCombo;
     player.stageIndex = nextState.clearedStages;
     player.stage = nextState.currentStage;
 
@@ -242,9 +248,11 @@ function createSnapshot(room: RoomState): RoomSnapshot {
     return {
         roomId: room.roomId,
         seed: room.seed,
+        maxHp: STARTING_HP,
         stageIndex: room.stageIndex,
         stage: room.stage,
         players,
+        lastEvent: null,
         countdownEndsAt: undefined,
         status,
     };

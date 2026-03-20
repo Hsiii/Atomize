@@ -1,7 +1,11 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { JSX } from 'react';
-import type { Prime, RoomPlayer, RoomSnapshot } from '@atomize/game-core';
-import { CircleArrowUp, Delete } from 'lucide-react';
+import type { CSSProperties, JSX } from 'react';
+import type {
+    Prime,
+    RoomPlayer,
+    RoomSnapshot,
+} from '@atomize/game-core';
+import { ArrowLeft, CircleArrowUp, Delete } from 'lucide-react';
 
 import { uiText } from '../app-state';
 
@@ -10,45 +14,53 @@ import './MultiplayerGameScreen.css';
 
 import { ActionButton } from './ActionButton';
 import { ComboQueuePanel } from './ComboQueuePanel';
-import { GameStatusHeader } from './GameStatusHeader';
 import { NumberBlobDisplay } from './NumberBlobDisplay';
 import { PrimeKeyButton } from './PrimeKeyButton';
 import { ScoreDialog } from './ScoreDialog';
 
+type DamagePop = {
+    id: string;
+    side: 'enemy' | 'self';
+    value: number;
+};
+
+type AttackParticle = {
+    id: number;
+    side: 'enemy' | 'self';
+    x: number;
+    y: number;
+    size: number;
+    opacity: number;
+};
+
+type AttackEffectState = {
+    id: number;
+    particles: AttackParticle[];
+};
+
 type MultiplayerGameScreenProps = {
     playablePrimes: Prime[];
-    multiplayerTimeLeft: number;
-    multiplayerCountdownProgress: number;
-    multiplayerScore: number;
     currentMultiplayerPlayer: RoomPlayer | null;
     multiplayerSnapshot: RoomSnapshot | null;
     multiplayerPrimeQueue: Prime[];
     isMultiplayerInputDisabled: boolean;
     isMultiplayerComboRunning: boolean;
-    roomId: string;
     onBack: () => void | Promise<void>;
     onSubmit: (queue: readonly Prime[]) => Promise<void>;
-    formatCountdown: (totalSeconds: number) => string;
 };
 
 export function MultiplayerGameScreen({
     playablePrimes,
-    multiplayerTimeLeft,
-    multiplayerCountdownProgress,
-    multiplayerScore,
     currentMultiplayerPlayer,
     multiplayerSnapshot,
     multiplayerPrimeQueue,
     isMultiplayerInputDisabled,
     isMultiplayerComboRunning,
-    roomId: _roomId,
     onBack,
     onSubmit,
-    formatCountdown,
 }: MultiplayerGameScreenProps): JSX.Element {
     const blobRevealTotalMs = 3000;
     const keyboardDigitBufferWindowMs = 250;
-    const isTimeUp = multiplayerTimeLeft === 0;
     const isMatchFinished = multiplayerSnapshot?.status === 'finished';
     const [isBlobRevealActive, setIsBlobRevealActive] = useState(false);
     const hasInitializedStageRef = useRef(false);
@@ -63,8 +75,27 @@ export function MultiplayerGameScreen({
     const digitBufferRef = useRef('');
     const digitBufferTimerRef = useRef<number | undefined>(undefined);
     const previousStageIndexRef = useRef<number | undefined>(undefined);
+    const previousOpponentStageIndexRef = useRef<number | undefined>(undefined);
     const currentStageIndex = currentMultiplayerPlayer?.stage.stageIndex ?? -1;
-
+    const opponentPlayer =
+        multiplayerSnapshot?.players.find(
+            (player) => player.id !== currentMultiplayerPlayer?.id
+        ) ?? null;
+    const [isOpponentRevealActive, setIsOpponentRevealActive] = useState(false);
+    const [damagePops, setDamagePops] = useState<DamagePop[]>([]);
+    const [attackEffect, setAttackEffect] = useState<AttackEffectState | null>(
+        null
+    );
+    const previousEventIdRef = useRef<number | null>(null);
+    const animationFrameRef = useRef<number | null>(null);
+    const overlayRef = useRef<HTMLDivElement | null>(null);
+    const selfBlobRef = useRef<HTMLDivElement | null>(null);
+    const enemyBlobRef = useRef<HTMLDivElement | null>(null);
+    const selfHealthRef = useRef<HTMLDivElement | null>(null);
+    const enemyHealthRef = useRef<HTMLDivElement | null>(null);
+    const currentPlayerWon =
+        isMatchFinished &&
+        Boolean(currentMultiplayerPlayer && currentMultiplayerPlayer.hp > 0);
     useEffect(() => {
         visibleQueueRef.current = multiplayerPrimeQueue;
         setVisibleQueue(multiplayerPrimeQueue);
@@ -122,6 +153,97 @@ export function MultiplayerGameScreen({
             globalThis.clearTimeout(timer);
         };
     }, [blobRevealTotalMs, currentStageIndex]);
+
+    useLayoutEffect(() => {
+        const opponentStageIndex = opponentPlayer?.stage.stageIndex;
+
+        if (opponentStageIndex === undefined) {
+            previousOpponentStageIndexRef.current = undefined;
+            setIsOpponentRevealActive(false);
+            return undefined;
+        }
+
+        if (previousOpponentStageIndexRef.current === undefined) {
+            previousOpponentStageIndexRef.current = opponentStageIndex;
+            setIsOpponentRevealActive(false);
+            return undefined;
+        }
+
+        if (previousOpponentStageIndexRef.current === opponentStageIndex) {
+            return undefined;
+        }
+
+        previousOpponentStageIndexRef.current = opponentStageIndex;
+        setIsOpponentRevealActive(true);
+
+        const timer = globalThis.setTimeout(() => {
+            setIsOpponentRevealActive(false);
+        }, blobRevealTotalMs);
+
+        return () => {
+            globalThis.clearTimeout(timer);
+        };
+    }, [blobRevealTotalMs, opponentPlayer?.stage.stageIndex]);
+
+    useEffect(() => {
+        return () => {
+            if (animationFrameRef.current !== null) {
+                cancelAnimationFrame(animationFrameRef.current);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        const lastEvent = multiplayerSnapshot?.lastEvent;
+
+        if (!lastEvent || lastEvent.id === previousEventIdRef.current) {
+            return;
+        }
+
+        previousEventIdRef.current = lastEvent.id;
+
+        if (lastEvent.type === 'attack') {
+            const sourceSide =
+                lastEvent.sourcePlayerId === currentMultiplayerPlayer?.id
+                    ? 'self'
+                    : 'enemy';
+            const targetSide = sourceSide === 'self' ? 'enemy' : 'self';
+
+            startAttackEffect(sourceSide, targetSide, lastEvent.id, () => {
+                showDamagePop(targetSide, lastEvent.damage);
+            });
+            return;
+        }
+
+        if (lastEvent.type === 'self-hit') {
+            const side =
+                lastEvent.sourcePlayerId === currentMultiplayerPlayer?.id
+                    ? 'self'
+                    : 'enemy';
+
+            showDamagePop(side, lastEvent.damage);
+            return;
+        }
+
+        if (lastEvent.cause === 'attack') {
+            const sourceSide =
+                lastEvent.sourcePlayerId === currentMultiplayerPlayer?.id
+                    ? 'self'
+                    : 'enemy';
+            const targetSide = sourceSide === 'self' ? 'enemy' : 'self';
+
+            startAttackEffect(sourceSide, targetSide, lastEvent.id, () => {
+                showDamagePop(targetSide, lastEvent.damage);
+            });
+            return;
+        }
+
+        const loserSide =
+            lastEvent.loserPlayerId === currentMultiplayerPlayer?.id
+                ? 'self'
+                : 'enemy';
+        showDamagePop(loserSide, lastEvent.damage);
+    }, [currentMultiplayerPlayer?.id, multiplayerSnapshot?.lastEvent]);
 
     function setLocalQueue(nextQueue: readonly Prime[]) {
         const normalizedQueue = [...nextQueue];
@@ -256,6 +378,120 @@ export function MultiplayerGameScreen({
         submitVisibleQueue().catch(() => undefined);
     }
 
+    function showDamagePop(side: 'enemy' | 'self', value: number) {
+        const id = globalThis.crypto.randomUUID();
+
+        setDamagePops((currentPops) => [
+            ...currentPops,
+            { id, side, value },
+        ]);
+
+        globalThis.setTimeout(() => {
+            setDamagePops((currentPops) =>
+                currentPops.filter((currentPop) => currentPop.id !== id)
+            );
+        }, 780);
+    }
+
+    function startAttackEffect(
+        sourceSide: 'enemy' | 'self',
+        targetSide: 'enemy' | 'self',
+        id: number,
+        onComplete?: () => void
+    ) {
+        const overlayElement = overlayRef.current;
+        const sourceElement =
+            sourceSide === 'self' ? selfBlobRef.current : enemyBlobRef.current;
+        const targetElement =
+            targetSide === 'self'
+                ? selfHealthRef.current
+                : enemyHealthRef.current;
+
+        if (!overlayElement || !sourceElement || !targetElement) {
+            return;
+        }
+
+        const overlayRect = overlayElement.getBoundingClientRect();
+        const sourceRect = sourceElement.getBoundingClientRect();
+        const targetRect = targetElement.getBoundingClientRect();
+        const startPoint = {
+            x: sourceRect.left + sourceRect.width / 2 - overlayRect.left,
+            y: sourceRect.top + sourceRect.height / 2 - overlayRect.top,
+        };
+        const endPoint = {
+            x: targetRect.left + targetRect.width / 2 - overlayRect.left,
+            y: targetRect.top + targetRect.height / 2 - overlayRect.top,
+        };
+        const horizontalDirection = targetSide === 'self' ? 1 : -1;
+        const controlPoint = {
+            x: (startPoint.x + endPoint.x) / 2 + 42 * horizontalDirection,
+            y: Math.min(startPoint.y, endPoint.y) - 88,
+        };
+        const particleSeeds = [0, 0.12, 0.24, 0.36, 0.48, 0.6];
+        const animationStart = performance.now();
+        const durationMs = 1080;
+
+        if (animationFrameRef.current !== null) {
+            cancelAnimationFrame(animationFrameRef.current);
+        }
+
+        const animate = (timestamp: number) => {
+            const elapsed = timestamp - animationStart;
+            const baseProgress = Math.min(1, elapsed / durationMs);
+            const particles = particleSeeds
+                .map((seed, index) => {
+                    const shifted = Math.max(
+                        0,
+                        Math.min(1, (baseProgress - seed) / (1 - seed))
+                    );
+
+                    if (shifted <= 0 || shifted >= 1) {
+                        return null;
+                    }
+
+                    const accelerated = shifted * shifted;
+                    const x = quadraticBezier(
+                        startPoint.x,
+                        controlPoint.x + (index - 2.5) * 10,
+                        endPoint.x,
+                        accelerated
+                    );
+                    const y = quadraticBezier(
+                        startPoint.y,
+                        controlPoint.y - (index % 2 === 0 ? 12 : -6),
+                        endPoint.y,
+                        accelerated
+                    );
+
+                    return {
+                        id: index,
+                        side: targetSide,
+                        x,
+                        y,
+                        size: 12 - index * 0.8,
+                        opacity: 1 - shifted * 0.72,
+                    } satisfies AttackParticle;
+                })
+                .filter((particle): particle is AttackParticle => particle !== null);
+
+            setAttackEffect({
+                id,
+                particles,
+            });
+
+            if (baseProgress < 1) {
+                animationFrameRef.current = requestAnimationFrame(animate);
+                return;
+            }
+
+            setAttackEffect(null);
+            animationFrameRef.current = null;
+            onComplete?.();
+        };
+
+        animationFrameRef.current = requestAnimationFrame(animate);
+    }
+
     useEffect(() => {
         function handleWindowKeyDown(event: KeyboardEvent) {
             const { target } = event;
@@ -325,27 +561,82 @@ export function MultiplayerGameScreen({
     return (
         <main className='app-shell fullscreen-shell'>
             <section className='screen game-screen single-game-screen multiplayer-game-screen'>
-                <GameStatusHeader
-                    countdownProgress={multiplayerCountdownProgress}
-                    formatCountdown={formatCountdown}
-                    headerClassName='multiplayer-top-bar'
-                    onBack={onBack}
-                    score={multiplayerScore}
-                    scoreClassName='multiplayer-score-pill'
-                    timeLeft={multiplayerTimeLeft}
-                />
-
-                <section
-                    aria-live='polite'
-                    className='single-value-display multiplayer-value-display'
+                <button
+                    aria-label={uiText.back}
+                    className='multiplayer-back-button'
+                    onClick={() => {
+                        Promise.resolve(onBack()).catch(() => undefined);
+                    }}
+                    type='button'
                 >
-                    <NumberBlobDisplay
-                        isComboRunning={isMultiplayerComboRunning}
-                        isStageRevealActive={isBlobRevealActive}
-                        mode='multiplayer'
-                        stageIndex={currentMultiplayerPlayer?.stage.stageIndex}
-                        value={currentMultiplayerPlayer?.stage.remainingValue}
-                    />
+                    <ArrowLeft aria-hidden='true' className='control-icon' />
+                </button>
+
+                <section className='multiplayer-board' ref={overlayRef}>
+                    <div className='multiplayer-column multiplayer-column-enemy'>
+                        <BattleHpBar
+                            damagePop={damagePops.find(
+                                (damagePop) => damagePop.side === 'enemy'
+                            )}
+                            hp={opponentPlayer?.hp ?? 0}
+                            label={opponentPlayer?.name ?? uiText.opponent}
+                            maxHp={multiplayerSnapshot?.maxHp ?? 1}
+                            outerRef={enemyHealthRef}
+                            side='enemy'
+                        />
+                        <div className='multiplayer-blob-anchor' ref={enemyBlobRef}>
+                            <NumberBlobDisplay
+                                isComboRunning={false}
+                                isStageRevealActive={isOpponentRevealActive}
+                                mode='multiplayer'
+                                size='enemy'
+                                stageIndex={opponentPlayer?.stage.stageIndex}
+                                value={opponentPlayer?.stage.remainingValue}
+                            />
+                        </div>
+                    </div>
+
+                    <div className='multiplayer-column multiplayer-column-self'>
+                        <BattleHpBar
+                            damagePop={damagePops.find(
+                                (damagePop) => damagePop.side === 'self'
+                            )}
+                            hp={currentMultiplayerPlayer?.hp ?? 0}
+                            label={uiText.you}
+                            maxHp={multiplayerSnapshot?.maxHp ?? 1}
+                            outerRef={selfHealthRef}
+                            side='self'
+                        />
+                        <div className='multiplayer-blob-anchor' ref={selfBlobRef}>
+                            <NumberBlobDisplay
+                                isComboRunning={isMultiplayerComboRunning}
+                                isStageRevealActive={isBlobRevealActive}
+                                mode='multiplayer'
+                                size='self'
+                                stageIndex={currentMultiplayerPlayer?.stage.stageIndex}
+                                value={currentMultiplayerPlayer?.stage.remainingValue}
+                            />
+                        </div>
+                    </div>
+
+                    {attackEffect ? (
+                        <div aria-hidden='true' className='multiplayer-attack-layer'>
+                            {attackEffect.particles.map((particle) => (
+                                <span
+                                    className={`multiplayer-attack-particle multiplayer-attack-particle-${particle.side}`}
+                                    key={`${attackEffect.id}-${particle.id}`}
+                                    style={
+                                        {
+                                            '--particle-size': `${particle.size}px`,
+                                            '--particle-x': `${particle.x}px`,
+                                            '--particle-y': `${particle.y}px`,
+                                            '--particle-opacity': particle.opacity,
+                                        } as CSSProperties
+                                    }
+                                />
+                            ))}
+                        </div>
+                    ) : undefined}
                 </section>
 
                 <section className='single-controls-grid multiplayer-controls-grid'>
@@ -404,13 +695,75 @@ export function MultiplayerGameScreen({
                     </div>
                 </section>
 
-                {isTimeUp || isMatchFinished ? (
+                {isMatchFinished ? (
                     <ScoreDialog
+                        comboCount={currentMultiplayerPlayer?.maxCombo ?? 0}
                         onReturnHome={onBack}
-                        score={multiplayerScore}
+                        title={currentPlayerWon ? uiText.victory : uiText.defeat}
                     />
                 ) : undefined}
             </section>
         </main>
+    );
+}
+
+type BattleHpBarProps = {
+    damagePop: DamagePop | undefined;
+    hp: number;
+    label: string;
+    maxHp: number;
+    outerRef: React.RefObject<HTMLDivElement | null>;
+    side: 'enemy' | 'self';
+};
+
+function BattleHpBar({
+    damagePop,
+    hp,
+    label,
+    maxHp,
+    outerRef,
+    side,
+}: BattleHpBarProps): JSX.Element {
+    const hpRatio = Math.max(0, Math.min(100, (hp / Math.max(maxHp, 1)) * 100));
+
+    return (
+        <div
+            className={`multiplayer-hp-bar multiplayer-hp-bar-${side}`}
+            ref={outerRef}
+        >
+            <div className='multiplayer-hp-copy'>
+                <span className='label'>{label}</span>
+                <strong>
+                    {hp}/{maxHp} {uiText.healthUnit}
+                </strong>
+            </div>
+
+            <div className='multiplayer-hp-track'>
+                <span
+                    className='multiplayer-hp-fill'
+                    style={{ width: `${hpRatio}%` }}
+                />
+            </div>
+
+            {damagePop ? (
+                <span className='multiplayer-damage-pop' key={damagePop.id}>
+                    -{damagePop.value}
+                </span>
+            ) : undefined}
+        </div>
+    );
+}
+
+function quadraticBezier(
+    start: number,
+    control: number,
+    end: number,
+    progress: number
+): number {
+    const inverse = 1 - progress;
+    return (
+        inverse * inverse * start +
+        2 * inverse * progress * control +
+        progress * progress * end
     );
 }

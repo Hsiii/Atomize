@@ -1,11 +1,221 @@
 .multiplayer-game-screen {
     flex: 1;
+    gap: var(--space-4);
+    padding-top: max(var(--space-4), env(safe-area-inset-top));
+    padding-right: max(var(--space-5), env(safe-area-inset-right));
+    padding-bottom: max(var(--space-5), env(safe-area-inset-bottom));
+    padding-left: max(var(--space-5), env(safe-area-inset-left));
 }
 
-.multiplayer-value-display {
+.multiplayer-back-button {
+    align-self: flex-start;
+    display: grid;
+    place-items: center;
+    color: var(--color-secondary);
+}
+
+.multiplayer-board {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-4);
+    align-items: stretch;
+}
+
+.multiplayer-column {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.multiplayer-column-enemy {
+    justify-content: flex-start;
+}
+
+.multiplayer-column-self {
+    justify-content: center;
+}
+
+.multiplayer-blob-anchor {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    place-items: center;
+}
+
+.multiplayer-column-enemy .multiplayer-blob-anchor {
+    align-items: center;
+}
+
+.multiplayer-column-self .multiplayer-blob-anchor {
+    align-items: center;
+}
+
+.multiplayer-column .number-blob-display {
+    padding: 0;
+}
+
+.multiplayer-hp-bar {
+    position: relative;
+    display: grid;
+    gap: var(--space-2);
+}
+
+.multiplayer-hp-copy {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+}
+
+.multiplayer-hp-copy strong {
+    font-family: var(--font-family-numeric);
+    font-size: clamp(0.88rem, 2.2vw, 1.05rem);
+    line-height: 1;
+    color: var(--color-primary);
+}
+
+.multiplayer-hp-track {
+    position: relative;
+    width: 100%;
+    height: var(--size-health-bar);
+    overflow: hidden;
+    border-radius: var(--radius-pill);
+    background: var(--color-track);
+}
+
+.multiplayer-hp-fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(
+        90deg,
+        var(--color-primary-strong),
+        var(--color-secondary)
+    );
+}
+
+.multiplayer-damage-pop {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + var(--space-timer-gap));
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-danger);
+    animation: timer-penalty-pop 0.7s ease-out forwards;
+    pointer-events: none;
+}
+
+.multiplayer-attack-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.multiplayer-attack-particle {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--particle-size);
+    height: var(--particle-size);
+    border-radius: 50%;
+    transform: translate(
+        calc(var(--particle-x) - 50%),
+        calc(var(--particle-y) - 50%)
+    );
+    opacity: var(--particle-opacity);
+    filter: blur(0.3px);
+    box-shadow: 0 0 18px currentColor;
+    color: var(--color-primary-strong);
+    background: radial-gradient(
+        circle,
+        color-mix(in srgb, var(--color-text-inverse) 96%, transparent) 0%,
+        color-mix(in srgb, var(--color-secondary) 72%, var(--color-text-inverse))
+            42%,
+        color-mix(in srgb, var(--color-primary-strong) 88%, transparent) 72%,
+        transparent 100%
+    );
+}
+
+.multiplayer-attack-particle-self {
+    color: var(--color-primary-strong);
+}
+
+.multiplayer-attack-particle-enemy {
+    color: var(--color-primary-strong);
+}
+
+.multiplayer-controls-grid {
+    margin-top: auto;
+    gap: var(--space-2);
 }
 
 .multiplayer-keypad {
     margin-top: 0;
+    gap: var(--space-keypad-gap-mobile);
+}
+
+.multiplayer-keypad button {
+    min-height: 4rem;
+}
+
+.multiplayer-controls-grid .combo-panel {
+    grid-column: 1 / -1;
+}
+
+.multiplayer-controls-grid .combo-bar {
+    min-height: 3.5rem;
+}
+
+.multiplayer-controls-grid .combo-actions-column {
+    gap: var(--space-2);
+    grid-template-rows: repeat(3, minmax(4rem, 1fr));
+}
+
+@media (max-width: 700px) {
+    .multiplayer-board {
+        gap: var(--space-3);
+    }
+
+    .multiplayer-hp-copy {
+        font-size: 0.74rem;
+    }
+
+    .multiplayer-hp-copy strong {
+        font-size: 0.84rem;
+    }
+
+    .multiplayer-keypad button {
+        min-height: 3.7rem;
+    }
+}
+
+@media (max-height: 780px) {
+    .multiplayer-game-screen {
+        gap: var(--space-3);
+        padding-top: max(var(--space-3), env(safe-area-inset-top));
+        padding-right: max(var(--space-4), env(safe-area-inset-right));
+        padding-bottom: max(var(--space-4), env(safe-area-inset-bottom));
+        padding-left: max(var(--space-4), env(safe-area-inset-left));
+    }
+
+    .multiplayer-column {
+        gap: var(--space-3);
+    }
+
+    .multiplayer-keypad button {
+        min-height: 3.35rem;
+    }
+
+    .multiplayer-controls-grid .combo-actions-column {
+        grid-template-rows: repeat(3, minmax(3.35rem, 1fr));
+    }
 }

@@ -6,12 +6,13 @@ export const uiText = {
     score: 'Score',
     scoreUnit: 'pt',
     timerPenalty: '-1s',
-    returnHome: 'Return Home',
+    returnHome: 'Top',
     health: 'HP',
+    healthUnit: 'HP',
     combo: 'Combo',
+    maxCombo: 'Max Combo',
     you: 'You',
     opponent: 'Opponent',
-    battle: 'Battle',
     serverOnline: 'Server online',
     serverOffline: 'Server offline',
     title: 'Atomize',
@@ -59,6 +60,9 @@ export const uiText = {
     waitingForPlayer: 'Waiting for the second player to join.',
     multiplayerSyncStalled:
         'Realtime sync stalled. Input unlocked, but room sync may lag.',
+    victory: 'Victory',
+    defeat: 'Defeat',
+    remainingUnit: 'left',
 } as const;
 
 export type MenuMode = 'default' | 'create-room' | 'join-room';
