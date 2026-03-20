@@ -84,15 +84,15 @@
     box-shadow: none;
 }
 
-.combo-backspace-button {
+.combo-backspace-button.app-action-button {
     aspect-ratio: 1;
     padding: 0;
-    border-radius: var(--radius-orb);
+    border-radius: 50%;
     background: var(--color-secondary);
 }
 
-.combo-enter-button {
-    border-radius: var(--radius-pill);
+.combo-enter-button.app-action-button {
+    border-radius: var(--radius-panel);
     background: var(--color-primary-strong);
 }
 
