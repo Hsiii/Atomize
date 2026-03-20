@@ -4,7 +4,7 @@ import { uiText } from '../../../app-state';
 
 import './ScoreDialog.css';
 
-import { ActionButton } from '../ui/ActionButton';
+import { ActionButton } from './ActionButton';
 
 type ScoreDialogProps = {
     comboCount: number;

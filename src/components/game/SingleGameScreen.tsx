@@ -1,18 +1,18 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { JSX } from 'react';
-import type { Prime, SoloState } from '../../core';
 import { CircleArrowUp, Delete } from 'lucide-react';
 
 import { uiText } from '../../app-state';
+import type { Prime, SoloState } from '../../core';
 
 import './GamePlayScreen.css';
 
-import { ComboQueuePanel } from './shared/ComboQueuePanel';
 import { GameStatusHeader } from './GameStatusHeader';
-import { NumberBlobDisplay } from './shared/NumberBlobDisplay';
-import { PrimeKeyButton } from './shared/PrimeKeyButton';
-import { ScoreDialog } from './shared/ScoreDialog';
 import { ActionButton } from './ui/ActionButton';
+import { ComboQueuePanel } from './ui/ComboQueuePanel';
+import { NumberBlobDisplay } from './ui/NumberBlobDisplay';
+import { PrimeKeyButton } from './ui/PrimeKeyButton';
+import { ScoreDialog } from './ui/ScoreDialog';
 
 type SingleGameScreenProps = {
     playablePrimes: Prime[];
