@@ -211,6 +211,11 @@ export function MenuScreen({
                                             <Plus className='slot-plus-icon' />
                                         </button>
                                     </div>
+                                    {isInRoom ? (
+                                        <span className='slot-name'>
+                                            {uiText.waitingShort}
+                                        </span>
+                                    ) : undefined}
                                 </div>
                             )}
                         </div>
