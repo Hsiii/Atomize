@@ -84,6 +84,7 @@ function handleMessage(socket: WebSocket, message: ClientMessage) {
                         stageIndex: 0,
                         stage: soloState.currentStage,
                         connected: true,
+                        ready: true,
                     },
                 ],
             ]),
@@ -124,6 +125,7 @@ function handleMessage(socket: WebSocket, message: ClientMessage) {
             stageIndex: room.stageIndex,
             stage: room.stage,
             connected: true,
+            ready: true,
         });
         sockets.set(socket, { id: playerId, socket });
 

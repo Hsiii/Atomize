@@ -1,4 +1,5 @@
-import { PRIME_POOL, type Prime } from './primes';
+import { PRIME_POOL } from './primes';
+import type { Prime } from './primes';
 import { createRng, randomInt } from './random';
 
 export type StageState = {
@@ -18,7 +19,7 @@ export type SoloState = {
     currentStage: StageState;
 };
 
-export type SelectionResult =
+type SelectionResult =
     | {
           kind: 'correct';
           stage: StageState;
@@ -59,7 +60,7 @@ export function generateStage(seed: string, stageIndex: number): StageState {
     const factors: Prime[] = [];
     let targetValue = 1;
 
-    for (let count = 0; count < factorCount; count += 1) {
+    for (let count = 0; count < factorCount; count++) {
         const remainingSlots = factorCount - count - 1;
         const reservedValue = MIN_PRIME ** remainingSlots;
         const maxPrimeValue = Math.floor(
