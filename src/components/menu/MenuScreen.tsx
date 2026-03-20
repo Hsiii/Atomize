@@ -86,9 +86,8 @@ export function MenuScreen({
     const showCurrentReadyBadge = hasOpponent && isCurrentPlayerReady;
     const showOpponentReadyBadge = hasOpponent && isOpponentReady;
     const isReadyButtonDisabled = isMultiplayerCountdown;
-    let readyButtonLabel: string = isCurrentPlayerReady
-        ? uiText.cancelReady
-        : uiText.ready;
+    const readyButtonClassName = `menu-start-btn${isCurrentPlayerReady ? ' menu-start-btn-ready' : ''}`;
+    let readyButtonLabel: string = uiText.ready;
 
     if (isMultiplayerCountdown) {
         readyButtonLabel = `${uiText.startingIn} ${String(multiplayerCountdownValue)}...`;
@@ -215,7 +214,8 @@ export function MenuScreen({
 
                         {shouldShowReadyAction ? (
                             <ActionButton
-                                className='menu-start-btn'
+                                aria-pressed={isCurrentPlayerReady}
+                                className={readyButtonClassName}
                                 disabled={isReadyButtonDisabled}
                                 onClick={() => {
                                     detachAction(onToggleReady());

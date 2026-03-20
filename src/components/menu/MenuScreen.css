@@ -252,6 +252,18 @@
     min-height: 3.5rem;
 }
 
+.menu-start-btn-ready:not(:disabled) {
+    background: var(--color-disabled-bg);
+    border-color: transparent;
+    color: var(--color-disabled-text);
+    opacity: 1;
+}
+
+.menu-start-btn-ready:not(:disabled):hover,
+.menu-start-btn-ready:not(:disabled):active {
+    opacity: 1;
+}
+
 .menu-room-hint-block {
     max-width: 13rem;
     padding: 0.85rem 1rem;
