@@ -196,14 +196,6 @@
         ease-out;
 }
 
-.multiplayer-hp-bar-self .multiplayer-hp-track::after {
-    background: var(--color-secondary);
-}
-
-.multiplayer-hp-bar-enemy .multiplayer-hp-track::after {
-    background: var(--color-primary-strong);
-}
-
 .multiplayer-hp-fill {
     display: block;
     height: 100%;
