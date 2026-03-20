@@ -85,7 +85,7 @@ function seedParticles(
     blobs: readonly BlobDefinition[],
     phase: MenuPhase,
     field: Readonly<HTMLDivElement>,
-    titleAtom: Readonly<HTMLSpanElement> | null,
+    _titleAtom: Readonly<HTMLSpanElement> | null,
     buttons: ReadonlyMap<BlobId, HTMLButtonElement>,
     previousParticles: readonly BlobParticle[],
     splitSourceId: BlobId | undefined
@@ -141,27 +141,14 @@ function seedParticles(
             ? sourceParticle.vy + seed.vy * 0.7
             : seed.vy;
 
-        if (
-            !sourceParticle &&
-            phase === 'play' &&
-            blob.id === 'play' &&
-            titleAtom
-        ) {
-            const titleAtomRect = titleAtom.getBoundingClientRect();
-            const titleAtomCenterX =
-                titleAtomRect.left - fieldRect.left + titleAtomRect.width / 2;
-            const titleAtomBottom =
-                titleAtomRect.bottom -
-                fieldRect.top +
-                clamp(fieldRect.height * 0.02, 12, 22);
-
+        if (!sourceParticle && phase === 'play' && blob.id === 'play') {
             return {
                 id: blob.id,
                 radius,
-                x: clamp(titleAtomCenterX - radius, WALL_PADDING, maxX),
-                y: clamp(titleAtomBottom - radius, WALL_PADDING, maxY),
-                vx: 0,
-                vy: Math.abs(seed.vy) * 0.55,
+                x: clamp(fieldRect.width / 2 - radius, WALL_PADDING, maxX),
+                y: clamp(fieldRect.height / 2 - radius, WALL_PADDING, maxY),
+                vx: seed.vx,
+                vy: seed.vy,
             };
         }
 

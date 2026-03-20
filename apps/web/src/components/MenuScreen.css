@@ -153,27 +153,23 @@
 
 .menu-blob-play-intro {
     z-index: 2;
-    animation: menu-play-blob-intro 1725ms cubic-bezier(0.16, 0.84, 0.2, 1)
+    animation: menu-play-blob-intro 600ms cubic-bezier(0.34, 1.56, 0.64, 1)
         forwards;
 }
 
 @keyframes menu-play-blob-intro {
     0% {
         opacity: 0;
-        transform: translateY(-2.2rem) scale(0.9);
+        transform: scale(0);
     }
 
-    18% {
+    40% {
         opacity: 1;
-    }
-
-    74% {
-        transform: translateY(0.28rem) scale(1.01);
     }
 
     100% {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: scale(1);
     }
 }
 
@@ -190,26 +186,6 @@
 @media (max-width: 640px) {
     .menu-actions-shell-play {
         inset: 11.6rem 0 0.4rem;
-    }
-
-    @keyframes menu-play-blob-intro {
-        0% {
-            opacity: 0;
-            transform: translateY(-1.7rem) scale(0.9);
-        }
-
-        18% {
-            opacity: 1;
-        }
-
-        74% {
-            transform: translateY(0.22rem) scale(1.01);
-        }
-
-        100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
     }
 
     .menu-actions-shell {
