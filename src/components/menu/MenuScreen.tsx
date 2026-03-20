@@ -346,17 +346,24 @@ export function MenuScreen({
                                         {onlineUsers.map((user) => {
                                             const isUserInGame =
                                                 user.status === 'in-game';
+                                            const isUserInTeam =
+                                                user.status === 'in-team';
                                             const isInvited = invitedIds.has(
                                                 user.playerId
                                             );
                                             const isDisabled =
-                                                isUserInGame || isInvited;
+                                                isUserInGame ||
+                                                isUserInTeam ||
+                                                isInvited;
                                             let inviteButtonLabel: string =
                                                 uiText.inviteButton;
 
                                             if (isUserInGame) {
                                                 inviteButtonLabel =
                                                     uiText.inGame;
+                                            } else if (isUserInTeam) {
+                                                inviteButtonLabel =
+                                                    uiText.inTeam;
                                             } else if (isInvited) {
                                                 inviteButtonLabel =
                                                     uiText.invited;

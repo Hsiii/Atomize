@@ -44,5 +44,6 @@ export type MultiplayerSendResult = {
 
 export type LobbyInvitation = {
     fromName: string;
+    fromPlayerId: string;
     roomCode: string;
 };

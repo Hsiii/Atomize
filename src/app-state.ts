@@ -55,6 +55,8 @@ export const uiText = {
     accept: 'Accept',
     decline: 'Decline',
     inGame: 'In Game',
+    inTeam: 'In Team',
+    inviteDeclined: 'Invitation declined',
     start: 'Start',
     guest: 'Guest',
 } as const;
@@ -72,7 +74,7 @@ export type MultiplayerState = {
 export type OnlineLobbyUser = {
     playerId: string;
     name: string;
-    status: 'lobby' | 'in-game';
+    status: 'lobby' | 'in-game' | 'in-team';
 };
 
 export type PendingInvitation = {

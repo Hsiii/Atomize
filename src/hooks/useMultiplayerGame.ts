@@ -182,6 +182,7 @@ export function useMultiplayerGame({
                     type: 'room_invite';
                     roomCode: string;
                     fromName: string;
+                    fromPlayerId: string;
                     targetPlayerId: string;
                 };
 
@@ -201,22 +202,64 @@ export function useMultiplayerGame({
 
                 setPendingInvitation({
                     fromName: invite.fromName,
+                    fromPlayerId: invite.fromPlayerId,
                     roomCode: invite.roomCode,
+                });
+            })
+            .on('broadcast', { event: 'invite_declined' }, ({ payload }) => {
+                const decline = payload as {
+                    type: 'invite_declined';
+                    roomCode: string;
+                    targetPlayerId: string;
+                };
+
+                if (decline.targetPlayerId !== currentPlayerId) {
+                    return;
+                }
+
+                const currentState = latestMultiplayerRef.current;
+
+                if (currentState.roomId !== decline.roomCode) {
+                    return;
+                }
+
+                if (
+                    currentState.snapshot &&
+                    currentState.snapshot.players.length >= 2
+                ) {
+                    return;
+                }
+
+                showLobbyToast(uiText.inviteDeclined);
+                detachPromise(closeActiveChannel());
+                setMultiplayer({
+                    playerId: undefined,
+                    snapshot: undefined,
+                    statusText: uiText.idleStatus,
+                    roomId: '',
+                    isHost: false,
                 });
             })
             .subscribe((status) => {
                 if (status === REALTIME_SUBSCRIBE_STATES.SUBSCRIBED) {
                     syncLobbyPresenceUsers();
 
+                    let presenceStatus: 'lobby' | 'in-game' | 'in-team';
+
+                    if (screenRef.current !== 'menu') {
+                        presenceStatus = 'in-game';
+                    } else if (latestMultiplayerRef.current.roomId) {
+                        presenceStatus = 'in-team';
+                    } else {
+                        presenceStatus = 'lobby';
+                    }
+
                     detachPromise(
                         lobbyChannel
                             .track({
                                 playerId: currentPlayerId,
                                 name: playerName,
-                                status:
-                                    screenRef.current === 'menu'
-                                        ? 'lobby'
-                                        : 'in-game',
+                                status: presenceStatus,
                             })
                             .then(() => {
                                 syncLobbyPresenceUsers();
@@ -246,7 +289,7 @@ export function useMultiplayerGame({
             const state = currentLobbyChannel.presenceState<{
                 playerId: string;
                 name: string;
-                status: 'lobby' | 'in-game';
+                status: 'lobby' | 'in-game' | 'in-team';
             }>();
             const users: OnlineLobbyUser[] = [];
 
@@ -273,16 +316,26 @@ export function useMultiplayerGame({
             return undefined;
         }
 
+        let status: 'lobby' | 'in-game' | 'in-team';
+
+        if (screen !== 'menu') {
+            status = 'in-game';
+        } else if (multiplayer.roomId) {
+            status = 'in-team';
+        } else {
+            status = 'lobby';
+        }
+
         detachPromise(
             lobbyChannel.track({
                 playerId: lobbyPlayerIdRef.current,
                 name: playerName,
-                status: screen === 'menu' ? 'lobby' : 'in-game',
+                status,
             })
         );
 
         return undefined;
-    }, [playerName, screen]);
+    }, [playerName, screen, multiplayer.roomId]);
 
     async function resetMultiplayerGame() {
         await closeActiveChannel();
@@ -308,7 +361,7 @@ export function useMultiplayerGame({
         const state = lobbyChannel.presenceState<{
             playerId: string;
             name: string;
-            status: 'lobby' | 'in-game';
+            status: 'lobby' | 'in-game' | 'in-team';
         }>();
         const currentPlayerId = lobbyPlayerIdRef.current;
         const users: OnlineLobbyUser[] = [];
@@ -363,6 +416,7 @@ export function useMultiplayerGame({
                             type: 'room_invite',
                             roomCode: roomId,
                             fromName: playerName,
+                            fromPlayerId: lobbyPlayerIdRef.current,
                             targetPlayerId,
                         },
                     });
@@ -431,6 +485,24 @@ export function useMultiplayerGame({
     }
 
     function handleDeclineInvitation() {
+        if (pendingInvitation) {
+            const lobbyChannel = lobbyChannelRef.current;
+
+            if (lobbyChannel) {
+                detachPromise(
+                    lobbyChannel.send({
+                        type: 'broadcast',
+                        event: 'invite_declined',
+                        payload: {
+                            type: 'invite_declined',
+                            roomCode: pendingInvitation.roomCode,
+                            targetPlayerId: pendingInvitation.fromPlayerId,
+                        },
+                    })
+                );
+            }
+        }
+
         setPendingInvitation(undefined);
     }
 
@@ -598,6 +670,7 @@ export function useMultiplayerGame({
     async function invitePlayer(targetPlayerId: string) {
         const currentState = latestMultiplayerRef.current;
         const lobbyChannel = lobbyChannelRef.current;
+        const currentPlayerId = lobbyPlayerIdRef.current;
 
         if (!currentState.roomId || !lobbyChannel) {
             return;
@@ -610,6 +683,7 @@ export function useMultiplayerGame({
                 type: 'room_invite',
                 roomCode: currentState.roomId,
                 fromName: playerName,
+                fromPlayerId: currentPlayerId,
                 targetPlayerId,
             },
         });
