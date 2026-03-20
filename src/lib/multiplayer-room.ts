@@ -346,29 +346,85 @@ export function clearSolvedBattleStage(
         return snapshot;
     }
 
+    const targetPlayer = snapshot.players.find(
+        (player) => player.id !== playerId
+    );
+
+    if (!targetPlayer) {
+        return snapshot;
+    }
+
+    const clearDamage = 1;
     const stageIndex = actingPlayer.stageIndex + 1;
     const nextStage = generateStage(snapshot.seed, stageIndex);
     const nextPlayers = snapshot.players.map((player) => {
-        if (player.id !== playerId) {
-            return player;
+        if (player.id === playerId) {
+            return {
+                ...player,
+                pendingFactorDamage: 0,
+                stageIndex,
+                stage: nextStage,
+            };
         }
 
         return {
             ...player,
-            pendingFactorDamage: 0,
-            stageIndex,
-            stage: nextStage,
+            hp: Math.max(0, player.hp - clearDamage),
         };
     });
+
+    const nextActingPlayer = nextPlayers.find(
+        (player) => player.id === playerId
+    );
+    const nextTargetPlayer = nextPlayers.find(
+        (player) => player.id !== playerId
+    );
+
+    if (!nextActingPlayer || !nextTargetPlayer) {
+        return snapshot;
+    }
+
+    const lastEvent: BattleEvent =
+        nextTargetPlayer.hp === 0
+            ? {
+                  id: getNextEventId(snapshot),
+                  type: 'finish',
+                  winnerPlayerId: actingPlayer.id,
+                  loserPlayerId: targetPlayer.id,
+                  sourcePlayerId: playerId,
+                  damage: clearDamage,
+                  regen: 0,
+                  perfectSolve: false,
+                  combo: actingPlayer.combo,
+                  cause: 'attack',
+                  sourceStageIndex: actingPlayer.stageIndex,
+                  nextStageIndex: stageIndex,
+                  winnerHp: nextActingPlayer.hp,
+                  loserHp: nextTargetPlayer.hp,
+              }
+            : {
+                  id: getNextEventId(snapshot),
+                  type: 'attack',
+                  sourcePlayerId: playerId,
+                  targetPlayerId: targetPlayer.id,
+                  damage: clearDamage,
+                  regen: 0,
+                  perfectSolve: false,
+                  combo: actingPlayer.combo,
+                  sourceStageIndex: actingPlayer.stageIndex,
+                  nextStageIndex: stageIndex,
+                  sourceHp: nextActingPlayer.hp,
+                  targetHp: nextTargetPlayer.hp,
+              };
 
     return withPlayers(
         {
             ...snapshot,
             stageIndex,
             stage: nextStage,
-            lastEvent: undefined,
         },
-        nextPlayers
+        nextPlayers,
+        lastEvent
     );
 }
 
