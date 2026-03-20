@@ -1,7 +1,7 @@
 import type { JSX } from 'react';
 import { ArrowLeft } from 'lucide-react';
 
-import { uiText } from '../../../app-state';
+import { uiText } from '../../app-state';
 
 import './BackButton.css';
 

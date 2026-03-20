@@ -1,0 +1,19 @@
+.icon-action.floating-back-button {
+    position: fixed;
+    top: max(var(--space-7), env(safe-area-inset-top));
+    left: max(var(--space-7), env(safe-area-inset-left));
+    width: var(--size-control-floating);
+    height: var(--size-control-floating);
+    z-index: 5;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--color-secondary);
+    box-shadow: none;
+}
+
+.floating-back-button .control-icon {
+    width: var(--size-icon-lg);
+    height: var(--size-icon-lg);
+}
+}

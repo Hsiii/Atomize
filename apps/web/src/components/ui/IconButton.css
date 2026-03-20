@@ -1,0 +1,13 @@
+.icon-action {
+    width: var(--size-control);
+    height: var(--size-control);
+    padding: var(--space-0);
+    border: 1px solid var(--color-border-soft);
+    border-radius: 50%;
+    background: var(--color-surface-strong);
+    color: var(--color-secondary);
+    box-shadow: none;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+}
