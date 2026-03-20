@@ -517,11 +517,8 @@ export function NumberBlobDisplay({
                         }${clearPop ? ' is-cleared' : ''}`}
                         key={stageIndex}
                     >
-                        <strong
-                            aria-hidden={concealValues}
-                            className={valueClassName}
-                        >
-                            {concealValues ? '' : displayedValue}
+                        <strong className={valueClassName}>
+                            {displayedValue}
                         </strong>
                     </div>
                 </div>
