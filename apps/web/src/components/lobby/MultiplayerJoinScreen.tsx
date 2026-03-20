@@ -6,6 +6,7 @@ import { uiText } from '../../app-state';
 import { BackButton } from '../ui/BackButton';
 import {
     clampFloatingParticleOutsideCollider,
+    clampFloatingParticlePosition,
     clampFloatingValue,
     getFloatingTitleOrbCollider,
     resolveFloatingBlobCollisions,
@@ -62,14 +63,6 @@ function seedJoinParticles(
         }
 
         const radius = Math.max(element.offsetWidth, element.offsetHeight) / 2;
-        const maxX = Math.max(
-            JOIN_WALL_PADDING,
-            fieldRect.width - radius * 2 - JOIN_WALL_PADDING
-        );
-        const maxY = Math.max(
-            JOIN_WALL_PADDING,
-            fieldRect.height - radius * 2 - JOIN_WALL_PADDING
-        );
         const previousParticle = previousParticleMap.get(seed.id);
         const unclampedX = previousParticle
             ? previousParticle.x
@@ -77,19 +70,16 @@ function seedJoinParticles(
         const unclampedY = previousParticle
             ? previousParticle.y
             : fieldRect.height * seed.y - radius;
-        const clampedX = clampFloatingValue(
+        const constrainedToField = clampFloatingParticlePosition(
             unclampedX,
-            JOIN_WALL_PADDING,
-            maxX
-        );
-        const clampedY = clampFloatingValue(
             unclampedY,
-            JOIN_WALL_PADDING,
-            maxY
+            radius,
+            fieldRect,
+            JOIN_WALL_PADDING
         );
         const constrainedPosition = clampFloatingParticleOutsideCollider(
-            clampedX,
-            clampedY,
+            constrainedToField.x,
+            constrainedToField.y,
             radius,
             collider,
             JOIN_TITLE_ORB_CLEARANCE
@@ -247,22 +237,21 @@ export function MultiplayerJoinScreen({
                     JOIN_WALL_PADDING,
                     fieldRect.height - particle.radius * 2 - JOIN_WALL_PADDING
                 );
+                const constrainedToField = clampFloatingParticlePosition(
+                    particle.x,
+                    particle.y,
+                    particle.radius,
+                    fieldRect,
+                    JOIN_WALL_PADDING
+                );
 
                 if (particle.x <= JOIN_WALL_PADDING || particle.x >= maxX) {
-                    particle.x = clampFloatingValue(
-                        particle.x,
-                        JOIN_WALL_PADDING,
-                        maxX
-                    );
+                    particle.x = constrainedToField.x;
                     particle.vx *= -1;
                 }
 
                 if (particle.y <= JOIN_WALL_PADDING || particle.y >= maxY) {
-                    particle.y = clampFloatingValue(
-                        particle.y,
-                        JOIN_WALL_PADDING,
-                        maxY
-                    );
+                    particle.y = constrainedToField.y;
                     particle.vy *= -1;
                 }
             }
