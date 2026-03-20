@@ -60,15 +60,27 @@ export function addPlayerToRoom(
 
 export function setPlayerReady(
     snapshot: RoomSnapshot,
-    playerId: string
+    playerId: string,
+    ready: boolean
 ): RoomSnapshot {
+    if (snapshot.status === 'playing' || snapshot.status === 'finished') {
+        return snapshot;
+    }
+
     const nextPlayers = snapshot.players.map((player) =>
-        player.id === playerId ? { ...player, ready: true } : player
+        player.id === playerId ? { ...player, ready } : player
     );
+    const shouldCancelCountdown =
+        snapshot.status === 'countdown' &&
+        nextPlayers.some((player) => !player.ready);
 
     return {
         ...snapshot,
         players: nextPlayers,
+        countdownEndsAt: shouldCancelCountdown
+            ? undefined
+            : snapshot.countdownEndsAt,
+        status: shouldCancelCountdown ? 'waiting' : snapshot.status,
     };
 }
 

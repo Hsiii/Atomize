@@ -84,16 +84,14 @@ export function MenuScreen({
     const shouldShowReadyAction = isInRoom && hasOpponent;
     const shouldShowSoloStart = !shouldShowReadyAction && !isInRoom;
     const isMultiplayerCountdown = multiplayerCountdownValue !== null;
-    let currentReadyLabel: string = uiText.ready;
+    const showCurrentReadyBadge = hasOpponent && isCurrentPlayerReady;
+    const showOpponentReadyBadge = hasOpponent && isOpponentReady;
+    let readyButtonLabel: string = isCurrentPlayerReady
+        ? uiText.cancelReady
+        : uiText.ready;
 
-    if (hasOpponent && !isCurrentPlayerReady) {
-        currentReadyLabel = uiText.notReady;
-    }
-
-    let readyButtonLabel: string = uiText.ready;
-
-    if (isMultiplayerCountdown) {
-        readyButtonLabel = `${uiText.startingIn} ${String(multiplayerCountdownValue)}...`;
+    if (isMultiplayerCountdown && isCurrentPlayerReady) {
+        readyButtonLabel = `${uiText.cancelReady} (${String(multiplayerCountdownValue)})`;
     }
 
     useEffect(() => {
@@ -164,9 +162,9 @@ export function MenuScreen({
                                 </button>
                                 <span className='slot-name'>{playerName}</span>
                                 <span
-                                    className={`slot-ready-badge${hasOpponent && isCurrentPlayerReady ? ' slot-ready-badge-on' : ''}${hasOpponent ? '' : ' slot-ready-badge-placeholder'}`}
+                                    className={`slot-ready-badge${showCurrentReadyBadge ? ' slot-ready-badge-on' : ' slot-ready-badge-placeholder'}`}
                                 >
-                                    {currentReadyLabel}
+                                    {uiText.ready}
                                 </span>
                             </div>
 
@@ -181,11 +179,9 @@ export function MenuScreen({
                                         {opponentName}
                                     </span>
                                     <span
-                                        className={`slot-ready-badge${isOpponentReady ? ' slot-ready-badge-on' : ''}`}
+                                        className={`slot-ready-badge${showOpponentReadyBadge ? ' slot-ready-badge-on' : ' slot-ready-badge-placeholder'}`}
                                     >
-                                        {isOpponentReady
-                                            ? uiText.ready
-                                            : uiText.notReady}
+                                        {uiText.ready}
                                     </span>
                                 </div>
                             ) : (
@@ -220,7 +216,6 @@ export function MenuScreen({
                         {shouldShowReadyAction ? (
                             <ActionButton
                                 className='menu-start-btn'
-                                disabled={isCurrentPlayerReady || isMultiplayerCountdown}
                                 onClick={onToggleReady}
                                 variant='primary'
                             >

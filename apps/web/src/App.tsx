@@ -78,6 +78,7 @@ type RoomBroadcastMessage =
     | {
           type: 'player_ready';
           playerId: string;
+            ready: boolean;
       }
     | {
           type: 'prime_selected';
@@ -632,7 +633,8 @@ export default function App() {
         if (
             !currentState.playerId ||
             !currentState.snapshot ||
-            currentState.snapshot.status !== 'waiting'
+            (currentState.snapshot.status !== 'waiting' &&
+                currentState.snapshot.status !== 'countdown')
         ) {
             return;
         }
@@ -640,17 +642,17 @@ export default function App() {
         const alreadyReady = currentState.snapshot.players.find(
             (player) => player.id === currentState.playerId
         )?.ready;
-
-        if (alreadyReady) {
-            return;
-        }
+        const nextReadyState = !alreadyReady;
 
         if (currentState.isHost) {
             const readySnapshot = setPlayerReady(
                 currentState.snapshot,
-                currentState.playerId
+                currentState.playerId,
+                nextReadyState
             );
-            const nextSnapshot = startRoomCountdown(readySnapshot);
+            const nextSnapshot = nextReadyState
+                ? startRoomCountdown(readySnapshot)
+                : readySnapshot;
 
             updateSnapshot(nextSnapshot, '');
             await broadcastMessage({
@@ -662,6 +664,7 @@ export default function App() {
             await broadcastMessage({
                 type: 'player_ready',
                 playerId: currentState.playerId,
+                ready: nextReadyState,
             });
 
             setMultiplayer((prev) => {
@@ -669,7 +672,11 @@ export default function App() {
                     return prev;
                 }
 
-                const readySnapshot = setPlayerReady(prev.snapshot, prev.playerId);
+                const readySnapshot = setPlayerReady(
+                    prev.snapshot,
+                    prev.playerId,
+                    nextReadyState
+                );
 
                 return {
                     ...prev,
@@ -879,9 +886,12 @@ export default function App() {
 
                 const nextSnapshot = setPlayerReady(
                     currentState.snapshot,
-                    message.playerId
+                    message.playerId,
+                    message.ready
                 );
-                const countdownSnapshot = startRoomCountdown(nextSnapshot);
+                const countdownSnapshot = message.ready
+                    ? startRoomCountdown(nextSnapshot)
+                    : nextSnapshot;
 
                 updateSnapshot(countdownSnapshot, '');
                 await broadcastMessage({

@@ -49,7 +49,7 @@ export const uiText = {
     inviteButton: 'Invite',
     invited: 'Invited',
     ready: 'Ready',
-    notReady: 'Not Ready',
+    cancelReady: 'Cancel Ready',
     startingIn: 'Start in',
     noOnlinePlayers: 'No other players online.',
     inviteTitle: 'Online Players',
