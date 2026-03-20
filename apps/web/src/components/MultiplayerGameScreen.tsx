@@ -771,7 +771,7 @@ export function MultiplayerGameScreen({
 
                     return {
                         id: index,
-                        side: targetSide,
+                        side: sourceSide,
                         x,
                         y,
                         size: 12 - index * 0.8,
