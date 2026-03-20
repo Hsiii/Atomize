@@ -1,6 +1,7 @@
 import {
     applyPrimeSelection,
-    computeBattleHitDamage,
+    computeBattleDamage,
+    computeBattlePartialDamage,
     generateStage,
 } from '../core';
 import type { BattleEvent, Prime, RoomPlayer, RoomSnapshot } from '../core';
@@ -138,14 +139,6 @@ export function applyBattlePrimeSelection(
         return applyBattlePenalty(snapshot, playerId);
     }
 
-    const solvedFactorCount =
-        actingPlayer.stage.factors.length -
-        selection.stage.remainingFactors.length;
-    const damage = computeBattleHitDamage(
-        actingPlayer.stage,
-        actingPlayer.combo,
-        solvedFactorCount
-    );
     const combo = selection.cleared
         ? actingPlayer.combo + 1
         : actingPlayer.combo;
@@ -155,6 +148,9 @@ export function applyBattlePrimeSelection(
     const nextStage = selection.cleared
         ? generateStage(snapshot.seed, stageIndex)
         : selection.stage;
+    const damage = selection.cleared
+        ? computeBattleDamage(actingPlayer.stage, combo)
+        : computeBattlePartialDamage(actingPlayer.stage, actingPlayer.combo);
     const nextPlayers = snapshot.players.map((player) => {
         if (player.id === playerId) {
             return {

@@ -171,33 +171,23 @@ export function computeBattleDamage(
     return (
         6 +
         clearedStage.factors.length * 4 +
-        Math.max(0, combo - 1) * 3 +
+        Math.max(0, combo - 1) * 5 +
         Math.min(clearedStage.stageIndex, 6)
     );
 }
 
-export function computeBattleHitDamage(
+export function computeBattlePartialDamage(
     stage: StageState,
-    combo: number,
-    solvedFactorCount: number
+    combo: number
 ): number {
     const totalFactorCount = stage.factors.length;
 
-    if (totalFactorCount === 0 || solvedFactorCount <= 0) {
+    if (totalFactorCount === 0) {
         return 0;
     }
 
-    const clampedSolvedFactorCount = Math.min(
-        solvedFactorCount,
-        totalFactorCount
+    return Math.max(
+        1,
+        Math.ceil(computeBattleDamage(stage, combo) / (totalFactorCount * 3))
     );
-    const totalDamage = computeBattleDamage(stage, combo);
-    const previousResolvedDamage = Math.round(
-        (totalDamage * (clampedSolvedFactorCount - 1)) / totalFactorCount
-    );
-    const resolvedDamage = Math.round(
-        (totalDamage * clampedSolvedFactorCount) / totalFactorCount
-    );
-
-    return resolvedDamage - previousResolvedDamage;
 }
