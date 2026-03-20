@@ -333,7 +333,6 @@
     place-items: center;
     padding: 1.5rem;
     background: var(--color-overlay-soft);
-    backdrop-filter: blur(4px);
     animation: menu-scrim-fade 0.2s ease-out;
 }
 
