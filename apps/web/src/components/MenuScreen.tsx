@@ -40,6 +40,7 @@ export function MenuScreen({
 }: MenuScreenProps): JSX.Element {
     const [showInviteDialog, setShowInviteDialog] = useState(false);
     const [showProfileDialog, setShowProfileDialog] = useState(false);
+    const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
     const [editingName, setEditingName] = useState(playerName);
     const [visibleToast, setVisibleToast] = useState<string | undefined>(
         undefined
@@ -83,7 +84,7 @@ export function MenuScreen({
 
     function handleInvite(targetPlayerId: string) {
         onInvitePlayer(targetPlayerId);
-        setShowInviteDialog(false);
+        setInvitedIds((prev) => new Set(prev).add(targetPlayerId));
     }
 
     return (
@@ -265,6 +266,10 @@ export function MenuScreen({
                                         {onlineUsers.map((user) => {
                                             const isUserInGame =
                                                 user.status === 'in-game';
+                                            const isInvited =
+                                                invitedIds.has(user.playerId);
+                                            const isDisabled =
+                                                isUserInGame || isInvited;
 
                                             return (
                                                 <li
@@ -275,8 +280,8 @@ export function MenuScreen({
                                                         {user.name}
                                                     </span>
                                                     <button
-                                                        className={`invite-btn${isUserInGame ? ' invite-btn-disabled' : ''}`}
-                                                        disabled={isUserInGame}
+                                                        className={`invite-btn${isDisabled ? ' invite-btn-disabled' : ''}`}
+                                                        disabled={isDisabled}
                                                         onClick={() => {
                                                             handleInvite(
                                                                 user.playerId
@@ -286,7 +291,9 @@ export function MenuScreen({
                                                     >
                                                         {isUserInGame
                                                             ? uiText.inGame
-                                                            : uiText.inviteButton}
+                                                            : isInvited
+                                                              ? uiText.invited
+                                                              : uiText.inviteButton}
                                                     </button>
                                                 </li>
                                             );

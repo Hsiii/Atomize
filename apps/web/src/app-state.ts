@@ -59,6 +59,7 @@ export const uiText = {
     inviteSent: 'Invite sent!',
     inviteReceived: 'invited you to play!',
     inviteButton: 'Invite',
+    invited: 'Invited',
     copyCode: 'Copy Code',
     codeCopied: 'Copied!',
     noOnlinePlayers: 'No other players online.',

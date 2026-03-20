@@ -551,7 +551,6 @@ export default function App() {
                 }
             });
 
-            showLobbyToast(uiText.inviteSent);
             return;
         }
 
@@ -627,8 +626,6 @@ export default function App() {
                 targetPlayerId,
             },
         });
-
-        showLobbyToast(uiText.inviteSent);
     }
 
     function setStatusText(statusText: string) {
