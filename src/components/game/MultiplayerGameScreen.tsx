@@ -88,7 +88,6 @@ export function MultiplayerGameScreen({
     const keyboardDigitBufferWindowMs = 250;
     const damagePopLifetimeMs = 780;
     const perfectBurstDurationMs = 1120;
-    const perfectRegenLeadMs = 150;
     const hpImpactTailMs = 240;
     const hpLossBaseDurationMs = 220;
     const hpLossPerPointDurationMs = 28;
@@ -750,15 +749,10 @@ export function MultiplayerGameScreen({
         const regenDurationMs = getHpGainDuration(previousHp, nextHp);
 
         if (regen > 0) {
-            scheduleTimeout(() => {
-                resolveHpGain(side, nextHp, regen);
-            }, perfectRegenLeadMs);
+            resolveHpGain(side, nextHp, regen);
         }
 
-        return Math.max(
-            perfectBurstDurationMs,
-            perfectRegenLeadMs + regenDurationMs
-        );
+        return Math.max(perfectBurstDurationMs, regenDurationMs);
     }
 
     function queuePrime(prime: Prime) {
