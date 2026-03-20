@@ -313,6 +313,47 @@ export function applyBattlePenalty(
     );
 }
 
+export function clearSolvedBattleStage(
+    snapshot: RoomSnapshot,
+    playerId: string
+): RoomSnapshot {
+    if (snapshot.status !== 'playing') {
+        return snapshot;
+    }
+
+    const actingPlayer = snapshot.players.find(
+        (player) => player.id === playerId
+    );
+
+    if (!actingPlayer || actingPlayer.stage.remainingValue !== 1) {
+        return snapshot;
+    }
+
+    const stageIndex = actingPlayer.stageIndex + 1;
+    const nextStage = generateStage(snapshot.seed, stageIndex);
+    const nextPlayers = snapshot.players.map((player) => {
+        if (player.id !== playerId) {
+            return player;
+        }
+
+        return {
+            ...player,
+            stageIndex,
+            stage: nextStage,
+        };
+    });
+
+    return withPlayers(
+        {
+            ...snapshot,
+            stageIndex,
+            stage: nextStage,
+            lastEvent: undefined,
+        },
+        nextPlayers
+    );
+}
+
 function createPlayer(id: string, name: string, seed: string): RoomPlayer {
     return {
         id,

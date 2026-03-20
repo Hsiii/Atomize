@@ -23,6 +23,7 @@ import {
     applyBattlePenalty,
     applyBattlePrimeSelection,
     beginRoomMatch,
+    clearSolvedBattleStage,
     createRoomSnapshot,
     setPlayerReady,
     startRoomCountdown,
@@ -574,7 +575,28 @@ export function useMultiplayerGame({
     }
 
     async function handleMultiplayerComboSubmit(queue: readonly Prime[]) {
-        if (isMultiplayerInputDisabled || queue.length === 0) {
+        if (isMultiplayerInputDisabled) {
+            return;
+        }
+
+        const currentState = latestMultiplayerRef.current;
+        const currentPlayer = currentState.snapshot?.players.find(
+            (player) => player.id === currentState.playerId
+        );
+
+        if (queue.length === 0) {
+            if (currentPlayer?.stage.remainingValue !== 1) {
+                return;
+            }
+
+            setIsMultiplayerComboRunning(true);
+
+            try {
+                await sendSolvedStageClear();
+            } finally {
+                setIsMultiplayerComboRunning(false);
+            }
+
             return;
         }
 
@@ -803,6 +825,12 @@ export function useMultiplayerGame({
                 const message = payload as RoomBroadcastMessage;
                 detachPromise(handleComboPenaltyBroadcast(message, playerId));
             })
+            .on('broadcast', { event: 'clear_solved_stage' }, ({ payload }) => {
+                const message = payload as RoomBroadcastMessage;
+                detachPromise(
+                    handleClearSolvedStageBroadcast(message, playerId)
+                );
+            })
             .on('broadcast', { event: 'room_error' }, ({ payload }) => {
                 const message = payload as RoomBroadcastMessage;
 
@@ -934,6 +962,32 @@ export function useMultiplayerGame({
         });
     }
 
+    async function sendSolvedStageClear(): Promise<boolean> {
+        const currentState = latestMultiplayerRef.current;
+
+        if (!currentState.playerId || !currentState.snapshot) {
+            return false;
+        }
+
+        if (currentState.isHost) {
+            const nextSnapshot = clearSolvedBattleStage(
+                currentState.snapshot,
+                currentState.playerId
+            );
+            updateSnapshot(nextSnapshot, '');
+            return await broadcastMessage({
+                type: 'room_state',
+                snapshot: nextSnapshot,
+                sourcePlayerId: currentState.playerId,
+            });
+        }
+
+        return await broadcastMessage({
+            type: 'clear_solved_stage',
+            playerId: currentState.playerId,
+        });
+    }
+
     async function handleJoinRequestBroadcast(
         message: RoomBroadcastMessage,
         sourcePlayerId: string
@@ -1054,6 +1108,35 @@ export function useMultiplayerGame({
             currentState.snapshot,
             message.playerId,
             message.preservedStage
+        );
+
+        updateSnapshot(nextSnapshot, '');
+        await broadcastMessage({
+            type: 'room_state',
+            snapshot: nextSnapshot,
+            sourcePlayerId,
+        });
+
+        return undefined;
+    }
+
+    async function handleClearSolvedStageBroadcast(
+        message: RoomBroadcastMessage,
+        sourcePlayerId: string
+    ): Promise<undefined> {
+        const currentState = latestMultiplayerRef.current;
+
+        if (
+            message.type !== 'clear_solved_stage' ||
+            !currentState.isHost ||
+            !currentState.snapshot
+        ) {
+            return undefined;
+        }
+
+        const nextSnapshot = clearSolvedBattleStage(
+            currentState.snapshot,
+            message.playerId
         );
 
         updateSnapshot(nextSnapshot, '');

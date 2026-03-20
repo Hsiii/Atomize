@@ -27,6 +27,10 @@ export type RoomBroadcastMessage =
           preservedStage?: RoomSnapshot['stage'];
       }
     | {
+          type: 'clear_solved_stage';
+          playerId: string;
+      }
+    | {
           type: 'room_error';
           targetPlayerId: string;
           message: string;

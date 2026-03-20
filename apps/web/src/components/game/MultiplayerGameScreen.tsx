@@ -83,6 +83,8 @@ export function MultiplayerGameScreen({
     const showKeypadDisabledState =
         (isMultiplayerInputDisabled && !isMultiplayerComboRunning) ||
         isBlobRevealActive;
+    const canSubmitSolvedBlob =
+        currentMultiplayerPlayer?.stage.remainingValue === 1;
     const [visibleQueue, setVisibleQueue] = useState<Prime[]>(
         multiplayerPrimeQueue
     );
@@ -669,7 +671,10 @@ export function MultiplayerGameScreen({
     }
 
     async function submitVisibleQueue() {
-        if (isInputDisabled || visibleQueueRef.current.length === 0) {
+        if (
+            isInputDisabled ||
+            (visibleQueueRef.current.length === 0 && !canSubmitSolvedBlob)
+        ) {
             return;
         }
 
@@ -1009,7 +1014,9 @@ export function MultiplayerGameScreen({
                                 aria-label={uiText.enterCombo}
                                 className='combo-enter-button'
                                 disabled={
-                                    isInputDisabled || visibleQueue.length === 0
+                                    isInputDisabled ||
+                                    (visibleQueue.length === 0 &&
+                                        !canSubmitSolvedBlob)
                                 }
                                 onClick={handleSubmitClick}
                                 shape='rounded'
