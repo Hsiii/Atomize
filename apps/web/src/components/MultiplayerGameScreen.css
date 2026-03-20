@@ -132,25 +132,15 @@
         calc(var(--particle-y) - 50%)
     );
     opacity: var(--particle-opacity);
-    filter: blur(0.3px);
-    box-shadow: 0 0 18px currentColor;
-    color: var(--color-primary-strong);
-    background: radial-gradient(
-        circle,
-        color-mix(in srgb, var(--color-text-inverse) 96%, transparent) 0%,
-        color-mix(in srgb, var(--color-secondary) 72%, var(--color-text-inverse))
-            42%,
-        color-mix(in srgb, var(--color-primary-strong) 88%, transparent) 72%,
-        transparent 100%
-    );
+    background: var(--color-gold-strong);
 }
 
 .multiplayer-attack-particle-self {
-    color: var(--color-primary-strong);
+    background: var(--color-gold-strong);
 }
 
 .multiplayer-attack-particle-enemy {
-    color: var(--color-primary-strong);
+    background: var(--color-danger);
 }
 
 .multiplayer-controls-grid {

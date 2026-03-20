@@ -26,6 +26,9 @@
     --color-track: rgba(16, 27, 46, 0.12);
     --color-danger: #c43a3a;
     --color-success: #3d7a57;
+    --color-gold: #d4a017;
+    --color-gold-strong: #e8b825;
+    --color-gold-soft: rgba(212, 160, 23, 0.14);
     --color-overlay-soft: rgba(16, 27, 46, 0.2);
     --color-overlay-strong: rgba(16, 27, 46, 0.26);
     --color-placeholder: rgba(16, 27, 46, 0.28);
