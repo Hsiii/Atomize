@@ -45,9 +45,8 @@ export function SingleGameScreen({
     const [isBlobRevealActive, setIsBlobRevealActive] = useState(false);
     const hasInitializedStageRef = useRef(false);
     const previousStageIndexRef = useRef<number | null>(null);
-    const isInputDisabled =
-        isTimeUp || isSoloComboRunning || isBlobRevealActive;
-    const showKeypadDisabledState = isTimeUp || isBlobRevealActive;
+    const isInputDisabled = isTimeUp || isSoloComboRunning;
+    const showKeypadDisabledState = isTimeUp;
     const [visibleQueue, setVisibleQueue] = useState<Prime[]>(soloPrimeQueue);
     const visibleQueueRef = useRef(visibleQueue);
 
