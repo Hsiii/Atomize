@@ -168,6 +168,36 @@ export default function App() {
         screenRef.current = screen;
     }, [screen]);
 
+    function syncLobbyPresenceUsers() {
+        const lobbyChannel = lobbyChannelRef.current;
+
+        if (!lobbyChannel) {
+            return;
+        }
+
+        const state = lobbyChannel.presenceState<{
+            playerId: string;
+            name: string;
+            status: 'lobby' | 'in-game';
+        }>();
+        const currentPlayerId = lobbyPlayerIdRef.current;
+        const users: OnlineLobbyUser[] = [];
+
+        for (const presences of Object.values(state)) {
+            for (const entry of presences) {
+                if (entry.playerId !== currentPlayerId) {
+                    users.push({
+                        playerId: entry.playerId,
+                        name: entry.name,
+                        status: entry.status ?? 'lobby',
+                    });
+                }
+            }
+        }
+
+        setOnlineUsers(users);
+    }
+
     useEffect(() => {
         if (multiplayer.snapshot?.status === 'playing') {
             setScreen('multi-game');
@@ -298,31 +328,8 @@ export default function App() {
             config: { presence: { key: currentPlayerId } },
         });
 
-        function syncPresenceState() {
-            const state = lobbyChannel.presenceState<{
-                playerId: string;
-                name: string;
-                status: 'lobby' | 'in-game';
-            }>();
-            const users: OnlineLobbyUser[] = [];
-
-            for (const presences of Object.values(state)) {
-                for (const entry of presences) {
-                    if (entry.playerId !== currentPlayerId) {
-                        users.push({
-                            playerId: entry.playerId,
-                            name: entry.name,
-                            status: entry.status ?? 'lobby',
-                        });
-                    }
-                }
-            }
-
-            setOnlineUsers(users);
-        }
-
         lobbyChannel
-            .on('presence', { event: 'sync' }, syncPresenceState)
+            .on('presence', { event: 'sync' }, syncLobbyPresenceUsers)
             .on('broadcast', { event: 'room_invite' }, ({ payload }) => {
                 const invite = payload as {
                     type: 'room_invite';
@@ -352,6 +359,8 @@ export default function App() {
             })
             .subscribe(async (status) => {
                 if (status === 'SUBSCRIBED') {
+                    syncLobbyPresenceUsers();
+
                     await lobbyChannel.track({
                         playerId: currentPlayerId,
                         name: playerName,
@@ -360,6 +369,8 @@ export default function App() {
                                 ? 'lobby'
                                 : 'in-game',
                     });
+
+                    syncLobbyPresenceUsers();
                 }
             });
 
@@ -450,6 +461,10 @@ export default function App() {
     function handleEditName(name: string) {
         setPlayerName(name);
         persistPlayerName(name);
+    }
+
+    function prefetchOnlineUsers() {
+        syncLobbyPresenceUsers();
     }
 
     async function handleLobbyInvite(targetPlayerId: string) {
@@ -1167,6 +1182,7 @@ export default function App() {
                 onDeclineInvitation={handleDeclineInvitation}
                 onEditName={handleEditName}
                 onInvitePlayer={handleLobbyInvite}
+                onPrefetchInviteUsers={prefetchOnlineUsers}
                 onStartSoloGame={startSingleGame}
                 onToggleReady={toggleReady}
                 isInRoom={Boolean(multiplayer.roomId)}

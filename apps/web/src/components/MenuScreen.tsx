@@ -20,6 +20,7 @@ type MenuScreenProps = {
     toastId: number;
     onStartSoloGame: () => void;
     onInvitePlayer: (targetPlayerId: string) => void;
+    onPrefetchInviteUsers: () => void;
     onToggleReady: () => void;
     onEditName: (name: string) => void;
     pendingInvitation: { fromName: string; roomCode: string } | null;
@@ -38,6 +39,7 @@ export function MenuScreen({
     toastId,
     onStartSoloGame,
     onInvitePlayer,
+    onPrefetchInviteUsers,
     onToggleReady,
     onEditName,
     pendingInvitation,
@@ -98,6 +100,11 @@ export function MenuScreen({
             nextInvitedIds.add(targetPlayerId);
             return nextInvitedIds;
         });
+    }
+
+    function handleOpenInviteDialog() {
+        onPrefetchInviteUsers();
+        setShowInviteDialog(true);
     }
 
     return (
@@ -168,8 +175,11 @@ export function MenuScreen({
                                     <button
                                         className='slot-circle slot-p2-empty'
                                         onClick={() => {
-                                            setShowInviteDialog(true);
+                                            handleOpenInviteDialog();
                                         }}
+                                        onFocus={onPrefetchInviteUsers}
+                                        onPointerDown={onPrefetchInviteUsers}
+                                        onPointerEnter={onPrefetchInviteUsers}
                                         type='button'
                                     >
                                         <Plus className='slot-plus-icon' />
