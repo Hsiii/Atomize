@@ -50,8 +50,8 @@ type PendingAttack = {
 
 type MultiplayerGameScreenProps = {
     playablePrimes: Prime[];
-    currentMultiplayerPlayer: RoomPlayer | null;
-    multiplayerSnapshot: RoomSnapshot | null;
+    currentMultiplayerPlayer: RoomPlayer | undefined;
+    multiplayerSnapshot: RoomSnapshot | undefined;
     multiplayerPrimeQueue: Prime[];
     isMultiplayerInputDisabled: boolean;
     isMultiplayerComboRunning: boolean;

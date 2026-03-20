@@ -64,8 +64,8 @@ export const uiText = {
 export type Screen = 'menu' | 'single' | 'multi-game';
 
 export type MultiplayerState = {
-    playerId: string | null;
-    snapshot: RoomSnapshot | null;
+    playerId: string | undefined;
+    snapshot: RoomSnapshot | undefined;
     statusText: string;
     roomId: string;
     isHost: boolean;

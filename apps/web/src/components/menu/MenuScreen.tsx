@@ -4,28 +4,27 @@ import { Plus, User, X } from 'lucide-react';
 
 import type { OnlineLobbyUser } from '../../app-state';
 import { uiText } from '../../app-state';
-
 import { ActionButton } from '../game/ui/ActionButton';
 
 import './MenuScreen.css';
 
 type MenuScreenProps = {
     playerName: string;
-    opponentName: string | null;
+    opponentName: string | undefined;
     isInRoom: boolean;
     isCurrentPlayerReady: boolean;
     isOpponentReady: boolean;
-    multiplayerCountdownValue: number | null;
+    multiplayerCountdownValue: number | undefined;
     onlineUsers: OnlineLobbyUser[];
-    toastMessage: string | null;
+    toastMessage: string | undefined;
     toastId: number;
     onStartSoloGame: () => void;
-    onInvitePlayer: (targetPlayerId: string) => void;
+    onInvitePlayer: (targetPlayerId: string) => void | Promise<void>;
     onPrefetchInviteUsers: () => void;
-    onToggleReady: () => void;
+    onToggleReady: () => void | Promise<void>;
     onEditName: (name: string) => void;
-    pendingInvitation: { fromName: string; roomCode: string } | null;
-    onAcceptInvitation: () => void;
+    pendingInvitation: { fromName: string; roomCode: string } | undefined;
+    onAcceptInvitation: () => void | Promise<void>;
     onDeclineInvitation: () => void;
 };
 
@@ -83,7 +82,7 @@ export function MenuScreen({
     const opponentInitials = (opponentName ?? '').slice(0, 1).toUpperCase();
     const shouldShowReadyAction = isInRoom && hasOpponent;
     const shouldShowSoloStart = !shouldShowReadyAction && !isInRoom;
-    const isMultiplayerCountdown = multiplayerCountdownValue !== null;
+    const isMultiplayerCountdown = multiplayerCountdownValue !== undefined;
     const showCurrentReadyBadge = hasOpponent && isCurrentPlayerReady;
     const showOpponentReadyBadge = hasOpponent && isOpponentReady;
     let readyButtonLabel: string = isCurrentPlayerReady
@@ -113,7 +112,7 @@ export function MenuScreen({
     }
 
     function handleInvite(targetPlayerId: string) {
-        onInvitePlayer(targetPlayerId);
+        detachAction(onInvitePlayer(targetPlayerId));
         setInvitedIds((prev: ReadonlySet<string>) => {
             const nextInvitedIds = new Set(prev);
 
@@ -216,7 +215,9 @@ export function MenuScreen({
                         {shouldShowReadyAction ? (
                             <ActionButton
                                 className='menu-start-btn'
-                                onClick={onToggleReady}
+                                onClick={() => {
+                                    detachAction(onToggleReady());
+                                }}
                                 variant='primary'
                             >
                                 {readyButtonLabel}
@@ -337,8 +338,9 @@ export function MenuScreen({
                                         {onlineUsers.map((user) => {
                                             const isUserInGame =
                                                 user.status === 'in-game';
-                                            const isInvited =
-                                                invitedIds.has(user.playerId);
+                                            const isInvited = invitedIds.has(
+                                                user.playerId
+                                            );
                                             const isDisabled =
                                                 isUserInGame || isInvited;
                                             let inviteButtonLabel: string =
@@ -404,7 +406,9 @@ export function MenuScreen({
                                     {uiText.decline}
                                 </ActionButton>
                                 <ActionButton
-                                    onClick={onAcceptInvitation}
+                                    onClick={() => {
+                                        detachAction(onAcceptInvitation());
+                                    }}
                                     variant='primary'
                                 >
                                     {uiText.accept}
@@ -416,4 +420,8 @@ export function MenuScreen({
             </section>
         </main>
     );
+}
+
+function detachAction(result: void | Promise<void>) {
+    Promise.resolve(result).catch(() => undefined);
 }

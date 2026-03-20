@@ -1,22 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
+import type { JSX } from 'react';
 import {
-    applySoloPenalty,
     advanceSoloState,
     applyPrimeSelection,
+    applySoloPenalty,
     createInitialSoloState,
     PRIME_POOL,
-    type Prime,
-    type RoomSnapshot,
 } from '@atomize/game-core';
-import type { RealtimeChannel, SupabaseClient } from '@supabase/supabase-js';
+import type { Prime, RoomSnapshot } from '@atomize/game-core';
+import { REALTIME_SUBSCRIBE_STATES } from '@supabase/supabase-js';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
-import {
-    uiText,
-    type MultiplayerState,
-    type OnlineLobbyUser,
-    type PendingInvitation,
-    type Screen,
-} from './app-state';
+import { uiText } from './app-state';
+import type { MultiplayerState, OnlineLobbyUser, Screen } from './app-state';
 import { MultiplayerGameScreen } from './components/game/MultiplayerGameScreen';
 import { SingleGameScreen } from './components/game/SingleGameScreen';
 import { MenuScreen } from './components/menu/MenuScreen';
@@ -61,7 +57,7 @@ const fallbackPlayerNames = [
 
 type LobbyToastState = {
     id: number;
-    message: string | null;
+    message: string | undefined;
 };
 
 type RoomBroadcastMessage =
@@ -78,17 +74,17 @@ type RoomBroadcastMessage =
     | {
           type: 'player_ready';
           playerId: string;
-            ready: boolean;
+          ready: boolean;
       }
     | {
           type: 'prime_selected';
           playerId: string;
           prime: Prime;
       }
-        | {
-                    type: 'combo_penalty';
-                    playerId: string;
-            }
+    | {
+          type: 'combo_penalty';
+          playerId: string;
+      }
     | {
           type: 'room_error';
           targetPlayerId: string;
@@ -100,7 +96,12 @@ type MultiplayerSendResult = {
     didBroadcast: boolean;
 };
 
-export default function App() {
+type LobbyInvitation = {
+    fromName: string;
+    roomCode: string;
+};
+
+export default function App(): JSX.Element {
     const initialSoloSeedRef = useRef(createSoloRunSeed());
     const [screen, setScreen] = useState<Screen>('menu');
     const [soloSeed, setSoloSeed] = useState(initialSoloSeedRef.current);
@@ -116,38 +117,38 @@ export default function App() {
     );
     const [isMultiplayerComboRunning, setIsMultiplayerComboRunning] =
         useState(false);
-    const [multiplayerCountdownValue, setMultiplayerCountdownValue] = useState<
-        number | null
-    >(null);
+    const [multiplayerCountdownValue, setMultiplayerCountdownValue] =
+        useState<number>();
     const [playerName, setPlayerName] = useState(() => getInitialPlayerName());
-    const [pendingInvitation, setPendingInvitation] =
-        useState<PendingInvitation | null>(null);
+    const [pendingInvitation, setPendingInvitation] = useState<
+        LobbyInvitation | undefined
+    >(undefined);
     const [lobbyToast, setLobbyToast] = useState<LobbyToastState>({
         id: 0,
-        message: null,
+        message: undefined,
     });
     const [multiplayer, setMultiplayer] = useState<MultiplayerState>({
-        playerId: null,
-        snapshot: null,
+        playerId: undefined,
+        snapshot: undefined,
         statusText: uiText.idleStatus,
         roomId: '',
         isHost: false,
     });
     const [onlineUsers, setOnlineUsers] = useState<OnlineLobbyUser[]>([]);
-    const channelRef = useRef<RealtimeChannel | null>(null);
-    const lobbyChannelRef = useRef<RealtimeChannel | null>(null);
-    const supabaseRef = useRef<SupabaseClient | null>(null);
+    const channelRef = useRef<RealtimeChannel | undefined>(undefined);
+    const lobbyChannelRef = useRef<RealtimeChannel | undefined>(undefined);
+    const supabaseRef =
+        useRef<ReturnType<typeof createRealtimeClient>>(undefined);
     const lobbyPlayerIdRef = useRef(crypto.randomUUID());
     const screenRef = useRef(screen);
     const latestSoloStateRef = useRef(soloState);
     const latestMultiplayerRef = useRef(multiplayer);
-    const joinLookupTimeoutRef = useRef<number | null>(null);
-    const joinRetryIntervalRef = useRef<number | null>(null);
+    const joinLookupTimeoutRef = useRef<number | undefined>(undefined);
+    const joinRetryIntervalRef = useRef<number | undefined>(undefined);
     const multiplayerPlayers = multiplayer.snapshot?.players ?? [];
-    const currentMultiplayerPlayer =
-        multiplayerPlayers.find(
-            (player) => player.id === multiplayer.playerId
-        ) ?? null;
+    const currentMultiplayerPlayer = multiplayerPlayers.find(
+        (player) => player.id === multiplayer.playerId
+    );
     const isMultiplayerInputDisabled =
         !multiplayer.snapshot ||
         multiplayer.snapshot.status !== 'playing' ||
@@ -192,7 +193,7 @@ export default function App() {
                     users.push({
                         playerId: entry.playerId,
                         name: entry.name,
-                        status: entry.status ?? 'lobby',
+                        status: entry.status,
                     });
                 }
             }
@@ -211,8 +212,8 @@ export default function App() {
         const countdownEndsAt = multiplayer.snapshot?.countdownEndsAt;
 
         if (multiplayer.snapshot?.status !== 'countdown' || !countdownEndsAt) {
-            setMultiplayerCountdownValue(null);
-            return;
+            setMultiplayerCountdownValue(undefined);
+            return undefined;
         }
 
         const updateCountdownValue = () => {
@@ -225,13 +226,14 @@ export default function App() {
 
         updateCountdownValue();
 
-        const timer = window.setInterval(
+        const timer = globalThis.setInterval(
             updateCountdownValue,
-            multiplayerCountdownTickMs
+            multiplayerCountdownTickMs,
+            undefined
         );
 
         return () => {
-            window.clearInterval(timer);
+            globalThis.clearInterval(timer);
         };
     }, [multiplayer.snapshot?.countdownEndsAt, multiplayer.snapshot?.status]);
 
@@ -245,62 +247,76 @@ export default function App() {
             !countdownEndsAt ||
             !currentState.playerId
         ) {
-            return;
+            return undefined;
         }
 
-        const timer = window.setTimeout(() => {
-            const latestState = latestMultiplayerRef.current;
+        const timer = globalThis.setTimeout(
+            () => {
+                const latestState = latestMultiplayerRef.current;
 
-            if (
-                !latestState.isHost ||
-                !latestState.snapshot ||
-                latestState.snapshot.status !== 'countdown' ||
-                !latestState.playerId
-            ) {
-                return;
-            }
+                if (
+                    !latestState.isHost ||
+                    !latestState.snapshot ||
+                    latestState.snapshot.status !== 'countdown' ||
+                    !latestState.playerId
+                ) {
+                    return;
+                }
 
-            const nextSnapshot = beginRoomMatch(latestState.snapshot);
+                const nextSnapshot = beginRoomMatch(latestState.snapshot);
 
-            updateSnapshot(nextSnapshot, '');
-            void broadcastMessage({
-                type: 'room_state',
-                snapshot: nextSnapshot,
-                sourcePlayerId: latestState.playerId,
-            });
-        }, Math.max(0, countdownEndsAt - Date.now()));
+                updateSnapshot(nextSnapshot, '');
+                detachPromise(
+                    broadcastMessage({
+                        type: 'room_state',
+                        snapshot: nextSnapshot,
+                        sourcePlayerId: latestState.playerId,
+                    })
+                );
+            },
+            Math.max(0, countdownEndsAt - Date.now()),
+            undefined
+        );
 
         return () => {
-            window.clearTimeout(timer);
+            globalThis.clearTimeout(timer);
         };
-    }, [multiplayer.isHost, multiplayer.snapshot?.countdownEndsAt, multiplayer.snapshot?.status]);
+    }, [
+        multiplayer.isHost,
+        multiplayer.snapshot?.countdownEndsAt,
+        multiplayer.snapshot?.status,
+    ]);
 
     useEffect(() => {
         if (screen !== 'single') {
-            return;
+            return undefined;
         }
 
         setSoloTimeLeft(soloDurationSeconds);
 
-        const timer = window.setInterval(() => {
-            setSoloTimeLeft((currentTime) => {
-                if (currentTime <= 1) {
-                    window.clearInterval(timer);
-                    return 0;
-                }
+        const timer = globalThis.setInterval(
+            () => {
+                setSoloTimeLeft((currentTime) => {
+                    if (currentTime <= 1) {
+                        globalThis.clearInterval(timer);
+                        return 0;
+                    }
 
-                return currentTime - 1;
-            });
-        }, 1000);
+                    return currentTime - 1;
+                });
+            },
+            1000,
+            undefined
+        );
 
         return () => {
-            window.clearInterval(timer);
+            globalThis.clearInterval(timer);
         };
     }, [screen]);
 
     useEffect(() => {
         if (multiplayer.snapshot?.status === 'playing') {
-            return;
+            return undefined;
         }
 
         setMultiplayerPrimeQueue([]);
@@ -309,60 +325,74 @@ export default function App() {
 
     useEffect(() => {
         if (screen !== 'single' || !isSoloComboRunning) {
-            return;
+            return undefined;
         }
 
         if (soloTimeLeft === 0) {
             setIsSoloComboRunning(false);
-            return;
+            return undefined;
         }
 
         if (soloPrimeQueue.length === 0) {
             setIsSoloComboRunning(false);
-            return;
+            return undefined;
         }
 
-        const timer = window.setTimeout(() => {
-            const currentState = latestSoloStateRef.current;
-            const nextPrime = soloPrimeQueue[0];
-            const outcome = applyPrimeSelection(
-                currentState.currentStage,
-                nextPrime
-            );
+        const timer = globalThis.setTimeout(
+            () => {
+                const currentState = latestSoloStateRef.current;
+                const nextPrime = soloPrimeQueue[0];
+                const outcome = applyPrimeSelection(
+                    currentState.currentStage,
+                    nextPrime
+                );
 
-            if (outcome.kind === 'wrong') {
-                setSoloState(applySoloPenalty(currentState));
-                setSoloPrimeQueue([]);
-                setSoloTimeLeft((currentTime) => Math.max(0, currentTime - 1));
-                setSoloTimerPenaltyPopKey((currentKey) => currentKey + 1);
-                setIsSoloComboRunning(false);
-                return;
-            }
+                if (outcome.kind === 'wrong') {
+                    setSoloState(applySoloPenalty(currentState));
+                    setSoloPrimeQueue([]);
+                    setSoloTimeLeft((currentTime) =>
+                        Math.max(0, currentTime - 1)
+                    );
+                    setSoloTimerPenaltyPopKey((currentKey) => currentKey + 1);
+                    setIsSoloComboRunning(false);
+                    return;
+                }
 
-            const nextState = advanceSoloState(currentState, soloSeed, nextPrime);
-            const hasRedundantBufferedPrimes =
-                outcome.cleared && soloPrimeQueue.length > 1;
+                const nextState = advanceSoloState(
+                    currentState,
+                    soloSeed,
+                    nextPrime
+                );
+                const hasRedundantBufferedPrimes =
+                    outcome.cleared && soloPrimeQueue.length > 1;
 
-            if (hasRedundantBufferedPrimes) {
-                setSoloState(applySoloPenalty(nextState));
-                setSoloPrimeQueue([]);
-                setSoloTimeLeft((currentTime) => Math.max(0, currentTime - 1));
-                setSoloTimerPenaltyPopKey((currentKey) => currentKey + 1);
-                setIsSoloComboRunning(false);
-                return;
-            }
+                if (hasRedundantBufferedPrimes) {
+                    setSoloState(applySoloPenalty(nextState));
+                    setSoloPrimeQueue([]);
+                    setSoloTimeLeft((currentTime) =>
+                        Math.max(0, currentTime - 1)
+                    );
+                    setSoloTimerPenaltyPopKey((currentKey) => currentKey + 1);
+                    setIsSoloComboRunning(false);
+                    return;
+                }
 
-            setSoloState(nextState);
+                setSoloState(nextState);
 
-            setSoloPrimeQueue((currentQueue) => currentQueue.slice(1));
+                setSoloPrimeQueue((currentQueue: readonly Prime[]) =>
+                    currentQueue.slice(1)
+                );
 
-            if (outcome.cleared) {
-                setIsSoloComboRunning(false);
-            }
-        }, soloComboStepDelayMs);
+                if (outcome.cleared) {
+                    setIsSoloComboRunning(false);
+                }
+            },
+            soloComboStepDelayMs,
+            undefined
+        );
 
         return () => {
-            window.clearTimeout(timer);
+            globalThis.clearTimeout(timer);
         };
     }, [isSoloComboRunning, screen, soloPrimeQueue, soloTimeLeft]);
 
@@ -371,7 +401,9 @@ export default function App() {
 
         return () => {
             if (channelRef.current && supabaseRef.current) {
-                void supabaseRef.current.removeChannel(channelRef.current);
+                detachPromise(
+                    supabaseRef.current.removeChannel(channelRef.current)
+                );
             }
         };
     }, []);
@@ -418,28 +450,36 @@ export default function App() {
                     roomCode: invite.roomCode,
                 });
             })
-            .subscribe(async (status) => {
-                if (status === 'SUBSCRIBED') {
+            .subscribe((status) => {
+                if (status === REALTIME_SUBSCRIBE_STATES.SUBSCRIBED) {
                     syncLobbyPresenceUsers();
 
-                    await lobbyChannel.track({
-                        playerId: currentPlayerId,
-                        name: playerName,
-                        status:
-                            screenRef.current === 'menu'
-                                ? 'lobby'
-                                : 'in-game',
-                    });
+                    detachPromise(
+                        lobbyChannel
+                            .track({
+                                playerId: currentPlayerId,
+                                name: playerName,
+                                status:
+                                    screenRef.current === 'menu'
+                                        ? 'lobby'
+                                        : 'in-game',
+                            })
+                            .then(() => {
+                                syncLobbyPresenceUsers();
+                            })
+                    );
 
-                    syncLobbyPresenceUsers();
+                    return undefined;
                 }
+
+                return undefined;
             });
 
         lobbyChannelRef.current = lobbyChannel;
 
         return () => {
-            void supabase.removeChannel(lobbyChannel);
-            lobbyChannelRef.current = null;
+            detachPromise(supabase.removeChannel(lobbyChannel));
+            lobbyChannelRef.current = undefined;
         };
     }, [playerName]);
 
@@ -447,22 +487,22 @@ export default function App() {
         const lobbyChannel = lobbyChannelRef.current;
 
         if (!lobbyChannel) {
-            return;
+            return undefined;
         }
 
-        void lobbyChannel.track({
-            playerId: lobbyPlayerIdRef.current,
-            name: playerName,
-            status: screen === 'menu' ? 'lobby' : 'in-game',
-        });
+        detachPromise(
+            lobbyChannel.track({
+                playerId: lobbyPlayerIdRef.current,
+                name: playerName,
+                status: screen === 'menu' ? 'lobby' : 'in-game',
+            })
+        );
+
+        return undefined;
     }, [screen, playerName]);
 
     function handleSoloComboSubmit(queue: readonly Prime[]) {
-        if (
-            soloTimeLeft === 0 ||
-            queue.length === 0 ||
-            isSoloComboRunning
-        ) {
+        if (soloTimeLeft === 0 || queue.length === 0 || isSoloComboRunning) {
             return;
         }
 
@@ -490,13 +530,13 @@ export default function App() {
         setMultiplayerPrimeQueue([]);
         setIsMultiplayerComboRunning(false);
         setMultiplayer({
-            playerId: null,
-            snapshot: null,
+            playerId: undefined,
+            snapshot: undefined,
             statusText: uiText.idleStatus,
             roomId: '',
             isHost: false,
         });
-        setPendingInvitation(null);
+        setPendingInvitation(undefined);
         setScreen('menu');
     }
 
@@ -510,7 +550,7 @@ export default function App() {
     }
 
     async function handleLobbyInvite(targetPlayerId: string) {
-        let currentState = latestMultiplayerRef.current;
+        const currentState = latestMultiplayerRef.current;
 
         if (!currentState.roomId) {
             const roomId = createRoomId();
@@ -561,50 +601,58 @@ export default function App() {
             return;
         }
 
-        const roomCode = pendingInvitation.roomCode;
-        setPendingInvitation(null);
+        const { roomCode } = pendingInvitation;
+        setPendingInvitation(undefined);
 
         const playerId = crypto.randomUUID();
 
-        await subscribeToRoom(roomCode, playerId, false, async () => {
+        await subscribeToRoom(roomCode, playerId, false, () => {
             const sendJoinRequest = () => {
                 const currentState = latestMultiplayerRef.current;
 
                 if (!isPendingGuestJoin(currentState)) {
                     clearPendingJoinTimers();
-                    return;
+                    return undefined;
                 }
 
-                void broadcastMessage({
-                    type: 'join_request',
-                    playerId,
-                    playerName,
-                });
+                detachPromise(
+                    broadcastMessage({
+                        type: 'join_request',
+                        playerId,
+                        playerName,
+                    })
+                );
             };
 
             sendJoinRequest();
             clearPendingJoinTimers();
 
-            joinRetryIntervalRef.current = window.setInterval(
+            joinRetryIntervalRef.current = globalThis.setInterval(
                 sendJoinRequest,
-                joinRoomRetryIntervalMs
+                joinRoomRetryIntervalMs,
+                undefined
             );
 
-            joinLookupTimeoutRef.current = window.setTimeout(() => {
-                const currentState = latestMultiplayerRef.current;
+            joinLookupTimeoutRef.current = globalThis.setTimeout(
+                () => {
+                    const currentState = latestMultiplayerRef.current;
 
-                if (!isPendingGuestJoin(currentState)) {
-                    clearPendingJoinTimers();
-                    return;
-                }
+                    if (!isPendingGuestJoin(currentState)) {
+                        clearPendingJoinTimers();
+                        return undefined;
+                    }
 
-                void failPendingJoin(uiText.joinMissingRoomToast);
-            }, joinRoomLookupTimeoutMs);
+                    detachPromise(failPendingJoin(uiText.joinMissingRoomToast));
+                    return undefined;
+                },
+                joinRoomLookupTimeoutMs,
+                undefined
+            );
         });
     }
 
     function handleDeclineInvitation() {
-        setPendingInvitation(null);
+        setPendingInvitation(undefined);
     }
 
     async function invitePlayer(targetPlayerId: string) {
@@ -701,14 +749,14 @@ export default function App() {
     }
 
     function clearPendingJoinTimers() {
-        if (joinLookupTimeoutRef.current !== null) {
-            window.clearTimeout(joinLookupTimeoutRef.current);
-            joinLookupTimeoutRef.current = null;
+        if (joinLookupTimeoutRef.current !== undefined) {
+            globalThis.clearTimeout(joinLookupTimeoutRef.current);
+            joinLookupTimeoutRef.current = undefined;
         }
 
-        if (joinRetryIntervalRef.current !== null) {
-            window.clearInterval(joinRetryIntervalRef.current);
-            joinRetryIntervalRef.current = null;
+        if (joinRetryIntervalRef.current !== undefined) {
+            globalThis.clearInterval(joinRetryIntervalRef.current);
+            joinRetryIntervalRef.current = undefined;
         }
     }
 
@@ -717,8 +765,8 @@ export default function App() {
         clearPendingJoinTimers();
         await closeActiveChannel();
         setMultiplayer({
-            playerId: null,
-            snapshot: null,
+            playerId: undefined,
+            snapshot: undefined,
             statusText: uiText.idleStatus,
             roomId: '',
             isHost: false,
@@ -738,18 +786,19 @@ export default function App() {
         let timeoutId: number | undefined;
 
         try {
-            const response = await Promise.race<
-                'ok' | 'timed out' | 'error'
-            >([
+            const response = await Promise.race<'ok' | 'timed out' | 'error'>([
                 channel.send({
                     type: 'broadcast',
                     event: message.type,
                     payload: message,
                 }),
                 new Promise<'timed out'>((resolve) => {
-                    timeoutId = window.setTimeout(
-                        () => resolve('timed out'),
-                        realtimeSendTimeoutMs
+                    timeoutId = globalThis.setTimeout(
+                        () => {
+                            resolve('timed out');
+                        },
+                        realtimeSendTimeoutMs,
+                        undefined
                     );
                 }),
             ]);
@@ -766,7 +815,7 @@ export default function App() {
             return true;
         } finally {
             if (timeoutId !== undefined) {
-                window.clearTimeout(timeoutId);
+                globalThis.clearTimeout(timeoutId);
             }
         }
     }
@@ -785,7 +834,7 @@ export default function App() {
 
         if (channelRef.current && supabaseRef.current) {
             await supabaseRef.current.removeChannel(channelRef.current);
-            channelRef.current = null;
+            channelRef.current = undefined;
         }
     }
 
@@ -803,7 +852,7 @@ export default function App() {
             setStatusText(
                 `Server unavailable: missing ${envList}. Add them to this environment and redeploy.`
             );
-            return;
+            return undefined;
         }
 
         await closeActiveChannel();
@@ -838,120 +887,21 @@ export default function App() {
 
                 updateSnapshot(message.snapshot, '');
             })
-            .on('broadcast', { event: 'join_request' }, async ({ payload }) => {
+            .on('broadcast', { event: 'join_request' }, ({ payload }) => {
                 const message = payload as RoomBroadcastMessage;
-                const currentState = latestMultiplayerRef.current;
-
-                if (
-                    message.type !== 'join_request' ||
-                    !currentState.isHost ||
-                    !currentState.snapshot
-                ) {
-                    return;
-                }
-
-                const nextSnapshot = addPlayerToRoom(
-                    currentState.snapshot,
-                    message.playerId,
-                    message.playerName
-                );
-
-                if (!nextSnapshot) {
-                    await broadcastMessage({
-                        type: 'room_error',
-                        targetPlayerId: message.playerId,
-                        message: 'Room already full',
-                    });
-                    return;
-                }
-
-                updateSnapshot(nextSnapshot, '');
-                await broadcastMessage({
-                    type: 'room_state',
-                    snapshot: nextSnapshot,
-                    sourcePlayerId: playerId,
-                });
+                detachPromise(handleJoinRequestBroadcast(message, playerId));
             })
-            .on('broadcast', { event: 'player_ready' }, async ({ payload }) => {
+            .on('broadcast', { event: 'player_ready' }, ({ payload }) => {
                 const message = payload as RoomBroadcastMessage;
-                const currentState = latestMultiplayerRef.current;
-
-                if (
-                    message.type !== 'player_ready' ||
-                    !currentState.isHost ||
-                    !currentState.snapshot
-                ) {
-                    return;
-                }
-
-                const nextSnapshot = setPlayerReady(
-                    currentState.snapshot,
-                    message.playerId,
-                    message.ready
-                );
-                const countdownSnapshot = message.ready
-                    ? startRoomCountdown(nextSnapshot)
-                    : nextSnapshot;
-
-                updateSnapshot(countdownSnapshot, '');
-                await broadcastMessage({
-                    type: 'room_state',
-                    snapshot: countdownSnapshot,
-                    sourcePlayerId: playerId,
-                });
+                detachPromise(handlePlayerReadyBroadcast(message, playerId));
             })
-            .on(
-                'broadcast',
-                { event: 'prime_selected' },
-                async ({ payload }) => {
-                    const message = payload as RoomBroadcastMessage;
-                    const currentState = latestMultiplayerRef.current;
-
-                    if (
-                        message.type !== 'prime_selected' ||
-                        !currentState.isHost ||
-                        !currentState.snapshot
-                    ) {
-                        return;
-                    }
-
-                    const nextSnapshot = applyBattlePrimeSelection(
-                        currentState.snapshot,
-                        message.playerId,
-                        message.prime
-                    );
-
-                    updateSnapshot(nextSnapshot, '');
-                    await broadcastMessage({
-                        type: 'room_state',
-                        snapshot: nextSnapshot,
-                        sourcePlayerId: playerId,
-                    });
-                }
-            )
-            .on('broadcast', { event: 'combo_penalty' }, async ({ payload }) => {
+            .on('broadcast', { event: 'prime_selected' }, ({ payload }) => {
                 const message = payload as RoomBroadcastMessage;
-                const currentState = latestMultiplayerRef.current;
-
-                if (
-                    message.type !== 'combo_penalty' ||
-                    !currentState.isHost ||
-                    !currentState.snapshot
-                ) {
-                    return;
-                }
-
-                const nextSnapshot = applyBattlePenalty(
-                    currentState.snapshot,
-                    message.playerId
-                );
-
-                updateSnapshot(nextSnapshot, '');
-                await broadcastMessage({
-                    type: 'room_state',
-                    snapshot: nextSnapshot,
-                    sourcePlayerId: playerId,
-                });
+                detachPromise(handlePrimeSelectedBroadcast(message, playerId));
+            })
+            .on('broadcast', { event: 'combo_penalty' }, ({ payload }) => {
+                const message = payload as RoomBroadcastMessage;
+                detachPromise(handleComboPenaltyBroadcast(message, playerId));
             })
             .on('broadcast', { event: 'room_error' }, ({ payload }) => {
                 const message = payload as RoomBroadcastMessage;
@@ -960,17 +910,18 @@ export default function App() {
                     message.type !== 'room_error' ||
                     message.targetPlayerId !== playerId
                 ) {
-                    return;
+                    return undefined;
                 }
 
                 const currentState = latestMultiplayerRef.current;
 
                 if (isPendingGuestJoin(currentState)) {
-                    void failPendingJoin(message.message);
-                    return;
+                    detachPromise(failPendingJoin(message.message));
+                    return undefined;
                 }
 
                 setStatusText(message.message);
+                return undefined;
             });
 
         channelRef.current = channel;
@@ -983,21 +934,24 @@ export default function App() {
             statusText: '',
         }));
 
-        channel.subscribe(async (status) => {
-            if (status === 'SUBSCRIBED') {
-                await onSubscribed();
+        channel.subscribe((status) => {
+            if (status === REALTIME_SUBSCRIBE_STATES.SUBSCRIBED) {
+                detachPromise(Promise.resolve(onSubscribed()));
+                return undefined;
             }
 
-            if (status === 'CHANNEL_ERROR') {
+            if (status === REALTIME_SUBSCRIBE_STATES.CHANNEL_ERROR) {
                 const currentState = latestMultiplayerRef.current;
 
                 if (isPendingGuestJoin(currentState)) {
-                    void failPendingJoin(uiText.joinMissingRoomToast);
-                    return;
+                    detachPromise(failPendingJoin(uiText.joinMissingRoomToast));
+                    return undefined;
                 }
 
                 setStatusText('Server connection failed');
             }
+
+            return undefined;
         });
     }
 
@@ -1064,25 +1018,218 @@ export default function App() {
                 currentState.playerId
             );
             updateSnapshot(nextSnapshot, '');
-            return broadcastMessage({
+            return await broadcastMessage({
                 type: 'room_state',
                 snapshot: nextSnapshot,
                 sourcePlayerId: currentState.playerId,
             });
         }
 
-        return broadcastMessage({
+        return await broadcastMessage({
             type: 'combo_penalty',
             playerId: currentState.playerId,
         });
     }
 
-    async function handleMultiplayerComboSubmit(queue: readonly Prime[]) {
+    async function handleJoinRequestBroadcast(
+        message: RoomBroadcastMessage,
+        sourcePlayerId: string
+    ): Promise<undefined> {
+        const currentState = latestMultiplayerRef.current;
+
         if (
-            isMultiplayerInputDisabled ||
-            queue.length === 0 ||
-            isMultiplayerComboRunning
+            message.type !== 'join_request' ||
+            !currentState.isHost ||
+            !currentState.snapshot
         ) {
+            return undefined;
+        }
+
+        const nextSnapshot = addPlayerToRoom(
+            currentState.snapshot,
+            message.playerId,
+            message.playerName
+        );
+
+        if (!nextSnapshot) {
+            await broadcastMessage({
+                type: 'room_error',
+                targetPlayerId: message.playerId,
+                message: 'Room already full',
+            });
+            return undefined;
+        }
+
+        updateSnapshot(nextSnapshot, '');
+        await broadcastMessage({
+            type: 'room_state',
+            snapshot: nextSnapshot,
+            sourcePlayerId,
+        });
+
+        return undefined;
+    }
+
+    async function handlePlayerReadyBroadcast(
+        message: RoomBroadcastMessage,
+        sourcePlayerId: string
+    ): Promise<undefined> {
+        const currentState = latestMultiplayerRef.current;
+
+        if (
+            message.type !== 'player_ready' ||
+            !currentState.isHost ||
+            !currentState.snapshot
+        ) {
+            return undefined;
+        }
+
+        const nextSnapshot = setPlayerReady(
+            currentState.snapshot,
+            message.playerId,
+            message.ready
+        );
+        const countdownSnapshot = message.ready
+            ? startRoomCountdown(nextSnapshot)
+            : nextSnapshot;
+
+        updateSnapshot(countdownSnapshot, '');
+        await broadcastMessage({
+            type: 'room_state',
+            snapshot: countdownSnapshot,
+            sourcePlayerId,
+        });
+
+        return undefined;
+    }
+
+    async function handlePrimeSelectedBroadcast(
+        message: RoomBroadcastMessage,
+        sourcePlayerId: string
+    ): Promise<undefined> {
+        const currentState = latestMultiplayerRef.current;
+
+        if (
+            message.type !== 'prime_selected' ||
+            !currentState.isHost ||
+            !currentState.snapshot
+        ) {
+            return undefined;
+        }
+
+        const nextSnapshot = applyBattlePrimeSelection(
+            currentState.snapshot,
+            message.playerId,
+            message.prime
+        );
+
+        updateSnapshot(nextSnapshot, '');
+        await broadcastMessage({
+            type: 'room_state',
+            snapshot: nextSnapshot,
+            sourcePlayerId,
+        });
+
+        return undefined;
+    }
+
+    async function handleComboPenaltyBroadcast(
+        message: RoomBroadcastMessage,
+        sourcePlayerId: string
+    ): Promise<undefined> {
+        const currentState = latestMultiplayerRef.current;
+
+        if (
+            message.type !== 'combo_penalty' ||
+            !currentState.isHost ||
+            !currentState.snapshot
+        ) {
+            return undefined;
+        }
+
+        const nextSnapshot = applyBattlePenalty(
+            currentState.snapshot,
+            message.playerId
+        );
+
+        updateSnapshot(nextSnapshot, '');
+        await broadcastMessage({
+            type: 'room_state',
+            snapshot: nextSnapshot,
+            sourcePlayerId,
+        });
+
+        return undefined;
+    }
+
+    async function processMultiplayerQueue(
+        queuedPrimes: readonly Prime[],
+        index = 0
+    ): Promise<undefined> {
+        if (index >= queuedPrimes.length) {
+            return undefined;
+        }
+
+        const prime = queuedPrimes[index];
+
+        const currentState = latestMultiplayerRef.current;
+
+        if (
+            !currentState.snapshot ||
+            currentState.snapshot.status !== 'playing'
+        ) {
+            return undefined;
+        }
+
+        const currentPlayer = currentState.snapshot.players.find(
+            (player) => player.id === currentState.playerId
+        );
+
+        if (!currentPlayer) {
+            return undefined;
+        }
+
+        const outcome = applyPrimeSelection(currentPlayer.stage, prime);
+
+        if (outcome.kind === 'wrong') {
+            setMultiplayerPrimeQueue([]);
+
+            await sendMultiplayerPrime(prime);
+            return undefined;
+        }
+
+        const hasRedundantBufferedPrimes =
+            outcome.cleared && index < queuedPrimes.length - 1;
+
+        if (hasRedundantBufferedPrimes) {
+            setMultiplayerPrimeQueue([]);
+            await sendMultiplayerPenalty();
+            return undefined;
+        }
+
+        setMultiplayerPrimeQueue((currentQueue: readonly Prime[]) =>
+            currentQueue.slice(1)
+        );
+
+        const sendResult = await sendMultiplayerPrime(prime);
+
+        if (!sendResult.didBroadcast) {
+            setMultiplayerPrimeQueue([]);
+            return undefined;
+        }
+
+        if (index >= queuedPrimes.length - 1) {
+            return undefined;
+        }
+
+        await wait(multiplayerComboStepDelayMs);
+        await processMultiplayerQueue(queuedPrimes, index + 1);
+
+        return undefined;
+    }
+
+    async function handleMultiplayerComboSubmit(queue: readonly Prime[]) {
+        if (isMultiplayerInputDisabled || queue.length === 0) {
             return;
         }
 
@@ -1092,61 +1239,7 @@ export default function App() {
         setMultiplayerPrimeQueue(queuedPrimes);
 
         try {
-            for (const [index, prime] of queuedPrimes.entries()) {
-                const currentState = latestMultiplayerRef.current;
-
-                if (
-                    !currentState.snapshot ||
-                    currentState.snapshot.status !== 'playing'
-                ) {
-                    break;
-                }
-
-                const currentPlayer = currentState.snapshot.players.find(
-                    (player) => player.id === currentState.playerId
-                );
-
-                if (!currentPlayer) {
-                    break;
-                }
-
-                const outcome = applyPrimeSelection(currentPlayer.stage, prime);
-
-                if (outcome.kind === 'wrong') {
-                    setMultiplayerPrimeQueue([]);
-
-                    const sendResult = await sendMultiplayerPrime(prime);
-
-                    if (!sendResult.didBroadcast) {
-                        break;
-                    }
-
-                    break;
-                }
-
-                const hasRedundantBufferedPrimes =
-                    outcome.cleared && index < queuedPrimes.length - 1;
-
-                if (hasRedundantBufferedPrimes) {
-                    setMultiplayerPrimeQueue([]);
-
-                    await sendMultiplayerPenalty();
-                    break;
-                }
-
-                setMultiplayerPrimeQueue((currentQueue) =>
-                    currentQueue.slice(1)
-                );
-
-                const sendResult = await sendMultiplayerPrime(prime);
-
-                if (!sendResult.didBroadcast) {
-                    setMultiplayerPrimeQueue([]);
-                    break;
-                }
-
-                await wait(multiplayerComboStepDelayMs);
-            }
+            await processMultiplayerQueue(queuedPrimes);
         } finally {
             setIsMultiplayerComboRunning(false);
         }
@@ -1164,22 +1257,28 @@ export default function App() {
                         (player) => player.id === multiplayer.playerId
                     )?.ready ?? false
                 }
+                isInRoom={Boolean(multiplayer.roomId)}
                 isOpponentReady={
                     multiplayerPlayers.find(
                         (player) => player.id !== multiplayer.playerId
                     )?.ready ?? false
                 }
                 multiplayerCountdownValue={multiplayerCountdownValue}
-                onAcceptInvitation={handleAcceptInvitation}
+                onAcceptInvitation={() => {
+                    detachPromise(handleAcceptInvitation());
+                }}
                 onDeclineInvitation={handleDeclineInvitation}
                 onEditName={handleEditName}
-                onInvitePlayer={handleLobbyInvite}
+                onInvitePlayer={(targetPlayerId) => {
+                    detachPromise(handleLobbyInvite(targetPlayerId));
+                }}
+                onlineUsers={onlineUsers}
                 onPrefetchInviteUsers={prefetchOnlineUsers}
                 onStartSoloGame={startSingleGame}
-                onToggleReady={toggleReady}
-                isInRoom={Boolean(multiplayer.roomId)}
-                onlineUsers={onlineUsers}
-                opponentName={opponentPlayer?.name ?? null}
+                onToggleReady={() => {
+                    detachPromise(toggleReady());
+                }}
+                opponentName={opponentPlayer?.name}
                 pendingInvitation={pendingInvitation}
                 playerName={playerName}
                 toastId={lobbyToast.id}
@@ -1191,38 +1290,50 @@ export default function App() {
     if (screen === 'single') {
         return (
             <SingleGameScreen
-                playablePrimes={playablePrimes}
-                soloState={soloState}
-                soloTimeLeft={soloTimeLeft}
-                soloCountdownProgress={soloCountdownProgress}
-                soloPrimeQueue={soloPrimeQueue}
+                formatCountdown={formatCountdown}
                 isSoloComboRunning={isSoloComboRunning}
-                soloTimerPenaltyPopKey={soloTimerPenaltyPopKey}
                 onBack={returnToMenu}
                 onSubmit={handleSoloComboSubmit}
-                formatCountdown={formatCountdown}
+                playablePrimes={playablePrimes}
+                soloCountdownProgress={soloCountdownProgress}
+                soloPrimeQueue={soloPrimeQueue}
+                soloState={soloState}
+                soloTimeLeft={soloTimeLeft}
+                soloTimerPenaltyPopKey={soloTimerPenaltyPopKey}
             />
         );
     }
 
     return (
         <MultiplayerGameScreen
-            playablePrimes={playablePrimes}
             currentMultiplayerPlayer={currentMultiplayerPlayer}
-            multiplayerSnapshot={multiplayer.snapshot}
-            multiplayerPrimeQueue={multiplayerPrimeQueue}
-            isMultiplayerInputDisabled={isMultiplayerInputDisabled}
             isMultiplayerComboRunning={isMultiplayerComboRunning}
+            isMultiplayerInputDisabled={isMultiplayerInputDisabled}
+            multiplayerPrimeQueue={multiplayerPrimeQueue}
+            multiplayerSnapshot={multiplayer.snapshot}
             onBack={returnToMenu}
             onSubmit={handleMultiplayerComboSubmit}
+            playablePrimes={playablePrimes}
         />
     );
 }
 
-function wait(durationMs: number): Promise<void> {
-    return new Promise((resolve) => {
-        window.setTimeout(resolve, durationMs);
+async function wait(durationMs: number) {
+    await new Promise<void>((resolve) => {
+        globalThis.setTimeout(
+            () => {
+                resolve();
+            },
+            durationMs,
+            undefined
+        );
     });
+
+    return undefined;
+}
+
+function detachPromise(promise: Promise<unknown>) {
+    promise.catch(() => undefined);
 }
 
 function createSoloRunSeed(): string {
@@ -1230,12 +1341,8 @@ function createSoloRunSeed(): string {
 }
 
 function getInitialPlayerName(): string {
-    if (typeof window === 'undefined') {
-        return fallbackPlayerNames[0];
-    }
-
     const storedName = normalizePlayerName(
-        window.localStorage.getItem(playerNameStorageKey) ?? ''
+        globalThis.localStorage.getItem(playerNameStorageKey) ?? ''
     );
 
     if (storedName) {
@@ -1245,22 +1352,18 @@ function getInitialPlayerName(): string {
     return uiText.guest;
 }
 
-function getUsedPlayerNames(): string[] {
-    if (typeof window === 'undefined') {
-        return [];
-    }
-
-    const rawValue = window.localStorage.getItem(usedPlayerNamesStorageKey);
+function getUsedPlayerNames(): readonly string[] {
+    const rawValue = globalThis.localStorage.getItem(usedPlayerNamesStorageKey);
 
     if (!rawValue) {
         return [];
     }
 
     try {
-        const parsedValue = JSON.parse(rawValue) as string[];
-        return Array.isArray(parsedValue)
+        const parsedValue = JSON.parse(rawValue) as unknown;
+        return isArray(parsedValue)
             ? parsedValue
-                  .map((name) => normalizePlayerName(name))
+                  .map((name) => normalizePlayerName(String(name)))
                   .filter(Boolean)
             : [];
     } catch {
@@ -1269,35 +1372,39 @@ function getUsedPlayerNames(): string[] {
 }
 
 function persistPlayerName(playerName: string) {
-    if (typeof window === 'undefined') {
-        return;
-    }
-
     const normalizedName = normalizePlayerName(playerName);
 
     if (!normalizedName) {
         return;
     }
 
-    window.localStorage.setItem(playerNameStorageKey, normalizedName);
+    globalThis.localStorage.setItem(playerNameStorageKey, normalizedName);
 
     const nextUsedNames = [
         normalizedName,
         ...getUsedPlayerNames().filter((name) => name !== normalizedName),
     ].slice(0, fallbackPlayerNames.length);
 
-    window.localStorage.setItem(
+    globalThis.localStorage.setItem(
         usedPlayerNamesStorageKey,
         JSON.stringify(nextUsedNames)
     );
 }
 
 function normalizePlayerName(value: string): string {
-    return value.trim().replace(/\s+/g, ' ').slice(0, 24);
+    return value.trim().replaceAll(/\s+/g, ' ').slice(0, 24);
 }
 
 function createRoomId(): string {
     return String(Math.floor(1000 + Math.random() * 9000));
+}
+
+function isArray(value: unknown): value is readonly unknown[] {
+    return (
+        value !== null &&
+        typeof value === 'object' &&
+        value.constructor === Array
+    );
 }
 
 function formatCountdown(totalSeconds: number): string {
