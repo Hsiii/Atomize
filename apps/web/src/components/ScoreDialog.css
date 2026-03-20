@@ -34,10 +34,10 @@
 
 .score-dialog-title {
     display: block;
-    font-size: 0.78rem;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: 0.12em;
+    font-size: clamp(1.75rem, 8vw, 2.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
     color: var(--color-ink);
 }
@@ -62,8 +62,9 @@
 
 .score-dialog-summary {
     margin: 0;
-    font-size: 0.72rem;
-    line-height: 1;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.2;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--color-ink-soft);
