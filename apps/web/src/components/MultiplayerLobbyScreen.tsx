@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import type { JSX } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { JSX, KeyboardEvent } from 'react';
 import { ArrowLeft, Copy, Check } from 'lucide-react';
 
 import type { MenuMode, MultiplayerState, OnlineLobbyUser } from '../app-state';
@@ -48,10 +48,10 @@ export function MultiplayerLobbyScreen({
     const [visibleTransientToastMessage, setVisibleTransientToastMessage] =
         useState<string | undefined>(undefined);
     const [codeCopied, setCodeCopied] = useState(false);
+    const hasAutoSubmitted = useRef(false);
     const isJoinFlow = menuMode === 'join-room';
     const shouldShowWaitingRoom = Boolean(multiplayer.roomId);
     const isJoinButtonReady = roomIdInput.length === 4;
-    const isJoinButtonDisabled = isJoinPending || !isJoinButtonReady;
     const activeToastMessage =
         localToastMessage ?? visibleTransientToastMessage;
     let createOrJoinButtonText: string = uiText.createRoom;
@@ -116,12 +116,7 @@ export function MultiplayerLobbyScreen({
         };
     }, [transientToastId, transientToastMessage]);
 
-    function handleCreateOrJoinClick() {
-        if (!isJoinFlow) {
-            runAsyncAction(onCreateRoom);
-            return;
-        }
-
+    const submitJoin = useCallback(() => {
         if (!isJoinButtonReady) {
             setLocalToastMessage(uiText.joinIncompleteToast);
             return;
@@ -132,6 +127,37 @@ export function MultiplayerLobbyScreen({
         }
 
         runAsyncAction(onJoinRoom);
+    }, [isJoinButtonReady, isJoinPending, onJoinRoom]);
+
+    // Auto-submit when 4 digits are entered (desktop)
+    useEffect(() => {
+        if (!isJoinFlow || !isJoinButtonReady || isJoinPending) {
+            hasAutoSubmitted.current = false;
+            return;
+        }
+
+        if (hasAutoSubmitted.current) {
+            return;
+        }
+
+        hasAutoSubmitted.current = true;
+        submitJoin();
+    }, [isJoinFlow, isJoinButtonReady, isJoinPending, submitJoin]);
+
+    function handleCreateOrJoinClick() {
+        if (!isJoinFlow) {
+            runAsyncAction(onCreateRoom);
+            return;
+        }
+
+        submitJoin();
+    }
+
+    function handleRoomCodeKeyDown(event: KeyboardEvent<HTMLElement>) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            submitJoin();
+        }
     }
 
     function handleCopyCode() {
@@ -157,39 +183,35 @@ export function MultiplayerLobbyScreen({
                 <BackButton onBack={onBack} />
                 <section className='screen lobby-screen'>
                     <div className='lobby-stack waiting-room-stack'>
-                        <RoomCodePanel
-                            editable
-                            onChange={onRoomIdInputChange}
-                            value={roomIdInput}
-                        />
-
-                        <div className='waiting-cta'>
-                            <ActionButton
-                                aria-disabled={
-                                    isJoinFlow && isJoinButtonDisabled
-                                }
-                                className={
-                                    isJoinFlow && isJoinButtonDisabled
-                                        ? 'start-action is-disabled'
-                                        : 'start-action'
-                                }
-                                onClick={handleCreateOrJoinClick}
-                                variant='secondary'
-                            >
-                                {createOrJoinButtonText}
-                            </ActionButton>
-                        </div>
-
                         {activeToastMessage ? (
                             <div
                                 aria-live='polite'
-                                className='waiting-toast-layer'
+                                className='join-toast-layer'
                             >
                                 <div className='waiting-toast'>
                                     {activeToastMessage}
                                 </div>
                             </div>
                         ) : undefined}
+
+                        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions -- captures Enter from child input */}
+                        <div onKeyDown={handleRoomCodeKeyDown}>
+                            <RoomCodePanel
+                                editable
+                                onChange={onRoomIdInputChange}
+                                value={roomIdInput}
+                            />
+                        </div>
+
+                        <div className='waiting-cta'>
+                            <ActionButton
+                                className='start-action'
+                                onClick={handleCreateOrJoinClick}
+                                variant='secondary'
+                            >
+                                {createOrJoinButtonText}
+                            </ActionButton>
+                        </div>
                     </div>
                 </section>
             </main>
@@ -228,48 +250,48 @@ export function MultiplayerLobbyScreen({
                 </header>
 
                 <div className='lobby-arena'>
-                    <div className='arena-slot arena-self'>
-                        <span className='arena-tag'>P1</span>
+                    <div className='arena-player arena-p1'>
+                        <span className='arena-label'>P1</span>
                         <span className='arena-name'>
                             {currentPlayer?.name ?? '-'}
                         </span>
                     </div>
 
-                    <div className='arena-vs'>
-                        {isCountdown
-                            ? (multiplayerCountdownValue ?? 3)
-                            : 'VS'}
+                    <div className='arena-center'>
+                        <span className='arena-vs'>
+                            {isCountdown
+                                ? (multiplayerCountdownValue ?? 3)
+                                : 'VS'}
+                        </span>
                     </div>
 
-                    {opponentPlayer ? (
-                        <div className='arena-slot arena-opponent'>
-                            <span className='arena-tag'>P2</span>
-                            <span className='arena-name'>
-                                {opponentPlayer.name}
-                            </span>
-                        </div>
-                    ) : (
-                        <div className='arena-slot arena-empty'>
-                            <span className='arena-tag'>P2</span>
-                            <span className='arena-name'>?</span>
-                        </div>
-                    )}
-                </div>
+                    <div
+                        className={`arena-player arena-p2${
+                            !opponentPlayer ? ' arena-p2-open' : ''
+                        }`}
+                    >
+                        <span className='arena-label'>P2</span>
+                        <span
+                            className={`arena-name${
+                                !opponentPlayer ? ' arena-name-waiting' : ''
+                            }`}
+                        >
+                            {opponentPlayer?.name ?? '?'}
+                        </span>
+                    </div>
 
-                {!hasOpponent && !isCountdown && onlineUsers.length > 0 ? (
-                    <div className='lobby-online'>
-                        <p className='lobby-online-label'>
-                            {uiText.onlineSection}
-                        </p>
-                        <ul className='lobby-online-list'>
+                    {!hasOpponent && !isCountdown && onlineUsers.length > 0 ? (
+                        <ul className='arena-challengers'>
                             {onlineUsers.map((user) => (
                                 <li
-                                    className='lobby-online-user'
+                                    className='arena-challenger'
                                     key={user.playerId}
                                 >
-                                    <span>{user.name}</span>
+                                    <span className='arena-challenger-name'>
+                                        {user.name}
+                                    </span>
                                     <button
-                                        className='lobby-online-invite'
+                                        className='arena-challenger-invite'
                                         onClick={() => {
                                             handleInvite(user.playerId);
                                         }}
@@ -280,8 +302,8 @@ export function MultiplayerLobbyScreen({
                                 </li>
                             ))}
                         </ul>
-                    </div>
-                ) : undefined}
+                    ) : undefined}
+                </div>
 
                 {activeToastMessage ? (
                     <div aria-live='polite' className='waiting-toast-layer'>

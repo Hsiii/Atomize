@@ -44,15 +44,15 @@
 .lobby-bar-code {
     display: flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: 0.35rem;
 }
 
 .lobby-bar-digits {
     font-family: var(--font-family-display);
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    color: var(--color-ink-soft);
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    color: var(--color-ink);
 }
 
 .lobby-bar-copy {
@@ -76,46 +76,46 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: stretch;
     justify-content: center;
+    gap: 0;
 }
 
-.arena-slot {
+.arena-player {
     display: flex;
     align-items: center;
     gap: var(--space-7);
     padding: var(--space-8) var(--space-7);
+    border-left: 3px solid transparent;
 }
 
-.arena-self {
-    background: var(--color-primary);
-    color: var(--color-text-inverse);
-    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+.arena-p1 {
+    border-left-color: var(--color-primary);
 }
 
-.arena-opponent {
-    background: var(--color-surface-muted);
-    color: var(--color-ink);
-    border-radius: 0 0 var(--radius-panel) var(--radius-panel);
+.arena-p2 {
+    border-left-color: var(--color-secondary);
 }
 
-.arena-empty {
-    background: var(--color-surface-muted);
-    color: var(--color-placeholder);
-    border-radius: 0 0 var(--radius-panel) var(--radius-panel);
+.arena-p2-open {
+    border-bottom: none;
 }
 
-.arena-tag {
+.arena-label {
     flex: 0 0 auto;
     font-family: var(--font-family-display);
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     font-weight: 800;
-    letter-spacing: 0.06em;
-    opacity: 0.55;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ink-soft);
 }
 
-.arena-self .arena-tag {
-    opacity: 0.7;
+.arena-p1 .arena-label {
+    color: var(--color-primary);
+}
+
+.arena-p2 .arena-label {
+    color: var(--color-secondary);
 }
 
 .arena-name {
@@ -124,20 +124,66 @@
     font-size: 1.3rem;
     font-weight: 700;
     letter-spacing: 0.02em;
+    color: var(--color-ink);
 }
 
-.arena-empty .arena-name {
+.arena-name-waiting {
+    color: var(--color-placeholder);
     animation: arena-pulse 1.8s ease-in-out infinite;
 }
 
+.arena-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-7) 0;
+}
+
 .arena-vs {
-    text-align: center;
-    padding: var(--space-4) 0;
     font-family: var(--font-family-display);
-    font-size: 2rem;
+    font-size: 2.4rem;
     font-weight: 800;
-    letter-spacing: 0.08em;
-    color: var(--color-ink-soft);
+    letter-spacing: 0.12em;
+    color: var(--color-ink);
+}
+
+/* --- Challengers (integrated with P2) --- */
+
+.arena-challengers {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    padding-left: var(--space-7);
+    list-style: none;
+    border-left: 3px solid var(--color-secondary);
+    opacity: 0.6;
+}
+
+.arena-challenger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-3) var(--space-7);
+}
+
+.arena-challenger-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--color-ink);
+}
+
+.arena-challenger-invite {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-secondary);
+    cursor: pointer;
+    letter-spacing: 0.03em;
+}
+
+.arena-challenger-invite:hover {
+    color: var(--color-primary-strong);
 }
 
 @keyframes arena-pulse {
@@ -149,52 +195,6 @@
     50% {
         opacity: 0.7;
     }
-}
-
-/* --- Online Section --- */
-
-.lobby-online {
-    flex: 0 0 auto;
-    padding-top: var(--space-7);
-}
-
-.lobby-online-label {
-    margin: 0 0 var(--space-3);
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--color-ink-soft);
-}
-
-.lobby-online-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.lobby-online-user {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--space-3) 0;
-    font-size: 0.88rem;
-    color: var(--color-ink);
-}
-
-.lobby-online-invite {
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--color-secondary);
-    cursor: pointer;
-    letter-spacing: 0.02em;
-}
-
-.lobby-online-invite:hover {
-    color: var(--color-primary-strong);
 }
 
 /* --- Shared --- */
@@ -236,15 +236,10 @@
     z-index: 20;
 }
 
-.start-action:disabled,
-.start-action.is-disabled {
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    background: rgba(32, 53, 83, 0.84);
-    color: rgba(255, 255, 255, 0.9);
-    box-shadow: none;
-    cursor: not-allowed;
-    filter: saturate(0.7);
-    opacity: 0.88;
+.join-toast-layer {
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
 }
 
 @keyframes waiting-toast-pop {
