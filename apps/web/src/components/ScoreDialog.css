@@ -1,3 +1,49 @@
+@keyframes scrim-fade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes dialog-enter {
+    from {
+        opacity: 0;
+        transform: translateY(1.25rem) scale(0.94);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes stat-pop {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    70% {
+        transform: scale(1.06);
+        opacity: 1;
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes button-slide {
+    from {
+        opacity: 0;
+        transform: translateY(0.5rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .score-dialog-scrim {
     position: fixed;
     inset: 0;
@@ -10,26 +56,26 @@
         max(var(--space-8), env(safe-area-inset-left));
     background: var(--color-overlay-soft);
     backdrop-filter: blur(var(--blur-overlay));
+    animation: scrim-fade 0.3s ease-out both;
 }
 
 .score-dialog {
     width: min(100%, var(--size-score-dialog-width));
-    padding: 1.15rem;
+    border: 2px solid var(--color-primary);
     border-radius: var(--radius-panel);
     background: var(--color-surface-base);
-    box-shadow: var(--shadow-panel);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-6);
     text-align: center;
+    overflow: hidden;
+    animation: dialog-enter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
 }
 
 .score-dialog-header {
-    display: grid;
-    gap: var(--space-2);
     width: 100%;
-    padding-bottom: var(--space-2);
+    padding: var(--space-7) var(--space-8);
+    background: var(--color-primary);
 }
 
 .score-dialog-title {
@@ -37,39 +83,52 @@
     font-size: clamp(1.75rem, 8vw, 2.5rem);
     font-weight: 800;
     line-height: 1.1;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--color-ink);
+    color: var(--color-text-inverse);
 }
 
 .score-dialog-stat {
-    display: grid;
-    gap: var(--space-3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
     width: 100%;
-    padding-top: var(--space-3);
-    border-top: 1px solid var(--color-border-soft);
+    padding: var(--space-8) var(--space-8) var(--space-6);
+}
+
+.score-dialog-combo-ring {
+    display: grid;
+    place-items: center;
+    width: 7rem;
+    height: 7rem;
+    border: 3px solid var(--color-primary);
+    border-radius: var(--radius-orb);
+    animation: stat-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s both;
 }
 
 .score-dialog-combo-value {
     display: block;
     margin: 0;
     font-family: var(--font-family-numeric);
-    font-size: clamp(3.25rem, 16vw, 4.75rem);
+    font-size: clamp(2.5rem, 12vw, 3.5rem);
     font-weight: var(--font-weight-number-emphasis);
-    line-height: 0.95;
+    line-height: 1;
     color: var(--color-primary);
 }
 
 .score-dialog-summary {
     margin: 0;
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: 0.8rem;
+    font-weight: 700;
     line-height: 1.2;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--color-ink-soft);
 }
 
 .score-dialog .app-action-button {
-    width: 100%;
+    width: calc(100% - 2 * var(--space-8));
+    margin: 0 var(--space-8) var(--space-8);
+    animation: button-slide 0.3s ease-out 0.55s both;
 }

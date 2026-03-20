@@ -7,13 +7,15 @@ import './ScoreDialog.css';
 import { ActionButton } from './ActionButton';
 
 type ScoreDialogProps = {
-    score: number;
+    comboCount: number;
     onReturnHome: () => void | Promise<void>;
+    title: string;
 };
 
 export function ScoreDialog({
-    score,
+    comboCount,
     onReturnHome,
+    title,
 }: ScoreDialogProps): JSX.Element {
     function handleReturnHomeClick() {
         Promise.resolve(onReturnHome()).catch(() => undefined);
@@ -27,18 +29,25 @@ export function ScoreDialog({
                 className='score-dialog'
                 role='dialog'
             >
-                <span className='label' id='score-dialog-title'>
-                    {uiText.score}
-                </span>
-                <div
-                    aria-label={`${uiText.score}: ${score} ${uiText.scoreUnit}`}
-                    className='score-dialog-value'
-                >
-                    <strong>{score}</strong>
-                    <span className='score-dialog-unit'>
-                        {uiText.scoreUnit}
+                <header className='score-dialog-header'>
+                    <span
+                        className='score-dialog-title'
+                        id='score-dialog-title'
+                    >
+                        {title}
                     </span>
-                </div>
+                </header>
+                <section
+                    aria-label={uiText.maxCombo}
+                    className='score-dialog-stat'
+                >
+                    <p className='score-dialog-summary'>{uiText.maxCombo}</p>
+                    <div className='score-dialog-combo-ring'>
+                        <strong className='score-dialog-combo-value'>
+                            x{comboCount}
+                        </strong>
+                    </div>
+                </section>
                 <ActionButton onClick={handleReturnHomeClick} variant='primary'>
                     {uiText.returnHome}
                 </ActionButton>
