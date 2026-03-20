@@ -12,74 +12,7 @@
     flex: 1;
     min-height: 0;
     display: block;
-    overflow: hidden;
-    border: 2px solid color-mix(in srgb, var(--color-primary) 16%, white);
-    border-radius: calc(var(--radius-panel) * 1.2);
-    background:
-        radial-gradient(
-            circle at 22% 80%,
-            color-mix(in srgb, var(--color-secondary) 22%, white) 0%,
-            transparent 28%
-        ),
-        radial-gradient(
-            circle at 80% 18%,
-            color-mix(in srgb, var(--color-primary) 18%, white) 0%,
-            transparent 26%
-        ),
-        linear-gradient(
-            180deg,
-            color-mix(in srgb, white 84%, var(--color-primary) 16%) 0%,
-            color-mix(in srgb, white 75%, var(--color-secondary) 25%) 48%,
-            color-mix(in srgb, var(--color-track) 42%, #9ca86f 58%) 48%,
-            color-mix(in srgb, var(--color-track) 22%, #6f8a58 78%),
-            color-mix(in srgb, #2c4031 78%, black) 100%
-        );
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.65),
-        inset 0 -2.4rem 3rem rgba(22, 31, 37, 0.16);
-    isolation: isolate;
-}
-
-.multiplayer-board::before {
-    content: '';
-    position: absolute;
-    left: -6%;
-    right: -6%;
-    bottom: -10%;
-    height: 44%;
-    border-radius: 50% 50% 0 0;
-    background:
-        linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.18) 0%,
-            rgba(255, 255, 255, 0.04) 28%,
-            rgba(0, 0, 0, 0.1) 100%
-        ),
-        linear-gradient(
-            90deg,
-            color-mix(in srgb, var(--color-secondary) 16%, #6e8552) 0%,
-            color-mix(in srgb, #8ba56d 78%, white) 52%,
-            color-mix(in srgb, var(--color-primary) 20%, #72865e) 100%
-        );
-    transform: perspective(720px) rotateX(72deg);
-    transform-origin: center bottom;
-    opacity: 0.92;
-    z-index: 0;
-}
-
-.multiplayer-board::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.32), transparent 28%),
-        radial-gradient(
-            circle at center,
-            transparent 48%,
-            rgba(9, 17, 20, 0.12) 100%
-        );
-    pointer-events: none;
-    z-index: 0;
+    overflow: visible;
 }
 
 .multiplayer-column {
