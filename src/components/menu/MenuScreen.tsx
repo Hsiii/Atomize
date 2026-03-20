@@ -195,7 +195,7 @@ export function MenuScreen({
                                 <div className='menu-slot-column'>
                                     <div className='slot-circle-shell'>
                                         <button
-                                            className='slot-circle slot-p2-empty'
+                                            className={`slot-circle slot-p2-empty${isInRoom ? ' slot-p2-empty-waiting' : ''}`}
                                             onClick={() => {
                                                 handleOpenInviteDialog();
                                             }}

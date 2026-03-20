@@ -168,6 +168,9 @@
     inset: -2px;
     border: 2px dashed var(--color-primary-strong);
     border-radius: inherit;
+}
+
+.slot-p2-empty-waiting::before {
     animation: slot-outline-spin 10s linear infinite;
 }
 
