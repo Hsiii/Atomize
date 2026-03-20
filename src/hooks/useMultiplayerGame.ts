@@ -111,11 +111,15 @@ export function useMultiplayerGame({
     const joinLookupTimeoutRef = useRef<number | undefined>(undefined);
     const joinRetryIntervalRef = useRef<number | undefined>(undefined);
 
-    const multiplayerPlayers = multiplayer.snapshot?.players ?? [];
+    const effectiveMultiplayerSnapshot = getEffectiveMultiplayerSnapshot(
+        multiplayer.snapshot,
+        screen
+    );
+    const multiplayerPlayers = effectiveMultiplayerSnapshot?.players ?? [];
     const currentMultiplayerPlayer = multiplayerPlayers.find(
         (player) => player.id === multiplayer.playerId
     );
-    const opponentPlayer = multiplayer.snapshot?.players.find(
+    const opponentPlayer = effectiveMultiplayerSnapshot?.players.find(
         (player) => player.id !== multiplayer.playerId
     );
     const isCurrentPlayerReady =
@@ -125,8 +129,8 @@ export function useMultiplayerGame({
         multiplayerPlayers.find((player) => player.id !== multiplayer.playerId)
             ?.ready ?? false;
     const isMultiplayerInputDisabled =
-        !multiplayer.snapshot ||
-        multiplayer.snapshot.status !== 'playing' ||
+        !effectiveMultiplayerSnapshot ||
+        effectiveMultiplayerSnapshot.status !== 'playing' ||
         isMultiplayerComboRunning;
 
     useEffect(() => {
@@ -222,13 +226,13 @@ export function useMultiplayerGame({
     ]);
 
     useEffect(() => {
-        if (multiplayer.snapshot?.status === 'playing') {
+        if (effectiveMultiplayerSnapshot?.status === 'playing') {
             return undefined;
         }
 
         setMultiplayerPrimeQueue([]);
         setIsMultiplayerComboRunning(false);
-    }, [multiplayer.snapshot?.status]);
+    }, [effectiveMultiplayerSnapshot?.status]);
 
     useEffect(() => {
         supabaseRef.current = createRealtimeClient();
@@ -579,7 +583,11 @@ export function useMultiplayerGame({
         }
 
         const currentState = latestMultiplayerRef.current;
-        const currentPlayer = currentState.snapshot?.players.find(
+        const gameplaySnapshot = getEffectiveMultiplayerSnapshot(
+            currentState.snapshot,
+            screenRef.current
+        );
+        const currentPlayer = gameplaySnapshot?.players.find(
             (player) => player.id === currentState.playerId
         );
 
@@ -912,19 +920,23 @@ export function useMultiplayerGame({
         prime: Prime
     ): Promise<MultiplayerSendResult> {
         const currentState = latestMultiplayerRef.current;
+        const gameplaySnapshot = getEffectiveMultiplayerSnapshot(
+            currentState.snapshot,
+            screenRef.current
+        );
 
-        if (!currentState.playerId || !currentState.snapshot) {
+        if (!currentState.playerId || !gameplaySnapshot) {
             setStatusText('Create or join a room first');
             return { didBroadcast: false };
         }
 
-        if (currentState.snapshot.status !== 'playing') {
+        if (gameplaySnapshot.status !== 'playing') {
             return { didBroadcast: false };
         }
 
         if (currentState.isHost) {
             const nextSnapshot = applyBattlePrimeSelection(
-                currentState.snapshot,
+                gameplaySnapshot,
                 currentState.playerId,
                 prime
             );
@@ -955,20 +967,22 @@ export function useMultiplayerGame({
         preservedStage?: RoomSnapshot['stage']
     ): Promise<boolean> {
         const currentState = latestMultiplayerRef.current;
+        const gameplaySnapshot = getEffectiveMultiplayerSnapshot(
+            snapshotOverride ?? currentState.snapshot,
+            screenRef.current
+        );
 
         if (!currentState.playerId) {
             return false;
         }
 
         if (currentState.isHost) {
-            const snapshot = snapshotOverride ?? currentState.snapshot;
-
-            if (!snapshot) {
+            if (!gameplaySnapshot) {
                 return false;
             }
 
             const nextSnapshot = applyBattlePenalty(
-                snapshot,
+                gameplaySnapshot,
                 currentState.playerId,
                 preservedStage
             );
@@ -989,14 +1003,18 @@ export function useMultiplayerGame({
 
     async function sendSolvedStageClear(): Promise<boolean> {
         const currentState = latestMultiplayerRef.current;
+        const gameplaySnapshot = getEffectiveMultiplayerSnapshot(
+            currentState.snapshot,
+            screenRef.current
+        );
 
-        if (!currentState.playerId || !currentState.snapshot) {
+        if (!currentState.playerId || !gameplaySnapshot) {
             return false;
         }
 
         if (currentState.isHost) {
             const nextSnapshot = clearSolvedBattleStage(
-                currentState.snapshot,
+                gameplaySnapshot,
                 currentState.playerId
             );
             updateSnapshot(nextSnapshot, '');
@@ -1184,15 +1202,16 @@ export function useMultiplayerGame({
 
         const prime = queuedPrimes[index];
         const currentState = latestMultiplayerRef.current;
+        const gameplaySnapshot = getEffectiveMultiplayerSnapshot(
+            currentState.snapshot,
+            screenRef.current
+        );
 
-        if (
-            !currentState.snapshot ||
-            currentState.snapshot.status !== 'playing'
-        ) {
+        if (!gameplaySnapshot || gameplaySnapshot.status !== 'playing') {
             return undefined;
         }
 
-        const currentPlayer = currentState.snapshot.players.find(
+        const currentPlayer = gameplaySnapshot.players.find(
             (player) => player.id === currentState.playerId
         );
 
@@ -1236,5 +1255,28 @@ export function useMultiplayerGame({
         await processMultiplayerQueue(queuedPrimes, index + 1);
 
         return undefined;
+    }
+
+    function getEffectiveMultiplayerSnapshot(
+        snapshot: RoomSnapshot | undefined,
+        currentScreen: Screen
+    ): RoomSnapshot | undefined {
+        if (!snapshot) {
+            return undefined;
+        }
+
+        if (
+            currentScreen !== 'multi-game' ||
+            snapshot.status === 'playing' ||
+            snapshot.status === 'finished'
+        ) {
+            return snapshot;
+        }
+
+        return {
+            ...snapshot,
+            countdownEndsAt: undefined,
+            status: 'playing',
+        };
     }
 }
