@@ -18,10 +18,10 @@ import {
     type PendingInvitation,
     type Screen,
 } from './app-state';
-import { MenuScreen } from './components/MenuScreen';
-import { MultiplayerGameScreen } from './components/MultiplayerGameScreen';
-import { MultiplayerLobbyScreen } from './components/MultiplayerLobbyScreen';
-import { SingleGameScreen } from './components/SingleGameScreen';
+import { MultiplayerGameScreen } from './components/game/MultiplayerGameScreen';
+import { SingleGameScreen } from './components/game/SingleGameScreen';
+import { MultiplayerLobbyScreen } from './components/lobby/MultiplayerLobbyScreen';
+import { MenuScreen } from './components/menu/MenuScreen';
 import {
     addPlayerToRoom,
     applyBattlePenalty,
