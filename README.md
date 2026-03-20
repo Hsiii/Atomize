@@ -46,13 +46,11 @@ Without these variables, solo mode still works but multiplayer stays disabled.
 ## Workspace layout
 
 - `apps/web`: PWA frontend
-- `apps/server`: legacy local WebSocket prototype
 - `packages/game-core`: shared game rules and multiplayer event types
 
 ## Scripts
 
 - `bun run dev:web`
-- `bun run dev:server`
 - `bun run build`
 - `bun run check`
 

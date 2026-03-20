@@ -8,9 +8,8 @@
     ],
     "scripts": {
         "dev:web": "cd apps/web && bun run dev",
-        "dev:server": "cd apps/server && bun run dev",
-        "build": "bun run --cwd packages/game-core build && bun run --cwd apps/server build && bun run --cwd apps/web build",
-        "check": "bun run --cwd packages/game-core check && bun run --cwd apps/server check && bun run --cwd apps/web check",
+        "build": "bun run --cwd packages/game-core build && bun run --cwd apps/web build",
+        "check": "bun run --cwd packages/game-core check && bun run --cwd apps/web check",
         "lint": "eslint .",
         "format": "prettier --write .",
         "prepare": "husky"
