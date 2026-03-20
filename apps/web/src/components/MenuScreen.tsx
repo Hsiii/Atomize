@@ -7,6 +7,20 @@ import { uiText } from '../app-state';
 
 import './MenuScreen.css';
 
+import {
+    clampFloatingParticleOutsideCollider,
+    clampFloatingParticlePosition,
+    clampFloatingValue,
+    getFloatingTitleOrbCollider,
+    resolveFloatingBlobCollisions,
+    resolveFloatingTitleOrbCollision,
+    writeFloatingParticleStyles,
+} from './floating-blob-physics';
+import type {
+    FloatingActiveDrag,
+    FloatingBlobParticle,
+} from './floating-blob-physics';
+
 type MenuScreenProps = {
     onStartSingleGame: () => void;
     onStartCreateRoomFlow: () => void;
@@ -24,35 +38,8 @@ type BlobDefinition = {
     tone: 'play' | 'solo' | 'dual' | 'create' | 'join';
 };
 
-type BlobParticle = {
-    id: BlobId;
-    x: number;
-    y: number;
-    vx: number;
-    vy: number;
-    radius: number;
-};
-
-type CircleCollider = {
-    centerX: number;
-    centerY: number;
-    radius: number;
-};
-
-type ActiveDrag = {
-    blobId: BlobId;
-    pointerId: number;
-    x: number;
-    y: number;
-    offsetX: number;
-    offsetY: number;
-    startClientX: number;
-    startClientY: number;
-    lastClientX: number;
-    lastClientY: number;
-    lastTimestamp: number;
-    moved: boolean;
-};
+type BlobParticle = FloatingBlobParticle<BlobId>;
+type ActiveDrag = FloatingActiveDrag<BlobId>;
 
 const COLLISION_GAP = 2;
 const TITLE_ORB_CLEARANCE = 4;
@@ -76,10 +63,6 @@ const phaseSeeds: Record<
         { x: 0.58, y: 0.7, vx: -0.19, vy: -0.23 },
     ],
 };
-
-function clamp(value: number, min: number, max: number): number {
-    return Math.min(Math.max(value, min), max);
-}
 
 function seedParticles(
     blobs: readonly BlobDefinition[],
@@ -125,8 +108,8 @@ function seedParticles(
             return {
                 id: blob.id,
                 radius,
-                x: clamp(previousParticle.x, WALL_PADDING, maxX),
-                y: clamp(previousParticle.y, WALL_PADDING, maxY),
+                x: clampFloatingValue(previousParticle.x, WALL_PADDING, maxX),
+                y: clampFloatingValue(previousParticle.y, WALL_PADDING, maxY),
                 vx: previousParticle.vx,
                 vy: previousParticle.vy,
             };
@@ -145,8 +128,16 @@ function seedParticles(
             return {
                 id: blob.id,
                 radius,
-                x: clamp(fieldRect.width / 2 - radius, WALL_PADDING, maxX),
-                y: clamp(fieldRect.height / 2 - radius, WALL_PADDING, maxY),
+                x: clampFloatingValue(
+                    fieldRect.width / 2 - radius,
+                    WALL_PADDING,
+                    maxX
+                ),
+                y: clampFloatingValue(
+                    fieldRect.height / 2 - radius,
+                    WALL_PADDING,
+                    maxY
+                ),
                 vx: 0,
                 vy: 0,
             };
@@ -155,171 +146,20 @@ function seedParticles(
         return {
             id: blob.id,
             radius,
-            x: clamp(sourceCenterX - radius + splitOffsetX, WALL_PADDING, maxX),
-            y: clamp(sourceCenterY - radius + splitOffsetY, WALL_PADDING, maxY),
+            x: clampFloatingValue(
+                sourceCenterX - radius + splitOffsetX,
+                WALL_PADDING,
+                maxX
+            ),
+            y: clampFloatingValue(
+                sourceCenterY - radius + splitOffsetY,
+                WALL_PADDING,
+                maxY
+            ),
             vx: velocityX,
             vy: velocityY,
         };
     });
-}
-
-function writeParticleStyles(
-    particles: readonly BlobParticle[],
-    buttons: ReadonlyMap<BlobId, HTMLButtonElement>
-) {
-    for (const particle of particles) {
-        const button = buttons.get(particle.id);
-
-        if (!button) {
-            continue;
-        }
-
-        button.style.setProperty('--blob-x', `${particle.x}px`);
-        button.style.setProperty('--blob-y', `${particle.y}px`);
-    }
-}
-
-function resolveCollisions(particles: readonly BlobParticle[]) {
-    for (let index = 0; index < particles.length; index++) {
-        const current = particles[index];
-
-        for (
-            let nextIndex = index + 1;
-            nextIndex < particles.length;
-            nextIndex++
-        ) {
-            const next = particles[nextIndex];
-            const deltaX = next.x + next.radius - (current.x + current.radius);
-            const deltaY = next.y + next.radius - (current.y + current.radius);
-            const distance = Math.hypot(deltaX, deltaY) || 0.001;
-            const minimumDistance =
-                current.radius + next.radius + COLLISION_GAP;
-
-            if (distance >= minimumDistance) {
-                continue;
-            }
-
-            const normalX = deltaX / distance;
-            const normalY = deltaY / distance;
-            const overlap = (minimumDistance - distance) / 2;
-
-            current.x -= normalX * overlap;
-            current.y -= normalY * overlap;
-            next.x += normalX * overlap;
-            next.y += normalY * overlap;
-
-            const currentNormalVelocity =
-                current.vx * normalX + current.vy * normalY;
-            const nextNormalVelocity = next.vx * normalX + next.vy * normalY;
-            const currentTangentX =
-                current.vx - currentNormalVelocity * normalX;
-            const currentTangentY =
-                current.vy - currentNormalVelocity * normalY;
-            const nextTangentX = next.vx - nextNormalVelocity * normalX;
-            const nextTangentY = next.vy - nextNormalVelocity * normalY;
-
-            current.vx = currentTangentX + nextNormalVelocity * normalX;
-            current.vy = currentTangentY + nextNormalVelocity * normalY;
-            next.vx = nextTangentX + currentNormalVelocity * normalX;
-            next.vy = nextTangentY + currentNormalVelocity * normalY;
-        }
-    }
-}
-
-function getTitleOrbCollider(
-    field: Readonly<HTMLDivElement>,
-    titleOrb: Readonly<HTMLDivElement>
-): CircleCollider {
-    const fieldRect = field.getBoundingClientRect();
-    const orbRect = titleOrb.getBoundingClientRect();
-
-    return {
-        centerX: orbRect.left - fieldRect.left + orbRect.width / 2,
-        centerY: orbRect.top - fieldRect.top + orbRect.height / 2,
-        radius: orbRect.width / 2,
-    };
-}
-
-function resolveTitleOrbCollision(
-    particles: readonly BlobParticle[],
-    collider: Readonly<CircleCollider>
-) {
-    for (const particle of particles) {
-        const particleCenterX = particle.x + particle.radius;
-        const particleCenterY = particle.y + particle.radius;
-        const deltaX = particleCenterX - collider.centerX;
-        const deltaY = particleCenterY - collider.centerY;
-        const distance = Math.hypot(deltaX, deltaY) || 0.001;
-        const minimumDistance =
-            collider.radius + particle.radius + TITLE_ORB_CLEARANCE;
-
-        if (distance >= minimumDistance) {
-            continue;
-        }
-
-        const normalX = deltaX / distance;
-        const normalY = deltaY / distance;
-        const overlap = minimumDistance - distance;
-        const currentNormalVelocity =
-            particle.vx * normalX + particle.vy * normalY;
-
-        particle.x += normalX * overlap;
-        particle.y += normalY * overlap;
-
-        if (currentNormalVelocity < 0) {
-            particle.vx -= 2 * currentNormalVelocity * normalX;
-            particle.vy -= 2 * currentNormalVelocity * normalY;
-        }
-    }
-}
-
-function clampParticlePosition(
-    x: number,
-    y: number,
-    radius: number,
-    fieldRect: Readonly<DOMRect>
-): { x: number; y: number } {
-    const maxX = Math.max(
-        WALL_PADDING,
-        fieldRect.width - radius * 2 - WALL_PADDING
-    );
-    const maxY = Math.max(
-        WALL_PADDING,
-        fieldRect.height - radius * 2 - WALL_PADDING
-    );
-
-    return {
-        x: clamp(x, WALL_PADDING, maxX),
-        y: clamp(y, WALL_PADDING, maxY),
-    };
-}
-
-function clampParticleOutsideCollider(
-    x: number,
-    y: number,
-    radius: number,
-    collider: Readonly<CircleCollider>
-): { x: number; y: number } {
-    const centerX = x + radius;
-    const centerY = y + radius;
-    const deltaX = centerX - collider.centerX;
-    const deltaY = centerY - collider.centerY;
-    const distance = Math.hypot(deltaX, deltaY) || 0.001;
-    const minimumDistance = collider.radius + radius + TITLE_ORB_CLEARANCE;
-
-    if (distance >= minimumDistance) {
-        return { x, y };
-    }
-
-    const normalX = deltaX / distance;
-    const normalY = deltaY / distance;
-    const pushedCenterX = collider.centerX + normalX * minimumDistance;
-    const pushedCenterY = collider.centerY + normalY * minimumDistance;
-
-    return {
-        x: pushedCenterX - radius,
-        y: pushedCenterY - radius,
-    };
 }
 
 export function MenuScreen({
@@ -431,18 +271,20 @@ export function MenuScreen({
         const nextX = clientX - fieldRect.left - activeDrag.offsetX;
         const nextY = clientY - fieldRect.top - activeDrag.offsetY;
         const titleOrb = titleOrbRef.current;
-        const clampedPosition = clampParticlePosition(
+        const clampedPosition = clampFloatingParticlePosition(
             nextX,
             nextY,
             particle.radius,
-            fieldRect
+            fieldRect,
+            WALL_PADDING
         );
         const constrainedPosition = titleOrb
-            ? clampParticleOutsideCollider(
+            ? clampFloatingParticleOutsideCollider(
                   clampedPosition.x,
                   clampedPosition.y,
                   particle.radius,
-                  getTitleOrbCollider(field, titleOrb)
+                  getFloatingTitleOrbCollider(field, titleOrb),
+                  TITLE_ORB_CLEARANCE
               )
             : clampedPosition;
         const elapsed = Math.max(timestamp - activeDrag.lastTimestamp, 16);
@@ -464,7 +306,7 @@ export function MenuScreen({
         activeDrag.lastClientY = clientY;
         activeDrag.lastTimestamp = timestamp;
 
-        writeParticleStyles(particlesRef.current, buttonRefs.current);
+        writeFloatingParticleStyles(particlesRef.current, buttonRefs.current);
     };
 
     const handleBlobPointerDown = (
@@ -501,18 +343,20 @@ export function MenuScreen({
         };
         suppressClickRef.current = undefined;
 
-        const clampedPosition = clampParticlePosition(
+        const clampedPosition = clampFloatingParticlePosition(
             buttonRect.left - fieldRect.left,
             buttonRect.top - fieldRect.top,
             particle.radius,
-            fieldRect
+            fieldRect,
+            WALL_PADDING
         );
         const constrainedPosition = titleOrb
-            ? clampParticleOutsideCollider(
+            ? clampFloatingParticleOutsideCollider(
                   clampedPosition.x,
                   clampedPosition.y,
                   particle.radius,
-                  getTitleOrbCollider(field, titleOrb)
+                  getFloatingTitleOrbCollider(field, titleOrb),
+                  TITLE_ORB_CLEARANCE
               )
             : clampedPosition;
 
@@ -525,7 +369,7 @@ export function MenuScreen({
         activeDragRef.current.y = constrainedPosition.y;
 
         button.setPointerCapture(event.pointerId);
-        writeParticleStyles(particlesRef.current, buttonRefs.current);
+        writeFloatingParticleStyles(particlesRef.current, buttonRefs.current);
     };
 
     const handleBlobPointerMove = (
@@ -595,7 +439,7 @@ export function MenuScreen({
                 ),
             ];
             splitSourceRef.current = undefined;
-            writeParticleStyles(particlesRef.current, buttons);
+            writeFloatingParticleStyles(particlesRef.current, buttons);
         };
 
         const tick = (time: number): void => {
@@ -616,7 +460,7 @@ export function MenuScreen({
             const centerX = fieldRect.width / 2;
             const centerY = fieldRect.height / 2;
             const particles = particlesRef.current;
-            const titleOrbCollider = getTitleOrbCollider(
+            const titleOrbCollider = getFloatingTitleOrbCollider(
                 currentField,
                 currentTitleOrb
             );
@@ -663,18 +507,30 @@ export function MenuScreen({
                 );
 
                 if (particle.x <= WALL_PADDING || particle.x >= maxX) {
-                    particle.x = clamp(particle.x, WALL_PADDING, maxX);
+                    particle.x = clampFloatingValue(
+                        particle.x,
+                        WALL_PADDING,
+                        maxX
+                    );
                     particle.vx *= -1;
                 }
 
                 if (particle.y <= WALL_PADDING || particle.y >= maxY) {
-                    particle.y = clamp(particle.y, WALL_PADDING, maxY);
+                    particle.y = clampFloatingValue(
+                        particle.y,
+                        WALL_PADDING,
+                        maxY
+                    );
                     particle.vy *= -1;
                 }
             }
 
-            resolveTitleOrbCollision(particles, titleOrbCollider);
-            resolveCollisions(particles);
+            resolveFloatingTitleOrbCollision(
+                particles,
+                titleOrbCollider,
+                TITLE_ORB_CLEARANCE
+            );
+            resolveFloatingBlobCollisions(particles, COLLISION_GAP);
 
             if (activeDrag) {
                 const draggedParticle = particles.find(
@@ -687,7 +543,7 @@ export function MenuScreen({
                 }
             }
 
-            writeParticleStyles(particles, buttonRefs.current);
+            writeFloatingParticleStyles(particles, buttonRefs.current);
             frameRef.current = globalThis.requestAnimationFrame(tick);
         };
 
