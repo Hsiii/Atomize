@@ -269,25 +269,59 @@ export function applyBattlePenalty(
     }
 
     const nextStage = preservedStage ?? actingPlayer.stage;
+    const releasedDamage = actingPlayer.pendingFactorDamage;
     const nextPlayers = snapshot.players.map((player) => {
-        if (player.id !== playerId) {
-            return player;
+        if (player.id === playerId) {
+            return {
+                ...player,
+                hp: Math.max(0, player.hp - WRONG_SELECTION_DAMAGE),
+                pendingFactorDamage: 0,
+                combo: 0,
+                stage: nextStage,
+            };
         }
 
         return {
             ...player,
-            hp: Math.max(0, player.hp - WRONG_SELECTION_DAMAGE),
-            pendingFactorDamage: 0,
-            combo: 0,
-            stage: nextStage,
+            hp: Math.max(0, player.hp - releasedDamage),
         };
     });
     const nextActingPlayer = nextPlayers.find(
         (player) => player.id === playerId
     );
+    const nextTargetPlayer = nextPlayers.find(
+        (player) => player.id !== playerId
+    );
 
-    if (!nextActingPlayer) {
+    if (!nextActingPlayer || !nextTargetPlayer) {
         return snapshot;
+    }
+
+    if (nextTargetPlayer.hp === 0) {
+        return withPlayers(
+            {
+                ...snapshot,
+                stageIndex: actingPlayer.stageIndex,
+                stage: nextStage,
+            },
+            nextPlayers,
+            {
+                id: getNextEventId(snapshot),
+                type: 'finish',
+                winnerPlayerId: actingPlayer.id,
+                loserPlayerId: targetPlayer.id,
+                sourcePlayerId: playerId,
+                damage: releasedDamage,
+                regen: 0,
+                perfectSolve: false,
+                combo: actingPlayer.combo,
+                cause: 'attack',
+                sourceStageIndex: actingPlayer.stageIndex,
+                nextStageIndex: actingPlayer.stageIndex,
+                winnerHp: nextActingPlayer.hp,
+                loserHp: nextTargetPlayer.hp,
+            }
+        );
     }
 
     const lastEvent: BattleEvent =
@@ -305,7 +339,7 @@ export function applyBattlePenalty(
                   cause: 'self-hit',
                   sourceStageIndex: actingPlayer.stageIndex,
                   nextStageIndex: actingPlayer.stageIndex,
-                  winnerHp: targetPlayer.hp,
+                  winnerHp: nextTargetPlayer.hp,
                   loserHp: nextActingPlayer.hp,
               }
             : {
@@ -317,6 +351,9 @@ export function applyBattlePenalty(
                   sourceStageIndex: actingPlayer.stageIndex,
                   nextStageIndex: actingPlayer.stageIndex,
                   sourceHp: nextActingPlayer.hp,
+                  releasedDamage,
+                  targetPlayerId: targetPlayer.id,
+                  targetHp: nextTargetPlayer.hp,
               };
 
     return withPlayers(

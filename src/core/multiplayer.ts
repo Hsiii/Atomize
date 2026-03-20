@@ -37,6 +37,9 @@ export type BattleEvent =
           sourceStageIndex: number;
           nextStageIndex: number;
           sourceHp: number;
+          releasedDamage: number;
+          targetPlayerId: string;
+          targetHp: number;
       }
     | {
           id: number;

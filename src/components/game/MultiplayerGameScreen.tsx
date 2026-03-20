@@ -34,6 +34,8 @@ type AttackParticle = {
     y: number;
     size: number;
     opacity: number;
+    shape: 'circle' | 'diamond' | 'ring';
+    rotation: number;
 };
 
 type AttackEffectState = {
@@ -415,6 +417,16 @@ export function MultiplayerGameScreen({
                     ? 'self'
                     : 'enemy';
 
+            if (lastEvent.releasedDamage > 0) {
+                const targetSide = side === 'self' ? 'enemy' : 'self';
+
+                resolveHpLoss(
+                    targetSide,
+                    lastEvent.targetHp,
+                    lastEvent.releasedDamage
+                );
+            }
+
             resolveHpLoss(side, lastEvent.sourceHp, lastEvent.damage);
             return;
         }
@@ -447,6 +459,9 @@ export function MultiplayerGameScreen({
             lastEvent.loserPlayerId === currentMultiplayerPlayer?.id
                 ? 'self'
                 : 'enemy';
+        const winnerSide = loserSide === 'self' ? 'enemy' : 'self';
+
+        setDisplayedHp(winnerSide, lastEvent.winnerHp);
 
         const lossResult = resolveHpLoss(
             loserSide,
@@ -523,6 +538,7 @@ export function MultiplayerGameScreen({
             nextAttack.sourceSide,
             nextAttack.targetSide,
             nextAttack.id,
+            nextAttack.damage,
             completeAttack
         );
 
@@ -934,6 +950,7 @@ export function MultiplayerGameScreen({
         sourceSide: 'enemy' | 'self',
         targetSide: 'enemy' | 'self',
         id: number,
+        damage: number,
         onComplete?: () => void
     ): boolean {
         const overlayElement = overlayRef.current;
@@ -960,13 +977,39 @@ export function MultiplayerGameScreen({
             y: targetRect.top + targetRect.height / 2 - overlayRect.top,
         };
         const horizontalDirection = targetSide === 'self' ? 1 : -1;
+
+        let severity = 0;
+
+        if (damage > 30) {
+            severity = 3;
+        } else if (damage > 15) {
+            severity = 2;
+        } else if (damage > 5) {
+            severity = 1;
+        }
+        const trailCount = [3, 5, 8, 11][severity];
+        const leadSize = [14, 18, 24, 30][severity];
+        const trailBaseSize = [6, 8, 10, 12][severity];
+        const spreadScale = [0.6, 1, 1.5, 2][severity];
+        const impactRingCount = [3, 4, 5, 7][severity];
+        const durationMs = [1080, 960, 840, 720][severity];
+
         const controlPoint = {
-            x: (startPoint.x + endPoint.x) / 2 + 42 * horizontalDirection,
-            y: Math.min(startPoint.y, endPoint.y) - 88,
+            x:
+                (startPoint.x + endPoint.x) / 2 +
+                42 * horizontalDirection * spreadScale,
+            y: Math.min(startPoint.y, endPoint.y) - 88 * spreadScale,
         };
-        const particleSeeds = [0, 0.12, 0.24, 0.36, 0.48, 0.6];
+
+        const dx = endPoint.x - startPoint.x;
+        const dy = endPoint.y - startPoint.y;
+        const pathLength = Math.hypot(dx, dy) || 1;
+        const perpX = -dy / pathLength;
+        const perpY = dx / pathLength;
+
+        const flightEnd = 0.82;
+        const impactStart = 0.78;
         const animationStart = performance.now();
-        const durationMs = 1080;
 
         if (animationFrameRef.current !== undefined) {
             cancelAnimationFrame(animationFrameRef.current);
@@ -975,49 +1018,121 @@ export function MultiplayerGameScreen({
         const animate = (timestamp: number) => {
             const elapsed = timestamp - animationStart;
             const baseProgress = Math.min(1, elapsed / durationMs);
-            const particles = particleSeeds
-                .map((seed, index) => {
-                    const shifted = Math.max(
-                        0,
-                        Math.min(1, (baseProgress - seed) / (1 - seed))
-                    );
+            const particles: AttackParticle[] = [];
 
-                    if (shifted <= 0 || shifted >= 1) {
-                        return undefined;
-                    }
+            const leadT = Math.min(1, baseProgress / flightEnd);
 
-                    const accelerated = shifted * shifted;
-                    const x = quadraticBezier(
-                        startPoint.x,
-                        controlPoint.x + (index - 2.5) * 10,
-                        endPoint.x,
-                        accelerated
-                    );
-                    const y = quadraticBezier(
-                        startPoint.y,
-                        controlPoint.y - (index % 2 === 0 ? 12 : -6),
-                        endPoint.y,
-                        accelerated
-                    );
+            if (leadT > 0 && leadT < 1) {
+                const accel = leadT * leadT;
+                const lx = quadraticBezier(
+                    startPoint.x,
+                    controlPoint.x,
+                    endPoint.x,
+                    accel
+                );
+                const ly = quadraticBezier(
+                    startPoint.y,
+                    controlPoint.y,
+                    endPoint.y,
+                    accel
+                );
+                const nextT = Math.min(1, accel + 0.01);
+                const nx = quadraticBezier(
+                    startPoint.x,
+                    controlPoint.x,
+                    endPoint.x,
+                    nextT
+                );
+                const ny = quadraticBezier(
+                    startPoint.y,
+                    controlPoint.y,
+                    endPoint.y,
+                    nextT
+                );
+                const angle =
+                    Math.atan2(ny - ly, nx - lx) * (180 / Math.PI) + 45;
 
-                    return {
-                        id: index,
-                        side: sourceSide,
-                        x,
-                        y,
-                        size: 12 - index * 0.8,
-                        opacity: 1 - shifted * 0.72,
-                    } satisfies AttackParticle;
-                })
-                .filter(
-                    (particle): particle is AttackParticle =>
-                        particle !== undefined
+                particles.push({
+                    id: 0,
+                    side: sourceSide,
+                    x: lx,
+                    y: ly,
+                    size: leadSize,
+                    opacity: Math.min(1, leadT * 5),
+                    shape: 'diamond',
+                    rotation: angle,
+                });
+            }
+
+            for (let i = 0; i < trailCount; i++) {
+                const delay = (i + 1) * 0.06;
+                const t = Math.max(
+                    0,
+                    Math.min(
+                        1,
+                        (baseProgress - delay) / (flightEnd - delay)
+                    )
                 );
 
-            setAttackEffect({
-                id,
-                particles,
-            });
+                if (t <= 0 || t >= 1) {
+                    continue;
+                }
+
+                const accel = t * t;
+                const wobbleAmp =
+                    10 * spreadScale * Math.sin(t * Math.PI);
+                const wobblePhase =
+                    Math.sin(t * Math.PI * 4 + i * 1.8) * wobbleAmp;
+
+                const bx = quadraticBezier(
+                    startPoint.x,
+                    controlPoint.x,
+                    endPoint.x,
+                    accel
+                );
+                const by = quadraticBezier(
+                    startPoint.y,
+                    controlPoint.y,
+                    endPoint.y,
+                    accel
+                );
+
+                particles.push({
+                    id: i + 1,
+                    side: sourceSide,
+                    x: bx + perpX * wobblePhase,
+                    y: by + perpY * wobblePhase,
+                    size: trailBaseSize * Math.max(0.5, 1 - i * 0.06),
+                    opacity: (1 - t * 0.65) * Math.min(1, t * 8),
+                    shape: 'circle',
+                    rotation: 0,
+                });
+            }
+
+            if (baseProgress > impactStart) {
+                const impactT =
+                    (baseProgress - impactStart) / (1 - impactStart);
+                const easeOut = 1 - (1 - impactT) * (1 - impactT);
+
+                for (let i = 0; i < impactRingCount; i++) {
+                    const angle =
+                        (Math.PI * 2 * i) / impactRingCount + 0.3;
+                    const radius = easeOut * (24 + severity * 10);
+
+                    particles.push({
+                        id: trailCount + 1 + i,
+                        side: sourceSide,
+                        x: endPoint.x + Math.cos(angle) * radius,
+                        y: endPoint.y + Math.sin(angle) * radius,
+                        size: leadSize * 0.5 * (1 - easeOut * 0.4),
+                        opacity: (1 - easeOut) * 0.9,
+                        shape: 'ring',
+                        rotation: 0,
+                    });
+                }
+            }
+
+            setAttackEffect({ id, particles });
 
             if (baseProgress < 1) {
                 animationFrameRef.current = requestAnimationFrame(animate);
@@ -1154,7 +1269,7 @@ export function MultiplayerGameScreen({
                         >
                             {attackEffect.particles.map((particle) => (
                                 <span
-                                    className={`multiplayer-attack-particle multiplayer-attack-particle-${particle.side}`}
+                                    className={`multiplayer-attack-particle multiplayer-attack-particle-${particle.side} multiplayer-attack-particle-${particle.shape}`}
                                     key={`${attackEffect.id}-${particle.id}`}
                                     style={
                                         {
@@ -1163,6 +1278,7 @@ export function MultiplayerGameScreen({
                                             '--particle-y': `${particle.y}px`,
                                             '--particle-opacity':
                                                 particle.opacity,
+                                            '--particle-rotation': `${particle.rotation}deg`,
                                         } as CSSProperties
                                     }
                                 />
