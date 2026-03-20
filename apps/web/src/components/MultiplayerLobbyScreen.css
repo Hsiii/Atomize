@@ -24,6 +24,15 @@
     overflow: hidden;
 }
 
+.join-layout::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 40dvh;
+    background: var(--color-primary);
+    z-index: 0;
+}
+
 .join-toast-layer {
     position: absolute;
     top: max(var(--space-7), env(safe-area-inset-top));

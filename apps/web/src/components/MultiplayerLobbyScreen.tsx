@@ -264,6 +264,32 @@ function seedJoinParticles(
     });
 }
 
+function getJoinBlobTarget(
+    blobId: JoinBlobId,
+    fieldRect: Readonly<DOMRect>,
+    time: number
+): { x: number; y: number } {
+    if (blobId === 'code') {
+        return {
+            x:
+                fieldRect.width * 0.36 +
+                Math.sin(time / 1500) * fieldRect.width * 0.04,
+            y:
+                fieldRect.height * 0.6 +
+                Math.cos(time / 1700) * fieldRect.height * 0.025,
+        };
+    }
+
+    return {
+        x:
+            fieldRect.width * 0.72 +
+            Math.cos(time / 1400) * fieldRect.width * 0.035,
+        y:
+            fieldRect.height * 0.77 +
+            Math.sin(time / 1600) * fieldRect.height * 0.03,
+    };
+}
+
 export function MultiplayerLobbyScreen({
     menuMode,
     multiplayer,
@@ -466,8 +492,6 @@ export function MultiplayerLobbyScreen({
             joinLastTimeRef.current = time;
 
             const fieldRect = currentField.getBoundingClientRect();
-            const centerX = fieldRect.width / 2;
-            const centerY = fieldRect.height * 0.62;
             const particles = joinParticlesRef.current;
             const titleOrbCollider = getJoinTitleOrbCollider(
                 currentField,
@@ -475,13 +499,14 @@ export function MultiplayerLobbyScreen({
             );
 
             for (const particle of particles) {
+                const target = getJoinBlobTarget(particle.id, fieldRect, time);
                 const particleCenterX = particle.x + particle.radius;
                 const particleCenterY = particle.y + particle.radius;
-                const pullX = (centerX - particleCenterX) / fieldRect.width;
-                const pullY = (centerY - particleCenterY) / fieldRect.height;
+                const pullX = (target.x - particleCenterX) / fieldRect.width;
+                const pullY = (target.y - particleCenterY) / fieldRect.height;
 
-                particle.vx += pullX * 0.009 * delta;
-                particle.vy += pullY * 0.009 * delta;
+                particle.vx += pullX * 0.012 * delta;
+                particle.vy += pullY * 0.012 * delta;
 
                 const speed =
                     Math.hypot(particle.vx, particle.vy) || JOIN_MIN_SPEED;
