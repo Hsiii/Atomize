@@ -26,8 +26,10 @@ import {
     addPlayerToRoom,
     applyBattlePenalty,
     applyBattlePrimeSelection,
+    beginRoomMatch,
     createRoomSnapshot,
     setPlayerReady,
+    startRoomCountdown,
 } from './lib/multiplayer-room';
 import {
     createRealtimeClient,
@@ -38,6 +40,7 @@ const soloDurationSeconds = 60;
 const playablePrimes = PRIME_POOL.slice(0, 9);
 const soloComboStepDelayMs = 280;
 const multiplayerComboStepDelayMs = 220;
+const multiplayerCountdownTickMs = 100;
 const realtimeSendTimeoutMs = 1500;
 const joinRoomLookupTimeoutMs = 5000;
 const joinRoomRetryIntervalMs = 1200;
@@ -115,6 +118,9 @@ export default function App() {
     );
     const [isMultiplayerComboRunning, setIsMultiplayerComboRunning] =
         useState(false);
+    const [multiplayerCountdownValue, setMultiplayerCountdownValue] = useState<
+        number | null
+    >(null);
     const [playerName, setPlayerName] = useState(() => getInitialPlayerName());
     const [pendingInvitation, setPendingInvitation] =
         useState<PendingInvitation | null>(null);
@@ -205,14 +211,83 @@ export default function App() {
     }, [multiplayer.snapshot?.status]);
 
     useEffect(() => {
+        const countdownEndsAt = multiplayer.snapshot?.countdownEndsAt;
+
+        if (multiplayer.snapshot?.status !== 'countdown' || !countdownEndsAt) {
+            setMultiplayerCountdownValue(null);
+            return;
+        }
+
+        const updateCountdownValue = () => {
+            const remainingMs = countdownEndsAt - Date.now();
+
+            setMultiplayerCountdownValue(
+                Math.max(1, Math.ceil(remainingMs / 1000))
+            );
+        };
+
+        updateCountdownValue();
+
+        const timer = window.setInterval(
+            updateCountdownValue,
+            multiplayerCountdownTickMs
+        );
+
+        return () => {
+            window.clearInterval(timer);
+        };
+    }, [multiplayer.snapshot?.countdownEndsAt, multiplayer.snapshot?.status]);
+
+    useEffect(() => {
         if (
             multiplayer.snapshot &&
-            multiplayer.snapshot.status === 'waiting' &&
+            (multiplayer.snapshot.status === 'waiting' ||
+                multiplayer.snapshot.status === 'countdown') &&
             screen === 'multi-lobby'
         ) {
             setScreen('menu');
         }
     }, [multiplayer.snapshot, screen]);
+
+    useEffect(() => {
+        const currentState = latestMultiplayerRef.current;
+        const countdownEndsAt = currentState.snapshot?.countdownEndsAt;
+
+        if (
+            !currentState.isHost ||
+            currentState.snapshot?.status !== 'countdown' ||
+            !countdownEndsAt ||
+            !currentState.playerId
+        ) {
+            return;
+        }
+
+        const timer = window.setTimeout(() => {
+            const latestState = latestMultiplayerRef.current;
+
+            if (
+                !latestState.isHost ||
+                !latestState.snapshot ||
+                latestState.snapshot.status !== 'countdown' ||
+                !latestState.playerId
+            ) {
+                return;
+            }
+
+            const nextSnapshot = beginRoomMatch(latestState.snapshot);
+
+            updateSnapshot(nextSnapshot, '');
+            void broadcastMessage({
+                type: 'room_state',
+                snapshot: nextSnapshot,
+                sourcePlayerId: latestState.playerId,
+            });
+        }, Math.max(0, countdownEndsAt - Date.now()));
+
+        return () => {
+            window.clearTimeout(timer);
+        };
+    }, [multiplayer.isHost, multiplayer.snapshot?.countdownEndsAt, multiplayer.snapshot?.status]);
 
     useEffect(() => {
         if (screen !== 'single') {
@@ -588,15 +663,28 @@ export default function App() {
     async function toggleReady() {
         const currentState = latestMultiplayerRef.current;
 
-        if (!currentState.playerId || !currentState.snapshot) {
+        if (
+            !currentState.playerId ||
+            !currentState.snapshot ||
+            currentState.snapshot.status !== 'waiting'
+        ) {
+            return;
+        }
+
+        const alreadyReady = currentState.snapshot.players.find(
+            (player) => player.id === currentState.playerId
+        )?.ready;
+
+        if (alreadyReady) {
             return;
         }
 
         if (currentState.isHost) {
-            const nextSnapshot = setPlayerReady(
+            const readySnapshot = setPlayerReady(
                 currentState.snapshot,
                 currentState.playerId
             );
+            const nextSnapshot = startRoomCountdown(readySnapshot);
 
             updateSnapshot(nextSnapshot, '');
             await broadcastMessage({
@@ -615,9 +703,11 @@ export default function App() {
                     return prev;
                 }
 
+                const readySnapshot = setPlayerReady(prev.snapshot, prev.playerId);
+
                 return {
                     ...prev,
-                    snapshot: setPlayerReady(prev.snapshot, prev.playerId),
+                    snapshot: readySnapshot,
                 };
             });
         }
@@ -825,11 +915,12 @@ export default function App() {
                     currentState.snapshot,
                     message.playerId
                 );
+                const countdownSnapshot = startRoomCountdown(nextSnapshot);
 
-                updateSnapshot(nextSnapshot, '');
+                updateSnapshot(countdownSnapshot, '');
                 await broadcastMessage({
                     type: 'room_state',
-                    snapshot: nextSnapshot,
+                    snapshot: countdownSnapshot,
                     sourcePlayerId: playerId,
                 });
             })
@@ -1178,6 +1269,7 @@ export default function App() {
                         (player) => player.id !== multiplayer.playerId
                     )?.ready ?? false
                 }
+                multiplayerCountdownValue={multiplayerCountdownValue}
                 onAcceptInvitation={handleAcceptInvitation}
                 onDeclineInvitation={handleDeclineInvitation}
                 onEditName={handleEditName}

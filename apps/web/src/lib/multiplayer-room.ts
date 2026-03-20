@@ -12,6 +12,7 @@ import type {
 
 const STARTING_HP = 60;
 const WRONG_SELECTION_DAMAGE = 8;
+const ROOM_START_COUNTDOWN_MS = 3000;
 
 export function createRoomSnapshot(
     roomId: string,
@@ -68,6 +69,39 @@ export function setPlayerReady(
     return {
         ...snapshot,
         players: nextPlayers,
+    };
+}
+
+export function startRoomCountdown(
+    snapshot: RoomSnapshot,
+    now = Date.now()
+): RoomSnapshot {
+    if (snapshot.players.length < 2 || snapshot.status !== 'waiting') {
+        return snapshot;
+    }
+
+    const areAllPlayersReady = snapshot.players.every((player) => player.ready);
+
+    if (!areAllPlayersReady) {
+        return snapshot;
+    }
+
+    return {
+        ...snapshot,
+        countdownEndsAt: now + ROOM_START_COUNTDOWN_MS,
+        status: 'countdown',
+    };
+}
+
+export function beginRoomMatch(snapshot: RoomSnapshot): RoomSnapshot {
+    if (snapshot.status !== 'countdown') {
+        return snapshot;
+    }
+
+    return {
+        ...snapshot,
+        countdownEndsAt: undefined,
+        status: 'playing',
     };
 }
 

@@ -15,6 +15,7 @@ type MenuScreenProps = {
     isInRoom: boolean;
     isCurrentPlayerReady: boolean;
     isOpponentReady: boolean;
+    multiplayerCountdownValue: number | null;
     onlineUsers: OnlineLobbyUser[];
     toastMessage: string | null;
     toastId: number;
@@ -34,6 +35,7 @@ export function MenuScreen({
     isInRoom,
     isCurrentPlayerReady,
     isOpponentReady,
+    multiplayerCountdownValue,
     onlineUsers,
     toastMessage,
     toastId,
@@ -81,6 +83,18 @@ export function MenuScreen({
     const opponentInitials = (opponentName ?? '').slice(0, 1).toUpperCase();
     const shouldShowReadyAction = isInRoom && hasOpponent;
     const shouldShowSoloStart = !shouldShowReadyAction && !isInRoom;
+    const isMultiplayerCountdown = multiplayerCountdownValue !== null;
+    let currentReadyLabel: string = uiText.ready;
+
+    if (hasOpponent && !isCurrentPlayerReady) {
+        currentReadyLabel = uiText.notReady;
+    }
+
+    let readyButtonLabel: string = uiText.ready;
+
+    if (isMultiplayerCountdown) {
+        readyButtonLabel = `${uiText.startingIn} ${String(multiplayerCountdownValue)}...`;
+    }
 
     useEffect(() => {
         if (!hasOpponent) {
@@ -149,15 +163,11 @@ export function MenuScreen({
                                     )}
                                 </button>
                                 <span className='slot-name'>{playerName}</span>
-                                {hasOpponent ? (
-                                    <span
-                                        className={`slot-ready-badge${isCurrentPlayerReady ? ' slot-ready-badge-on' : ''}`}
-                                    >
-                                        {isCurrentPlayerReady
-                                            ? uiText.ready
-                                            : uiText.notReady}
-                                    </span>
-                                ) : undefined}
+                                <span
+                                    className={`slot-ready-badge${hasOpponent && isCurrentPlayerReady ? ' slot-ready-badge-on' : ''}${hasOpponent ? '' : ' slot-ready-badge-placeholder'}`}
+                                >
+                                    {currentReadyLabel}
+                                </span>
                             </div>
 
                             {hasOpponent ? (
@@ -192,8 +202,8 @@ export function MenuScreen({
                                     >
                                         <Plus className='slot-plus-icon' />
                                     </button>
-                                    <span className='slot-name'>
-                                        {uiText.onlineSection}
+                                    <span className='slot-ready-badge slot-ready-badge-placeholder'>
+                                        {uiText.ready}
                                     </span>
                                 </div>
                             )}
@@ -210,11 +220,11 @@ export function MenuScreen({
                         {shouldShowReadyAction ? (
                             <ActionButton
                                 className='menu-start-btn'
-                                disabled={isCurrentPlayerReady}
+                                disabled={isCurrentPlayerReady || isMultiplayerCountdown}
                                 onClick={onToggleReady}
                                 variant='primary'
                             >
-                                {uiText.ready}
+                                {readyButtonLabel}
                             </ActionButton>
                         ) : undefined}
 

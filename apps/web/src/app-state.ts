@@ -62,6 +62,7 @@ export const uiText = {
     invited: 'Invited',
     ready: 'Ready',
     notReady: 'Not Ready',
+    startingIn: 'Start in',
     noOnlinePlayers: 'No other players online.',
     inviteTitle: 'Online Players',
     editName: 'Edit Name',

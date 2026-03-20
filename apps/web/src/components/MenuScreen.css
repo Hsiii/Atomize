@@ -98,6 +98,7 @@
     align-items: center;
     gap: 0.5rem;
     width: 6.25rem;
+    min-height: 8.7rem;
 }
 
 .slot-circle {
@@ -183,6 +184,7 @@
 
 .slot-ready-badge {
     min-width: 4.8rem;
+    min-height: 1.55rem;
     padding: 0.22rem 0.55rem;
     border: 1px solid var(--color-ink-soft);
     border-radius: 999px;
@@ -192,6 +194,9 @@
     font-weight: 800;
     letter-spacing: 0.06em;
     line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     text-align: center;
     text-transform: uppercase;
 }
@@ -199,6 +204,10 @@
 .slot-ready-badge-on {
     color: var(--color-primary-strong);
     border-color: var(--color-primary-strong);
+}
+
+.slot-ready-badge-placeholder {
+    visibility: hidden;
 }
 
 .slot-plus-icon {
@@ -240,6 +249,7 @@
 
 .menu-start-btn {
     width: min(100%, 16rem);
+    min-height: 3.5rem;
 }
 
 .menu-room-hint-block {
