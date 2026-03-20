@@ -1,7 +1,6 @@
 :root {
     --font-family-base: 'Avenir Next', 'Helvetica Neue', sans-serif;
-    --font-family-display:
-        'Avenir Next Condensed', 'Avenir Next', 'Helvetica Neue', sans-serif;
+    --font-family-display: var(--font-family-base);
     --font-family-numeric: var(--font-family-base);
     --font-weight-number-emphasis: 700;
     --line-height-base: 1.4;
