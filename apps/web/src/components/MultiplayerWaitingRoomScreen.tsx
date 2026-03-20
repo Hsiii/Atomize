@@ -13,6 +13,7 @@ type MultiplayerWaitingRoomScreenProps = {
     onBack: () => void;
     onCopyCode: () => void;
     onInvitePlayer: (targetPlayerId: string) => void;
+    onToggleReady: () => void;
 };
 
 export function MultiplayerWaitingRoomScreen({
@@ -24,6 +25,7 @@ export function MultiplayerWaitingRoomScreen({
     onBack,
     onCopyCode,
     onInvitePlayer,
+    onToggleReady,
 }: MultiplayerWaitingRoomScreenProps): JSX.Element {
     const currentPlayer = multiplayer.snapshot?.players.find(
         (player) => player.id === multiplayer.playerId
@@ -33,6 +35,8 @@ export function MultiplayerWaitingRoomScreen({
     );
     const isCountdown = multiplayer.snapshot?.status === 'countdown';
     const hasOpponent = Boolean(opponentPlayer);
+    const isCurrentReady = currentPlayer?.ready ?? false;
+    const isOpponentReady = opponentPlayer?.ready ?? false;
 
     return (
         <main className='app-shell fullscreen-shell'>
@@ -69,6 +73,13 @@ export function MultiplayerWaitingRoomScreen({
                         <span className='arena-name'>
                             {currentPlayer?.name ?? '-'}
                         </span>
+                        {hasOpponent ? (
+                            <span
+                                className={`arena-ready-badge${isCurrentReady ? ' arena-ready-badge-on' : ''}`}
+                            >
+                                {isCurrentReady ? 'Ready' : 'Not Ready'}
+                            </span>
+                        ) : undefined}
                     </div>
 
                     <div className='arena-center'>
@@ -92,6 +103,13 @@ export function MultiplayerWaitingRoomScreen({
                         >
                             {opponentPlayer?.name ?? '?'}
                         </span>
+                        {hasOpponent ? (
+                            <span
+                                className={`arena-ready-badge${isOpponentReady ? ' arena-ready-badge-on' : ''}`}
+                            >
+                                {isOpponentReady ? 'Ready' : 'Not Ready'}
+                            </span>
+                        ) : undefined}
                     </div>
 
                     {!hasOpponent && !isCountdown && onlineUsers.length > 0 ? (
@@ -118,6 +136,18 @@ export function MultiplayerWaitingRoomScreen({
                         </ul>
                     ) : undefined}
                 </div>
+
+                {hasOpponent && !isCurrentReady ? (
+                    <div className='arena-ready-action'>
+                        <button
+                            className='arena-ready-button'
+                            onClick={onToggleReady}
+                            type='button'
+                        >
+                            Ready
+                        </button>
+                    </div>
+                ) : undefined}
 
                 {activeToastMessage ? (
                     <div aria-live='polite' className='waiting-toast-layer'>

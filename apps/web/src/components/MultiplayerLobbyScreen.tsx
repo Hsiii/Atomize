@@ -23,6 +23,7 @@ type MultiplayerLobbyScreenProps = {
     onJoinRoom: () => void | Promise<void>;
     onCreateRoom: () => void | Promise<void>;
     onInvitePlayer: (targetPlayerId: string) => void | Promise<void>;
+    onToggleReady: () => void | Promise<void>;
 };
 
 export function MultiplayerLobbyScreen({
@@ -39,6 +40,7 @@ export function MultiplayerLobbyScreen({
     onJoinRoom,
     onCreateRoom,
     onInvitePlayer,
+    onToggleReady,
 }: MultiplayerLobbyScreenProps): JSX.Element {
     const [localToastMessage, setLocalToastMessage] = useState<
         string | undefined
@@ -177,6 +179,12 @@ export function MultiplayerLobbyScreen({
         });
     }
 
+    function handleToggleReady() {
+        runAsyncAction(async () => {
+            await onToggleReady();
+        });
+    }
+
     if (!multiplayer.roomId && !shouldShowWaitingRoom) {
         return (
             <MultiplayerJoinScreen
@@ -200,6 +208,7 @@ export function MultiplayerLobbyScreen({
             onBack={handleBack}
             onCopyCode={handleCopyCode}
             onInvitePlayer={handleInvite}
+            onToggleReady={handleToggleReady}
             onlineUsers={onlineUsers}
         />
     );

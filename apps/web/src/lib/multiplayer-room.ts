@@ -36,8 +36,7 @@ export function createRoomSnapshot(
 export function addPlayerToRoom(
     snapshot: RoomSnapshot,
     playerId: string,
-    playerName: string,
-    countdownEndsAt: number
+    playerName: string
 ): RoomSnapshot | undefined {
     if (snapshot.players.some((player) => player.id === playerId)) {
         return snapshot;
@@ -53,9 +52,24 @@ export function addPlayerToRoom(
             ...snapshot.players,
             createPlayer(playerId, playerName, snapshot.seed),
         ],
-        countdownEndsAt,
         lastEvent: undefined,
-        status: 'countdown',
+        status: 'waiting',
+    };
+}
+
+export function setPlayerReady(
+    snapshot: RoomSnapshot,
+    playerId: string
+): RoomSnapshot {
+    const nextPlayers = snapshot.players.map((player) =>
+        player.id === playerId ? { ...player, ready: true } : player
+    );
+
+    return {
+        ...snapshot,
+        players: nextPlayers,
+        status: snapshot.status,
+        countdownEndsAt: snapshot.countdownEndsAt,
     };
 }
 
@@ -277,6 +291,7 @@ function createPlayer(id: string, name: string, seed: string): RoomPlayer {
         stageIndex: 0,
         stage: generateStage(seed, 0),
         connected: true,
+        ready: false,
     };
 }
 

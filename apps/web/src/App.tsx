@@ -28,6 +28,7 @@ import {
     applyBattlePrimeSelection,
     beginRoomMatch,
     createRoomSnapshot,
+    setPlayerReady,
 } from './lib/multiplayer-room';
 import {
     createRealtimeClient,
@@ -74,6 +75,10 @@ type RoomBroadcastMessage =
           type: 'join_request';
           playerId: string;
           playerName: string;
+      }
+    | {
+          type: 'player_ready';
+          playerId: string;
       }
     | {
           type: 'prime_selected';
@@ -175,6 +180,18 @@ export default function App() {
     }, [multiplayer.snapshot?.status]);
 
     useEffect(() => {
+        if (
+            multiplayer.snapshot &&
+            multiplayer.snapshot.players.length >= 2 &&
+            multiplayer.snapshot.status === 'waiting' &&
+            screen === 'menu'
+        ) {
+            setMenuMode('create-room');
+            setScreen('multi-lobby');
+        }
+    }, [multiplayer.snapshot, screen]);
+
+    useEffect(() => {
         const countdownEndsAt = multiplayer.snapshot?.countdownEndsAt;
 
         if (multiplayer.snapshot?.status !== 'countdown' || !countdownEndsAt) {
@@ -197,50 +214,6 @@ export default function App() {
             window.clearInterval(timer);
         };
     }, [multiplayer.snapshot?.countdownEndsAt, multiplayer.snapshot?.status]);
-
-    useEffect(() => {
-        const countdownEndsAt = multiplayer.snapshot?.countdownEndsAt;
-
-        if (
-            !multiplayer.isHost ||
-            multiplayer.snapshot?.status !== 'countdown' ||
-            !countdownEndsAt
-        ) {
-            return;
-        }
-
-        const timer = window.setTimeout(
-            () => {
-                const currentState = latestMultiplayerRef.current;
-
-                if (
-                    !currentState.isHost ||
-                    !currentState.snapshot ||
-                    currentState.snapshot.status !== 'countdown' ||
-                    !currentState.playerId
-                ) {
-                    return;
-                }
-
-                const nextSnapshot = beginRoomMatch(currentState.snapshot);
-                updateSnapshot(nextSnapshot, '');
-                void broadcastMessage({
-                    type: 'room_state',
-                    snapshot: nextSnapshot,
-                    sourcePlayerId: currentState.playerId,
-                });
-            },
-            Math.max(0, countdownEndsAt - Date.now())
-        );
-
-        return () => {
-            window.clearTimeout(timer);
-        };
-    }, [
-        multiplayer.isHost,
-        multiplayer.snapshot?.countdownEndsAt,
-        multiplayer.snapshot?.status,
-    ]);
 
     useEffect(() => {
         if (screen !== 'single') {
@@ -628,6 +601,44 @@ export default function App() {
         });
     }
 
+    async function toggleReady() {
+        const currentState = latestMultiplayerRef.current;
+
+        if (!currentState.playerId || !currentState.snapshot) {
+            return;
+        }
+
+        if (currentState.isHost) {
+            const nextSnapshot = setPlayerReady(
+                currentState.snapshot,
+                currentState.playerId
+            );
+
+            updateSnapshot(nextSnapshot, '');
+            await broadcastMessage({
+                type: 'room_state',
+                snapshot: nextSnapshot,
+                sourcePlayerId: currentState.playerId,
+            });
+        } else {
+            await broadcastMessage({
+                type: 'player_ready',
+                playerId: currentState.playerId,
+            });
+
+            setMultiplayer((prev) => {
+                if (!prev.snapshot || !prev.playerId) {
+                    return prev;
+                }
+
+                return {
+                    ...prev,
+                    snapshot: setPlayerReady(prev.snapshot, prev.playerId),
+                };
+            });
+        }
+    }
+
     function setStatusText(statusText: string) {
         setMultiplayer((currentState) => ({
             ...currentState,
@@ -795,8 +806,7 @@ export default function App() {
                 const nextSnapshot = addPlayerToRoom(
                     currentState.snapshot,
                     message.playerId,
-                    message.playerName,
-                    Date.now() + multiplayerCountdownDurationMs
+                    message.playerName
                 );
 
                 if (!nextSnapshot) {
@@ -807,6 +817,30 @@ export default function App() {
                     });
                     return;
                 }
+
+                updateSnapshot(nextSnapshot, '');
+                await broadcastMessage({
+                    type: 'room_state',
+                    snapshot: nextSnapshot,
+                    sourcePlayerId: playerId,
+                });
+            })
+            .on('broadcast', { event: 'player_ready' }, async ({ payload }) => {
+                const message = payload as RoomBroadcastMessage;
+                const currentState = latestMultiplayerRef.current;
+
+                if (
+                    message.type !== 'player_ready' ||
+                    !currentState.isHost ||
+                    !currentState.snapshot
+                ) {
+                    return;
+                }
+
+                const nextSnapshot = setPlayerReady(
+                    currentState.snapshot,
+                    message.playerId
+                );
 
                 updateSnapshot(nextSnapshot, '');
                 await broadcastMessage({
@@ -1199,6 +1233,7 @@ export default function App() {
                 onJoinRoom={joinRoom}
                 onCreateRoom={createRoom}
                 onInvitePlayer={invitePlayer}
+                onToggleReady={toggleReady}
             />
         );
     }

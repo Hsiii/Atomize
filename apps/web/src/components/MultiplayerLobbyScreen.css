@@ -380,6 +380,55 @@
     animation: arena-pulse 1.8s ease-in-out infinite;
 }
 
+.arena-ready-badge {
+    flex: 0 0 auto;
+    font-family: var(--font-family-display);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-ink-soft);
+    padding: 0.15rem 0.5rem;
+    border: 1px solid var(--color-ink-soft);
+    border-radius: 0.25rem;
+}
+
+.arena-ready-badge-on {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.arena-ready-action {
+    display: flex;
+    justify-content: center;
+    padding: var(--space-7) 0;
+    flex: 0 0 auto;
+}
+
+.arena-ready-button {
+    font-family: var(--font-family-display);
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-inverse);
+    background: var(--color-primary);
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.8rem 2.5rem;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform 120ms ease;
+}
+
+.arena-ready-button:hover {
+    transform: scale(1.04);
+}
+
+.arena-ready-button:active {
+    transform: scale(0.96);
+}
+
 .arena-center {
     display: flex;
     align-items: center;
