@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { JSX } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, User, X } from 'lucide-react';
 
 import type { OnlineLobbyUser, PendingInvitation } from '../app-state';
 import { uiText } from '../app-state';
@@ -68,6 +68,7 @@ export function MenuScreen({
 
     const hasOpponent = Boolean(opponentName);
     const isCountingDown = countdownValue !== null;
+    const isGuest = playerName === uiText.guest;
     const initials = playerName.slice(0, 1).toUpperCase();
 
     function handleProfileSave() {
@@ -89,16 +90,15 @@ export function MenuScreen({
         <main className='app-shell fullscreen-shell'>
             <section className='screen screen-menu'>
                 <div className='menu-layout'>
-                    <div className='menu-title-orb'>
-                        <h1 className='hero-title'>
-                            <span>{uiText.titleLead}</span>
-                            <span
-                                aria-hidden='true'
-                                className='hero-title-filled-o'
-                            />
-                            <span>{uiText.titleTail}</span>
-                        </h1>
-                    </div>
+                    <div className='menu-title-orb' />
+                    <h1 className='hero-title'>
+                        <span>{uiText.titleLead}</span>
+                        <span
+                            aria-hidden='true'
+                            className='hero-title-filled-o'
+                        />
+                        <span>{uiText.titleTail}</span>
+                    </h1>
 
                     <div className='menu-content'>
                         <div className='menu-slots'>
@@ -110,10 +110,13 @@ export function MenuScreen({
                                 }}
                                 type='button'
                             >
-                                <span className='slot-initials'>
-                                    {initials}
-                                </span>
-                                <span className='slot-name'>{playerName}</span>
+                                {isGuest ? (
+                                    <User className='slot-user-icon' />
+                                ) : (
+                                    <span className='slot-initials'>
+                                        {initials}
+                                    </span>
+                                )}
                             </button>
 
                             {hasOpponent ? (
@@ -122,9 +125,6 @@ export function MenuScreen({
                                         {(opponentName ?? '')
                                             .slice(0, 1)
                                             .toUpperCase()}
-                                    </span>
-                                    <span className='slot-name'>
-                                        {opponentName}
                                     </span>
                                 </div>
                             ) : (

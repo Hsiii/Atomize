@@ -68,6 +68,7 @@ export const uiText = {
     decline: 'Decline',
     inGame: 'In Game',
     start: 'Start',
+    guest: 'Guest',
 } as const;
 
 export type MenuMode = 'default' | 'create-room' | 'join-room';

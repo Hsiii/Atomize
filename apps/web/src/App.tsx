@@ -1243,7 +1243,7 @@ function getInitialPlayerName(): string {
         return storedName;
     }
 
-    return getRandomUnusedPlayerName();
+    return uiText.guest;
 }
 
 function getRandomUnusedPlayerName(currentName?: string): string {

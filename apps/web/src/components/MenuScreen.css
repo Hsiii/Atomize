@@ -17,7 +17,7 @@
 }
 
 .menu-title-orb {
-    --menu-title-diameter: max(130vw, 130dvh);
+    --menu-title-diameter: max(160vw, 130dvh);
     position: absolute;
     left: 50%;
     top: calc(50dvh - var(--menu-title-diameter));
@@ -38,11 +38,11 @@
     margin: var(--space-0);
     position: absolute;
     left: 50%;
-    top: calc(var(--menu-title-diameter) - 25dvh);
-    width: min(92vw, 32rem);
-    max-width: 100%;
+    top: 25dvh;
+    width: 92vw;
+    max-width: 32rem;
     font-family: var(--font-family-display);
-    font-size: 8rem;
+    font-size: clamp(2.5rem, 8vw, 5.5rem);
     line-height: 0.82;
     font-weight: 900;
     letter-spacing: 0.015em;
@@ -53,6 +53,7 @@
     justify-content: center;
     gap: 0.035em;
     transform: translate(-50%, -50%);
+    z-index: 3;
 }
 
 .hero-title-filled-o {
@@ -152,6 +153,12 @@
     font-weight: 800;
     letter-spacing: 0.03em;
     line-height: 1;
+}
+
+.slot-user-icon {
+    width: 1.6rem;
+    height: 1.6rem;
+    stroke-width: 2.2;
 }
 
 .slot-name {
@@ -460,11 +467,6 @@
         padding: 1.8rem;
         padding-bottom: 5.5rem;
     }
-
-    .hero-title {
-        width: min(92vw, 28rem);
-        font-size: 5.8rem;
-    }
 }
 
 @media (max-width: 480px) {
@@ -475,9 +477,5 @@
 
     .slot-initials {
         font-size: 1.1rem;
-    }
-
-    .hero-title {
-        font-size: 5rem;
     }
 }
