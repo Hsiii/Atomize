@@ -35,7 +35,7 @@ const rooms = new Map<string, RoomState>();
 const port = 8787;
 const HOST_NAME = 'Player 1';
 const GUEST_NAME = 'Player 2';
-const STARTING_HP = 60;
+const STARTING_HP = 100;
 const WRONG_SELECTION_DAMAGE = 8;
 
 const server = new WebSocketServer({ port });
@@ -252,7 +252,7 @@ function createSnapshot(room: RoomState): RoomSnapshot {
         stageIndex: room.stageIndex,
         stage: room.stage,
         players,
-        lastEvent: null,
+        lastEvent: undefined,
         countdownEndsAt: undefined,
         status,
     };

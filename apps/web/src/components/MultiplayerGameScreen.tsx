@@ -1068,10 +1068,8 @@ function BattleHpBar({
             }
         >
             <div className='multiplayer-hp-copy'>
-                <span className='label'>{label}</span>
-                <strong>
-                    {hp}/{maxHp} {uiText.healthUnit}
-                </strong>
+                <span className='multiplayer-hp-name'>{label}</span>
+                <span className='multiplayer-hp-stat'>{hp}</span>
             </div>
 
             <div className='multiplayer-hp-track'>

@@ -58,7 +58,7 @@ export type RoomSnapshot = {
     stageIndex: number;
     stage: StageState;
     players: RoomPlayer[];
-    lastEvent: BattleEvent | null;
+    lastEvent: BattleEvent | undefined;
     countdownEndsAt: number | undefined;
     status: 'waiting' | 'countdown' | 'playing' | 'finished';
 };

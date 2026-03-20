@@ -1,10 +1,14 @@
 import {
-    type BattleEvent,
     applyPrimeSelection,
     computeBattleDamage,
     generateStage,
 } from '@atomize/game-core';
-import type { Prime, RoomPlayer, RoomSnapshot } from '@atomize/game-core';
+import type {
+    BattleEvent,
+    Prime,
+    RoomPlayer,
+    RoomSnapshot,
+} from '@atomize/game-core';
 
 const STARTING_HP = 60;
 const WRONG_SELECTION_DAMAGE = 8;
@@ -23,7 +27,7 @@ export function createRoomSnapshot(
         stageIndex: 0,
         stage: initialStage,
         players: [createPlayer(hostId, hostName, roomId)],
-        lastEvent: null,
+        lastEvent: undefined,
         countdownEndsAt: undefined,
         status: 'waiting',
     };
@@ -49,7 +53,7 @@ export function addPlayerToRoom(
             createPlayer(playerId, playerName, snapshot.seed),
         ],
         countdownEndsAt: undefined,
-        lastEvent: null,
+        lastEvent: undefined,
         status: 'waiting',
     };
 }
@@ -97,7 +101,7 @@ export function startRoomCountdown(
     return {
         ...snapshot,
         countdownEndsAt,
-        lastEvent: null,
+        lastEvent: undefined,
         status: 'countdown',
     };
 }
@@ -110,7 +114,7 @@ export function beginRoomMatch(snapshot: RoomSnapshot): RoomSnapshot {
     return {
         ...snapshot,
         countdownEndsAt: undefined,
-        lastEvent: null,
+        lastEvent: undefined,
         status: 'playing',
     };
 }
@@ -127,7 +131,9 @@ export function applyBattlePrimeSelection(
     const actingPlayer = snapshot.players.find(
         (player) => player.id === playerId
     );
-    const targetPlayer = snapshot.players.find((player) => player.id !== playerId);
+    const targetPlayer = snapshot.players.find(
+        (player) => player.id !== playerId
+    );
 
     if (!actingPlayer || !targetPlayer) {
         return snapshot;
@@ -168,7 +174,7 @@ export function applyBattlePrimeSelection(
             return {
                 ...player,
                 combo,
-                    maxCombo: Math.max(player.maxCombo ?? 0, combo),
+                maxCombo: Math.max(player.maxCombo, combo),
                 stageIndex,
                 stage: nextStage,
             };
@@ -179,7 +185,9 @@ export function applyBattlePrimeSelection(
             hp: Math.max(0, player.hp - damage),
         };
     });
-    const nextActingPlayer = nextPlayers.find((player) => player.id === playerId);
+    const nextActingPlayer = nextPlayers.find(
+        (player) => player.id === playerId
+    );
     const nextTargetPlayer = nextPlayers.find(
         (player) => player.id === targetPlayer.id
     );
@@ -239,7 +247,9 @@ export function applyBattlePenalty(
     const actingPlayer = snapshot.players.find(
         (player) => player.id === playerId
     );
-    const targetPlayer = snapshot.players.find((player) => player.id !== playerId);
+    const targetPlayer = snapshot.players.find(
+        (player) => player.id !== playerId
+    );
 
     if (!actingPlayer || !targetPlayer) {
         return snapshot;
@@ -258,7 +268,9 @@ export function applyBattlePenalty(
             stage: resetStage,
         };
     });
-    const nextActingPlayer = nextPlayers.find((player) => player.id === playerId);
+    const nextActingPlayer = nextPlayers.find(
+        (player) => player.id === playerId
+    );
 
     if (!nextActingPlayer) {
         return snapshot;
@@ -319,7 +331,7 @@ function createPlayer(id: string, name: string, seed: string): RoomPlayer {
 function withPlayers(
     snapshot: RoomSnapshot,
     players: readonly RoomPlayer[],
-    lastEvent: BattleEvent | null = snapshot.lastEvent
+    lastEvent: BattleEvent | undefined = snapshot.lastEvent
 ): RoomSnapshot {
     const hasDefeatedPlayer = players.some((player) => player.hp === 0);
 

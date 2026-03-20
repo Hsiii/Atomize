@@ -117,11 +117,35 @@
     letter-spacing: 0.04em;
 }
 
-.multiplayer-hp-copy strong {
+.multiplayer-hp-name {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    line-height: 1;
+}
+
+.multiplayer-hp-bar-self .multiplayer-hp-name {
+    color: var(--color-gold);
+}
+
+.multiplayer-hp-bar-enemy .multiplayer-hp-name {
+    color: var(--color-danger);
+}
+
+.multiplayer-hp-stat {
     font-family: var(--font-family-numeric);
     font-size: clamp(0.88rem, 2.2vw, 1.05rem);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
     line-height: 1;
-    color: var(--color-primary);
+}
+
+.multiplayer-hp-bar-self .multiplayer-hp-stat {
+    color: var(--color-gold);
+}
+
+.multiplayer-hp-bar-enemy .multiplayer-hp-stat {
+    color: var(--color-danger);
 }
 
 .multiplayer-hp-track {
@@ -147,16 +171,27 @@
         ease-out;
 }
 
+.multiplayer-hp-bar-self .multiplayer-hp-track::after {
+    background: var(--color-danger);
+}
+
+.multiplayer-hp-bar-enemy .multiplayer-hp-track::after {
+    background: var(--color-gold);
+}
+
 .multiplayer-hp-fill {
     display: block;
     height: 100%;
     border-radius: inherit;
-    background: linear-gradient(
-        90deg,
-        var(--color-primary-strong),
-        var(--color-secondary)
-    );
     transition: width var(--hp-loss-duration) cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.multiplayer-hp-bar-self .multiplayer-hp-fill {
+    background: var(--color-gold);
+}
+
+.multiplayer-hp-bar-enemy .multiplayer-hp-fill {
+    background: var(--color-danger);
 }
 
 .multiplayer-damage-pop {
@@ -166,9 +201,16 @@
     font-size: 0.82rem;
     font-weight: 700;
     line-height: 1;
-    color: var(--color-danger);
     animation: timer-penalty-pop 0.7s ease-out forwards;
     pointer-events: none;
+}
+
+.multiplayer-hp-bar-self .multiplayer-damage-pop {
+    color: var(--color-danger);
+}
+
+.multiplayer-hp-bar-enemy .multiplayer-damage-pop {
+    color: var(--color-gold);
 }
 
 .multiplayer-attack-layer {
@@ -190,15 +232,14 @@
         calc(var(--particle-y) - 50%)
     );
     opacity: var(--particle-opacity);
-    background: var(--color-gold-strong);
 }
 
 .multiplayer-attack-particle-self {
-    background: var(--color-gold-strong);
+    background: var(--color-danger);
 }
 
 .multiplayer-attack-particle-enemy {
-    background: var(--color-danger);
+    background: var(--color-gold-strong);
 }
 
 .multiplayer-controls-grid {
@@ -237,7 +278,7 @@
         font-size: 0.74rem;
     }
 
-    .multiplayer-hp-copy strong {
+    .multiplayer-hp-stat {
         font-size: 0.84rem;
     }
 
