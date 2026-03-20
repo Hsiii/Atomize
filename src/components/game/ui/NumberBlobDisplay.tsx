@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, JSX } from 'react';
 
 import './NumberBlobDisplay.css';
@@ -117,6 +117,7 @@ export function NumberBlobDisplay({
     const [displayedValue, setDisplayedValue] = useState<number | undefined>(
         value
     );
+    const [availableSize, setAvailableSize] = useState<number>();
     const valueClassName = (
         isStageRevealActive ? ' is-value-hidden' : ''
     ).trim();
@@ -133,6 +134,74 @@ export function NumberBlobDisplay({
     const valueTimerRef = useRef<number | undefined>(undefined);
     const echoTimerRef = useRef<number | undefined>(undefined);
     const impactTimerRef = useRef<number | undefined>(undefined);
+    const containerRef = useRef<HTMLDivElement | null>(null);
+
+    useLayoutEffect(() => {
+        const container = containerRef.current;
+
+        if (!container) {
+            return undefined;
+        }
+
+        function updateAvailableSize(nextWidth: number, nextHeight: number) {
+            const nextSize = Math.max(
+                0,
+                Math.floor(Math.min(nextWidth, nextHeight))
+            );
+
+            setAvailableSize((currentSize) =>
+                currentSize === nextSize ? currentSize : nextSize
+            );
+        }
+
+        function measureContainer() {
+            const currentContainer = containerRef.current;
+
+            if (!currentContainer) {
+                return;
+            }
+
+            const styles = globalThis.getComputedStyle(currentContainer);
+            const rect = currentContainer.getBoundingClientRect();
+            const horizontalPadding =
+                Number.parseFloat(styles.paddingLeft) +
+                Number.parseFloat(styles.paddingRight);
+            const verticalPadding =
+                Number.parseFloat(styles.paddingTop) +
+                Number.parseFloat(styles.paddingBottom);
+
+            updateAvailableSize(
+                Math.max(0, rect.width - horizontalPadding),
+                Math.max(0, rect.height - verticalPadding)
+            );
+        }
+
+        if (typeof ResizeObserver === 'undefined') {
+            measureContainer();
+            globalThis.addEventListener('resize', measureContainer);
+
+            return () => {
+                globalThis.removeEventListener('resize', measureContainer);
+            };
+        }
+
+        const resizeObserver = new ResizeObserver((entries) => {
+            const entry = entries[0];
+
+            if (!entry) {
+                return;
+            }
+
+            updateAvailableSize(entry.contentRect.width, entry.contentRect.height);
+        });
+
+        resizeObserver.observe(container);
+        measureContainer();
+
+        return () => {
+            resizeObserver.disconnect();
+        };
+    }, []);
 
     useEffect(
         () => () => {
@@ -378,9 +447,17 @@ export function NumberBlobDisplay({
 
     return (
         <div
+            ref={containerRef}
             className={`number-blob-display number-blob-display-${mode}${
                 isComboRunning ? ' is-combo-running' : ''
             }${size ? ` number-blob-display-size-${size}` : ''}`}
+            style={
+                availableSize
+                    ? ({
+                          '--number-blob-available-size': `${availableSize}px`,
+                      } as CSSProperties)
+                    : undefined
+            }
         >
             <div
                 className={`number-blob-field${

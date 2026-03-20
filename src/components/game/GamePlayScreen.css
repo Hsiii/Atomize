@@ -13,6 +13,11 @@
     place-items: center;
     text-align: center;
     min-height: 0;
+    overflow: hidden;
+}
+
+.single-value-display > .number-blob-display {
+    place-self: stretch;
 }
 
 .single-value-display strong {

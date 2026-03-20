@@ -1,6 +1,10 @@
 .number-blob-display {
     --number-blob-scale-factor: 1;
-    --number-blob-size: min(74vw, 21.5rem);
+    --number-blob-max-size: 21.5rem;
+    --number-blob-size: min(
+        var(--number-blob-available-size, 100%),
+        var(--number-blob-max-size)
+    );
     --number-blob-padding: calc(1.75rem * var(--number-blob-scale-factor));
     --number-blob-main-font-size: calc(
         var(--type-display-game-size) * var(--number-blob-scale-factor)
@@ -15,6 +19,8 @@
     display: grid;
     place-items: center;
     width: 100%;
+    height: 100%;
+    min-width: 0;
     min-height: 0;
     padding: var(--space-4) 0 var(--space-2);
 }
@@ -23,7 +29,10 @@
     position: relative;
     display: grid;
     place-items: center;
-    width: min(100%, var(--number-blob-size));
+    width: var(--number-blob-size);
+    height: var(--number-blob-size);
+    max-width: 100%;
+    max-height: 100%;
     aspect-ratio: 1;
     isolation: isolate;
 }
@@ -121,18 +130,12 @@
 
 .number-blob-display-size-enemy {
     --number-blob-scale-factor: 0.5;
-    --number-blob-size: min(
-        100%,
-        calc(21.5rem * var(--number-blob-scale-factor))
-    );
+    --number-blob-max-size: calc(21.5rem * var(--number-blob-scale-factor));
 }
 
 .number-blob-display-size-self {
     --number-blob-scale-factor: 0.5;
-    --number-blob-size: min(
-        100%,
-        calc(21.5rem * var(--number-blob-scale-factor))
-    );
+    --number-blob-max-size: calc(21.5rem * var(--number-blob-scale-factor));
 }
 
 .number-main-blob-shell.is-impact-active {
@@ -328,10 +331,7 @@
 @media (max-width: 700px) {
     .number-blob-display-size-enemy,
     .number-blob-display-size-self {
-        --number-blob-size: min(
-            100%,
-            calc(17.7rem * var(--number-blob-scale-factor))
-        );
+        --number-blob-max-size: calc(17.7rem * var(--number-blob-scale-factor));
     }
 }
 
@@ -404,15 +404,12 @@
 
 @media (max-width: 480px) {
     .number-blob-display {
-        --number-blob-size: min(78vw, 18.6rem);
+        --number-blob-max-size: 18.6rem;
         --number-blob-padding: calc(1.15rem * var(--number-blob-scale-factor));
     }
 
     .number-blob-display-size-enemy,
     .number-blob-display-size-self {
-        --number-blob-size: min(
-            100%,
-            calc(16.5rem * var(--number-blob-scale-factor))
-        );
+        --number-blob-max-size: calc(16.5rem * var(--number-blob-scale-factor));
     }
 }
