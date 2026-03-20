@@ -177,12 +177,10 @@ export default function App() {
     useEffect(() => {
         if (
             multiplayer.snapshot &&
-            multiplayer.snapshot.players.length >= 2 &&
             multiplayer.snapshot.status === 'waiting' &&
-            screen === 'menu'
+            screen === 'multi-lobby'
         ) {
-            setMenuMode('create-room');
-            setScreen('multi-lobby');
+            setScreen('menu');
         }
     }, [multiplayer.snapshot, screen]);
 
@@ -1155,15 +1153,27 @@ export default function App() {
 
         return (
             <MenuScreen
+                isCurrentPlayerReady={
+                    multiplayerPlayers.find(
+                        (player) => player.id === multiplayer.playerId
+                    )?.ready ?? false
+                }
+                isOpponentReady={
+                    multiplayerPlayers.find(
+                        (player) => player.id !== multiplayer.playerId
+                    )?.ready ?? false
+                }
                 onAcceptInvitation={handleAcceptInvitation}
                 onDeclineInvitation={handleDeclineInvitation}
                 onEditName={handleEditName}
                 onInvitePlayer={handleLobbyInvite}
                 onStartSoloGame={startSingleGame}
+                onToggleReady={toggleReady}
                 onlineUsers={onlineUsers}
                 opponentName={opponentPlayer?.name ?? null}
                 pendingInvitation={pendingInvitation}
                 playerName={playerName}
+                roomId={multiplayer.roomId || null}
                 toastId={lobbyToast.id}
                 toastMessage={lobbyToast.message}
             />
@@ -1191,18 +1201,14 @@ export default function App() {
         return (
             <MultiplayerLobbyScreen
                 menuMode={menuMode}
-                multiplayer={multiplayer}
                 transientToastId={lobbyToast.id}
                 transientToastMessage={lobbyToast.message}
                 isJoinPending={isPendingGuestJoin(multiplayer)}
                 roomIdInput={roomIdInput}
-                onlineUsers={onlineUsers}
                 onBack={returnToMenu}
                 onRoomIdInputChange={handleRoomIdInputChange}
                 onJoinRoom={joinRoom}
                 onCreateRoom={createRoom}
-                onInvitePlayer={invitePlayer}
-                onToggleReady={toggleReady}
             />
         );
     }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { JSX } from 'react';
-import { Plus, User, X } from 'lucide-react';
+import { Check, Copy, Plus, User, X } from 'lucide-react';
 
 import type { OnlineLobbyUser, PendingInvitation } from '../app-state';
 import { uiText } from '../app-state';
@@ -12,11 +12,15 @@ import './MenuScreen.css';
 type MenuScreenProps = {
     playerName: string;
     opponentName: string | null;
+    roomId: string | null;
+    isCurrentPlayerReady: boolean;
+    isOpponentReady: boolean;
     onlineUsers: OnlineLobbyUser[];
     toastMessage: string | null;
     toastId: number;
     onStartSoloGame: () => void;
     onInvitePlayer: (targetPlayerId: string) => void;
+    onToggleReady: () => void;
     onEditName: (name: string) => void;
     pendingInvitation: PendingInvitation | null;
     onAcceptInvitation: () => void;
@@ -26,11 +30,15 @@ type MenuScreenProps = {
 export function MenuScreen({
     playerName,
     opponentName,
+    roomId,
+    isCurrentPlayerReady,
+    isOpponentReady,
     onlineUsers,
     toastMessage,
     toastId,
     onStartSoloGame,
     onInvitePlayer,
+    onToggleReady,
     onEditName,
     pendingInvitation,
     onAcceptInvitation,
@@ -40,6 +48,7 @@ export function MenuScreen({
     const [showProfileDialog, setShowProfileDialog] = useState(false);
     const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
     const [editingName, setEditingName] = useState(playerName);
+    const [codeCopied, setCodeCopied] = useState(false);
     const [visibleToast, setVisibleToast] = useState<string | undefined>(
         undefined
     );
@@ -66,8 +75,27 @@ export function MenuScreen({
     }, [toastId, toastMessage]);
 
     const hasOpponent = Boolean(opponentName);
+    const isInRoom = Boolean(roomId);
     const isGuest = playerName === uiText.guest;
     const initials = playerName.slice(0, 1).toUpperCase();
+    const opponentInitials = (opponentName ?? '').slice(0, 1).toUpperCase();
+    const shouldShowReadyAction = isInRoom && hasOpponent;
+
+    function handleCopyRoomCode() {
+        if (!roomId) {
+            return;
+        }
+
+        navigator.clipboard.writeText(roomId).then(
+            () => {
+                setCodeCopied(true);
+                globalThis.setTimeout(() => {
+                    setCodeCopied(false);
+                }, 1500);
+            },
+            () => undefined
+        );
+    }
 
     function handleProfileSave() {
         const trimmed = editingName.trim();
@@ -100,51 +128,119 @@ export function MenuScreen({
 
                     <div className='menu-content'>
                         <div className='menu-slots'>
-                            <button
-                                className='slot-circle slot-p1'
-                                onClick={() => {
-                                    setEditingName(playerName);
-                                    setShowProfileDialog(true);
-                                }}
-                                type='button'
-                            >
-                                {isGuest ? (
-                                    <User className='slot-user-icon' />
-                                ) : (
-                                    <span className='slot-initials'>
-                                        {initials}
-                                    </span>
-                                )}
-                            </button>
-
-                            {hasOpponent ? (
-                                <div className='slot-circle slot-p2-filled'>
-                                    <span className='slot-initials'>
-                                        {(opponentName ?? '')
-                                            .slice(0, 1)
-                                            .toUpperCase()}
-                                    </span>
-                                </div>
-                            ) : (
+                            <div className='menu-slot-column'>
                                 <button
-                                    className='slot-circle slot-p2-empty'
+                                    className='slot-circle slot-p1'
                                     onClick={() => {
-                                        setShowInviteDialog(true);
+                                        setEditingName(playerName);
+                                        setShowProfileDialog(true);
                                     }}
                                     type='button'
                                 >
-                                    <Plus className='slot-plus-icon' />
+                                    {isGuest ? (
+                                        <User className='slot-user-icon' />
+                                    ) : (
+                                        <span className='slot-initials'>
+                                            {initials}
+                                        </span>
+                                    )}
                                 </button>
+                                <span className='slot-name'>{playerName}</span>
+                                {hasOpponent ? (
+                                    <span
+                                        className={`slot-ready-badge${isCurrentPlayerReady ? ' slot-ready-badge-on' : ''}`}
+                                    >
+                                        {isCurrentPlayerReady
+                                            ? uiText.ready
+                                            : uiText.notReady}
+                                    </span>
+                                ) : undefined}
+                            </div>
+
+                            {hasOpponent ? (
+                                <div className='menu-slot-column'>
+                                    <div className='slot-circle slot-p2-filled'>
+                                        <span className='slot-initials'>
+                                            {opponentInitials}
+                                        </span>
+                                    </div>
+                                    <span className='slot-name'>
+                                        {opponentName}
+                                    </span>
+                                    <span
+                                        className={`slot-ready-badge${isOpponentReady ? ' slot-ready-badge-on' : ''}`}
+                                    >
+                                        {isOpponentReady
+                                            ? uiText.ready
+                                            : uiText.notReady}
+                                    </span>
+                                </div>
+                            ) : (
+                                <div className='menu-slot-column'>
+                                    <button
+                                        className='slot-circle slot-p2-empty'
+                                        onClick={() => {
+                                            setShowInviteDialog(true);
+                                        }}
+                                        type='button'
+                                    >
+                                        <Plus className='slot-plus-icon' />
+                                    </button>
+                                    <span className='slot-name'>
+                                        {uiText.onlineSection}
+                                    </span>
+                                </div>
                             )}
                         </div>
 
-                        <ActionButton
-                            className='menu-start-btn'
-                            onClick={onStartSoloGame}
-                            variant='primary'
-                        >
-                            {uiText.start}
-                        </ActionButton>
+                        {isInRoom ? (
+                            <div className='menu-room-card'>
+                                <span className='menu-room-label'>
+                                    {uiText.roomCodeShort}
+                                </span>
+                                <div className='menu-room-code-row'>
+                                    <span className='menu-room-code'>
+                                        {roomId}
+                                    </span>
+                                    <button
+                                        aria-label={uiText.copyCode}
+                                        className='menu-room-copy'
+                                        onClick={handleCopyRoomCode}
+                                        type='button'
+                                    >
+                                        {codeCopied ? (
+                                            <Check size={14} />
+                                        ) : (
+                                            <Copy size={14} />
+                                        )}
+                                    </button>
+                                </div>
+                                {!hasOpponent ? (
+                                    <span className='menu-room-hint'>
+                                        {uiText.waitingForPlayer}
+                                    </span>
+                                ) : undefined}
+                            </div>
+                        ) : undefined}
+
+                        {shouldShowReadyAction ? (
+                            <ActionButton
+                                className='menu-start-btn'
+                                disabled={isCurrentPlayerReady}
+                                onClick={onToggleReady}
+                                variant='primary'
+                            >
+                                {uiText.ready}
+                            </ActionButton>
+                        ) : !isInRoom ? (
+                            <ActionButton
+                                className='menu-start-btn'
+                                onClick={onStartSoloGame}
+                                variant='primary'
+                            >
+                                {uiText.start}
+                            </ActionButton>
+                        ) : undefined}
                     </div>
                 </div>
 

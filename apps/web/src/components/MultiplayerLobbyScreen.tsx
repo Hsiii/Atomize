@@ -1,54 +1,43 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { JSX } from 'react';
 
-import type { MenuMode, MultiplayerState, OnlineLobbyUser } from '../app-state';
+import type { MenuMode } from '../app-state';
 import { uiText } from '../app-state';
 
 import './MultiplayerLobbyScreen.css';
 
 import { MultiplayerJoinScreen } from './MultiplayerJoinScreen';
-import { MultiplayerWaitingRoomScreen } from './MultiplayerWaitingRoomScreen';
 
 type MultiplayerLobbyScreenProps = {
     menuMode: MenuMode;
-    multiplayer: MultiplayerState;
     transientToastId: number;
     transientToastMessage: string | null;
     isJoinPending: boolean;
     roomIdInput: string;
-    onlineUsers: OnlineLobbyUser[];
     onBack: () => void | Promise<void>;
     onRoomIdInputChange: (value: string) => void;
     onJoinRoom: () => void | Promise<void>;
     onCreateRoom: () => void | Promise<void>;
-    onInvitePlayer: (targetPlayerId: string) => void | Promise<void>;
-    onToggleReady: () => void | Promise<void>;
 };
 
 export function MultiplayerLobbyScreen({
     menuMode,
-    multiplayer,
     transientToastId,
     transientToastMessage,
     isJoinPending,
     roomIdInput,
-    onlineUsers,
     onBack,
     onRoomIdInputChange,
     onJoinRoom,
     onCreateRoom,
-    onInvitePlayer,
-    onToggleReady,
 }: MultiplayerLobbyScreenProps): JSX.Element {
     const [localToastMessage, setLocalToastMessage] = useState<
         string | undefined
     >(undefined);
     const [visibleTransientToastMessage, setVisibleTransientToastMessage] =
         useState<string | undefined>(undefined);
-    const [codeCopied, setCodeCopied] = useState(false);
     const hasAutoSubmitted = useRef(false);
     const isJoinFlow = menuMode === 'join-room';
-    const shouldShowWaitingRoom = Boolean(multiplayer.roomId);
     const isJoinButtonReady = roomIdInput.length === 4;
     const activeToastMessage =
         localToastMessage ?? visibleTransientToastMessage;
@@ -151,62 +140,15 @@ export function MultiplayerLobbyScreen({
         submitJoin();
     }
 
-    function handleCopyCode() {
-        if (!multiplayer.roomId) {
-            return;
-        }
-
-        navigator.clipboard.writeText(multiplayer.roomId).then(
-            () => {
-                setCodeCopied(true);
-                globalThis.setTimeout(
-                    () => {
-                        setCodeCopied(false);
-                    },
-                    1500,
-                    undefined
-                );
-            },
-            () => undefined
-        );
-    }
-
-    function handleInvite(targetPlayerId: string) {
-        runAsyncAction(async () => {
-            await onInvitePlayer(targetPlayerId);
-        });
-    }
-
-    function handleToggleReady() {
-        runAsyncAction(async () => {
-            await onToggleReady();
-        });
-    }
-
-    if (!multiplayer.roomId && !shouldShowWaitingRoom) {
-        return (
-            <MultiplayerJoinScreen
-                activeToastMessage={activeToastMessage}
-                createOrJoinButtonText={createOrJoinButtonText}
-                isJoinPending={isJoinPending}
-                onBack={handleBack}
-                onRoomIdInputChange={onRoomIdInputChange}
-                onSubmit={handleSubmit}
-                roomIdInput={roomIdInput}
-            />
-        );
-    }
-
     return (
-        <MultiplayerWaitingRoomScreen
+        <MultiplayerJoinScreen
             activeToastMessage={activeToastMessage}
-            codeCopied={codeCopied}
-            multiplayer={multiplayer}
             onBack={handleBack}
-            onCopyCode={handleCopyCode}
-            onInvitePlayer={handleInvite}
-            onToggleReady={handleToggleReady}
-            onlineUsers={onlineUsers}
+            createOrJoinButtonText={createOrJoinButtonText}
+            isJoinPending={isJoinPending}
+            onRoomIdInputChange={onRoomIdInputChange}
+            onSubmit={handleSubmit}
+            roomIdInput={roomIdInput}
         />
     );
 }
