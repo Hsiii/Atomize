@@ -1,7 +1,7 @@
 .score-dialog-scrim {
     position: fixed;
     inset: 0;
-    z-index: 3;
+    z-index: 50;
     display: grid;
     place-items: center;
     padding: max(var(--space-8), env(safe-area-inset-top))
@@ -14,27 +14,45 @@
 
 .score-dialog {
     width: min(100%, var(--size-score-dialog-width));
-    padding: 1.1rem;
+    padding: 1.15rem;
     border-radius: var(--radius-panel);
     background: var(--color-surface-base);
     box-shadow: var(--shadow-panel);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-7);
+    gap: var(--space-6);
     text-align: center;
 }
 
-.score-dialog-value {
-    display: inline-flex;
-    align-items: baseline;
-    justify-content: center;
-    gap: var(--space-1);
-    white-space: nowrap;
+.score-dialog-header {
+    display: grid;
+    gap: var(--space-2);
+    width: 100%;
+    padding-bottom: var(--space-2);
 }
 
-.score-dialog strong {
+.score-dialog-title {
     display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink);
+}
+
+.score-dialog-stat {
+    display: grid;
+    gap: var(--space-3);
+    width: 100%;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border-soft);
+}
+
+.score-dialog-combo-value {
+    display: block;
+    margin: 0;
     font-family: var(--font-family-numeric);
     font-size: clamp(3.25rem, 16vw, 4.75rem);
     font-weight: var(--font-weight-number-emphasis);
@@ -42,11 +60,12 @@
     color: var(--color-primary);
 }
 
-.score-dialog-unit {
-    font-size: 0.95rem;
-    font-weight: 700;
+.score-dialog-summary {
+    margin: 0;
+    font-size: 0.72rem;
     line-height: 1;
-    text-transform: lowercase;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     color: var(--color-ink-soft);
 }
 
