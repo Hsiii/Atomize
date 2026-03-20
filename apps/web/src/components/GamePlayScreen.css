@@ -58,12 +58,15 @@
 
 .combo-actions-column {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: repeat(3, minmax(var(--size-keypad-button-min), 1fr));
     gap: var(--space-3);
+    min-width: 0;
 }
 
 .combo-backspace-button,
 .combo-enter-button {
+    width: 100%;
     min-height: 100%;
     display: flex;
     align-items: center;
