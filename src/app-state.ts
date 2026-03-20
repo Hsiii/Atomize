@@ -1,4 +1,4 @@
-import type { RoomSnapshot } from '@atomize/game-core';
+import type { RoomSnapshot } from './core';
 
 export const uiText = {
     back: 'Back',

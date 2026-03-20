@@ -1,4 +1,4 @@
-import { PRIME_POOL } from '@atomize/game-core';
+import { PRIME_POOL } from '../core';
 
 import { uiText } from '../app-state';
 import type { MultiplayerState } from '../app-state';

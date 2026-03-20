@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, JSX } from 'react';
-import type { Prime, RoomPlayer, RoomSnapshot } from '@atomize/game-core';
+import type { Prime, RoomPlayer, RoomSnapshot } from '../../core';
 import { CircleArrowUp, Delete } from 'lucide-react';
 
 import { uiText } from '../../app-state';

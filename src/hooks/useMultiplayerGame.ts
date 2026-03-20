@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { applyPrimeSelection } from '@atomize/game-core';
-import type { Prime, RoomSnapshot } from '@atomize/game-core';
+import { applyPrimeSelection } from '../core';
+import type { Prime, RoomSnapshot } from '../core';
 import { REALTIME_SUBSCRIBE_STATES } from '@supabase/supabase-js';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 

@@ -1,5 +1,5 @@
 import type { JSX, KeyboardEvent, PointerEvent, ReactNode } from 'react';
-import type { Prime } from '@atomize/game-core';
+import type { Prime } from '../../../core';
 
 import './PrimeKeyButton.css';
 

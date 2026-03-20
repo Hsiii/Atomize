@@ -9,16 +9,6 @@ export default defineConfig(
     },
 
     {
-        files: ['vite.config.ts'],
-        languageOptions: {
-            parserOptions: {
-                projectService: true,
-                allowDefaultProject: [],
-            },
-        },
-    },
-
-    {
         files: ['**/*.d.ts'],
         rules: {
             'import-x/no-default-export': 'off',

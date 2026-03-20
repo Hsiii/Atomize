@@ -2,13 +2,13 @@ import {
     applyPrimeSelection,
     computeBattleDamage,
     generateStage,
-} from '@atomize/game-core';
+} from '../core';
 import type {
     BattleEvent,
     Prime,
     RoomPlayer,
     RoomSnapshot,
-} from '@atomize/game-core';
+} from '../core';
 
 const STARTING_HP = 500;
 const WRONG_SELECTION_DAMAGE = 8;

@@ -1,70 +1,140 @@
-# Atomize MVP
+# Atomize
 
-Atomize is an iOS-friendly PWA math game built around fast prime factorization. The MVP prioritizes a polished solo loop and a minimal real-time multiplayer foundation.
+Atomize is an installable React + Vite PWA built around fast prime factorization. The current build focuses on a polished solo mode and a lightweight real-time multiplayer room flow.
 
-## MVP scope
+## What the game is
 
-### Included now
+- Each stage starts with a target number.
+- That number is built from prime factors.
+- You enter primes from the keypad to divide the number down to `1`.
+- Faster and cleaner clears build combo and score.
+- Mistakes break momentum and cost survivability.
 
-- Installable React + Vite PWA shell
-- Shared game-core package for deterministic stage generation and factor resolution
-- Solo endless mode with combo, streak reset, and health pressure
-- Supabase Realtime room flow with host-validated shared-seed match sync
-- Shared room protocol types and deterministic multiplayer resolution helpers
+## Game rules
 
-### Explicitly deferred
+### Solo mode
 
-- Matchmaking and ranked ladder
-- Auth, persistence, and player profiles
-- Reconnection recovery beyond a basic room session token
-- Production deployment and analytics
-- Audio, particles, and advanced battle effects
+1. A run starts with `500` HP.
+2. Each stage is generated from prime factors and displayed as one target number.
+3. You build a prime queue from the keypad, then submit it.
+4. Each correct prime divides the current value immediately.
+5. If a submitted prime is not a remaining factor, you lose `1` HP, your combo resets, and you lose `1` second from the timer.
+6. If you submit extra buffered primes after a stage is already cleared, that also counts as a mistake.
+7. A correct prime that does not finish the stage gives `10` score.
+8. Clearing a stage gives `50` base score plus a combo bonus of `15 x current combo`.
+9. Every cleared stage increments combo by `1` and advances difficulty.
+10. Every fifth cleared stage restores `1` HP, up to the `500` HP cap.
 
-## Core gameplay loop
+### Stage generation
 
-1. Generate a target number from prime factors between 2 and 53.
-2. The player taps prime buttons to divide out matching factors.
-3. Correct partial inputs reduce the remaining value.
-4. A wrong input breaks combo and costs health.
-5. Clearing a stage increments combo and advances difficulty.
+- Early stages use fewer factors and a smaller set of primes.
+- Difficulty ramps by increasing factor count and the range of playable primes.
+- Stage values are capped so targets stay readable and playable.
 
-## Multiplayer MVP
+### Multiplayer
 
-This version uses Supabase Realtime channels. The room host acts as the temporary authority for room state, validates joins and prime selections in the client, and broadcasts updated snapshots through Supabase.
+- Multiplayer uses Supabase Realtime channels.
+- The room host acts as the temporary authority for room state.
+- Shared seed synchronization keeps both players on the same deterministic match flow.
+- Without Supabase environment variables, solo mode still works and multiplayer remains disabled.
 
-## Supabase setup
+## Simplest local installation
 
-Create `apps/web/.env.local` with:
+This is the fastest way to run the game locally for solo mode.
+
+### Requirements
+
+- Bun `1.2.5` or later
+
+### Steps
+
+1. Install dependencies:
+
+```bash
+bun install
+```
+
+2. Start the dev server:
+
+```bash
+bun run dev:web
+```
+
+3. Open the app in your browser:
+
+```text
+http://127.0.0.1:5173
+```
+
+That is enough for solo mode.
+
+## Local multiplayer setup
+
+To enable multiplayer locally, create `.env.local` in the repository root:
 
 ```bash
 VITE_SUPABASE_URL=your-project-url
 VITE_SUPABASE_ANON_KEY=your-anon-key
 ```
 
-Without these variables, solo mode still works but multiplayer stays disabled.
+Then restart the dev server if it is already running.
 
-## Workspace layout
+## PWA installation guide
 
-- `apps/web`: PWA frontend
-- `packages/game-core`: shared game rules and multiplayer event types
+Atomize ships with a web app manifest and standalone display mode, so it can be installed like an app.
+
+### iPhone or iPad (Safari)
+
+1. Open Atomize in Safari.
+2. Tap the Share button.
+3. Choose `Add to Home Screen`.
+4. Confirm the app name and tap `Add`.
+
+### Android (Chrome)
+
+1. Open Atomize in Chrome.
+2. Tap the browser menu.
+3. Choose `Install app` or `Add to Home screen`.
+4. Confirm the install prompt.
+
+### Desktop (Chrome, Edge, or other Chromium browsers)
+
+1. Open Atomize in the browser.
+2. Click the install icon in the address bar, if shown.
+3. Or open the browser menu and choose `Install Atomize`.
+4. Confirm the install prompt.
+
+### Notes about installation
+
+- The installed app launches in standalone mode instead of a normal browser tab.
+- For the best install experience, use a secure deployed URL. Browser support for installing from plain local development URLs is limited and inconsistent.
+- Updates are delivered through the PWA registration flow, so refreshing or reopening the app after a deployment should pick up the latest version.
 
 ## Scripts
 
-- `bun run dev:web`
-- `bun run build`
-- `bun run check`
+- `bun run dev:web` - start the local Vite dev server on port `5173`
+- `bun run build` - type-check and build the production bundle
+- `bun run check` - run TypeScript checks only
+- `bun run lint` - run ESLint
+
+## Project structure
+
+- `src` - PWA frontend source
+- `src/core` - shared game rules and multiplayer helpers
+- `src/hooks` - solo and multiplayer gameplay hooks
+- `src/lib` - app helpers and Supabase integration
 
 ## Deploy to Vercel
 
-Deploy from the repository root, not from `apps/web`, so the workspace dependency on `@atomize/game-core` resolves correctly.
+Deploy from the repository root.
 
 ### Vercel project settings
 
 - Framework preset: Vite
 - Root Directory: `.`
 - Install Command: `bun install`
-- Build Command: `bun run --cwd apps/web build`
-- Output Directory: `apps/web/dist`
+- Build Command: `bun run build`
+- Output Directory: `dist`
 
 The repository already includes [vercel.json](vercel.json) with these values.
 
@@ -81,7 +151,20 @@ After adding or changing them, redeploy the site. Vite bakes `VITE_*` values int
 
 If you are testing a Vercel preview deployment, make sure the variables are added to the `Preview` environment too. Setting them only for `Production` will not populate preview builds.
 
-### Notes
+## Current scope
 
-- `localhost` works for development without HTTPS, but the deployed Vercel domain will automatically use HTTPS.
-- Multiplayer still uses Supabase Realtime with client-side host authority in this MVP, so deployment does not change the current trust model.
+### Included now
+
+- Installable PWA shell
+- Solo endless gameplay loop
+- Deterministic stage generation and factor resolution
+- Supabase Realtime room flow
+- Shared multiplayer protocol and resolution helpers
+
+### Explicitly deferred
+
+- Matchmaking and ranked ladder
+- Auth, persistence, and player profiles
+- Full reconnection recovery
+- Analytics and live ops features
+- Audio, particles, and advanced battle effects

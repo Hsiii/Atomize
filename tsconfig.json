@@ -1,9 +1,8 @@
 {
   "extends": "./tsconfig.base.json",
-  "include": [
-    "apps/*/src/**/*.ts",
-    "apps/*/src/**/*.tsx",
-    "apps/*/*.ts",
-    "packages/*/src/**/*.ts"
-  ]
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "types": ["vite/client", "vite-plugin-pwa/client"]
+  },
+  "include": ["src", "vite.config.ts"]
 }

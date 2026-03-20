@@ -1,8 +1,10 @@
+/* eslint-disable no-bitwise, complete/no-unnecessary-assignment, unicorn/prefer-math-trunc */
+
 export function hashSeed(seed: string): number {
   let hash = 2166136261;
 
   for (let index = 0; index < seed.length; index += 1) {
-    hash ^= seed.charCodeAt(index);
+    hash ^= seed.codePointAt(index) ?? 0;
     hash = Math.imul(hash, 16777619);
   }
 

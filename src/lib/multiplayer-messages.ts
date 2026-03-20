@@ -1,4 +1,4 @@
-import type { Prime, RoomSnapshot } from '@atomize/game-core';
+import type { Prime, RoomSnapshot } from '../core';
 
 export type RoomBroadcastMessage =
     | {

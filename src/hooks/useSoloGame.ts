@@ -4,8 +4,8 @@ import {
     applyPrimeSelection,
     applySoloPenalty,
     createInitialSoloState,
-} from '@atomize/game-core';
-import type { Prime } from '@atomize/game-core';
+} from '../core';
+import type { Prime } from '../core';
 
 import type { Screen } from '../app-state';
 import {

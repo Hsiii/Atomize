@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { JSX } from 'react';
-import type { Prime, SoloState } from '@atomize/game-core';
+import type { Prime, SoloState } from '../../core';
 import { CircleArrowUp, Delete } from 'lucide-react';
 
 import { uiText } from '../../app-state';
