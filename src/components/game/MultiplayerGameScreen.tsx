@@ -420,22 +420,20 @@ export function MultiplayerGameScreen({
             if (lastEvent.releasedDamage > 0) {
                 const targetSide = side === 'self' ? 'enemy' : 'self';
 
-                setQueuedAttacks(
-                    (currentQueue: readonly PendingAttack[]) => [
-                        ...currentQueue,
-                        {
-                            id: lastEvent.id,
-                            damage: lastEvent.releasedDamage,
-                            isFinisher: false,
-                            perfectSolve: false,
-                            sourceHp: lastEvent.sourceHp,
-                            sourceRegen: 0,
-                            sourceSide: side,
-                            targetHp: lastEvent.targetHp,
-                            targetSide,
-                        },
-                    ]
-                );
+                setQueuedAttacks((currentQueue: readonly PendingAttack[]) => [
+                    ...currentQueue,
+                    {
+                        id: lastEvent.id,
+                        damage: lastEvent.releasedDamage,
+                        isFinisher: false,
+                        perfectSolve: false,
+                        sourceHp: lastEvent.sourceHp,
+                        sourceRegen: 0,
+                        sourceSide: side,
+                        targetHp: lastEvent.targetHp,
+                        targetSide,
+                    },
+                ]);
             }
 
             resolveHpLoss(side, lastEvent.sourceHp, lastEvent.damage);
@@ -1079,10 +1077,7 @@ export function MultiplayerGameScreen({
                 const delay = (i + 1) * 0.06;
                 const t = Math.max(
                     0,
-                    Math.min(
-                        1,
-                        (baseProgress - delay) / (flightEnd - delay)
-                    )
+                    Math.min(1, (baseProgress - delay) / (flightEnd - delay))
                 );
 
                 if (t <= 0 || t >= 1) {
@@ -1090,8 +1085,7 @@ export function MultiplayerGameScreen({
                 }
 
                 const accel = t * t;
-                const wobbleAmp =
-                    10 * spreadScale * Math.sin(t * Math.PI);
+                const wobbleAmp = 10 * spreadScale * Math.sin(t * Math.PI);
                 const wobblePhase =
                     Math.sin(t * Math.PI * 4 + i * 1.8) * wobbleAmp;
 
@@ -1126,8 +1120,7 @@ export function MultiplayerGameScreen({
                 const easeOut = 1 - (1 - impactT) * (1 - impactT);
 
                 for (let i = 0; i < impactRingCount; i++) {
-                    const angle =
-                        (Math.PI * 2 * i) / impactRingCount + 0.3;
+                    const angle = (Math.PI * 2 * i) / impactRingCount + 0.3;
                     const radius = easeOut * (24 + severity * 10);
 
                     particles.push({

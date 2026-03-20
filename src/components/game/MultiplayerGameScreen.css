@@ -352,12 +352,33 @@
     top: 0;
     width: var(--particle-size);
     height: var(--particle-size);
+    opacity: var(--particle-opacity);
+}
+
+.multiplayer-attack-particle-circle {
     border-radius: 50%;
     transform: translate(
         calc(var(--particle-x) - 50%),
         calc(var(--particle-y) - 50%)
     );
-    opacity: var(--particle-opacity);
+}
+
+.multiplayer-attack-particle-diamond {
+    border-radius: 2px;
+    transform: translate(
+            calc(var(--particle-x) - 50%),
+            calc(var(--particle-y) - 50%)
+        )
+        rotate(var(--particle-rotation));
+}
+
+.multiplayer-attack-particle-ring {
+    border-radius: 50%;
+    box-sizing: border-box;
+    transform: translate(
+        calc(var(--particle-x) - 50%),
+        calc(var(--particle-y) - 50%)
+    );
 }
 
 .multiplayer-attack-particle-self {
@@ -366,6 +387,16 @@
 
 .multiplayer-attack-particle-enemy {
     background: var(--color-primary-strong);
+}
+
+.multiplayer-attack-particle-ring.multiplayer-attack-particle-self {
+    background: transparent;
+    border: 2px solid var(--color-secondary);
+}
+
+.multiplayer-attack-particle-ring.multiplayer-attack-particle-enemy {
+    background: transparent;
+    border: 2px solid var(--color-primary-strong);
 }
 
 .multiplayer-controls-grid {
