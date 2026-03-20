@@ -32,6 +32,29 @@
     --color-multiplayer-self: var(--color-primary);
     --color-multiplayer-self-strong: var(--color-primary-strong);
     --color-multiplayer-opponent: var(--color-success);
+    --color-multiplayer-blob-stage: var(--color-primary-strong);
+    --color-multiplayer-self-attack: var(--color-multiplayer-self);
+    --color-multiplayer-self-attack-burst: color-mix(
+        in srgb,
+        var(--color-multiplayer-self) 78%,
+        white
+    );
+    --color-multiplayer-opponent-attack: var(--color-multiplayer-opponent);
+    --color-multiplayer-opponent-attack-burst: color-mix(
+        in srgb,
+        var(--color-multiplayer-opponent) 78%,
+        white
+    );
+    --color-multiplayer-self-border: color-mix(
+        in srgb,
+        var(--color-multiplayer-self) 36%,
+        transparent
+    );
+    --color-multiplayer-opponent-border: color-mix(
+        in srgb,
+        var(--color-multiplayer-opponent) 36%,
+        transparent
+    );
     --color-overlay-soft: rgba(16, 27, 46, 0.2);
     --color-overlay-strong: rgba(16, 27, 46, 0.26);
     --color-placeholder: rgba(16, 27, 46, 0.28);

@@ -102,7 +102,7 @@
 
 .number-blob-display-multiplayer .number-main-blob,
 .number-blob-display-multiplayer .number-blob-clear-pop {
-    --number-blob-stage-color: var(--color-primary-strong);
+    --number-blob-stage-color: var(--color-multiplayer-blob-stage);
 }
 
 .number-blob-display-size-enemy {
@@ -201,22 +201,34 @@
     animation-duration: 900ms;
 }
 
-.number-blob-display-multiplayer .number-blob-split-echo {
-    background: var(--color-primary);
+.number-blob-display-multiplayer.number-blob-display-size-self
+    .number-blob-split-echo {
+    background: var(--color-multiplayer-self-attack);
 }
 
-.number-blob-display-multiplayer .number-blob-split-echo.is-clear-burst {
-    background: color-mix(in srgb, var(--color-primary) 78%, white);
+.number-blob-display-multiplayer.number-blob-display-size-self
+    .number-blob-split-echo.is-clear-burst {
+    background: var(--color-multiplayer-self-attack-burst);
+}
+
+.number-blob-display-multiplayer.number-blob-display-size-enemy
+    .number-blob-split-echo {
+    background: var(--color-multiplayer-opponent-attack);
+}
+
+.number-blob-display-multiplayer.number-blob-display-size-enemy
+    .number-blob-split-echo.is-clear-burst {
+    background: var(--color-multiplayer-opponent-attack-burst);
 }
 
 .number-blob-display-multiplayer.number-blob-display-size-self
     .number-main-blob {
-    border-color: rgba(212, 160, 23, 0.36);
+    border-color: var(--color-multiplayer-self-border);
 }
 
 .number-blob-display-multiplayer.number-blob-display-size-enemy
     .number-main-blob {
-    border-color: rgba(196, 58, 58, 0.36);
+    border-color: var(--color-multiplayer-opponent-border);
 }
 
 .number-blob-split-value {
