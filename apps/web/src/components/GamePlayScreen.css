@@ -47,10 +47,29 @@
 }
 
 .solo-keypad {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 0.75fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-rows: repeat(3, minmax(0, 1fr));
     margin-top: 0;
     gap: var(--space-keypad-gap-compact);
+}
+
+.keypad-row {
+    display: flex;
+    gap: var(--space-4);
+    align-items: stretch;
+}
+
+.keypad-row > .keypad {
+    flex: 1;
+    min-width: 0;
+}
+
+.combo-actions-column {
+    display: grid;
+    grid-template-rows: 1fr 2fr;
+    gap: var(--space-keypad-gap-compact);
+    width: auto;
+    min-width: 0;
 }
 
 .combo-backspace-button,
@@ -60,21 +79,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
+    padding: 0 1.2rem;
     border: 0;
     box-shadow: none;
 }
 
 .combo-backspace-button {
-    grid-column: 4;
-    grid-row: 1;
+    aspect-ratio: 1;
+    padding: 0;
     border-radius: var(--radius-orb);
     background: var(--color-secondary);
 }
 
 .combo-enter-button {
-    grid-column: 4;
-    grid-row: 2 / 4;
     border-radius: var(--radius-pill);
     background: var(--color-primary-strong);
 }

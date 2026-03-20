@@ -152,56 +152,60 @@ export function SingleGameScreen({
                 <section className='single-controls-grid'>
                     <ComboQueuePanel queue={visibleQueue} />
 
-                    <div className='keypad solo-keypad'>
-                        {playablePrimes.map((prime) => (
-                            <PrimeKeyButton
-                                interactionDisabled={isInputDisabled}
-                                key={prime}
-                                onPress={handlePrimeTap}
-                                prime={prime}
-                                visuallyDisabled={showKeypadDisabledState}
+                    <div className='keypad-row'>
+                        <div className='keypad solo-keypad'>
+                            {playablePrimes.map((prime) => (
+                                <PrimeKeyButton
+                                    interactionDisabled={isInputDisabled}
+                                    key={prime}
+                                    onPress={handlePrimeTap}
+                                    prime={prime}
+                                    visuallyDisabled={showKeypadDisabledState}
+                                >
+                                    {prime}
+                                </PrimeKeyButton>
+                            ))}
+                        </div>
+
+                        <div className='combo-actions-column'>
+                            <ActionButton
+                                aria-label={uiText.backspace}
+                                className='combo-backspace-button'
+                                disabled={
+                                    visibleQueue.length === 0 ||
+                                    isSoloComboRunning ||
+                                    isTimeUp
+                                }
+                                onClick={handleBackspace}
+                                variant='secondary'
                             >
-                                {prime}
-                            </PrimeKeyButton>
-                        ))}
+                                <span className='control-button-content'>
+                                    <Delete
+                                        aria-hidden='true'
+                                        className='control-icon'
+                                    />
+                                </span>
+                            </ActionButton>
 
-                        <ActionButton
-                            aria-label={uiText.backspace}
-                            className='combo-backspace-button'
-                            disabled={
-                                visibleQueue.length === 0 ||
-                                isSoloComboRunning ||
-                                isTimeUp
-                            }
-                            onClick={handleBackspace}
-                            variant='secondary'
-                        >
-                            <span className='control-button-content'>
-                                <Delete
-                                    aria-hidden='true'
-                                    className='control-icon'
-                                />
-                            </span>
-                        </ActionButton>
-
-                        <ActionButton
-                            aria-label={uiText.enterCombo}
-                            className='combo-enter-button'
-                            disabled={
-                                isTimeUp ||
-                                visibleQueue.length === 0 ||
-                                isSoloComboRunning
-                            }
-                            onClick={handleSubmit}
-                            variant='secondary'
-                        >
-                            <span className='control-button-content'>
-                                <CircleArrowUp
-                                    aria-hidden='true'
-                                    className='control-icon'
-                                />
-                            </span>
-                        </ActionButton>
+                            <ActionButton
+                                aria-label={uiText.enterCombo}
+                                className='combo-enter-button'
+                                disabled={
+                                    isTimeUp ||
+                                    visibleQueue.length === 0 ||
+                                    isSoloComboRunning
+                                }
+                                onClick={handleSubmit}
+                                variant='secondary'
+                            >
+                                <span className='control-button-content'>
+                                    <CircleArrowUp
+                                        aria-hidden='true'
+                                        className='control-icon'
+                                    />
+                                </span>
+                            </ActionButton>
+                        </div>
                     </div>
                 </section>
 
