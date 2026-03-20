@@ -86,7 +86,7 @@
     line-height: var(--type-display-game-line-height);
     font-variant-numeric: tabular-nums;
     font-weight: var(--type-display-game-weight);
-    letter-spacing: 0.02em;
+    letter-spacing: var(--type-display-game-letter-spacing);
     color: var(--type-display-game-color);
     text-align: center;
     transition:
@@ -187,7 +187,7 @@
     line-height: var(--type-display-game-line-height);
     font-variant-numeric: tabular-nums;
     font-weight: var(--type-display-game-weight);
-    letter-spacing: 0.02em;
+    letter-spacing: var(--type-display-game-letter-spacing);
     color: var(--type-display-game-color);
 }
 
@@ -249,7 +249,7 @@
     display: block;
     font-family: var(--type-display-status-family);
     font-size: var(--number-blob-split-font-size);
-    line-height: 0.88;
+    line-height: var(--type-display-status-echo-line-height);
     font-variant-numeric: tabular-nums;
     font-weight: var(--type-display-status-weight);
     color: var(--type-display-game-color);

@@ -20,7 +20,7 @@
     font-family: var(--type-display-game-family);
     font-size: var(--type-display-game-size);
     font-weight: var(--type-display-game-weight);
-    line-height: 0.92;
+    line-height: var(--type-display-game-standalone-line-height);
     color: var(--color-ink);
     font-variant-numeric: tabular-nums;
 }

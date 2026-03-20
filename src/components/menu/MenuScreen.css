@@ -45,8 +45,8 @@
     font-size: var(--type-display-hero-size);
     line-height: var(--type-display-hero-line-height);
     font-weight: var(--type-display-hero-weight);
-    letter-spacing: 0.015em;
-    text-transform: uppercase;
+    letter-spacing: var(--type-display-hero-letter-spacing);
+    text-transform: var(--type-display-hero-text-transform);
     color: var(--type-display-hero-color);
     display: inline-flex;
     align-items: center;
@@ -160,7 +160,7 @@
     font-family: var(--type-title-compact-family);
     font-size: var(--type-title-compact-size);
     font-weight: var(--type-title-compact-weight);
-    letter-spacing: 0.03em;
+    letter-spacing: var(--type-title-compact-letter-spacing);
     line-height: var(--type-title-compact-line-height);
 }
 
@@ -174,7 +174,7 @@
     font-family: var(--type-body-meta-family);
     font-size: var(--type-body-meta-size);
     font-weight: var(--type-body-meta-weight);
-    letter-spacing: 0.02em;
+    letter-spacing: var(--type-body-meta-letter-spacing);
     opacity: 0.85;
     color: inherit;
     max-width: 6rem;
@@ -194,13 +194,13 @@
     font-family: var(--type-action-label-family);
     font-size: var(--type-action-label-size);
     font-weight: var(--type-action-label-weight);
-    letter-spacing: 0.06em;
+    letter-spacing: var(--type-action-label-wide-letter-spacing);
     line-height: var(--type-action-label-line-height);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    text-transform: uppercase;
+    text-transform: var(--type-action-label-wide-text-transform);
 }
 
 .slot-ready-badge-on {
@@ -230,7 +230,7 @@
     font-family: var(--type-display-status-family);
     font-size: var(--type-display-status-size);
     font-weight: var(--type-display-status-weight);
-    letter-spacing: 0.08em;
+    letter-spacing: var(--type-display-status-letter-spacing);
     color: var(--color-ink);
     animation: countdown-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -311,7 +311,7 @@
     font-family: var(--type-action-label-family);
     font-size: var(--type-action-label-size);
     font-weight: var(--type-action-label-weight);
-    letter-spacing: 0.01em;
+    letter-spacing: var(--type-action-label-letter-spacing);
     line-height: var(--type-body-meta-line-height);
     text-align: center;
     animation: menu-toast-pop 2.2s ease forwards;
@@ -396,8 +396,8 @@
     font-family: var(--type-action-label-family);
     font-size: var(--type-action-label-size);
     font-weight: var(--type-action-label-weight);
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
+    letter-spacing: var(--type-action-label-caps-letter-spacing);
+    text-transform: var(--type-action-label-caps-text-transform);
 }
 
 .dialog-close {
@@ -479,7 +479,7 @@
     font-size: var(--type-action-label-size);
     font-weight: var(--type-action-label-weight);
     cursor: pointer;
-    letter-spacing: 0.03em;
+    letter-spacing: var(--type-action-label-caps-letter-spacing);
     transition: transform 0.12s ease;
 }
 
@@ -526,7 +526,7 @@
     font-family: var(--type-body-meta-family);
     font-size: var(--type-body-meta-size);
     font-weight: var(--type-body-meta-weight);
-    line-height: 1.5;
+    line-height: var(--type-body-meta-relaxed-line-height);
     color: var(--color-ink);
 }
 

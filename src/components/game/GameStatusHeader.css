@@ -104,7 +104,7 @@
     font-size: var(--type-body-meta-size);
     font-weight: var(--type-body-meta-weight);
     line-height: var(--type-body-meta-line-height);
-    text-transform: lowercase;
+    text-transform: var(--type-body-meta-lowercase-transform);
     color: var(--type-body-meta-color);
 }
 

@@ -9,7 +9,7 @@
     font-family: var(--type-action-label-family);
     font-size: var(--type-action-label-size);
     font-weight: var(--type-action-label-weight);
-    letter-spacing: 0.01em;
+    letter-spacing: var(--type-action-label-letter-spacing);
     line-height: var(--type-action-label-line-height);
     box-shadow: none;
 }

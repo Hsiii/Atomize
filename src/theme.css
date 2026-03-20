@@ -9,12 +9,16 @@
     --type-display-hero-size: clamp(2.5rem, 8vw, 5.5rem);
     --type-display-hero-weight: 900;
     --type-display-hero-line-height: 0.82;
+    --type-display-hero-letter-spacing: 0.015em;
+    --type-display-hero-text-transform: uppercase;
     --type-display-hero-color: var(--color-text-inverse);
 
     --type-display-game-family: var(--font-family-numeric);
     --type-display-game-size: clamp(4.4rem, 16vw, 7.8rem);
     --type-display-game-weight: var(--font-weight-number-emphasis);
     --type-display-game-line-height: 1;
+    --type-display-game-standalone-line-height: 0.92;
+    --type-display-game-letter-spacing: 0.02em;
     --type-display-game-color: var(--color-text-inverse);
 
     --type-display-input-family: var(--font-family-numeric);
@@ -34,18 +38,24 @@
     --type-display-status-size: clamp(1.65rem, 6vw, 3rem);
     --type-display-status-weight: 800;
     --type-display-status-line-height: 1;
+    --type-display-status-letter-spacing: 0.08em;
+    --type-display-status-support-line-height: 1.2;
+    --type-display-status-echo-line-height: 0.88;
     --type-display-status-color: var(--color-secondary);
 
     --type-title-panel-family: var(--font-family-display);
     --type-title-panel-size: clamp(1.75rem, 4vw, 2.5rem);
     --type-title-panel-weight: 800;
     --type-title-panel-line-height: 1.1;
+    --type-title-panel-letter-spacing: 0.06em;
+    --type-title-panel-text-transform: uppercase;
     --type-title-panel-color: var(--color-text-inverse);
 
     --type-title-compact-family: var(--font-family-display);
     --type-title-compact-size: clamp(1.1rem, 2.8vw, 1.3rem);
     --type-title-compact-weight: 800;
     --type-title-compact-line-height: 1;
+    --type-title-compact-letter-spacing: 0.03em;
     --type-title-compact-color: var(--color-text-inverse);
 
     --type-metric-inline-family: var(--font-family-numeric);
@@ -58,12 +68,26 @@
     --type-action-label-size: clamp(0.76rem, 2.5vw, 1rem);
     --type-action-label-weight: 700;
     --type-action-label-line-height: 1.1;
+    --type-action-label-letter-spacing: 0.01em;
     --type-action-label-color: var(--color-text-inverse);
+
+    --type-action-label-caps-letter-spacing: 0.03em;
+    --type-action-label-caps-text-transform: uppercase;
+
+    --type-action-label-wide-letter-spacing: 0.12em;
+    --type-action-label-wide-line-height: 1;
+    --type-action-label-wide-text-transform: uppercase;
+
+    --type-action-label-hero-letter-spacing: 0.14em;
+    --type-action-label-support-line-height: 1.2;
 
     --type-body-meta-family: var(--font-family-base);
     --type-body-meta-size: clamp(0.68rem, 2vw, 0.95rem);
     --type-body-meta-weight: 600;
     --type-body-meta-line-height: 1.35;
+    --type-body-meta-letter-spacing: 0.02em;
+    --type-body-meta-relaxed-line-height: 1.5;
+    --type-body-meta-lowercase-transform: lowercase;
     --type-body-meta-color: var(--color-ink-soft);
 
     --color-primary: #184e77;

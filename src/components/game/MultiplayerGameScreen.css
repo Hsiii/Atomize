@@ -142,14 +142,14 @@
     font-size: var(--type-body-meta-size);
     font-weight: var(--type-body-meta-weight);
     line-height: var(--type-body-meta-line-height);
-    letter-spacing: 0.04em;
+    letter-spacing: var(--type-action-label-caps-letter-spacing);
 }
 
 .multiplayer-hp-name {
     font-weight: var(--type-body-meta-weight);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    line-height: 1;
+    text-transform: var(--type-action-label-wide-text-transform);
+    letter-spacing: var(--type-action-label-wide-letter-spacing);
+    line-height: var(--type-action-label-wide-line-height);
 }
 
 .multiplayer-hp-bar-self .multiplayer-hp-name {

@@ -88,8 +88,8 @@
     font-size: var(--type-title-panel-size);
     font-weight: var(--type-title-panel-weight);
     line-height: var(--type-title-panel-line-height);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    letter-spacing: var(--type-title-panel-letter-spacing);
+    text-transform: var(--type-title-panel-text-transform);
     color: var(--type-title-panel-color);
 }
 
@@ -153,9 +153,9 @@
     font-family: var(--type-action-label-family);
     font-size: var(--type-action-label-size);
     font-weight: var(--type-action-label-weight);
-    line-height: 1.2;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    line-height: var(--type-action-label-support-line-height);
+    letter-spacing: var(--type-action-label-hero-letter-spacing);
+    text-transform: var(--type-action-label-wide-text-transform);
     color: var(--type-body-meta-color);
 }
 
@@ -179,8 +179,8 @@
     font-family: var(--type-action-label-family);
     font-size: var(--type-action-label-size);
     font-weight: var(--type-action-label-weight);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    letter-spacing: var(--type-action-label-wide-letter-spacing);
+    text-transform: var(--type-action-label-wide-text-transform);
     color: var(--type-body-meta-color);
 }
 
