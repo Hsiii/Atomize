@@ -31,9 +31,6 @@ type NumberBlobDisplayProps = {
 
 const echoAngles = [-58, -26, 18, 52];
 const clearPopPrepDurationMs = 140;
-const stageRevealDelayMs = 1000;
-const stageRevealDurationMs = 2000;
-const stageRevealTotalMs = stageRevealDelayMs + stageRevealDurationMs;
 
 function createSplitEcho(
     id: number,
@@ -43,21 +40,22 @@ function createSplitEcho(
 ): SplitEcho {
     const angle = echoAngles[index % echoAngles.length] ?? echoAngles[0];
     const distance =
-        variant === 'clear'
-            ? 7.9 + (index % 4) * 0.6
-            : 7.6 + (index % 3) * 0.7;
-    const size =
-        variant === 'clear'
-            ? value < 10
-                ? 4.7
-                : value < 100
-                  ? 5.15
-                  : 5.65
-            : value < 10
-              ? 5.05
-              : value < 100
-                ? 5.55
-                : 6.05;
+        variant === 'clear' ? 7.9 + (index % 4) * 0.6 : 7.6 + (index % 3) * 0.7;
+    let size = 6.05;
+
+    if (variant === 'clear') {
+        if (value < 10) {
+            size = 4.7;
+        } else if (value < 100) {
+            size = 5.15;
+        } else {
+            size = 5.65;
+        }
+    } else if (value < 10) {
+        size = 5.05;
+    } else if (value < 100) {
+        size = 5.55;
+    }
 
     return {
         id,
@@ -70,7 +68,7 @@ function createSplitEcho(
     };
 }
 
-function factorizeValue(value: number): number[] {
+function factorizeValue(value: number): readonly number[] {
     if (!Number.isInteger(value) || value <= 1) {
         return [];
     }
@@ -95,7 +93,10 @@ function factorizeValue(value: number): number[] {
     return factors;
 }
 
-function createClearSplitEchoes(startId: number, value: number): SplitEcho[] {
+function createClearSplitEchoes(
+    startId: number,
+    value: number
+): readonly SplitEcho[] {
     return factorizeValue(value).map((factor, index) =>
         createSplitEcho(startId + index, factor, 'clear', index)
     );
@@ -110,10 +111,15 @@ export function NumberBlobDisplay({
     size,
 }: NumberBlobDisplayProps): JSX.Element {
     const [splitEchos, setSplitEchos] = useState<SplitEcho[]>([]);
-    const [clearPop, setClearPop] = useState<ClearPop | null>(null);
+    const [clearPop, setClearPop] = useState<ClearPop>();
     const [displayedValue, setDisplayedValue] = useState<number | undefined>(
         value
     );
+    const valueDigitCount = String(displayedValue ?? '').length;
+    const responsiveValueStyle = getValueTextStyle(mode, size, valueDigitCount);
+    const valueClassName = (
+        isStageRevealActive ? ' is-value-hidden' : ''
+    ).trim();
     const [isImpactActive, setIsImpactActive] = useState(false);
     const previousValueRef = useRef<number | undefined>(undefined);
     const previousStageIndexRef = useRef<number | undefined>(undefined);
@@ -125,25 +131,38 @@ export function NumberBlobDisplay({
     const echoTimerRef = useRef<number | undefined>(undefined);
     const impactTimerRef = useRef<number | undefined>(undefined);
 
-    useEffect(() => {
-        return () => {
-            clearTimer(clearPrepTimerRef);
-            clearTimer(clearEchoTimerRef);
-            clearTimer(clearPopTimerRef);
-            clearTimer(valueTimerRef);
-            clearTimer(echoTimerRef);
-            clearTimer(impactTimerRef);
-        };
-    }, []);
+    useEffect(
+        () => () => {
+            clearTimer(clearPrepTimerRef.current);
+            clearPrepTimerRef.current = undefined;
+            clearTimer(clearEchoTimerRef.current);
+            clearEchoTimerRef.current = undefined;
+            clearTimer(clearPopTimerRef.current);
+            clearPopTimerRef.current = undefined;
+            clearTimer(valueTimerRef.current);
+            valueTimerRef.current = undefined;
+            clearTimer(echoTimerRef.current);
+            echoTimerRef.current = undefined;
+            clearTimer(impactTimerRef.current);
+            impactTimerRef.current = undefined;
+        },
+        []
+    );
 
     useEffect(() => {
         if (typeof value !== 'number') {
-            clearTimer(clearPrepTimerRef);
-            clearTimer(clearEchoTimerRef);
-            clearTimer(clearPopTimerRef);
-            clearTimer(valueTimerRef);
-            clearTimer(echoTimerRef);
-            clearTimer(impactTimerRef);
+            clearTimer(clearPrepTimerRef.current);
+            clearPrepTimerRef.current = undefined;
+            clearTimer(clearEchoTimerRef.current);
+            clearEchoTimerRef.current = undefined;
+            clearTimer(clearPopTimerRef.current);
+            clearPopTimerRef.current = undefined;
+            clearTimer(valueTimerRef.current);
+            valueTimerRef.current = undefined;
+            clearTimer(echoTimerRef.current);
+            echoTimerRef.current = undefined;
+            clearTimer(impactTimerRef.current);
+            impactTimerRef.current = undefined;
             setDisplayedValue(value);
             previousValueRef.current = value;
             previousStageIndexRef.current = stageIndex;
@@ -160,13 +179,15 @@ export function NumberBlobDisplay({
             return undefined;
         }
 
-        const didStageAdvance =
-            stageIndex > (previousStageIndex ?? stageIndex);
+        const didStageAdvance = stageIndex > (previousStageIndex ?? stageIndex);
 
         if (didStageAdvance && previousValue > 1) {
-            clearTimer(clearPrepTimerRef);
-            clearTimer(clearEchoTimerRef);
-            clearTimer(clearPopTimerRef);
+            clearTimer(clearPrepTimerRef.current);
+            clearPrepTimerRef.current = undefined;
+            clearTimer(clearEchoTimerRef.current);
+            clearEchoTimerRef.current = undefined;
+            clearTimer(clearPopTimerRef.current);
+            clearPopTimerRef.current = undefined;
             const clearEchoes = createClearSplitEchoes(
                 echoIdRef.current,
                 previousValue
@@ -180,40 +201,55 @@ export function NumberBlobDisplay({
             setIsImpactActive(false);
             setDisplayedValue(1);
 
-            clearPrepTimerRef.current = window.setTimeout(() => {
-                if (clearEchoes.length > 0) {
-                    setSplitEchos((currentEchos) => [
-                        ...currentEchos,
-                        ...clearEchoes,
-                    ]);
-                }
-                setClearPop(nextClearPop);
-                setDisplayedValue(value);
+            clearPrepTimerRef.current = globalThis.setTimeout(
+                () => {
+                    if (clearEchoes.length > 0) {
+                        setSplitEchos((currentEchos: readonly SplitEcho[]) => [
+                            ...currentEchos,
+                            ...clearEchoes,
+                        ]);
+                    }
+                    setClearPop(nextClearPop);
+                    setDisplayedValue(value);
 
-                clearEchoTimerRef.current = window.setTimeout(() => {
-                    setSplitEchos((currentEchos) =>
-                        currentEchos.filter(
-                            (currentEcho) =>
-                                !clearEchoes.some(
-                                    (clearEcho) =>
-                                        clearEcho.id === currentEcho.id
-                                )
-                        )
+                    clearEchoTimerRef.current = globalThis.setTimeout(
+                        () => {
+                            setSplitEchos(
+                                (currentEchos: readonly SplitEcho[]) =>
+                                    currentEchos.filter(
+                                        (currentEcho) =>
+                                            !clearEchoes.some(
+                                                (clearEcho) =>
+                                                    clearEcho.id ===
+                                                    currentEcho.id
+                                            )
+                                    )
+                            );
+                            clearEchoTimerRef.current = undefined;
+                        },
+                        820,
+                        undefined
                     );
-                    clearEchoTimerRef.current = undefined;
-                }, 820);
 
-                clearPopTimerRef.current = window.setTimeout(() => {
-                    setClearPop((currentClearPop) =>
-                        currentClearPop?.id === nextClearPop.id
-                            ? null
-                            : currentClearPop
+                    clearPopTimerRef.current = globalThis.setTimeout(
+                        () => {
+                            setClearPop(
+                                (currentClearPop: ClearPop | undefined) =>
+                                    currentClearPop?.id === nextClearPop.id
+                                        ? undefined
+                                        : currentClearPop
+                            );
+                            clearPopTimerRef.current = undefined;
+                        },
+                        260,
+                        undefined
                     );
-                    clearPopTimerRef.current = undefined;
-                }, 260);
 
-                clearPrepTimerRef.current = undefined;
-            }, clearPopPrepDurationMs);
+                    clearPrepTimerRef.current = undefined;
+                },
+                clearPopPrepDurationMs,
+                undefined
+            );
 
             previousValueRef.current = value;
             previousStageIndexRef.current = stageIndex;
@@ -222,7 +258,7 @@ export function NumberBlobDisplay({
         }
 
         if (value !== previousValue) {
-            let poppedValue: number | null = null;
+            let poppedValue: number | undefined;
 
             if (
                 stageIndex === previousStageIndex &&
@@ -236,34 +272,52 @@ export function NumberBlobDisplay({
                 }
             }
 
-            if (poppedValue !== null) {
-                clearTimer(valueTimerRef);
-                clearTimer(echoTimerRef);
-                clearTimer(impactTimerRef);
+            if (poppedValue !== undefined) {
+                clearTimer(valueTimerRef.current);
+                valueTimerRef.current = undefined;
+                clearTimer(echoTimerRef.current);
+                echoTimerRef.current = undefined;
+                clearTimer(impactTimerRef.current);
+                impactTimerRef.current = undefined;
                 const echo = createSplitEcho(echoIdRef.current, poppedValue);
 
-                echoIdRef.current += 1;
-                setSplitEchos((currentEchos) => [...currentEchos, echo]);
+                echoIdRef.current++;
+                setSplitEchos((currentEchos: readonly SplitEcho[]) => [
+                    ...currentEchos,
+                    echo,
+                ]);
 
-                valueTimerRef.current = window.setTimeout(() => {
-                    setDisplayedValue(value);
-                    setIsImpactActive(true);
-                    valueTimerRef.current = undefined;
-                }, 90);
+                valueTimerRef.current = globalThis.setTimeout(
+                    () => {
+                        setDisplayedValue(value);
+                        setIsImpactActive(true);
+                        valueTimerRef.current = undefined;
+                    },
+                    90,
+                    undefined
+                );
 
-                echoTimerRef.current = window.setTimeout(() => {
-                    setSplitEchos((currentEchos) =>
-                        currentEchos.filter(
-                            (currentEcho) => currentEcho.id !== echo.id
-                        )
-                    );
-                    echoTimerRef.current = undefined;
-                }, 820);
+                echoTimerRef.current = globalThis.setTimeout(
+                    () => {
+                        setSplitEchos((currentEchos: readonly SplitEcho[]) =>
+                            currentEchos.filter(
+                                (currentEcho) => currentEcho.id !== echo.id
+                            )
+                        );
+                        echoTimerRef.current = undefined;
+                    },
+                    820,
+                    undefined
+                );
 
-                impactTimerRef.current = window.setTimeout(() => {
-                    setIsImpactActive(false);
-                    impactTimerRef.current = undefined;
-                }, 610);
+                impactTimerRef.current = globalThis.setTimeout(
+                    () => {
+                        setIsImpactActive(false);
+                        impactTimerRef.current = undefined;
+                    },
+                    610,
+                    undefined
+                );
 
                 previousValueRef.current = value;
                 previousStageIndexRef.current = stageIndex;
@@ -271,14 +325,19 @@ export function NumberBlobDisplay({
                 return undefined;
             }
 
-            clearTimer(impactTimerRef);
+            clearTimer(impactTimerRef.current);
+            impactTimerRef.current = undefined;
             setDisplayedValue(value);
             setIsImpactActive(true);
 
-            impactTimerRef.current = window.setTimeout(() => {
-                setIsImpactActive(false);
-                impactTimerRef.current = undefined;
-            }, 610);
+            impactTimerRef.current = globalThis.setTimeout(
+                () => {
+                    setIsImpactActive(false);
+                    impactTimerRef.current = undefined;
+                },
+                610,
+                undefined
+            );
 
             previousValueRef.current = value;
             previousStageIndexRef.current = stageIndex;
@@ -323,9 +382,7 @@ export function NumberBlobDisplay({
                     <div
                         aria-hidden='true'
                         className={`number-blob-split-echo${
-                            echo.variant === 'clear'
-                                ? ' is-clear-burst'
-                                : ''
+                            echo.variant === 'clear' ? ' is-clear-burst' : ''
                         }`}
                         key={echo.id}
                         style={
@@ -354,11 +411,8 @@ export function NumberBlobDisplay({
                         }${clearPop ? ' is-cleared' : ''}`}
                     >
                         <strong
-                            className={
-                                isStageRevealActive
-                                    ? 'is-value-hidden'
-                                    : undefined
-                            }
+                            className={valueClassName}
+                            style={responsiveValueStyle}
                         >
                             {displayedValue}
                         </strong>
@@ -369,11 +423,34 @@ export function NumberBlobDisplay({
     );
 }
 
-function clearTimer(timerRef: { current: number | undefined }) {
-    if (timerRef.current === undefined) {
+function clearTimer(timerId: number | undefined) {
+    if (timerId === undefined) {
         return;
     }
 
-    window.clearTimeout(timerRef.current);
-    timerRef.current = undefined;
+    globalThis.clearTimeout(timerId);
+}
+
+function getValueTextStyle(
+    mode: BlobMode,
+    size: NumberBlobDisplayProps['size'],
+    digitCount: number
+): CSSProperties {
+    if (mode !== 'multiplayer' || !size) {
+        return {};
+    }
+
+    if (digitCount <= 3) {
+        return { fontSize: 'clamp(3.1rem, 10.5vw, 5.5rem)' };
+    }
+
+    if (digitCount === 4) {
+        return { fontSize: 'clamp(2.3rem, 7.6vw, 3.95rem)' };
+    }
+
+    if (digitCount === 5) {
+        return { fontSize: 'clamp(1.85rem, 6vw, 3rem)' };
+    }
+
+    return { fontSize: 'clamp(1.5rem, 4.8vw, 2.45rem)' };
 }
