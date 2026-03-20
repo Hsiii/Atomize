@@ -41,7 +41,8 @@ const soloComboStepDelayMs = 280;
 const multiplayerComboStepDelayMs = 220;
 const multiplayerCountdownDurationMs = 3000;
 const realtimeSendTimeoutMs = 1500;
-const joinRoomLookupTimeoutMs = 1000;
+const joinRoomLookupTimeoutMs = 5000;
+const joinRoomRetryIntervalMs = 1200;
 const playerNameStorageKey = 'atomize.playerName';
 const usedPlayerNamesStorageKey = 'atomize.usedPlayerNames';
 const fallbackPlayerNames = [
@@ -138,6 +139,7 @@ export default function App() {
     const latestSoloStateRef = useRef(soloState);
     const latestMultiplayerRef = useRef(multiplayer);
     const joinLookupTimeoutRef = useRef<number | null>(null);
+    const joinRetryIntervalRef = useRef<number | null>(null);
     const multiplayerPlayers = multiplayer.snapshot?.players ?? [];
     const currentMultiplayerPlayer =
         multiplayerPlayers.find(
@@ -412,16 +414,21 @@ export default function App() {
         }));
     }
 
-    function clearJoinLookupTimeout() {
+    function clearPendingJoinTimers() {
         if (joinLookupTimeoutRef.current !== null) {
             window.clearTimeout(joinLookupTimeoutRef.current);
             joinLookupTimeoutRef.current = null;
+        }
+
+        if (joinRetryIntervalRef.current !== null) {
+            window.clearInterval(joinRetryIntervalRef.current);
+            joinRetryIntervalRef.current = null;
         }
     }
 
     async function failPendingJoin(message: string) {
         showLobbyToast(message);
-        clearJoinLookupTimeout();
+        clearPendingJoinTimers();
         await closeActiveChannel();
         setMultiplayer({
             playerId: null,
@@ -488,7 +495,7 @@ export default function App() {
     }
 
     async function closeActiveChannel() {
-        clearJoinLookupTimeout();
+        clearPendingJoinTimers();
 
         if (channelRef.current && supabaseRef.current) {
             await supabaseRef.current.removeChannel(channelRef.current);
@@ -540,7 +547,7 @@ export default function App() {
                         (player) => player.id === currentState.playerId
                     )
                 ) {
-                    clearJoinLookupTimeout();
+                    clearPendingJoinTimers();
                 }
 
                 updateSnapshot(message.snapshot, '');
@@ -746,17 +753,33 @@ export default function App() {
 
         await subscribeToRoom(roomId, playerId, false, async () => {
             setScreen('multi-lobby');
-            await broadcastMessage({
-                type: 'join_request',
-                playerId,
-                playerName,
-            });
+            const sendJoinRequest = () => {
+                const currentState = latestMultiplayerRef.current;
 
-            clearJoinLookupTimeout();
+                if (!isPendingGuestJoin(currentState)) {
+                    clearPendingJoinTimers();
+                    return;
+                }
+
+                void broadcastMessage({
+                    type: 'join_request',
+                    playerId,
+                    playerName,
+                });
+            };
+
+            sendJoinRequest();
+
+            clearPendingJoinTimers();
+            joinRetryIntervalRef.current = window.setInterval(
+                sendJoinRequest,
+                joinRoomRetryIntervalMs
+            );
             joinLookupTimeoutRef.current = window.setTimeout(() => {
                 const currentState = latestMultiplayerRef.current;
 
                 if (!isPendingGuestJoin(currentState)) {
+                    clearPendingJoinTimers();
                     return;
                 }
 
