@@ -470,6 +470,15 @@ export function MultiplayerGameScreen({
         }
 
         const nextAttack = queuedAttacks[0];
+        const perfectEffectStartTime = performance.now();
+        const perfectEffectDuration = nextAttack.perfectSolve
+            ? triggerPerfectSolve(
+                  nextAttack.sourceSide,
+                  nextAttack.id,
+                  nextAttack.sourceHp,
+                  nextAttack.sourceRegen
+              )
+            : 0;
 
         const completeAttack = () => {
             const lossResult = resolveHpLoss(
@@ -477,14 +486,14 @@ export function MultiplayerGameScreen({
                 nextAttack.targetHp,
                 nextAttack.damage
             );
-            const regenDelayMs = nextAttack.perfectSolve
-                ? triggerPerfectSolve(
-                      nextAttack.sourceSide,
-                      nextAttack.id,
-                      nextAttack.sourceHp,
-                      nextAttack.sourceRegen
-                  )
-                : 0;
+            const remainingPerfectDelay =
+                perfectEffectDuration > 0
+                    ? Math.max(
+                          0,
+                          perfectEffectDuration -
+                              (performance.now() - perfectEffectStartTime)
+                      )
+                    : 0;
 
             if (nextAttack.isFinisher) {
                 const zeroHoldMs =
@@ -494,7 +503,10 @@ export function MultiplayerGameScreen({
 
                 queueResultDialogReveal(
                     nextAttack.id,
-                    Math.max(lossResult.durationMs + zeroHoldMs, regenDelayMs)
+                    Math.max(
+                        lossResult.durationMs + zeroHoldMs,
+                        remainingPerfectDelay
+                    )
                 );
             }
 
