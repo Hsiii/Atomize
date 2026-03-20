@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { JSX } from 'react';
-import { Plus, User, X } from 'lucide-react';
+import { Check, Plus, User, X } from 'lucide-react';
 
 import type { OnlineLobbyUser } from '../../app-state';
 import { uiText } from '../../app-state';
@@ -83,8 +83,8 @@ export function MenuScreen({
     const shouldShowReadyAction = isInRoom && hasOpponent;
     const shouldShowSoloStart = !shouldShowReadyAction && !isInRoom;
     const isMultiplayerCountdown = multiplayerCountdownValue !== undefined;
-    const showCurrentReadyBadge = hasOpponent && isCurrentPlayerReady;
-    const showOpponentReadyBadge = hasOpponent && isOpponentReady;
+    const showCurrentReadyIndicator = hasOpponent && isCurrentPlayerReady;
+    const showOpponentReadyIndicator = hasOpponent && isOpponentReady;
     const isReadyButtonDisabled = isMultiplayerCountdown;
     const readyButtonClassName = `menu-start-btn${isCurrentPlayerReady ? ' menu-start-btn-ready' : ''}`;
     let readyButtonLabel: string = uiText.ready;
@@ -143,63 +143,76 @@ export function MenuScreen({
                     <div className='menu-content'>
                         <div className='menu-slots'>
                             <div className='menu-slot-column'>
-                                <button
-                                    className='slot-circle slot-p1'
-                                    onClick={() => {
-                                        setEditingName(playerName);
-                                        setShowProfileDialog(true);
-                                    }}
-                                    type='button'
-                                >
-                                    {isGuest ? (
-                                        <User className='slot-user-icon' />
-                                    ) : (
-                                        <span className='slot-initials'>
-                                            {initials}
+                                <div className='slot-circle-shell'>
+                                    <button
+                                        className='slot-circle slot-p1'
+                                        onClick={() => {
+                                            setEditingName(playerName);
+                                            setShowProfileDialog(true);
+                                        }}
+                                        type='button'
+                                    >
+                                        {isGuest ? (
+                                            <User className='slot-user-icon' />
+                                        ) : (
+                                            <span className='slot-initials'>
+                                                {initials}
+                                            </span>
+                                        )}
+                                    </button>
+                                    {showCurrentReadyIndicator ? (
+                                        <span
+                                            aria-hidden='true'
+                                            className='slot-status-indicator'
+                                        >
+                                            <Check className='slot-status-check' />
                                         </span>
-                                    )}
-                                </button>
+                                    ) : undefined}
+                                </div>
                                 <span className='slot-name'>{playerName}</span>
-                                <span
-                                    className={`slot-ready-badge${showCurrentReadyBadge ? ' slot-ready-badge-on' : ' slot-ready-badge-placeholder'}`}
-                                >
-                                    {uiText.ready}
-                                </span>
                             </div>
 
                             {hasOpponent ? (
                                 <div className='menu-slot-column'>
-                                    <div className='slot-circle slot-p2-filled'>
-                                        <span className='slot-initials'>
-                                            {opponentInitials}
-                                        </span>
+                                    <div className='slot-circle-shell'>
+                                        <div className='slot-circle slot-p2-filled'>
+                                            <span className='slot-initials'>
+                                                {opponentInitials}
+                                            </span>
+                                        </div>
+                                        {showOpponentReadyIndicator ? (
+                                            <span
+                                                aria-hidden='true'
+                                                className='slot-status-indicator'
+                                            >
+                                                <Check className='slot-status-check' />
+                                            </span>
+                                        ) : undefined}
                                     </div>
                                     <span className='slot-name'>
                                         {opponentName}
                                     </span>
-                                    <span
-                                        className={`slot-ready-badge${showOpponentReadyBadge ? ' slot-ready-badge-on' : ' slot-ready-badge-placeholder'}`}
-                                    >
-                                        {uiText.ready}
-                                    </span>
                                 </div>
                             ) : (
                                 <div className='menu-slot-column'>
-                                    <button
-                                        className='slot-circle slot-p2-empty'
-                                        onClick={() => {
-                                            handleOpenInviteDialog();
-                                        }}
-                                        onFocus={onPrefetchInviteUsers}
-                                        onPointerDown={onPrefetchInviteUsers}
-                                        onPointerEnter={onPrefetchInviteUsers}
-                                        type='button'
-                                    >
-                                        <Plus className='slot-plus-icon' />
-                                    </button>
-                                    <span className='slot-ready-badge slot-ready-badge-placeholder'>
-                                        {uiText.ready}
-                                    </span>
+                                    <div className='slot-circle-shell'>
+                                        <button
+                                            className='slot-circle slot-p2-empty'
+                                            onClick={() => {
+                                                handleOpenInviteDialog();
+                                            }}
+                                            onFocus={onPrefetchInviteUsers}
+                                            onPointerDown={
+                                                onPrefetchInviteUsers
+                                            }
+                                            onPointerEnter={
+                                                onPrefetchInviteUsers
+                                            }
+                                            type='button'
+                                        >
+                                            <Plus className='slot-plus-icon' />
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>
