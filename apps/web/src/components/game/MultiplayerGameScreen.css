@@ -11,45 +11,149 @@
     position: relative;
     flex: 1;
     min-height: 0;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-4);
-    align-items: stretch;
+    display: block;
+    overflow: hidden;
+    border: 2px solid color-mix(in srgb, var(--color-primary) 16%, white);
+    border-radius: calc(var(--radius-panel) * 1.2);
+    background:
+        radial-gradient(
+            circle at 22% 80%,
+            color-mix(in srgb, var(--color-secondary) 22%, white) 0%,
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at 80% 18%,
+            color-mix(in srgb, var(--color-primary) 18%, white) 0%,
+            transparent 26%
+        ),
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, white 84%, var(--color-primary) 16%) 0%,
+            color-mix(in srgb, white 75%, var(--color-secondary) 25%) 48%,
+            color-mix(in srgb, var(--color-track) 42%, #9ca86f 58%) 48%,
+            color-mix(in srgb, var(--color-track) 22%, #6f8a58 78%),
+            color-mix(in srgb, #2c4031 78%, black) 100%
+        );
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.65),
+        inset 0 -2.4rem 3rem rgba(22, 31, 37, 0.16);
+    isolation: isolate;
+}
+
+.multiplayer-board::before {
+    content: '';
+    position: absolute;
+    left: -6%;
+    right: -6%;
+    bottom: -10%;
+    height: 44%;
+    border-radius: 50% 50% 0 0;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.18) 0%,
+            rgba(255, 255, 255, 0.04) 28%,
+            rgba(0, 0, 0, 0.1) 100%
+        ),
+        linear-gradient(
+            90deg,
+            color-mix(in srgb, var(--color-secondary) 16%, #6e8552) 0%,
+            color-mix(in srgb, #8ba56d 78%, white) 52%,
+            color-mix(in srgb, var(--color-primary) 20%, #72865e) 100%
+        );
+    transform: perspective(720px) rotateX(72deg);
+    transform-origin: center bottom;
+    opacity: 0.92;
+    z-index: 0;
+}
+
+.multiplayer-board::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.32), transparent 28%),
+        radial-gradient(
+            circle at center,
+            transparent 48%,
+            rgba(9, 17, 20, 0.12) 100%
+        );
+    pointer-events: none;
+    z-index: 0;
 }
 
 .multiplayer-column {
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-}
-
-.multiplayer-column-enemy {
-    justify-content: flex-start;
-}
-
-.multiplayer-column-self {
-    justify-content: center;
-}
-
-.multiplayer-blob-anchor {
-    position: relative;
-    flex: 1;
+    position: absolute;
     min-height: 0;
     display: grid;
     place-items: center;
 }
 
+.multiplayer-column-enemy {
+    top: clamp(0.7rem, 4%, 1.1rem);
+    right: clamp(0.85rem, 5%, 1.4rem);
+    width: min(35%, 11rem);
+    aspect-ratio: 1;
+    z-index: 1;
+}
+
+.multiplayer-column-self {
+    left: clamp(0.75rem, 5%, 1.6rem);
+    bottom: clamp(0.7rem, 4%, 1.2rem);
+    width: min(61%, 19rem);
+    aspect-ratio: 1;
+    z-index: 2;
+}
+
+.multiplayer-blob-anchor {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+}
+
 .multiplayer-column-enemy .multiplayer-blob-anchor {
-    align-items: center;
+    justify-items: end;
+    align-items: start;
 }
 
 .multiplayer-column-self .multiplayer-blob-anchor {
-    align-items: center;
+    justify-items: start;
+    align-items: end;
 }
 
 .multiplayer-column .number-blob-display {
     padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.multiplayer-column-self .number-blob-display-size-self {
+    --number-blob-scale-factor: 0.78;
+}
+
+.multiplayer-column-enemy .number-blob-display-size-enemy {
+    --number-blob-scale-factor: 0.44;
+}
+
+.multiplayer-column-self .number-blob-field,
+.multiplayer-column-enemy .number-blob-field {
+    filter: drop-shadow(0 1rem 1.2rem rgba(13, 20, 27, 0.18));
+}
+
+.multiplayer-column-self .number-blob-field::before {
+    inset: auto 12% 6%;
+    height: 14%;
+    background: rgba(8, 16, 23, 0.2);
+    filter: blur(14px);
+}
+
+.multiplayer-column-enemy .number-blob-field::before {
+    inset: auto 24% 10%;
+    height: 9%;
+    background: rgba(8, 16, 23, 0.14);
+    filter: blur(9px);
 }
 
 .multiplayer-hp-bar {
@@ -211,6 +315,7 @@
     inset: 0;
     pointer-events: none;
     overflow: visible;
+    z-index: 3;
 }
 
 .multiplayer-attack-particle {
@@ -259,7 +364,27 @@
 
 @media (max-width: 700px) {
     .multiplayer-board {
-        gap: var(--space-3);
+        min-height: 16rem;
+    }
+
+    .multiplayer-column-self {
+        width: min(67%, 17rem);
+        left: clamp(0.55rem, 4%, 1rem);
+        bottom: 0.55rem;
+    }
+
+    .multiplayer-column-enemy {
+        width: min(38%, 8.75rem);
+        top: clamp(0.55rem, 3%, 0.85rem);
+        right: clamp(0.55rem, 4%, 0.95rem);
+    }
+
+    .multiplayer-column-self .number-blob-display-size-self {
+        --number-blob-scale-factor: 0.72;
+    }
+
+    .multiplayer-column-enemy .number-blob-display-size-enemy {
+        --number-blob-scale-factor: 0.39;
     }
 
     .multiplayer-hp-copy {
@@ -284,8 +409,16 @@
         padding-left: max(var(--space-4), env(safe-area-inset-left));
     }
 
-    .multiplayer-column {
-        gap: var(--space-3);
+    .multiplayer-board {
+        min-height: 14rem;
+    }
+
+    .multiplayer-column-self {
+        width: min(58%, 14.5rem);
+    }
+
+    .multiplayer-column-enemy {
+        width: min(32%, 7rem);
     }
 
     .multiplayer-keypad button {
@@ -294,6 +427,29 @@
 }
 
 @media (max-width: 480px) {
+    .multiplayer-board {
+        min-height: 13rem;
+    }
+
+    .multiplayer-column-self {
+        width: min(63%, 13.6rem);
+        left: 0.45rem;
+        bottom: 0.5rem;
+    }
+
+    .multiplayer-column-enemy {
+        width: min(34%, 6.75rem);
+        right: 0.45rem;
+    }
+
+    .multiplayer-column-self .number-blob-display-size-self {
+        --number-blob-scale-factor: 0.66;
+    }
+
+    .multiplayer-column-enemy .number-blob-display-size-enemy {
+        --number-blob-scale-factor: 0.35;
+    }
+
     .multiplayer-hp-stat {
         font-size: 0.88rem;
     }
