@@ -22,32 +22,20 @@ export const uiText = {
     menuPlay: 'Play',
     menuSolo: 'Solo',
     menuDual: 'Dual',
-    menuNewRoom: 'New room',
-    menuJoinRoom: 'Join room',
     singlePlayer: 'Single Player',
     multiPlayer: 'Multi Player',
-    createRoom: 'Create Room',
-    joinRoom: 'Join Room',
     settings: 'Settings',
     playerName: 'Player Name',
     saveName: 'Save',
     randomName: 'Randomize',
     close: 'Close',
     namePlaceholder: 'Enter your name',
-    go: 'Go!',
-    roomCode: 'Room Code',
-    enterCode: 'Enter Code',
     backspace: 'Backspace',
     enterCombo: 'Enter',
-    joinIncompleteToast: 'Enter the full 4-digit room code first.',
     joinMissingRoomToast: "That room doesn't exist.",
-    findingRoom: 'Finding Room...',
     countdownPrefix: 'Starting in',
-    roomHint: 'Tap create to open a room, or join with a 4-digit code.',
     configHint: 'Server setup required for multiplayer.',
     idleStatus: 'Server idle',
-    roomPlaceholder: '0000',
-    openingRoom: 'Opening room...',
     waitingForPlayer: 'Waiting for the second player to join.',
     multiplayerSyncStalled:
         'Realtime sync stalled. Input unlocked, but room sync may lag.',
@@ -73,8 +61,7 @@ export const uiText = {
     guest: 'Guest',
 } as const;
 
-export type MenuMode = 'default' | 'create-room' | 'join-room';
-export type Screen = 'menu' | 'single' | 'multi-lobby' | 'multi-game';
+export type Screen = 'menu' | 'single' | 'multi-game';
 
 export type MultiplayerState = {
     playerId: string | null;

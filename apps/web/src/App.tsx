@@ -12,7 +12,6 @@ import type { RealtimeChannel, SupabaseClient } from '@supabase/supabase-js';
 
 import {
     uiText,
-    type MenuMode,
     type MultiplayerState,
     type OnlineLobbyUser,
     type PendingInvitation,
@@ -20,7 +19,6 @@ import {
 } from './app-state';
 import { MultiplayerGameScreen } from './components/game/MultiplayerGameScreen';
 import { SingleGameScreen } from './components/game/SingleGameScreen';
-import { MultiplayerLobbyScreen } from './components/lobby/MultiplayerLobbyScreen';
 import { MenuScreen } from './components/menu/MenuScreen';
 import {
     addPlayerToRoom,
@@ -104,7 +102,6 @@ type MultiplayerSendResult = {
 export default function App() {
     const initialSoloSeedRef = useRef(createSoloRunSeed());
     const [screen, setScreen] = useState<Screen>('menu');
-    const [menuMode, setMenuMode] = useState<MenuMode>('default');
     const [soloSeed, setSoloSeed] = useState(initialSoloSeedRef.current);
     const [soloState, setSoloState] = useState(() =>
         createInitialSoloState(initialSoloSeedRef.current)
@@ -135,7 +132,6 @@ export default function App() {
         roomId: '',
         isHost: false,
     });
-    const [roomIdInput, setRoomIdInput] = useState('');
     const [onlineUsers, setOnlineUsers] = useState<OnlineLobbyUser[]>([]);
     const channelRef = useRef<RealtimeChannel | null>(null);
     const lobbyChannelRef = useRef<RealtimeChannel | null>(null);
@@ -237,17 +233,6 @@ export default function App() {
             window.clearInterval(timer);
         };
     }, [multiplayer.snapshot?.countdownEndsAt, multiplayer.snapshot?.status]);
-
-    useEffect(() => {
-        if (
-            multiplayer.snapshot &&
-            (multiplayer.snapshot.status === 'waiting' ||
-                multiplayer.snapshot.status === 'countdown') &&
-            screen === 'multi-lobby'
-        ) {
-            setScreen('menu');
-        }
-    }, [multiplayer.snapshot, screen]);
 
     useEffect(() => {
         const currentState = latestMultiplayerRef.current;
@@ -496,10 +481,6 @@ export default function App() {
         setScreen('single');
     }
 
-    function handleRoomIdInputChange(value: string) {
-        setRoomIdInput(normalizeRoomId(value));
-    }
-
     async function returnToMenu() {
         await closeActiveChannel();
         setSoloPrimeQueue([]);
@@ -514,8 +495,6 @@ export default function App() {
             roomId: '',
             isHost: false,
         });
-        setRoomIdInput('');
-        setMenuMode('default');
         setPendingInvitation(null);
         setScreen('menu');
     }
@@ -1012,82 +991,6 @@ export default function App() {
         });
     }
 
-    async function createRoom() {
-        const roomId = createRoomId();
-        const playerId = crypto.randomUUID();
-        const snapshot = createRoomSnapshot(roomId, playerId, playerName);
-
-        if (supabaseRef.current) {
-            setMultiplayer((currentState) => ({
-                ...currentState,
-                playerId,
-                snapshot,
-                roomId,
-                isHost: true,
-                statusText: uiText.openingRoom,
-            }));
-        }
-
-        await subscribeToRoom(roomId, playerId, true, async () => {
-            updateSnapshot(snapshot, '');
-            await broadcastMessage({
-                type: 'room_state',
-                snapshot,
-                sourcePlayerId: playerId,
-            });
-        });
-    }
-
-    async function joinRoom() {
-        const roomId = normalizeRoomId(roomIdInput);
-
-        if (roomId.length !== 4) {
-            return;
-        }
-
-        const playerId = crypto.randomUUID();
-        setLobbyToast((currentToast) => ({
-            id: currentToast.id,
-            message: null,
-        }));
-
-        await subscribeToRoom(roomId, playerId, false, async () => {
-            setScreen('multi-lobby');
-            const sendJoinRequest = () => {
-                const currentState = latestMultiplayerRef.current;
-
-                if (!isPendingGuestJoin(currentState)) {
-                    clearPendingJoinTimers();
-                    return;
-                }
-
-                void broadcastMessage({
-                    type: 'join_request',
-                    playerId,
-                    playerName,
-                });
-            };
-
-            sendJoinRequest();
-
-            clearPendingJoinTimers();
-            joinRetryIntervalRef.current = window.setInterval(
-                sendJoinRequest,
-                joinRoomRetryIntervalMs
-            );
-            joinLookupTimeoutRef.current = window.setTimeout(() => {
-                const currentState = latestMultiplayerRef.current;
-
-                if (!isPendingGuestJoin(currentState)) {
-                    clearPendingJoinTimers();
-                    return;
-                }
-
-                void failPendingJoin(uiText.joinMissingRoomToast);
-            }, joinRoomLookupTimeoutMs);
-        });
-    }
-
     async function sendMultiplayerPrime(
         prime: Prime
     ): Promise<MultiplayerSendResult> {
@@ -1292,22 +1195,6 @@ export default function App() {
         );
     }
 
-    if (screen === 'multi-lobby') {
-        return (
-            <MultiplayerLobbyScreen
-                menuMode={menuMode}
-                transientToastId={lobbyToast.id}
-                transientToastMessage={lobbyToast.message}
-                isJoinPending={isPendingGuestJoin(multiplayer)}
-                roomIdInput={roomIdInput}
-                onBack={returnToMenu}
-                onRoomIdInputChange={handleRoomIdInputChange}
-                onJoinRoom={joinRoom}
-                onCreateRoom={createRoom}
-            />
-        );
-    }
-
     return (
         <MultiplayerGameScreen
             playablePrimes={playablePrimes}
@@ -1401,10 +1288,6 @@ function normalizePlayerName(value: string): string {
 
 function createRoomId(): string {
     return String(Math.floor(1000 + Math.random() * 9000));
-}
-
-function normalizeRoomId(value: string): string {
-    return value.replace(/\D/g, '').slice(0, 4);
 }
 
 function formatCountdown(totalSeconds: number): string {
