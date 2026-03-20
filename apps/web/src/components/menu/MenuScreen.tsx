@@ -5,7 +5,7 @@ import { Plus, User, X } from 'lucide-react';
 import type { OnlineLobbyUser } from '../../app-state';
 import { uiText } from '../../app-state';
 
-import { ActionButton } from '../ActionButton';
+import { ActionButton } from '../game/ui/ActionButton';
 
 import './MenuScreen.css';
 

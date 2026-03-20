@@ -1,10 +1,10 @@
 import type { JSX } from 'react';
 
-import { uiText } from '../app-state';
+import { uiText } from '../../../app-state';
 
 import './ScoreDialog.css';
 
-import { ActionButton } from './ActionButton';
+import { ActionButton } from '../ui/ActionButton';
 
 type ScoreDialogProps = {
     comboCount: number;

@@ -7,12 +7,12 @@ import { uiText } from '../../app-state';
 
 import './GamePlayScreen.css';
 
-import { ActionButton } from '../ActionButton';
-import { ComboQueuePanel } from '../ComboQueuePanel';
+import { ComboQueuePanel } from './shared/ComboQueuePanel';
 import { GameStatusHeader } from './GameStatusHeader';
-import { NumberBlobDisplay } from '../NumberBlobDisplay';
-import { PrimeKeyButton } from '../PrimeKeyButton';
-import { ScoreDialog } from '../ScoreDialog';
+import { NumberBlobDisplay } from './shared/NumberBlobDisplay';
+import { PrimeKeyButton } from './shared/PrimeKeyButton';
+import { ScoreDialog } from './shared/ScoreDialog';
+import { ActionButton } from './ui/ActionButton';
 
 type SingleGameScreenProps = {
     playablePrimes: Prime[];

@@ -8,11 +8,11 @@ import { uiText } from '../../app-state';
 import './GamePlayScreen.css';
 import './MultiplayerGameScreen.css';
 
-import { ActionButton } from '../ActionButton';
-import { ComboQueuePanel } from '../ComboQueuePanel';
-import { NumberBlobDisplay } from '../NumberBlobDisplay';
-import { PrimeKeyButton } from '../PrimeKeyButton';
-import { ScoreDialog } from '../ScoreDialog';
+import { ComboQueuePanel } from './shared/ComboQueuePanel';
+import { NumberBlobDisplay } from './shared/NumberBlobDisplay';
+import { PrimeKeyButton } from './shared/PrimeKeyButton';
+import { ScoreDialog } from './shared/ScoreDialog';
+import { ActionButton } from './ui/ActionButton';
 
 type DamagePop = {
     id: string;

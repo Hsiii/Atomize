@@ -3,7 +3,7 @@ import type { ChangeEvent, JSX, KeyboardEvent } from 'react';
 import { Search } from 'lucide-react';
 
 import { uiText } from '../../app-state';
-import { BackButton } from '../BackButton';
+import { BackButton } from '../game/ui/BackButton';
 import {
     clampFloatingParticleOutsideCollider,
     clampFloatingValue,
