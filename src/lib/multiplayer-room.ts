@@ -1,13 +1,13 @@
 import {
     applyPrimeSelection,
-    computeBattleDamage,
-    computeBattlePartialDamage,
+    computeBattleComboDamage,
+    computeBattleFactorDamage,
     generateStage,
 } from '../core';
 import type { BattleEvent, Prime, RoomPlayer, RoomSnapshot } from '../core';
 
 const STARTING_HP = 500;
-const WRONG_SELECTION_DAMAGE = 8;
+const WRONG_SELECTION_DAMAGE = 4;
 
 export function createRoomSnapshot(
     roomId: string,
@@ -131,20 +131,20 @@ export function applyBattlePrimeSelection(
         : selection.stage;
     const shouldSuppressAttack =
         options?.suppressAttack === true && !selection.cleared;
-    let damage = computeBattlePartialDamage(
-        actingPlayer.stage,
-        actingPlayer.combo
-    );
-
-    if (shouldSuppressAttack) {
-        damage = 0;
-    } else if (selection.cleared) {
-        damage = computeBattleDamage(actingPlayer.stage, combo);
-    }
+    const { pendingFactorDamage } = actingPlayer;
+    const factorDamage = computeBattleFactorDamage(prime);
+    const comboDamage = selection.cleared ? computeBattleComboDamage(combo) : 0;
+    const nextPendingFactorDamage = shouldSuppressAttack
+        ? pendingFactorDamage + factorDamage
+        : 0;
+    const damage: number = shouldSuppressAttack
+        ? 0
+        : pendingFactorDamage + factorDamage + comboDamage;
     const nextPlayers = snapshot.players.map((player) => {
         if (player.id === playerId) {
             return {
                 ...player,
+                pendingFactorDamage: nextPendingFactorDamage,
                 combo,
                 maxCombo: selection.cleared
                     ? Math.max(player.maxCombo, combo)
@@ -251,6 +251,7 @@ export function applyBattlePenalty(
         return {
             ...player,
             hp: Math.max(0, player.hp - WRONG_SELECTION_DAMAGE),
+            pendingFactorDamage: 0,
             combo: 0,
             stage: nextStage,
         };
@@ -326,6 +327,7 @@ export function clearSolvedBattleStage(
 
         return {
             ...player,
+            pendingFactorDamage: 0,
             stageIndex,
             stage: nextStage,
         };
@@ -347,6 +349,7 @@ function createPlayer(id: string, name: string, seed: string): RoomPlayer {
         id,
         name,
         hp: STARTING_HP,
+        pendingFactorDamage: 0,
         combo: 0,
         maxCombo: 0,
         stageIndex: 0,

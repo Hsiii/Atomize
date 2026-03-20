@@ -4,6 +4,7 @@ export type RoomPlayer = {
     id: string;
     name: string;
     hp: number;
+    pendingFactorDamage: number;
     combo: number;
     maxCombo: number;
     stageIndex: number;

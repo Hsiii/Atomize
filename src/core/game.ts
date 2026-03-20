@@ -164,30 +164,10 @@ export function advanceSoloState(
     };
 }
 
-export function computeBattleDamage(
-    clearedStage: StageState,
-    combo: number
-): number {
-    return (
-        6 +
-        clearedStage.factors.length * 4 +
-        Math.max(0, combo - 1) * 5 +
-        Math.min(clearedStage.stageIndex, 6)
-    );
+export function computeBattleFactorDamage(selectedPrime: Prime): number {
+    return selectedPrime;
 }
 
-export function computeBattlePartialDamage(
-    stage: StageState,
-    combo: number
-): number {
-    const totalFactorCount = stage.factors.length;
-
-    if (totalFactorCount === 0) {
-        return 0;
-    }
-
-    return Math.max(
-        1,
-        Math.ceil(computeBattleDamage(stage, combo) / (totalFactorCount * 3))
-    );
+export function computeBattleComboDamage(combo: number): number {
+    return Math.max(0, combo - 1) * 8;
 }
