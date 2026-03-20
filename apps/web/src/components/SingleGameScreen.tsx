@@ -192,8 +192,7 @@ export function SingleGameScreen({
                             disabled={
                                 isTimeUp ||
                                 visibleQueue.length === 0 ||
-                                isSoloComboRunning ||
-                                isBlobRevealActive
+                                isSoloComboRunning
                             }
                             onClick={handleSubmit}
                             variant='secondary'
