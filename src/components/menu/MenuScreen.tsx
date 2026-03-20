@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { JSX } from 'react';
-import { Check, Plus, UserRound, X } from 'lucide-react';
+import { Check, Plus, X } from 'lucide-react';
 
 import type { OnlineLobbyUser } from '../../app-state';
 import { uiText } from '../../app-state';
@@ -155,10 +155,7 @@ export function MenuScreen({
                                         type='button'
                                     >
                                         {isCurrentPlayerGuest ? (
-                                            <UserRound
-                                                className='slot-user-icon'
-                                                fill='currentColor'
-                                            />
+                                            <span className='slot-guest-dot' />
                                         ) : (
                                             <span className='slot-initials'>
                                                 {initials}
@@ -182,10 +179,7 @@ export function MenuScreen({
                                     <div className='slot-circle-shell'>
                                         <div className='slot-circle slot-p2-filled'>
                                             {isOpponentGuest ? (
-                                                <UserRound
-                                                    className='slot-user-icon'
-                                                    fill='currentColor'
-                                                />
+                                                <span className='slot-guest-dot' />
                                             ) : (
                                                 <span className='slot-initials'>
                                                     {opponentInitials}
