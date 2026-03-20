@@ -115,8 +115,6 @@ export function NumberBlobDisplay({
     const [displayedValue, setDisplayedValue] = useState<number | undefined>(
         value
     );
-    const valueDigitCount = String(displayedValue ?? '').length;
-    const responsiveValueStyle = getValueTextStyle(mode, size, valueDigitCount);
     const valueClassName = (
         isStageRevealActive ? ' is-value-hidden' : ''
     ).trim();
@@ -410,10 +408,7 @@ export function NumberBlobDisplay({
                             isStageRevealActive ? ' is-stage-reveal' : ''
                         }${clearPop ? ' is-cleared' : ''}`}
                     >
-                        <strong
-                            className={valueClassName}
-                            style={responsiveValueStyle}
-                        >
+                        <strong className={valueClassName}>
                             {displayedValue}
                         </strong>
                     </div>
@@ -429,28 +424,4 @@ function clearTimer(timerId: number | undefined) {
     }
 
     globalThis.clearTimeout(timerId);
-}
-
-function getValueTextStyle(
-    mode: BlobMode,
-    size: NumberBlobDisplayProps['size'],
-    digitCount: number
-): CSSProperties {
-    if (mode !== 'multiplayer' || !size) {
-        return {};
-    }
-
-    if (digitCount <= 3) {
-        return { fontSize: 'clamp(3.1rem, 10.5vw, 5.5rem)' };
-    }
-
-    if (digitCount === 4) {
-        return { fontSize: 'clamp(2.3rem, 7.6vw, 3.95rem)' };
-    }
-
-    if (digitCount === 5) {
-        return { fontSize: 'clamp(1.85rem, 6vw, 3rem)' };
-    }
-
-    return { fontSize: 'clamp(1.5rem, 4.8vw, 2.45rem)' };
 }

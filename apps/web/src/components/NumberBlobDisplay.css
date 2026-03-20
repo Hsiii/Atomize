@@ -1,8 +1,28 @@
 .number-blob-display {
+    --number-blob-scale-factor: 1;
     --number-blob-size: min(74vw, 21.5rem);
+    --number-blob-padding: clamp(
+        calc(1.15rem * var(--number-blob-scale-factor)),
+        calc(4vw * var(--number-blob-scale-factor)),
+        calc(1.75rem * var(--number-blob-scale-factor))
+    );
+    --number-blob-main-font-size: clamp(
+        calc(4.4rem * var(--number-blob-scale-factor)),
+        calc(22vw * var(--number-blob-scale-factor)),
+        calc(7.8rem * var(--number-blob-scale-factor))
+    );
+    --number-blob-clear-font-size: var(--number-blob-main-font-size);
+    --number-blob-split-font-size: clamp(
+        calc(1.65rem * var(--number-blob-scale-factor)),
+        calc(5vw * var(--number-blob-scale-factor)),
+        calc(2.2rem * var(--number-blob-scale-factor))
+    );
+    --number-blob-split-padding: calc(0.8rem * var(--number-blob-scale-factor));
+    --number-blob-border-width: calc(2px * var(--number-blob-scale-factor));
     flex: 1;
     display: grid;
     place-items: center;
+    width: 100%;
     min-height: 0;
     padding: var(--space-4) 0 var(--space-2);
 }
@@ -11,8 +31,7 @@
     position: relative;
     display: grid;
     place-items: center;
-    width: var(--number-blob-size);
-    max-width: 100%;
+    width: min(100%, var(--number-blob-size));
     aspect-ratio: 1;
     isolation: isolate;
 }
@@ -41,8 +60,8 @@
     place-items: center;
     width: 100%;
     aspect-ratio: 1;
-    padding: clamp(1.15rem, 4vw, 1.75rem);
-    border: 2px solid rgba(255, 255, 255, 0.28);
+    padding: var(--number-blob-padding);
+    border: var(--number-blob-border-width) solid rgba(255, 255, 255, 0.28);
     border-radius: 50%;
     background: var(--number-blob-stage-color);
     transform: translateY(0) scale(1);
@@ -71,7 +90,7 @@
     width: 100%;
     max-width: 100%;
     font-family: var(--font-family-numeric);
-    font-size: clamp(4.4rem, 22vw, 7.8rem);
+    font-size: var(--number-blob-main-font-size);
     line-height: 1;
     font-variant-numeric: tabular-nums;
     font-weight: var(--font-weight-number-emphasis);
@@ -95,29 +114,19 @@
 }
 
 .number-blob-display-size-enemy {
-    --number-blob-size: min(29vw, 10.75rem);
-}
-
-.number-blob-display-size-enemy .number-main-blob strong,
-.number-blob-display-size-enemy .number-blob-clear-pop-value {
-    font-size: clamp(3.1rem, 10.5vw, 5.5rem);
-}
-
-.number-blob-display-size-enemy .number-blob-split-value {
-    font-size: clamp(1rem, 3vw, 1.4rem);
+    --number-blob-scale-factor: 0.5;
+    --number-blob-size: min(
+        100%,
+        calc(21.5rem * var(--number-blob-scale-factor))
+    );
 }
 
 .number-blob-display-size-self {
-    --number-blob-size: min(29vw, 10.75rem);
-}
-
-.number-blob-display-size-self .number-main-blob strong,
-.number-blob-display-size-self .number-blob-clear-pop-value {
-    font-size: clamp(3.1rem, 10.5vw, 5.5rem);
-}
-
-.number-blob-display-size-self .number-blob-split-value {
-    font-size: clamp(1rem, 3vw, 1.4rem);
+    --number-blob-scale-factor: 0.5;
+    --number-blob-size: min(
+        100%,
+        calc(21.5rem * var(--number-blob-scale-factor))
+    );
 }
 
 .number-main-blob-shell.is-impact-active {
@@ -156,8 +165,8 @@
     z-index: 3;
     display: grid;
     place-items: center;
-    padding: clamp(1.15rem, 4vw, 1.75rem);
-    border: 2px solid rgba(255, 255, 255, 0.28);
+    padding: var(--number-blob-padding);
+    border: var(--number-blob-border-width) solid rgba(255, 255, 255, 0.28);
     border-radius: 50%;
     background: var(--number-blob-stage-color);
     animation: number-blob-clear-pop 260ms cubic-bezier(0.2, 0.9, 0.3, 1)
@@ -168,7 +177,7 @@
 .number-blob-clear-pop-value {
     display: block;
     font-family: var(--font-family-numeric);
-    font-size: clamp(4.4rem, 22vw, 7.8rem);
+    font-size: var(--number-blob-clear-font-size);
     line-height: 0.84;
     font-variant-numeric: tabular-nums;
     font-weight: var(--font-weight-number-emphasis);
@@ -181,12 +190,12 @@
     z-index: 4;
     left: 50%;
     top: 50%;
-    width: var(--echo-size);
+    width: calc(var(--echo-size) * var(--number-blob-scale-factor));
     aspect-ratio: 1;
     display: grid;
     place-items: center;
-    padding: 0.8rem;
-    border: 2px solid rgba(255, 255, 255, 0.24);
+    padding: var(--number-blob-split-padding);
+    border: var(--number-blob-border-width) solid rgba(255, 255, 255, 0.24);
     border-radius: 50%;
     background: var(--color-secondary);
     transform: translate(-50%, -50%) rotate(var(--echo-angle)) translateY(0)
@@ -211,7 +220,7 @@
 .number-blob-split-value {
     display: block;
     font-family: var(--font-family-numeric);
-    font-size: clamp(1.65rem, 5vw, 2.2rem);
+    font-size: var(--number-blob-split-font-size);
     line-height: 0.88;
     font-variant-numeric: tabular-nums;
     font-weight: var(--font-weight-number-emphasis);
@@ -291,14 +300,10 @@
 @media (max-width: 700px) {
     .number-blob-display-size-enemy,
     .number-blob-display-size-self {
-        --number-blob-size: min(29vw, 8.85rem);
-    }
-
-    .number-blob-display-size-enemy .number-main-blob strong,
-    .number-blob-display-size-enemy .number-blob-clear-pop-value,
-    .number-blob-display-size-self .number-main-blob strong,
-    .number-blob-display-size-self .number-blob-clear-pop-value {
-        font-size: clamp(2.7rem, 10vw, 4.8rem);
+        --number-blob-size: min(
+            100%,
+            calc(17.7rem * var(--number-blob-scale-factor))
+        );
     }
 }
 
@@ -329,21 +334,36 @@
     24% {
         opacity: 1;
         transform: translate(-50%, -50%) rotate(var(--echo-angle))
-            translateY(calc(var(--echo-distance) * -0.82))
+            translateY(
+                calc(
+                    var(--echo-distance) * -0.82 *
+                        var(--number-blob-scale-factor)
+                )
+            )
             rotate(var(--echo-counter-angle)) scale(1.02);
     }
 
     72% {
         opacity: 0.96;
         transform: translate(-50%, -50%) rotate(var(--echo-angle))
-            translateY(calc(var(--echo-distance) * -1.12))
+            translateY(
+                calc(
+                    var(--echo-distance) * -1.12 *
+                        var(--number-blob-scale-factor)
+                )
+            )
             rotate(var(--echo-counter-angle)) scale(1);
     }
 
     100% {
         opacity: 0;
         transform: translate(-50%, -50%) rotate(var(--echo-angle))
-            translateY(calc(var(--echo-distance) * -1.24))
+            translateY(
+                calc(
+                    var(--echo-distance) * -1.24 *
+                        var(--number-blob-scale-factor)
+                )
+            )
             rotate(var(--echo-counter-angle)) scale(0.92);
     }
 }
@@ -355,15 +375,9 @@
 
     .number-blob-display-size-enemy,
     .number-blob-display-size-self {
-        --number-blob-size: min(29vw, 8.25rem);
-    }
-
-    .number-main-blob strong,
-    .number-blob-clear-pop-value {
-        font-size: clamp(3.9rem, 20vw, 6rem);
-    }
-
-    .number-blob-split-value {
-        font-size: clamp(1.35rem, 4.4vw, 1.9rem);
+        --number-blob-size: min(
+            100%,
+            calc(16.5rem * var(--number-blob-scale-factor))
+        );
     }
 }
