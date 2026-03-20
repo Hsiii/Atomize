@@ -150,6 +150,10 @@
 
 .score-dialog-summary {
     margin: 0;
+    min-height: calc(var(--type-action-label-support-line-height) * 2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-family: var(--type-action-label-family);
     font-size: var(--type-action-label-size);
     font-weight: var(--type-action-label-weight);
