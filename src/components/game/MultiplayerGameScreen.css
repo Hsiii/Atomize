@@ -181,6 +181,26 @@
     letter-spacing: var(--type-action-label-caps-letter-spacing);
 }
 
+.multiplayer-perfect-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.12rem 0.42rem 0.08rem;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--color-gold-soft) 92%, white 8%);
+    color: var(--color-gold-strong);
+    font-family: var(--type-action-label-family);
+    font-size: clamp(0.58rem, 1.4vw, 0.8rem);
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    line-height: 1;
+    text-transform: uppercase;
+    animation: multiplayer-perfect-tag 1120ms cubic-bezier(0.16, 0.9, 0.2, 1)
+        forwards;
+}
+
 .multiplayer-hp-name {
     font-weight: var(--type-body-meta-weight);
     text-transform: var(--type-action-label-wide-text-transform);
@@ -296,66 +316,25 @@
     color: var(--color-gold);
 }
 
-.multiplayer-perfect-burst {
-    position: absolute;
-    inset: 50% auto auto 50%;
-    z-index: 4;
-    display: grid;
-    place-items: center;
-    width: 58%;
-    aspect-ratio: 1;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-    animation: multiplayer-perfect-burst 1120ms cubic-bezier(0.16, 0.9, 0.2, 1)
-        forwards;
-}
-
-.multiplayer-perfect-burst-enemy {
-    width: 72%;
-}
-
-.multiplayer-perfect-burst-halo {
-    position: absolute;
-    inset: 18%;
-    border: 2px solid color-mix(in srgb, var(--color-gold-strong) 70%, white);
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--color-gold-soft) 86%, transparent);
-}
-
-.multiplayer-perfect-burst-label {
-    position: relative;
-    z-index: 1;
-    padding: 0.2rem 0.55rem;
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--color-gold-soft) 92%, white 8%);
-    color: var(--color-gold-strong);
-    font-family: var(--type-action-label-family);
-    font-size: clamp(0.7rem, 1.8vw, 1rem);
-    font-weight: 900;
-    letter-spacing: 0.16em;
-    line-height: 1;
-    text-transform: uppercase;
-}
-
-@keyframes multiplayer-perfect-burst {
+@keyframes multiplayer-perfect-tag {
     0% {
         opacity: 0;
-        transform: translate(-50%, -44%) scale(0.42);
+        transform: translateY(0.1rem) scale(0.72);
     }
 
     20% {
         opacity: 1;
-        transform: translate(-50%, -50%) scale(1.04);
+        transform: translateY(0) scale(1.04);
     }
 
     68% {
         opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
+        transform: translateY(0) scale(1);
     }
 
     100% {
         opacity: 0;
-        transform: translate(-50%, -58%) scale(0.9);
+        transform: translateY(-0.12rem) scale(0.92);
     }
 }
 

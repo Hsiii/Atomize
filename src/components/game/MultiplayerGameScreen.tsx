@@ -1103,6 +1103,7 @@ export function MultiplayerGameScreen({
                     label={opponentPlayer?.name ?? uiText.opponent}
                     maxHp={multiplayerSnapshot?.maxHp ?? 1}
                     outerRef={enemyHealthRef}
+                    perfectActive={perfectBurst?.side === 'enemy'}
                     side='enemy'
                 />
 
@@ -1120,18 +1121,6 @@ export function MultiplayerGameScreen({
                                 stageIndex={effectiveSelfBlob.stageIndex}
                                 value={effectiveSelfBlob.value}
                             />
-                            {perfectBurst?.side === 'self' ? (
-                                <div
-                                    aria-hidden='true'
-                                    className='multiplayer-perfect-burst'
-                                    key={`perfect-self-${perfectBurst.id}`}
-                                >
-                                    <span className='multiplayer-perfect-burst-halo' />
-                                    <span className='multiplayer-perfect-burst-label'>
-                                        PERFECT
-                                    </span>
-                                </div>
-                            ) : undefined}
                         </div>
                     </div>
 
@@ -1149,18 +1138,6 @@ export function MultiplayerGameScreen({
                                 stageIndex={effectiveEnemyBlob.stageIndex}
                                 value={effectiveEnemyBlob.value}
                             />
-                            {perfectBurst?.side === 'enemy' ? (
-                                <div
-                                    aria-hidden='true'
-                                    className='multiplayer-perfect-burst multiplayer-perfect-burst-enemy'
-                                    key={`perfect-enemy-${perfectBurst.id}`}
-                                >
-                                    <span className='multiplayer-perfect-burst-halo' />
-                                    <span className='multiplayer-perfect-burst-label'>
-                                        PERFECT
-                                    </span>
-                                </div>
-                            ) : undefined}
                         </div>
                     </div>
 
@@ -1196,6 +1173,7 @@ export function MultiplayerGameScreen({
                         label={uiText.you}
                         maxHp={multiplayerSnapshot?.maxHp ?? 1}
                         outerRef={selfHealthRef}
+                        perfectActive={perfectBurst?.side === 'self'}
                         side='self'
                     />
 
@@ -1281,6 +1259,7 @@ type BattleHpBarProps = {
     label: string;
     maxHp: number;
     outerRef: React.RefObject<HTMLDivElement | null>;
+    perfectActive: boolean;
     side: 'enemy' | 'self';
 };
 
@@ -1291,6 +1270,7 @@ function BattleHpBar({
     label,
     maxHp,
     outerRef,
+    perfectActive,
     side,
 }: BattleHpBarProps): JSX.Element {
     const hpRatio = Math.max(0, Math.min(100, (hp / Math.max(maxHp, 1)) * 100));
@@ -1308,6 +1288,14 @@ function BattleHpBar({
         >
             <div className='multiplayer-hp-copy'>
                 <span className='multiplayer-hp-name'>{label}</span>
+                {perfectActive ? (
+                    <span
+                        aria-hidden='true'
+                        className='multiplayer-perfect-tag'
+                    >
+                        PERFECT
+                    </span>
+                ) : undefined}
                 <span className='multiplayer-hp-stat'>{hp}</span>
             </div>
 
