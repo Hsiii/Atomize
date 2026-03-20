@@ -202,6 +202,7 @@ export function SingleGameScreen({
                     <ScoreDialog
                         comboCount={soloState.maxCombo}
                         onReturnHome={onBack}
+                        score={soloState.score}
                         title={uiText.score}
                     />
                 ) : undefined}
