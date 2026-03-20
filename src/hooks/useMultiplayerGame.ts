@@ -744,11 +744,37 @@ export function useMultiplayerGame({
 
     function updateSnapshot(snapshot: RoomSnapshot, statusText?: string) {
         setMultiplayer((currentState) => ({
-            ...currentState,
-            snapshot,
-            roomId: snapshot.roomId,
-            statusText: statusText ?? currentState.statusText,
+            ...(shouldIgnoreSnapshotRegression(
+                currentState.snapshot,
+                snapshot
+            )
+                ? currentState
+                : {
+                      ...currentState,
+                      snapshot,
+                      roomId: snapshot.roomId,
+                      statusText: statusText ?? currentState.statusText,
+                  }),
         }));
+    }
+
+    function shouldIgnoreSnapshotRegression(
+        currentSnapshot: RoomSnapshot | undefined,
+        nextSnapshot: RoomSnapshot
+    ): boolean {
+        if (!currentSnapshot) {
+            return false;
+        }
+
+        if (currentSnapshot.status === 'finished') {
+            return nextSnapshot.status !== 'finished';
+        }
+
+        return (
+            currentSnapshot.status === 'playing' &&
+            (nextSnapshot.status === 'waiting' ||
+                nextSnapshot.status === 'countdown')
+        );
     }
 
     async function closeActiveChannel() {
