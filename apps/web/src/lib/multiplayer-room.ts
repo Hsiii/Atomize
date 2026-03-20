@@ -10,7 +10,7 @@ import type {
     RoomSnapshot,
 } from '@atomize/game-core';
 
-const STARTING_HP = 60;
+const STARTING_HP = 500;
 const WRONG_SELECTION_DAMAGE = 8;
 const ROOM_START_COUNTDOWN_MS = 3000;
 

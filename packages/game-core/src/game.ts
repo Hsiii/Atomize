@@ -35,6 +35,7 @@ const MAX_PLAYABLE_PRIME_COUNT = 9;
 const MIN_FACTOR_COUNT = 2;
 const MAX_STAGE_VALUE = 1_000_000;
 const MIN_PRIME = PRIME_POOL[0];
+const SOLO_MAX_HP = 500;
 
 export function applySoloPenalty(state: SoloState): SoloState {
     return {
@@ -117,7 +118,7 @@ export function applyPrimeSelection(
 
 export function createInitialSoloState(seed: string): SoloState {
     return {
-        hp: 5,
+        hp: SOLO_MAX_HP,
         combo: 0,
         maxCombo: 0,
         score: 0,
@@ -150,7 +151,10 @@ export function advanceSoloState(
     const comboBonus = nextCombo * 15;
 
     return {
-        hp: Math.min(5, state.hp + (nextStageIndex % 5 === 0 ? 1 : 0)),
+        hp: Math.min(
+            SOLO_MAX_HP,
+            state.hp + (nextStageIndex % 5 === 0 ? 1 : 0)
+        ),
         combo: nextCombo,
         maxCombo: Math.max(state.maxCombo, nextCombo),
         score: state.score + 50 + comboBonus,
