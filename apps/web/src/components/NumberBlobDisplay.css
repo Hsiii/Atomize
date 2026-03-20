@@ -102,7 +102,7 @@
 
 .number-blob-display-multiplayer .number-main-blob,
 .number-blob-display-multiplayer .number-blob-clear-pop {
-    --number-blob-stage-color: var(--color-multiplayer-blob-stage);
+    --number-blob-stage-color: var(--color-primary-strong);
 }
 
 .number-blob-display-size-enemy {
@@ -203,32 +203,32 @@
 
 .number-blob-display-multiplayer.number-blob-display-size-self
     .number-blob-split-echo {
-    background: var(--color-multiplayer-self-attack);
+    background: var(--color-primary);
 }
 
 .number-blob-display-multiplayer.number-blob-display-size-self
     .number-blob-split-echo.is-clear-burst {
-    background: var(--color-multiplayer-self-attack-burst);
+    background: color-mix(in srgb, var(--color-primary) 78%, white);
 }
 
 .number-blob-display-multiplayer.number-blob-display-size-enemy
     .number-blob-split-echo {
-    background: var(--color-multiplayer-opponent-attack);
+    background: var(--color-secondary);
 }
 
 .number-blob-display-multiplayer.number-blob-display-size-enemy
     .number-blob-split-echo.is-clear-burst {
-    background: var(--color-multiplayer-opponent-attack-burst);
+    background: color-mix(in srgb, var(--color-secondary) 78%, white);
 }
 
 .number-blob-display-multiplayer.number-blob-display-size-self
     .number-main-blob {
-    border-color: var(--color-multiplayer-self-border);
+    border-color: color-mix(in srgb, var(--color-primary) 36%, transparent);
 }
 
 .number-blob-display-multiplayer.number-blob-display-size-enemy
     .number-main-blob {
-    border-color: var(--color-multiplayer-opponent-border);
+    border-color: color-mix(in srgb, var(--color-secondary) 36%, transparent);
 }
 
 .number-blob-split-value {
