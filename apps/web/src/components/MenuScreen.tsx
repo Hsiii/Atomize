@@ -68,7 +68,7 @@ export function MenuScreen({
 
     const hasOpponent = Boolean(opponentName);
     const isCountingDown = countdownValue !== null;
-    const initials = playerName.slice(0, 2).toUpperCase();
+    const initials = playerName.slice(0, 1).toUpperCase();
 
     function handleProfileSave() {
         const trimmed = editingName.trim();
@@ -120,7 +120,7 @@ export function MenuScreen({
                                 <div className='slot-circle slot-p2-filled'>
                                     <span className='slot-initials'>
                                         {(opponentName ?? '')
-                                            .slice(0, 2)
+                                            .slice(0, 1)
                                             .toUpperCase()}
                                     </span>
                                     <span className='slot-name'>

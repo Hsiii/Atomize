@@ -17,7 +17,7 @@
 }
 
 .menu-title-orb {
-    --menu-title-diameter: max(118vw, 118dvh);
+    --menu-title-diameter: max(130vw, 130dvh);
     position: absolute;
     left: 50%;
     top: calc(50dvh - var(--menu-title-diameter));
@@ -119,9 +119,10 @@
 }
 
 .slot-p2-empty {
-    background: var(--color-primary);
-    color: var(--color-text-inverse);
+    background: rgba(22, 138, 173, 0.18);
+    color: var(--color-primary-strong);
     border-style: dashed;
+    border-color: var(--color-primary-strong);
 }
 
 .slot-p2-empty:disabled {
