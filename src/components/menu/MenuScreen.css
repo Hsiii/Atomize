@@ -123,17 +123,16 @@
 
 .slot-status-indicator {
     position: absolute;
-    right: 0.1rem;
-    bottom: 0.1rem;
+    right: 0.12rem;
+    bottom: 0.08rem;
     width: 1.35rem;
     height: 1.35rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid var(--color-text-inverse);
     border-radius: 50%;
     background: var(--color-primary);
-    box-shadow: 0 0 0 1px rgba(16, 27, 46, 0.08);
+    z-index: 1;
 }
 
 .slot-status-check {
