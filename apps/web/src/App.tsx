@@ -26,7 +26,6 @@ import {
     addPlayerToRoom,
     applyBattlePenalty,
     applyBattlePrimeSelection,
-    beginRoomMatch,
     createRoomSnapshot,
     setPlayerReady,
 } from './lib/multiplayer-room';
@@ -39,7 +38,6 @@ const soloDurationSeconds = 60;
 const playablePrimes = PRIME_POOL.slice(0, 9);
 const soloComboStepDelayMs = 280;
 const multiplayerComboStepDelayMs = 220;
-const multiplayerCountdownDurationMs = 3000;
 const realtimeSendTimeoutMs = 1500;
 const joinRoomLookupTimeoutMs = 5000;
 const joinRoomRetryIntervalMs = 1200;
@@ -117,9 +115,6 @@ export default function App() {
     );
     const [isMultiplayerComboRunning, setIsMultiplayerComboRunning] =
         useState(false);
-    const [multiplayerCountdownValue, setMultiplayerCountdownValue] = useState<
-        number | null
-    >(null);
     const [playerName, setPlayerName] = useState(() => getInitialPlayerName());
     const [pendingInvitation, setPendingInvitation] =
         useState<PendingInvitation | null>(null);
@@ -190,30 +185,6 @@ export default function App() {
             setScreen('multi-lobby');
         }
     }, [multiplayer.snapshot, screen]);
-
-    useEffect(() => {
-        const countdownEndsAt = multiplayer.snapshot?.countdownEndsAt;
-
-        if (multiplayer.snapshot?.status !== 'countdown' || !countdownEndsAt) {
-            setMultiplayerCountdownValue(null);
-            return;
-        }
-
-        const updateCountdownValue = () => {
-            const remainingMs = countdownEndsAt - Date.now();
-            setMultiplayerCountdownValue(
-                Math.max(1, Math.ceil(remainingMs / 1000))
-            );
-        };
-
-        updateCountdownValue();
-
-        const timer = window.setInterval(updateCountdownValue, 100);
-
-        return () => {
-            window.clearInterval(timer);
-        };
-    }, [multiplayer.snapshot?.countdownEndsAt, multiplayer.snapshot?.status]);
 
     useEffect(() => {
         if (screen !== 'single') {
@@ -1184,7 +1155,6 @@ export default function App() {
 
         return (
             <MenuScreen
-                countdownValue={multiplayerCountdownValue}
                 onAcceptInvitation={handleAcceptInvitation}
                 onDeclineInvitation={handleDeclineInvitation}
                 onEditName={handleEditName}
@@ -1222,7 +1192,6 @@ export default function App() {
             <MultiplayerLobbyScreen
                 menuMode={menuMode}
                 multiplayer={multiplayer}
-                multiplayerCountdownValue={multiplayerCountdownValue}
                 transientToastId={lobbyToast.id}
                 transientToastMessage={lobbyToast.message}
                 isJoinPending={isPendingGuestJoin(multiplayer)}

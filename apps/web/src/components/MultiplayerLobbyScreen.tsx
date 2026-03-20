@@ -12,7 +12,6 @@ import { MultiplayerWaitingRoomScreen } from './MultiplayerWaitingRoomScreen';
 type MultiplayerLobbyScreenProps = {
     menuMode: MenuMode;
     multiplayer: MultiplayerState;
-    multiplayerCountdownValue: number | null;
     transientToastId: number;
     transientToastMessage: string | null;
     isJoinPending: boolean;
@@ -29,7 +28,6 @@ type MultiplayerLobbyScreenProps = {
 export function MultiplayerLobbyScreen({
     menuMode,
     multiplayer,
-    multiplayerCountdownValue,
     transientToastId,
     transientToastMessage,
     isJoinPending,
@@ -204,7 +202,6 @@ export function MultiplayerLobbyScreen({
             activeToastMessage={activeToastMessage}
             codeCopied={codeCopied}
             multiplayer={multiplayer}
-            multiplayerCountdownValue={multiplayerCountdownValue}
             onBack={handleBack}
             onCopyCode={handleCopyCode}
             onInvitePlayer={handleInvite}

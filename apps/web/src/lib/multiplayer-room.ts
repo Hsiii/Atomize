@@ -68,21 +68,6 @@ export function setPlayerReady(
     return {
         ...snapshot,
         players: nextPlayers,
-        status: snapshot.status,
-        countdownEndsAt: snapshot.countdownEndsAt,
-    };
-}
-
-export function beginRoomMatch(snapshot: RoomSnapshot): RoomSnapshot {
-    if (snapshot.status !== 'countdown') {
-        return snapshot;
-    }
-
-    return {
-        ...snapshot,
-        countdownEndsAt: undefined,
-        lastEvent: undefined,
-        status: 'playing',
     };
 }
 

@@ -12,7 +12,6 @@ import './MenuScreen.css';
 type MenuScreenProps = {
     playerName: string;
     opponentName: string | null;
-    countdownValue: number | null;
     onlineUsers: OnlineLobbyUser[];
     toastMessage: string | null;
     toastId: number;
@@ -27,7 +26,6 @@ type MenuScreenProps = {
 export function MenuScreen({
     playerName,
     opponentName,
-    countdownValue,
     onlineUsers,
     toastMessage,
     toastId,
@@ -68,7 +66,6 @@ export function MenuScreen({
     }, [toastId, toastMessage]);
 
     const hasOpponent = Boolean(opponentName);
-    const isCountingDown = countdownValue !== null;
     const isGuest = playerName === uiText.guest;
     const initials = playerName.slice(0, 1).toUpperCase();
 
@@ -131,7 +128,6 @@ export function MenuScreen({
                             ) : (
                                 <button
                                     className='slot-circle slot-p2-empty'
-                                    disabled={isCountingDown}
                                     onClick={() => {
                                         setShowInviteDialog(true);
                                     }}
@@ -142,20 +138,8 @@ export function MenuScreen({
                             )}
                         </div>
 
-                        {isCountingDown && (
-                            <div className='menu-countdown'>
-                                <span
-                                    className='countdown-number'
-                                    key={countdownValue}
-                                >
-                                    {countdownValue}
-                                </span>
-                            </div>
-                        )}
-
                         <ActionButton
                             className='menu-start-btn'
-                            disabled={isCountingDown}
                             onClick={onStartSoloGame}
                             variant='primary'
                         >

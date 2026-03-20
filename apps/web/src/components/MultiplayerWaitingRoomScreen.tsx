@@ -8,7 +8,6 @@ type MultiplayerWaitingRoomScreenProps = {
     activeToastMessage: string | undefined;
     codeCopied: boolean;
     multiplayer: MultiplayerState;
-    multiplayerCountdownValue: number | null;
     onlineUsers: OnlineLobbyUser[];
     onBack: () => void;
     onCopyCode: () => void;
@@ -20,7 +19,6 @@ export function MultiplayerWaitingRoomScreen({
     activeToastMessage,
     codeCopied,
     multiplayer,
-    multiplayerCountdownValue,
     onlineUsers,
     onBack,
     onCopyCode,
@@ -33,7 +31,6 @@ export function MultiplayerWaitingRoomScreen({
     const opponentPlayer = multiplayer.snapshot?.players.find(
         (player) => player.id !== multiplayer.playerId
     );
-    const isCountdown = multiplayer.snapshot?.status === 'countdown';
     const hasOpponent = Boolean(opponentPlayer);
     const isCurrentReady = currentPlayer?.ready ?? false;
     const isOpponentReady = opponentPlayer?.ready ?? false;
@@ -83,11 +80,7 @@ export function MultiplayerWaitingRoomScreen({
                     </div>
 
                     <div className='arena-center'>
-                        <span className='arena-vs'>
-                            {isCountdown
-                                ? (multiplayerCountdownValue ?? 3)
-                                : 'VS'}
-                        </span>
+                        <span className='arena-vs'>VS</span>
                     </div>
 
                     <div
@@ -112,7 +105,7 @@ export function MultiplayerWaitingRoomScreen({
                         ) : undefined}
                     </div>
 
-                    {!hasOpponent && !isCountdown && onlineUsers.length > 0 ? (
+                    {!hasOpponent && onlineUsers.length > 0 ? (
                         <ul className='arena-challengers'>
                             {onlineUsers.map((user) => (
                                 <li
