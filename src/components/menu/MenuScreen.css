@@ -132,7 +132,7 @@
     justify-content: center;
     border: 2px solid var(--color-text-inverse);
     border-radius: 50%;
-    background: #57d6ee;
+    background: var(--color-primary);
     box-shadow: 0 0 0 1px rgba(16, 27, 46, 0.08);
 }
 
@@ -140,7 +140,7 @@
     width: 0.8rem;
     height: 0.8rem;
     stroke-width: 3;
-    color: var(--color-ink);
+    color: var(--color-text-inverse);
 }
 
 .slot-circle:hover {
