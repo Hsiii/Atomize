@@ -26,6 +26,7 @@ type NumberBlobDisplayProps = {
     stageAdvanceSolvedStateKey?: number;
     isComboRunning?: boolean;
     isStageRevealActive?: boolean;
+    concealValues?: boolean;
     mode?: BlobMode;
     size?: 'enemy' | 'self';
 };
@@ -109,6 +110,7 @@ export function NumberBlobDisplay({
     stageAdvanceSolvedStateKey = 0,
     isComboRunning = false,
     isStageRevealActive = false,
+    concealValues = false,
     mode = 'solo',
     size,
 }: NumberBlobDisplayProps): JSX.Element {
@@ -185,15 +187,16 @@ export function NumberBlobDisplay({
             };
         }
 
-        const resizeObserver = new ResizeObserver((entries) => {
-            const entry = entries[0];
+        const resizeObserver = new ResizeObserver(
+            (entries: readonly ResizeObserverEntry[]) => {
+                const entry = entries[0];
 
-            if (!entry) {
-                return;
+                updateAvailableSize(
+                    entry.contentRect.width,
+                    entry.contentRect.height
+                );
             }
-
-            updateAvailableSize(entry.contentRect.width, entry.contentRect.height);
-        });
+        );
 
         resizeObserver.observe(container);
         measureContainer();
@@ -266,10 +269,9 @@ export function NumberBlobDisplay({
             clearEchoTimerRef.current = undefined;
             clearTimer(clearPopTimerRef.current);
             clearPopTimerRef.current = undefined;
-            const clearEchoes = createClearSplitEchoes(
-                echoIdRef.current,
-                previousValue
-            );
+            const clearEchoes = concealValues
+                ? []
+                : createClearSplitEchoes(echoIdRef.current, previousValue);
             const nextClearPop = shouldShowSolvedState
                 ? {
                       id: echoIdRef.current + clearEchoes.length,
@@ -443,14 +445,20 @@ export function NumberBlobDisplay({
         previousStageIndexRef.current = stageIndex;
 
         return undefined;
-    }, [isStageRevealActive, stageAdvanceSolvedStateKey, stageIndex, value]);
+    }, [
+        concealValues,
+        isStageRevealActive,
+        stageAdvanceSolvedStateKey,
+        stageIndex,
+        value,
+    ]);
 
     return (
         <div
-            ref={containerRef}
             className={`number-blob-display number-blob-display-${mode}${
                 isComboRunning ? ' is-combo-running' : ''
             }${size ? ` number-blob-display-size-${size}` : ''}`}
+            ref={containerRef}
             style={
                 availableSize
                     ? ({
@@ -471,7 +479,7 @@ export function NumberBlobDisplay({
                         key={clearPop.id}
                     >
                         <span className='number-blob-clear-pop-value'>
-                            {clearPop.value}
+                            {concealValues ? '' : clearPop.value}
                         </span>
                     </div>
                 ) : undefined}
@@ -488,12 +496,12 @@ export function NumberBlobDisplay({
                                 '--echo-angle': `${echo.angle}deg`,
                                 '--echo-counter-angle': `${echo.counterAngle}deg`,
                                 '--echo-distance': `${echo.distance}rem`,
-                                '--echo-size': `${echo.size}rem`,
+                                '--echo-size': `${concealValues ? 5.4 : echo.size}rem`,
                             } as CSSProperties
                         }
                     >
                         <span className='number-blob-split-value'>
-                            {echo.value}
+                            {concealValues ? '' : echo.value}
                         </span>
                     </div>
                 ))}
@@ -509,8 +517,11 @@ export function NumberBlobDisplay({
                         }${clearPop ? ' is-cleared' : ''}`}
                         key={stageIndex}
                     >
-                        <strong className={valueClassName}>
-                            {displayedValue}
+                        <strong
+                            aria-hidden={concealValues}
+                            className={valueClassName}
+                        >
+                            {concealValues ? '' : displayedValue}
                         </strong>
                     </div>
                 </div>

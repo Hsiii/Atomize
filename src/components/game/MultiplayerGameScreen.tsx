@@ -691,10 +691,10 @@ export function MultiplayerGameScreen({
             return;
         }
 
-        if (digitBufferRef.current.length > 0) {
+        if (digitBufferRef.current !== '') {
             const nextBuffer = digitBufferRef.current.slice(0, -1);
 
-            if (nextBuffer.length === 0) {
+            if (nextBuffer === '') {
                 clearDigitBuffer();
                 return;
             }
@@ -877,7 +877,7 @@ export function MultiplayerGameScreen({
             if (event.key === 'Backspace') {
                 if (
                     isMultiplayerComboRunning ||
-                    (digitBufferRef.current.length === 0 &&
+                    (digitBufferRef.current === '' &&
                         visibleQueueRef.current.length === 0)
                 ) {
                     return;
@@ -965,6 +965,7 @@ export function MultiplayerGameScreen({
                             ref={enemyBlobRef}
                         >
                             <NumberBlobDisplay
+                                concealValues
                                 isComboRunning={false}
                                 isStageRevealActive={isOpponentRevealActive}
                                 mode='multiplayer'
@@ -1036,7 +1037,7 @@ export function MultiplayerGameScreen({
                                 disabled={
                                     isMultiplayerComboRunning ||
                                     (visibleQueue.length === 0 &&
-                                        bufferedPrimeInput.length === 0)
+                                        bufferedPrimeInput === '')
                                 }
                                 onClick={handleBackspace}
                                 shape='rounded'
