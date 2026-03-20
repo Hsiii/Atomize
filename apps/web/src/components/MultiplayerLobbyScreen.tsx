@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { JSX } from 'react';
-import { Copy, Check, Send } from 'lucide-react';
+import { ArrowLeft, Copy, Check } from 'lucide-react';
 
 import type { MenuMode, MultiplayerState, OnlineLobbyUser } from '../app-state';
 import { uiText } from '../app-state';
@@ -198,118 +198,98 @@ export function MultiplayerLobbyScreen({
 
     return (
         <main className='app-shell fullscreen-shell'>
-            <BackButton onBack={onBack} />
-            <section className='screen lobby-screen'>
-                <div className='lobby-stack waiting-room-stack'>
-                    <RoomCodePanel value={multiplayer.roomId} />
+            <section className='screen lobby-screen lobby-room'>
+                <header className='lobby-bar'>
+                    <button
+                        className='lobby-bar-back'
+                        onClick={() => {
+                            runAsyncAction(onBack);
+                        }}
+                        type='button'
+                    >
+                        <ArrowLeft size={20} />
+                    </button>
+                    <div className='lobby-bar-code'>
+                        <span className='lobby-bar-digits'>
+                            {multiplayer.roomId}
+                        </span>
+                        <button
+                            className='lobby-bar-copy'
+                            onClick={handleCopyCode}
+                            type='button'
+                        >
+                            {codeCopied ? (
+                                <Check size={14} />
+                            ) : (
+                                <Copy size={14} />
+                            )}
+                        </button>
+                    </div>
+                </header>
 
-                    <section className='vs-matchup'>
-                        <div className='vs-player vs-player-self'>
-                            <span className='vs-player-tag'>P1</span>
-                            <strong className='vs-player-name'>
-                                {currentPlayer?.name ?? '-'}
-                            </strong>
-                        </div>
+                <div className='lobby-arena'>
+                    <div className='arena-slot arena-self'>
+                        <span className='arena-tag'>P1</span>
+                        <span className='arena-name'>
+                            {currentPlayer?.name ?? '-'}
+                        </span>
+                    </div>
 
-                        <div className='vs-divider'>
-                            <span className='vs-label'>VS</span>
-                        </div>
+                    <div className='arena-vs'>
+                        {isCountdown
+                            ? (multiplayerCountdownValue ?? 3)
+                            : 'VS'}
+                    </div>
 
-                        {opponentPlayer ? (
-                            <div className='vs-player vs-player-opponent'>
-                                <span className='vs-player-tag'>P2</span>
-                                <strong className='vs-player-name'>
-                                    {opponentPlayer.name}
-                                </strong>
-                            </div>
-                        ) : (
-                            <div className='vs-player vs-player-opponent vs-player-waiting'>
-                                <span className='vs-player-tag'>P2</span>
-                                <div className='vs-waiting-mark'>?</div>
-                            </div>
-                        )}
-                    </section>
-
-                    {isCountdown ? (
-                        <div className='waiting-cta'>
-                            <ActionButton
-                                className='start-action'
-                                disabled
-                                variant='secondary'
-                            >
-                                {`${uiText.countdownPrefix} ${multiplayerCountdownValue ?? 3}`}
-                            </ActionButton>
+                    {opponentPlayer ? (
+                        <div className='arena-slot arena-opponent'>
+                            <span className='arena-tag'>P2</span>
+                            <span className='arena-name'>
+                                {opponentPlayer.name}
+                            </span>
                         </div>
                     ) : (
-                        <div className='lobby-actions'>
-                            <button
-                                className='lobby-copy-btn'
-                                onClick={handleCopyCode}
-                                type='button'
-                            >
-                                {codeCopied ? (
-                                    <Check size={16} />
-                                ) : (
-                                    <Copy size={16} />
-                                )}
-                                {codeCopied
-                                    ? uiText.codeCopied
-                                    : uiText.copyCode}
-                            </button>
+                        <div className='arena-slot arena-empty'>
+                            <span className='arena-tag'>P2</span>
+                            <span className='arena-name'>?</span>
                         </div>
                     )}
-
-                    {!hasOpponent && !isCountdown ? (
-                        <section className='online-section'>
-                            <p className='online-header'>
-                                <span className='online-dot' />
-                                {uiText.onlineSection}
-                                <span className='online-count'>
-                                    {onlineUsers.length}
-                                </span>
-                            </p>
-
-                            {onlineUsers.length > 0 ? (
-                                <ul className='online-list'>
-                                    {onlineUsers.map((user) => (
-                                        <li
-                                            className='online-user'
-                                            key={user.playerId}
-                                        >
-                                            <span className='online-user-name'>
-                                                {user.name}
-                                            </span>
-                                            <button
-                                                className='online-invite-btn'
-                                                onClick={() => {
-                                                    handleInvite(
-                                                        user.playerId
-                                                    );
-                                                }}
-                                                type='button'
-                                            >
-                                                <Send size={13} />
-                                                {uiText.inviteButton}
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p className='online-empty'>
-                                    {uiText.noOnlinePlayers}
-                                </p>
-                            )}
-                        </section>
-                    ) : undefined}
-
-                    {activeToastMessage ? (
-                        <div aria-live='polite' className='waiting-toast-layer'>
-                            <div className='waiting-toast'>
-                                {activeToastMessage}
-                            </div>
-                        </div>
-                    ) : undefined}
                 </div>
+
+                {!hasOpponent && !isCountdown && onlineUsers.length > 0 ? (
+                    <div className='lobby-online'>
+                        <p className='lobby-online-label'>
+                            {uiText.onlineSection}
+                        </p>
+                        <ul className='lobby-online-list'>
+                            {onlineUsers.map((user) => (
+                                <li
+                                    className='lobby-online-user'
+                                    key={user.playerId}
+                                >
+                                    <span>{user.name}</span>
+                                    <button
+                                        className='lobby-online-invite'
+                                        onClick={() => {
+                                            handleInvite(user.playerId);
+                                        }}
+                                        type='button'
+                                    >
+                                        {uiText.inviteButton}
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ) : undefined}
+
+                {activeToastMessage ? (
+                    <div aria-live='polite' className='waiting-toast-layer'>
+                        <div className='waiting-toast'>
+                            {activeToastMessage}
+                        </div>
+                    </div>
+                ) : undefined}
             </section>
         </main>
     );
