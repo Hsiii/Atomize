@@ -253,9 +253,9 @@
 }
 
 .menu-start-btn-ready:not(:disabled) {
-    background: var(--color-disabled-bg);
-    border-color: transparent;
-    color: var(--color-disabled-text);
+    background: rgba(16, 27, 46, 0.62);
+    border-color: rgba(16, 27, 46, 0.62);
+    color: rgba(255, 255, 255, 0.74);
     opacity: 1;
 }
 
