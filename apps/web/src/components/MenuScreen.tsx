@@ -107,9 +107,9 @@ function seedParticles(
 
     return blobs.map((blob, index) => {
         const button = buttons.get(blob.id);
-        const buttonRect = button?.getBoundingClientRect();
-        const radius =
-            Math.max(buttonRect?.width ?? 0, buttonRect?.height ?? 0) / 2;
+        const radius = button
+            ? Math.max(button.offsetWidth, button.offsetHeight) / 2
+            : 0;
         const seed = seeds[index] ?? seeds.at(-1);
         const maxX = Math.max(
             WALL_PADDING,
@@ -147,8 +147,8 @@ function seedParticles(
                 radius,
                 x: clamp(fieldRect.width / 2 - radius, WALL_PADDING, maxX),
                 y: clamp(fieldRect.height / 2 - radius, WALL_PADDING, maxY),
-                vx: seed.vx,
-                vy: seed.vy,
+                vx: 0,
+                vy: 0,
             };
         }
 
@@ -329,6 +329,7 @@ export function MenuScreen({
 }: MenuScreenProps): JSX.Element {
     const [phase, setPhase] = useState<MenuPhase>('play');
     const [isPlayIntroActive, setIsPlayIntroActive] = useState(true);
+    const isPlayIntroActiveRef = useRef(true);
     const fieldRef = useRef<HTMLDivElement | null>(null);
     const titleOrbRef = useRef<HTMLDivElement | null>(null);
     const titleAtomRef = useRef<HTMLSpanElement | null>(null);
@@ -628,6 +629,14 @@ export function MenuScreen({
                     continue;
                 }
 
+                if (
+                    isPlayIntroActiveRef.current &&
+                    phase === 'play' &&
+                    particle.id === 'play'
+                ) {
+                    continue;
+                }
+
                 const particleCenterX = particle.x + particle.radius;
                 const particleCenterY = particle.y + particle.radius;
                 const pullX = (centerX - particleCenterX) / fieldRect.width;
@@ -748,6 +757,18 @@ export function MenuScreen({
                                         key={blob.id}
                                         onAnimationEnd={() => {
                                             if (blob.id === 'play') {
+                                                isPlayIntroActiveRef.current = false;
+
+                                                const playParticle =
+                                                    particlesRef.current.find(
+                                                        (p) => p.id === 'play'
+                                                    );
+
+                                                if (playParticle) {
+                                                    playParticle.vx = 0.24;
+                                                    playParticle.vy = -0.2;
+                                                }
+
                                                 setIsPlayIntroActive(false);
                                             }
                                         }}
