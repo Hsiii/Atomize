@@ -9,6 +9,13 @@ export default defineConfig(
     },
 
     {
+        files: ['vite.config.ts'],
+        rules: {
+            'new-cap': 'off',
+        },
+    },
+
+    {
         files: ['**/*.d.ts'],
         rules: {
             'import-x/no-default-export': 'off',
