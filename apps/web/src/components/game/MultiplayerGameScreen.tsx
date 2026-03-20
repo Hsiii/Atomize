@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, JSX } from 'react';
 import type { Prime, RoomPlayer, RoomSnapshot } from '@atomize/game-core';
-import { ArrowLeft, CircleArrowUp, Delete } from 'lucide-react';
+import { CircleArrowUp, Delete } from 'lucide-react';
 
 import { uiText } from '../../app-state';
 
@@ -876,30 +876,20 @@ export function MultiplayerGameScreen({
     return (
         <main className='app-shell fullscreen-shell'>
             <section className='screen game-screen single-game-screen multiplayer-game-screen'>
-                <button
-                    aria-label={uiText.back}
-                    className='multiplayer-back-button'
-                    onClick={() => {
-                        Promise.resolve(onBack()).catch(() => undefined);
-                    }}
-                    type='button'
-                >
-                    <ArrowLeft aria-hidden='true' className='control-icon' />
-                </button>
+                <BattleHpBar
+                    damagePop={damagePops.find(
+                        (damagePop) => damagePop.side === 'enemy'
+                    )}
+                    hp={displayedEnemyHp}
+                    impact={hpImpacts.enemy}
+                    label={opponentPlayer?.name ?? uiText.opponent}
+                    maxHp={multiplayerSnapshot?.maxHp ?? 1}
+                    outerRef={enemyHealthRef}
+                    side='enemy'
+                />
 
                 <section className='multiplayer-board' ref={overlayRef}>
                     <div className='multiplayer-column multiplayer-column-self'>
-                        <BattleHpBar
-                            damagePop={damagePops.find(
-                                (damagePop) => damagePop.side === 'self'
-                            )}
-                            hp={displayedSelfHp}
-                            impact={hpImpacts.self}
-                            label={uiText.you}
-                            maxHp={multiplayerSnapshot?.maxHp ?? 1}
-                            outerRef={selfHealthRef}
-                            side='self'
-                        />
                         <div
                             className='multiplayer-blob-anchor'
                             ref={selfBlobRef}
@@ -921,17 +911,6 @@ export function MultiplayerGameScreen({
                     </div>
 
                     <div className='multiplayer-column multiplayer-column-enemy'>
-                        <BattleHpBar
-                            damagePop={damagePops.find(
-                                (damagePop) => damagePop.side === 'enemy'
-                            )}
-                            hp={displayedEnemyHp}
-                            impact={hpImpacts.enemy}
-                            label={opponentPlayer?.name ?? uiText.opponent}
-                            maxHp={multiplayerSnapshot?.maxHp ?? 1}
-                            outerRef={enemyHealthRef}
-                            side='enemy'
-                        />
                         <div
                             className='multiplayer-blob-anchor'
                             ref={enemyBlobRef}
@@ -972,6 +951,18 @@ export function MultiplayerGameScreen({
                 </section>
 
                 <section className='single-controls-grid multiplayer-controls-grid'>
+                    <BattleHpBar
+                        damagePop={damagePops.find(
+                            (damagePop) => damagePop.side === 'self'
+                        )}
+                        hp={displayedSelfHp}
+                        impact={hpImpacts.self}
+                        label={uiText.you}
+                        maxHp={multiplayerSnapshot?.maxHp ?? 1}
+                        outerRef={selfHealthRef}
+                        side='self'
+                    />
+
                     <ComboQueuePanel queue={visibleQueue} />
 
                     <div className='keypad-row'>

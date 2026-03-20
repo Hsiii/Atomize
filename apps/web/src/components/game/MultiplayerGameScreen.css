@@ -7,13 +7,6 @@
     padding-left: max(var(--space-5), env(safe-area-inset-left));
 }
 
-.multiplayer-back-button {
-    align-self: flex-start;
-    display: grid;
-    place-items: center;
-    color: var(--color-secondary);
-}
-
 .multiplayer-board {
     position: relative;
     flex: 1;
@@ -245,6 +238,10 @@
 .multiplayer-controls-grid {
     margin-top: auto;
     gap: var(--space-2);
+}
+
+.multiplayer-controls-grid .multiplayer-hp-bar {
+    margin-bottom: var(--space-1);
 }
 
 .multiplayer-keypad {
