@@ -15,7 +15,6 @@ type MenuScreenProps = {
     isInRoom: boolean;
     isCurrentPlayerReady: boolean;
     isOpponentReady: boolean;
-    multiplayerCountdownValue: number | undefined;
     onlineUsers: OnlineLobbyUser[];
     toastMessage: string | undefined;
     toastId: number;
@@ -35,7 +34,6 @@ export function MenuScreen({
     isInRoom,
     isCurrentPlayerReady,
     isOpponentReady,
-    multiplayerCountdownValue,
     onlineUsers,
     toastMessage,
     toastId,
@@ -84,16 +82,10 @@ export function MenuScreen({
     const opponentInitials = (opponentName ?? '').slice(0, 1).toUpperCase();
     const shouldShowReadyAction = isInRoom && hasOpponent;
     const shouldShowSoloStart = !shouldShowReadyAction && !isInRoom;
-    const isMultiplayerCountdown = multiplayerCountdownValue !== undefined;
     const showCurrentReadyIndicator = hasOpponent && isCurrentPlayerReady;
     const showOpponentReadyIndicator = hasOpponent && isOpponentReady;
-    const isReadyButtonDisabled = isMultiplayerCountdown;
     const readyButtonClassName = `menu-start-btn${isCurrentPlayerReady ? ' menu-start-btn-ready' : ''}`;
-    let readyButtonLabel: string = uiText.ready;
-
-    if (isMultiplayerCountdown) {
-        readyButtonLabel = `${uiText.startingIn} ${String(multiplayerCountdownValue)}...`;
-    }
+    const readyButtonLabel = uiText.ready;
 
     useEffect(() => {
         if (!hasOpponent) {
@@ -235,7 +227,6 @@ export function MenuScreen({
                             <ActionButton
                                 aria-pressed={isCurrentPlayerReady}
                                 className={readyButtonClassName}
-                                disabled={isReadyButtonDisabled}
                                 onClick={() => {
                                     detachAction(onToggleReady());
                                 }}
@@ -244,7 +235,6 @@ export function MenuScreen({
                                 {readyButtonLabel}
                             </ActionButton>
                         ) : undefined}
-
                         {shouldShowSoloStart ? (
                             <ActionButton
                                 className='menu-start-btn'

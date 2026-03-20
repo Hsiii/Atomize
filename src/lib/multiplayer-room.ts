@@ -8,7 +8,6 @@ import type { BattleEvent, Prime, RoomPlayer, RoomSnapshot } from '../core';
 
 const STARTING_HP = 500;
 const WRONG_SELECTION_DAMAGE = 8;
-const ROOM_START_COUNTDOWN_MS = 3000;
 
 export function createRoomSnapshot(
     roomId: string,
@@ -66,24 +65,15 @@ export function setPlayerReady(
     const nextPlayers = snapshot.players.map((player) =>
         player.id === playerId ? { ...player, ready } : player
     );
-    const shouldCancelCountdown =
-        snapshot.status === 'countdown' &&
-        nextPlayers.some((player) => !player.ready);
-
     return {
         ...snapshot,
         players: nextPlayers,
-        countdownEndsAt: shouldCancelCountdown
-            ? undefined
-            : snapshot.countdownEndsAt,
-        status: shouldCancelCountdown ? 'waiting' : snapshot.status,
+        countdownEndsAt: undefined,
+        status: snapshot.status === 'countdown' ? 'waiting' : snapshot.status,
     };
 }
 
-export function startRoomCountdown(
-    snapshot: RoomSnapshot,
-    now = Date.now()
-): RoomSnapshot {
+export function beginRoomMatch(snapshot: RoomSnapshot): RoomSnapshot {
     if (snapshot.players.length < 2 || snapshot.status !== 'waiting') {
         return snapshot;
     }
@@ -91,18 +81,6 @@ export function startRoomCountdown(
     const areAllPlayersReady = snapshot.players.every((player) => player.ready);
 
     if (!areAllPlayersReady) {
-        return snapshot;
-    }
-
-    return {
-        ...snapshot,
-        countdownEndsAt: now + ROOM_START_COUNTDOWN_MS,
-        status: 'countdown',
-    };
-}
-
-export function beginRoomMatch(snapshot: RoomSnapshot): RoomSnapshot {
-    if (snapshot.status !== 'countdown') {
         return snapshot;
     }
 

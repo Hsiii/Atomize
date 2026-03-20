@@ -26,7 +26,6 @@ import {
     clearSolvedBattleStage,
     createRoomSnapshot,
     setPlayerReady,
-    startRoomCountdown,
 } from '../lib/multiplayer-room';
 import {
     createRealtimeClient,
@@ -34,7 +33,6 @@ import {
 } from '../lib/supabase';
 
 const multiplayerComboStepDelayMs = 220;
-const multiplayerCountdownTickMs = 100;
 const realtimeSendTimeoutMs = 1500;
 const joinRoomLookupTimeoutMs = 5000;
 const joinRoomRetryIntervalMs = 1200;
@@ -54,7 +52,6 @@ type UseMultiplayerGameResult = {
     playablePrimes: typeof playablePrimes;
     multiplayer: MultiplayerState;
     multiplayerPrimeQueue: Prime[];
-    multiplayerCountdownValue: number | undefined;
     isMultiplayerComboRunning: boolean;
     isMultiplayerInputDisabled: boolean;
     currentMultiplayerPlayer: RoomSnapshot['players'][number] | undefined;
@@ -84,8 +81,6 @@ export function useMultiplayerGame({
     );
     const [isMultiplayerComboRunning, setIsMultiplayerComboRunning] =
         useState(false);
-    const [multiplayerCountdownValue, setMultiplayerCountdownValue] =
-        useState<number>();
     const [pendingInvitation, setPendingInvitation] = useState<
         LobbyInvitation | undefined
     >(undefined);
@@ -146,81 +141,6 @@ export function useMultiplayerGame({
             onScreenChange('multi-game');
         }
     }, [multiplayer.snapshot?.status, onScreenChange]);
-
-    useEffect(() => {
-        const countdownEndsAt = multiplayer.snapshot?.countdownEndsAt;
-
-        if (multiplayer.snapshot?.status !== 'countdown' || !countdownEndsAt) {
-            setMultiplayerCountdownValue(undefined);
-            return undefined;
-        }
-
-        const updateCountdownValue = () => {
-            const remainingMs = countdownEndsAt - Date.now();
-
-            setMultiplayerCountdownValue(
-                Math.max(1, Math.ceil(remainingMs / 1000))
-            );
-        };
-
-        updateCountdownValue();
-
-        const timer = globalThis.setInterval(
-            updateCountdownValue,
-            multiplayerCountdownTickMs,
-            undefined
-        );
-
-        return () => {
-            globalThis.clearInterval(timer);
-        };
-    }, [multiplayer.snapshot?.countdownEndsAt, multiplayer.snapshot?.status]);
-
-    useEffect(() => {
-        const currentState = latestMultiplayerRef.current;
-        const countdownEndsAt = currentState.snapshot?.countdownEndsAt;
-
-        if (currentState.snapshot?.status !== 'countdown' || !countdownEndsAt) {
-            return undefined;
-        }
-
-        const timer = globalThis.setTimeout(
-            () => {
-                const latestState = latestMultiplayerRef.current;
-
-                if (
-                    !latestState.snapshot ||
-                    latestState.snapshot.status !== 'countdown'
-                ) {
-                    return;
-                }
-
-                const nextSnapshot = beginRoomMatch(latestState.snapshot);
-
-                updateSnapshot(nextSnapshot, '');
-
-                if (latestState.isHost && latestState.playerId) {
-                    detachPromise(
-                        broadcastMessage({
-                            type: 'room_state',
-                            snapshot: nextSnapshot,
-                            sourcePlayerId: latestState.playerId,
-                        })
-                    );
-                }
-            },
-            Math.max(0, countdownEndsAt - Date.now()),
-            undefined
-        );
-
-        return () => {
-            globalThis.clearTimeout(timer);
-        };
-    }, [
-        multiplayer.isHost,
-        multiplayer.snapshot?.countdownEndsAt,
-        multiplayer.snapshot?.status,
-    ]);
 
     useEffect(() => {
         if (effectiveMultiplayerSnapshot?.status === 'playing') {
@@ -520,8 +440,7 @@ export function useMultiplayerGame({
         if (
             !currentState.playerId ||
             !currentState.snapshot ||
-            (currentState.snapshot.status !== 'waiting' &&
-                currentState.snapshot.status !== 'countdown')
+            currentState.snapshot.status !== 'waiting'
         ) {
             return;
         }
@@ -537,9 +456,7 @@ export function useMultiplayerGame({
                 currentState.playerId,
                 nextReadyState
             );
-            const nextSnapshot = nextReadyState
-                ? startRoomCountdown(readySnapshot)
-                : readySnapshot;
+            const nextSnapshot = beginRoomMatch(readySnapshot);
 
             updateSnapshot(nextSnapshot, '');
             await broadcastMessage({
@@ -620,7 +537,6 @@ export function useMultiplayerGame({
         playablePrimes,
         multiplayer,
         multiplayerPrimeQueue,
-        multiplayerCountdownValue,
         isMultiplayerComboRunning,
         isMultiplayerInputDisabled,
         currentMultiplayerPlayer,
@@ -1067,14 +983,12 @@ export function useMultiplayerGame({
             message.playerId,
             message.ready
         );
-        const countdownSnapshot = message.ready
-            ? startRoomCountdown(nextSnapshot)
-            : nextSnapshot;
+        const readySnapshot = beginRoomMatch(nextSnapshot);
 
-        updateSnapshot(countdownSnapshot, '');
+        updateSnapshot(readySnapshot, '');
         await broadcastMessage({
             type: 'room_state',
-            snapshot: countdownSnapshot,
+            snapshot: readySnapshot,
             sourcePlayerId,
         });
 

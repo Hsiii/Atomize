@@ -47,9 +47,6 @@ export default function App(): JSX.Element {
                 isCurrentPlayerReady={multiplayerGame.isCurrentPlayerReady}
                 isInRoom={multiplayerGame.isInRoom}
                 isOpponentReady={multiplayerGame.isOpponentReady}
-                multiplayerCountdownValue={
-                    multiplayerGame.multiplayerCountdownValue
-                }
                 onAcceptInvitation={() => {
                     detachPromise(multiplayerGame.handleAcceptInvitation());
                 }}
