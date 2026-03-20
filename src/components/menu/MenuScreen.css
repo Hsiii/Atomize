@@ -198,6 +198,8 @@
 }
 
 .slot-name {
+    display: block;
+    width: 100%;
     font-family: var(--type-body-meta-family);
     font-size: var(--type-body-meta-size);
     font-weight: var(--type-body-meta-weight);
