@@ -84,12 +84,13 @@
 
 .score-dialog-title {
     display: block;
-    font-size: 2.5rem;
-    font-weight: 800;
-    line-height: 1.1;
+    font-family: var(--type-title-panel-family);
+    font-size: var(--type-title-panel-size);
+    font-weight: var(--type-title-panel-weight);
+    line-height: var(--type-title-panel-line-height);
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--color-text-inverse);
+    color: var(--type-title-panel-color);
 }
 
 .score-dialog-stat {
@@ -140,21 +141,22 @@
 .score-dialog-combo-value {
     display: block;
     margin: 0;
-    font-family: var(--font-family-numeric);
-    font-size: 3.5rem;
-    font-weight: var(--font-weight-number-emphasis);
-    line-height: 1;
-    color: var(--color-primary);
+    font-family: var(--type-display-results-family);
+    font-size: var(--type-display-results-size);
+    font-weight: var(--type-display-results-weight);
+    line-height: var(--type-display-results-line-height);
+    color: var(--type-display-results-color);
 }
 
 .score-dialog-summary {
     margin: 0;
-    font-size: 0.8rem;
-    font-weight: 700;
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-action-label-weight);
     line-height: 1.2;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--color-ink-soft);
+    color: var(--type-body-meta-color);
 }
 
 .score-dialog-stat-value-block {
@@ -166,19 +168,20 @@
 .score-dialog-stat-value {
     display: block;
     margin: 0;
-    font-family: var(--font-family-numeric);
-    font-size: 3.2rem;
-    font-weight: var(--font-weight-number-emphasis);
-    line-height: 1;
-    color: var(--color-primary);
+    font-family: var(--type-display-results-family);
+    font-size: var(--type-display-results-size);
+    font-weight: var(--type-display-results-weight);
+    line-height: var(--type-display-results-line-height);
+    color: var(--type-display-results-color);
 }
 
 .score-dialog-stat-unit {
-    font-size: 0.85rem;
-    font-weight: 700;
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-action-label-weight);
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--color-ink-soft);
+    color: var(--type-body-meta-color);
 }
 
 .score-dialog .app-action-button {
@@ -224,18 +227,6 @@
 }
 
 @media (max-width: 480px) {
-    .score-dialog-title {
-        font-size: 1.75rem;
-    }
-
-    .score-dialog-combo-value {
-        font-size: 2.5rem;
-    }
-
-    .score-dialog-stat-value {
-        font-size: 2.4rem;
-    }
-
     .score-dialog-stats--split {
         flex-wrap: wrap;
         gap: var(--space-6);

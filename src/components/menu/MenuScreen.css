@@ -41,13 +41,13 @@
     top: 25dvh;
     width: 92vw;
     max-width: 32rem;
-    font-family: var(--font-family-display);
-    font-size: clamp(2.5rem, 8vw, 5.5rem);
-    line-height: 0.82;
-    font-weight: 900;
+    font-family: var(--type-display-hero-family);
+    font-size: var(--type-display-hero-size);
+    line-height: var(--type-display-hero-line-height);
+    font-weight: var(--type-display-hero-weight);
     letter-spacing: 0.015em;
     text-transform: uppercase;
-    color: var(--color-text-inverse);
+    color: var(--type-display-hero-color);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -157,11 +157,11 @@
 }
 
 .slot-initials {
-    font-family: var(--font-family-display);
-    font-size: 1.3rem;
-    font-weight: 800;
+    font-family: var(--type-title-compact-family);
+    font-size: var(--type-title-compact-size);
+    font-weight: var(--type-title-compact-weight);
     letter-spacing: 0.03em;
-    line-height: 1;
+    line-height: var(--type-title-compact-line-height);
 }
 
 .slot-user-icon {
@@ -171,10 +171,12 @@
 }
 
 .slot-name {
-    font-size: 0.62rem;
-    font-weight: 600;
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
     letter-spacing: 0.02em;
     opacity: 0.85;
+    color: inherit;
     max-width: 6rem;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -188,12 +190,12 @@
     padding: 0.22rem 0.55rem;
     border: 1px solid var(--color-ink-soft);
     border-radius: 999px;
-    color: var(--color-ink-soft);
-    font-family: var(--font-family-display);
-    font-size: 0.68rem;
-    font-weight: 800;
+    color: var(--type-body-meta-color);
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-action-label-weight);
     letter-spacing: 0.06em;
-    line-height: 1;
+    line-height: var(--type-action-label-line-height);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -225,9 +227,9 @@
 }
 
 .countdown-number {
-    font-family: var(--font-family-display);
-    font-size: 3rem;
-    font-weight: 800;
+    font-family: var(--type-display-status-family);
+    font-size: var(--type-display-status-size);
+    font-weight: var(--type-display-status-weight);
     letter-spacing: 0.08em;
     color: var(--color-ink);
     animation: countdown-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -274,10 +276,11 @@
 
 .menu-room-hint {
     display: block;
-    color: var(--color-ink-soft);
-    font-size: 0.75rem;
-    font-weight: 600;
-    line-height: 1.35;
+    color: var(--type-body-meta-color);
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
+    line-height: var(--type-body-meta-line-height);
     text-align: center;
 }
 
@@ -305,10 +308,11 @@
     border-radius: 1rem;
     background: var(--color-toast-bg);
     color: var(--color-toast-text);
-    font-size: 0.84rem;
-    font-weight: 700;
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-action-label-weight);
     letter-spacing: 0.01em;
-    line-height: 1.35;
+    line-height: var(--type-body-meta-line-height);
     text-align: center;
     animation: menu-toast-pop 2.2s ease forwards;
 }
@@ -389,9 +393,9 @@
 }
 
 .dialog-title {
-    font-family: var(--font-family-display);
-    font-size: 1rem;
-    font-weight: 700;
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-action-label-weight);
     letter-spacing: 0.03em;
     text-transform: uppercase;
 }
@@ -420,7 +424,9 @@
 
 .dialog-input {
     width: 100%;
-    font-size: 1rem;
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
 }
 
 /* === Invite Dialog === */
@@ -458,8 +464,9 @@
 }
 
 .invite-name {
-    font-weight: 600;
-    font-size: 0.95rem;
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
     color: var(--color-ink);
 }
 
@@ -467,9 +474,10 @@
     padding: 0.3rem 0.7rem;
     border-radius: var(--radius-pill);
     background: var(--color-primary-strong);
-    color: var(--color-text-inverse);
-    font-size: 0.76rem;
-    font-weight: 700;
+    color: var(--type-action-label-color);
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-action-label-weight);
     cursor: pointer;
     letter-spacing: 0.03em;
     transition: transform 0.12s ease;
@@ -495,10 +503,12 @@
 }
 
 .invite-empty {
-    color: var(--color-ink-soft);
+    color: var(--type-body-meta-color);
     text-align: center;
     padding: var(--space-7) 0;
-    font-size: 0.9rem;
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
 }
 
 /* === Invitation Received Dialog === */
@@ -513,7 +523,9 @@
 
 .invitation-text {
     margin: 0;
-    font-size: 1.05rem;
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
     line-height: 1.5;
     color: var(--color-ink);
 }
@@ -540,9 +552,5 @@
     .slot-circle {
         width: 4.8rem;
         height: 4.8rem;
-    }
-
-    .slot-initials {
-        font-size: 1.1rem;
     }
 }

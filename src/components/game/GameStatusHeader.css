@@ -68,10 +68,11 @@
 }
 
 .single-timer-penalty {
-    font-size: 0.78rem;
-    font-weight: 700;
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-action-label-weight);
     color: var(--color-danger);
-    line-height: 1;
+    line-height: var(--type-action-label-line-height);
     animation: timer-penalty-pop 0.7s ease-out forwards;
 }
 
@@ -91,19 +92,20 @@
 .single-score-pill strong {
     display: inline-block;
     margin-top: var(--space-0);
-    font-family: var(--font-family-numeric);
-    font-size: 1.45rem;
-    font-weight: var(--font-weight-number-emphasis);
-    line-height: 1;
-    color: var(--color-primary);
+    font-family: var(--type-metric-inline-family);
+    font-size: var(--type-metric-inline-size);
+    font-weight: var(--type-metric-inline-weight);
+    line-height: var(--type-metric-inline-line-height);
+    color: var(--type-metric-inline-color);
 }
 
 .single-score-unit {
-    font-size: 0.82rem;
-    font-weight: 700;
-    line-height: 1;
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
+    line-height: var(--type-body-meta-line-height);
     text-transform: lowercase;
-    color: var(--color-ink-soft);
+    color: var(--type-body-meta-color);
 }
 
 .multiplayer-top-bar {
@@ -130,8 +132,3 @@
     }
 }
 
-@media (max-width: 480px) {
-    .single-score-pill strong {
-        font-size: 1.15rem;
-    }
-}

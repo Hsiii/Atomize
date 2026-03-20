@@ -9,11 +9,11 @@
     border: 0;
     border-radius: var(--radius-orb);
     background: var(--color-disabled-bg);
-    color: var(--color-disabled-text);
-    font-family: var(--font-family-numeric);
-    font-size: var(--font-size-keypad-digit);
-    font-weight: var(--font-weight-number-emphasis);
-    line-height: 1;
+    color: var(--type-display-input-color);
+    font-family: var(--type-display-input-family);
+    font-size: var(--type-display-input-size);
+    font-weight: var(--type-display-input-weight);
+    line-height: var(--type-display-input-line-height);
     font-variant-numeric: tabular-nums;
     box-shadow: none;
 }

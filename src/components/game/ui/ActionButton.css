@@ -5,10 +5,12 @@
     padding: var(--space-7);
     border: 1px solid var(--color-border-contrast);
     border-radius: var(--radius-button);
-    color: var(--color-text-inverse);
-    font-size: 1.1rem;
-    font-weight: 700;
+    color: var(--type-action-label-color);
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-action-label-weight);
     letter-spacing: 0.01em;
+    line-height: var(--type-action-label-line-height);
     box-shadow: none;
 }
 

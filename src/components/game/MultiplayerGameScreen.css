@@ -138,12 +138,15 @@
     align-items: baseline;
     justify-content: space-between;
     gap: var(--space-3);
-    font-size: 0.82rem;
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
+    line-height: var(--type-body-meta-line-height);
     letter-spacing: 0.04em;
 }
 
 .multiplayer-hp-name {
-    font-weight: 700;
+    font-weight: var(--type-body-meta-weight);
     text-transform: uppercase;
     letter-spacing: 0.12em;
     line-height: 1;
@@ -158,11 +161,11 @@
 }
 
 .multiplayer-hp-stat {
-    font-family: var(--font-family-numeric);
-    font-size: 1.05rem;
-    font-weight: 700;
+    font-family: var(--type-metric-inline-family);
+    font-size: var(--type-metric-inline-size);
+    font-weight: var(--type-metric-inline-weight);
     font-variant-numeric: tabular-nums;
-    line-height: 1;
+    line-height: var(--type-metric-inline-line-height);
 }
 
 .multiplayer-hp-bar-self .multiplayer-hp-stat {
@@ -215,9 +218,10 @@
     position: absolute;
     right: 0;
     bottom: calc(100% + var(--space-timer-gap));
-    font-size: 0.82rem;
-    font-weight: 700;
-    line-height: 1;
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-action-label-weight);
+    line-height: var(--type-action-label-line-height);
     animation: timer-penalty-pop 0.7s ease-out forwards;
     pointer-events: none;
 }
@@ -307,14 +311,6 @@
         --number-blob-scale-factor: 0.39;
     }
 
-    .multiplayer-hp-copy {
-        font-size: 0.74rem;
-    }
-
-    .multiplayer-hp-stat {
-        font-size: 0.84rem;
-    }
-
     .multiplayer-keypad button {
         min-height: 3.7rem;
     }
@@ -368,9 +364,5 @@
 
     .multiplayer-column-enemy .number-blob-display-size-enemy {
         --number-blob-scale-factor: 0.35;
-    }
-
-    .multiplayer-hp-stat {
-        font-size: 0.88rem;
     }
 }

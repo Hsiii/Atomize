@@ -17,9 +17,10 @@
 }
 
 .combo-bar-value {
-    color: var(--color-secondary);
-    font-size: var(--font-size-buffer-strip);
-    font-weight: 700;
+    color: var(--type-display-status-color);
+    font-family: var(--type-display-status-family);
+    font-size: var(--type-display-status-size);
+    font-weight: var(--type-display-status-weight);
     line-height: 1.2;
     font-variant-numeric: tabular-nums;
 }

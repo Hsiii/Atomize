@@ -3,11 +3,11 @@
     --number-blob-size: min(74vw, 21.5rem);
     --number-blob-padding: calc(1.75rem * var(--number-blob-scale-factor));
     --number-blob-main-font-size: calc(
-        7.8rem * var(--number-blob-scale-factor)
+        var(--type-display-game-size) * var(--number-blob-scale-factor)
     );
     --number-blob-clear-font-size: var(--number-blob-main-font-size);
     --number-blob-split-font-size: calc(
-        2.2rem * var(--number-blob-scale-factor)
+        var(--type-display-status-size) * var(--number-blob-scale-factor)
     );
     --number-blob-split-padding: calc(0.8rem * var(--number-blob-scale-factor));
     --number-blob-border-width: calc(2px * var(--number-blob-scale-factor));
@@ -81,13 +81,13 @@
     justify-content: center;
     width: 100%;
     max-width: 100%;
-    font-family: var(--font-family-numeric);
+    font-family: var(--type-display-game-family);
     font-size: var(--number-blob-main-font-size);
-    line-height: 1;
+    line-height: var(--type-display-game-line-height);
     font-variant-numeric: tabular-nums;
-    font-weight: var(--font-weight-number-emphasis);
+    font-weight: var(--type-display-game-weight);
     letter-spacing: 0.02em;
-    color: var(--color-text-inverse);
+    color: var(--type-display-game-color);
     text-align: center;
     transition:
         opacity 120ms ease,
@@ -182,13 +182,13 @@
 
 .number-blob-clear-pop-value {
     display: block;
-    font-family: var(--font-family-numeric);
+    font-family: var(--type-display-game-family);
     font-size: var(--number-blob-clear-font-size);
-    line-height: 0.84;
+    line-height: var(--type-display-game-line-height);
     font-variant-numeric: tabular-nums;
-    font-weight: var(--font-weight-number-emphasis);
+    font-weight: var(--type-display-game-weight);
     letter-spacing: 0.02em;
-    color: var(--color-text-inverse);
+    color: var(--type-display-game-color);
 }
 
 .number-blob-split-echo {
@@ -247,12 +247,12 @@
 
 .number-blob-split-value {
     display: block;
-    font-family: var(--font-family-numeric);
+    font-family: var(--type-display-status-family);
     font-size: var(--number-blob-split-font-size);
     line-height: 0.88;
     font-variant-numeric: tabular-nums;
-    font-weight: var(--font-weight-number-emphasis);
-    color: var(--color-text-inverse);
+    font-weight: var(--type-display-status-weight);
+    color: var(--type-display-game-color);
 }
 
 @keyframes number-blob-idle {
@@ -399,12 +399,6 @@
 @media (max-width: 768px) {
     .number-blob-display {
         --number-blob-padding: calc(1.4rem * var(--number-blob-scale-factor));
-        --number-blob-main-font-size: calc(
-            6rem * var(--number-blob-scale-factor)
-        );
-        --number-blob-split-font-size: calc(
-            1.9rem * var(--number-blob-scale-factor)
-        );
     }
 }
 
@@ -412,12 +406,6 @@
     .number-blob-display {
         --number-blob-size: min(78vw, 18.6rem);
         --number-blob-padding: calc(1.15rem * var(--number-blob-scale-factor));
-        --number-blob-main-font-size: calc(
-            4.4rem * var(--number-blob-scale-factor)
-        );
-        --number-blob-split-font-size: calc(
-            1.65rem * var(--number-blob-scale-factor)
-        );
     }
 
     .number-blob-display-size-enemy,

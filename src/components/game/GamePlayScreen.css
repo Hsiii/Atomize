@@ -17,8 +17,11 @@
 
 .single-value-display strong {
     display: block;
-    font-size: 8rem;
+    font-family: var(--type-display-game-family);
+    font-size: var(--type-display-game-size);
+    font-weight: var(--type-display-game-weight);
     line-height: 0.92;
+    color: var(--color-ink);
     font-variant-numeric: tabular-nums;
 }
 
@@ -112,22 +115,12 @@
     height: 2.2rem;
 }
 
-@media (max-width: 768px) {
-    .single-value-display strong {
-        font-size: 6rem;
-    }
-}
-
 @media (max-width: 480px) {
-    .single-value-display strong {
-        font-size: 5rem;
-    }
-
     .solo-keypad {
         gap: var(--space-keypad-gap-mobile);
     }
 
     .prime-key-button {
-        font-size: var(--font-size-keypad-digit-mobile);
+        font-size: var(--type-display-input-compact-size);
     }
 }

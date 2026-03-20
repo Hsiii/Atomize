@@ -80,7 +80,11 @@ input {
     margin: var(--space-0);
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    font-size: 0.75rem;
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
+    line-height: var(--type-body-meta-line-height);
+    color: var(--type-body-meta-color);
 }
 
 .control-icon {
