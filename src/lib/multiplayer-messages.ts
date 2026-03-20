@@ -20,6 +20,7 @@ export type RoomBroadcastMessage =
           type: 'prime_selected';
           playerId: string;
           prime: Prime;
+          suppressAttack?: boolean;
       }
     | {
           type: 'combo_penalty';

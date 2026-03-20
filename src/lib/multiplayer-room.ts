@@ -116,7 +116,10 @@ export function beginRoomMatch(snapshot: RoomSnapshot): RoomSnapshot {
 export function applyBattlePrimeSelection(
     snapshot: RoomSnapshot,
     playerId: string,
-    prime: Prime
+    prime: Prime,
+    options?: {
+        suppressAttack?: boolean;
+    }
 ): RoomSnapshot {
     if (snapshot.status !== 'playing') {
         return snapshot;
@@ -148,9 +151,18 @@ export function applyBattlePrimeSelection(
     const nextStage = selection.cleared
         ? generateStage(snapshot.seed, stageIndex)
         : selection.stage;
-    const damage = selection.cleared
-        ? computeBattleDamage(actingPlayer.stage, combo)
-        : computeBattlePartialDamage(actingPlayer.stage, actingPlayer.combo);
+    const shouldSuppressAttack =
+        options?.suppressAttack === true && !selection.cleared;
+    let damage = computeBattlePartialDamage(
+        actingPlayer.stage,
+        actingPlayer.combo
+    );
+
+    if (shouldSuppressAttack) {
+        damage = 0;
+    } else if (selection.cleared) {
+        damage = computeBattleDamage(actingPlayer.stage, combo);
+    }
     const nextPlayers = snapshot.players.map((player) => {
         if (player.id === playerId) {
             return {
@@ -178,6 +190,18 @@ export function applyBattlePrimeSelection(
 
     if (!nextActingPlayer || !nextTargetPlayer) {
         return snapshot;
+    }
+
+    if (shouldSuppressAttack) {
+        return withPlayers(
+            {
+                ...snapshot,
+                stageIndex,
+                stage: nextStage,
+            },
+            nextPlayers,
+            undefined
+        );
     }
 
     const lastEvent: BattleEvent =

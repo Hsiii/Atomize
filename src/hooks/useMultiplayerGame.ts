@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { applyPrimeSelection } from '../core';
-import type { Prime, RoomSnapshot } from '../core';
 import { REALTIME_SUBSCRIBE_STATES } from '@supabase/supabase-js';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 import { uiText } from '../app-state';
 import type { MultiplayerState, OnlineLobbyUser, Screen } from '../app-state';
+import { applyPrimeSelection } from '../core';
+import type { Prime, RoomSnapshot } from '../core';
 import {
     createRoomId,
     detachPromise,
@@ -180,10 +180,7 @@ export function useMultiplayerGame({
         const currentState = latestMultiplayerRef.current;
         const countdownEndsAt = currentState.snapshot?.countdownEndsAt;
 
-        if (
-            currentState.snapshot?.status !== 'countdown' ||
-            !countdownEndsAt
-        ) {
+        if (currentState.snapshot?.status !== 'countdown' || !countdownEndsAt) {
             return undefined;
         }
 
@@ -751,10 +748,7 @@ export function useMultiplayerGame({
 
     function updateSnapshot(snapshot: RoomSnapshot, statusText?: string) {
         setMultiplayer((currentState) => ({
-            ...(shouldIgnoreSnapshotRegression(
-                currentState.snapshot,
-                snapshot
-            )
+            ...(shouldIgnoreSnapshotRegression(currentState.snapshot, snapshot)
                 ? currentState
                 : {
                       ...currentState,
@@ -763,25 +757,6 @@ export function useMultiplayerGame({
                       statusText: statusText ?? currentState.statusText,
                   }),
         }));
-    }
-
-    function shouldIgnoreSnapshotRegression(
-        currentSnapshot: RoomSnapshot | undefined,
-        nextSnapshot: RoomSnapshot
-    ): boolean {
-        if (!currentSnapshot) {
-            return false;
-        }
-
-        if (currentSnapshot.status === 'finished') {
-            return nextSnapshot.status !== 'finished';
-        }
-
-        return (
-            currentSnapshot.status === 'playing' &&
-            (nextSnapshot.status === 'waiting' ||
-                nextSnapshot.status === 'countdown')
-        );
     }
 
     async function closeActiveChannel() {
@@ -917,7 +892,8 @@ export function useMultiplayerGame({
     }
 
     async function sendMultiplayerPrime(
-        prime: Prime
+        prime: Prime,
+        suppressAttack = false
     ): Promise<MultiplayerSendResult> {
         const currentState = latestMultiplayerRef.current;
         const gameplaySnapshot = getEffectiveMultiplayerSnapshot(
@@ -938,7 +914,8 @@ export function useMultiplayerGame({
             const nextSnapshot = applyBattlePrimeSelection(
                 gameplaySnapshot,
                 currentState.playerId,
-                prime
+                prime,
+                { suppressAttack }
             );
             updateSnapshot(nextSnapshot, '');
             const didBroadcast = await broadcastMessage({
@@ -957,6 +934,7 @@ export function useMultiplayerGame({
             type: 'prime_selected',
             playerId: currentState.playerId,
             prime,
+            suppressAttack,
         });
 
         return { didBroadcast };
@@ -1120,7 +1098,8 @@ export function useMultiplayerGame({
         const nextSnapshot = applyBattlePrimeSelection(
             currentState.snapshot,
             message.playerId,
-            message.prime
+            message.prime,
+            { suppressAttack: message.suppressAttack }
         );
 
         updateSnapshot(nextSnapshot, '');
@@ -1194,7 +1173,8 @@ export function useMultiplayerGame({
 
     async function processMultiplayerQueue(
         queuedPrimes: readonly Prime[],
-        index = 0
+        index = 0,
+        shouldBatchComboDamage?: boolean
     ): Promise<undefined> {
         if (index >= queuedPrimes.length) {
             return undefined;
@@ -1219,6 +1199,10 @@ export function useMultiplayerGame({
             return undefined;
         }
 
+        const batchComboDamage =
+            shouldBatchComboDamage ??
+            isExactStageClearCombo(currentPlayer.stage, queuedPrimes);
+
         const outcome = applyPrimeSelection(currentPlayer.stage, prime);
 
         if (outcome.kind === 'wrong') {
@@ -1240,7 +1224,10 @@ export function useMultiplayerGame({
             currentQueue.slice(1)
         );
 
-        const sendResult = await sendMultiplayerPrime(prime);
+        const sendResult = await sendMultiplayerPrime(
+            prime,
+            batchComboDamage && !outcome.cleared
+        );
 
         if (!sendResult.didBroadcast) {
             setMultiplayerPrimeQueue([]);
@@ -1252,9 +1239,32 @@ export function useMultiplayerGame({
         }
 
         await wait(multiplayerComboStepDelayMs);
-        await processMultiplayerQueue(queuedPrimes, index + 1);
+        await processMultiplayerQueue(
+            queuedPrimes,
+            index + 1,
+            batchComboDamage
+        );
 
         return undefined;
+    }
+
+    function isExactStageClearCombo(
+        stage: RoomSnapshot['stage'],
+        queuedPrimes: readonly Prime[]
+    ): boolean {
+        let currentStage = stage;
+
+        for (const prime of queuedPrimes) {
+            const outcome = applyPrimeSelection(currentStage, prime);
+
+            if (outcome.kind === 'wrong') {
+                return false;
+            }
+
+            currentStage = outcome.stage;
+        }
+
+        return currentStage.remainingValue === 1;
     }
 
     function getEffectiveMultiplayerSnapshot(
@@ -1279,4 +1289,23 @@ export function useMultiplayerGame({
             status: 'playing',
         };
     }
+}
+
+function shouldIgnoreSnapshotRegression(
+    currentSnapshot: RoomSnapshot | undefined,
+    nextSnapshot: RoomSnapshot
+): boolean {
+    if (!currentSnapshot) {
+        return false;
+    }
+
+    if (currentSnapshot.status === 'finished') {
+        return nextSnapshot.status !== 'finished';
+    }
+
+    return (
+        currentSnapshot.status === 'playing' &&
+        (nextSnapshot.status === 'waiting' ||
+            nextSnapshot.status === 'countdown')
+    );
 }
