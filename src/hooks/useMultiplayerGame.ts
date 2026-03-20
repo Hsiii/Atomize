@@ -177,10 +177,8 @@ export function useMultiplayerGame({
         const countdownEndsAt = currentState.snapshot?.countdownEndsAt;
 
         if (
-            !currentState.isHost ||
             currentState.snapshot?.status !== 'countdown' ||
-            !countdownEndsAt ||
-            !currentState.playerId
+            !countdownEndsAt
         ) {
             return undefined;
         }
@@ -190,10 +188,8 @@ export function useMultiplayerGame({
                 const latestState = latestMultiplayerRef.current;
 
                 if (
-                    !latestState.isHost ||
                     !latestState.snapshot ||
-                    latestState.snapshot.status !== 'countdown' ||
-                    !latestState.playerId
+                    latestState.snapshot.status !== 'countdown'
                 ) {
                     return;
                 }
@@ -201,13 +197,16 @@ export function useMultiplayerGame({
                 const nextSnapshot = beginRoomMatch(latestState.snapshot);
 
                 updateSnapshot(nextSnapshot, '');
-                detachPromise(
-                    broadcastMessage({
-                        type: 'room_state',
-                        snapshot: nextSnapshot,
-                        sourcePlayerId: latestState.playerId,
-                    })
-                );
+
+                if (latestState.isHost && latestState.playerId) {
+                    detachPromise(
+                        broadcastMessage({
+                            type: 'room_state',
+                            snapshot: nextSnapshot,
+                            sourcePlayerId: latestState.playerId,
+                        })
+                    );
+                }
             },
             Math.max(0, countdownEndsAt - Date.now()),
             undefined
