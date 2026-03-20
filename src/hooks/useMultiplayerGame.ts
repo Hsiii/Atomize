@@ -1137,9 +1137,11 @@ export function useMultiplayerGame({
             currentQueue.slice(1)
         );
 
+        const isFinalQueuedPrime = index >= queuedPrimes.length - 1;
+
         const sendResult = await sendMultiplayerPrime(
             prime,
-            batchComboDamage && !outcome.cleared
+            batchComboDamage && !outcome.cleared && !isFinalQueuedPrime
         );
 
         if (!sendResult.didBroadcast) {
@@ -1147,7 +1149,7 @@ export function useMultiplayerGame({
             return undefined;
         }
 
-        if (index >= queuedPrimes.length - 1) {
+        if (isFinalQueuedPrime) {
             return undefined;
         }
 
