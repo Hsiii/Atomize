@@ -10,7 +10,6 @@ export type RoomPlayer = {
     stageIndex: number;
     stage: StageState;
     connected: boolean;
-    ready: boolean;
 };
 
 export type BattleEvent =

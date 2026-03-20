@@ -22,9 +22,6 @@ type MultiplayerLobbyScreenProps = {
     onRoomIdInputChange: (value: string) => void;
     onJoinRoom: () => void | Promise<void>;
     onCreateRoom: () => void | Promise<void>;
-    onGuestReady: () => void | Promise<void>;
-    onHostStart: () => void | Promise<void>;
-    canStartRoomCountdown: boolean;
 };
 
 export function MultiplayerLobbyScreen({
@@ -39,9 +36,6 @@ export function MultiplayerLobbyScreen({
     onRoomIdInputChange,
     onJoinRoom,
     onCreateRoom,
-    onGuestReady,
-    onHostStart,
-    canStartRoomCountdown,
 }: MultiplayerLobbyScreenProps): JSX.Element {
     const [localToastMessage, setLocalToastMessage] = useState<
         string | undefined
@@ -67,10 +61,6 @@ export function MultiplayerLobbyScreen({
         (player) => player.id !== multiplayer.playerId
     );
     const isCountdown = multiplayer.snapshot?.status === 'countdown';
-    const readyButtonDisabled = !currentPlayer || isCountdown;
-    const guestButtonText = currentPlayer?.ready
-        ? `${uiText.readyWaiting} ${opponentPlayer?.name ?? uiText.opponent}`
-        : uiText.ready;
 
     function handleActionError() {
         setLocalToastMessage(uiText.serverOffline);
@@ -182,55 +172,6 @@ export function MultiplayerLobbyScreen({
         );
     }
 
-    function handleHostStartClick() {
-        if (!canStartRoomCountdown) {
-            setLocalToastMessage(uiText.startBlockedToast);
-            return;
-        }
-
-        runAsyncAction(onHostStart);
-    }
-
-    function handleGuestReadyClick() {
-        runAsyncAction(onGuestReady);
-    }
-
-    let waitingRoomAction: JSX.Element;
-
-    if (isCountdown) {
-        waitingRoomAction = (
-            <ActionButton className='start-action' disabled variant='secondary'>
-                {`${uiText.countdownPrefix} ${multiplayerCountdownValue ?? 3}`}
-            </ActionButton>
-        );
-    } else if (multiplayer.isHost) {
-        waitingRoomAction = (
-            <ActionButton
-                aria-disabled={!canStartRoomCountdown}
-                className={
-                    canStartRoomCountdown
-                        ? 'start-action'
-                        : 'start-action is-disabled'
-                }
-                onClick={handleHostStartClick}
-                variant='secondary'
-            >
-                {uiText.start}
-            </ActionButton>
-        );
-    } else {
-        waitingRoomAction = (
-            <ActionButton
-                className='start-action'
-                disabled={readyButtonDisabled}
-                onClick={handleGuestReadyClick}
-                variant='secondary'
-            >
-                {guestButtonText}
-            </ActionButton>
-        );
-    }
-
     return (
         <main className='app-shell fullscreen-shell'>
             <BackButton onBack={onBack} />
@@ -238,36 +179,48 @@ export function MultiplayerLobbyScreen({
                 <div className='lobby-stack waiting-room-stack'>
                     <RoomCodePanel value={multiplayer.roomId} />
 
-                    <section className='scoreboard player-scoreboard lobby-scoreboard waiting-room-grid'>
-                        <div className='player-card waiting-player-card active'>
-                            <p className='label'>YOU</p>
-                            <strong>{currentPlayer?.name ?? '-'}</strong>
+                    <section className='vs-matchup'>
+                        <div className='vs-player vs-player-self'>
+                            <span className='vs-player-tag'>P1</span>
+                            <strong className='vs-player-name'>
+                                {currentPlayer?.name ?? '-'}
+                            </strong>
+                        </div>
+
+                        <div className='vs-divider'>
+                            <span className='vs-label'>VS</span>
                         </div>
 
                         {opponentPlayer ? (
-                            <div className='player-card waiting-player-card'>
-                                <p className='label'>OPPONENT</p>
-                                <strong>{opponentPlayer.name}</strong>
-                                {opponentPlayer.ready ? (
-                                    <span className='waiting-ready-badge'>
-                                        {uiText.readyBadge}
-                                    </span>
-                                ) : undefined}
+                            <div className='vs-player vs-player-opponent'>
+                                <span className='vs-player-tag'>P2</span>
+                                <strong className='vs-player-name'>
+                                    {opponentPlayer.name}
+                                </strong>
                             </div>
                         ) : (
-                            <div className='player-card waiting-player-card waiting-placeholder-card'>
-                                <p className='label'>OPPONENT</p>
-                                <div
-                                    aria-hidden='true'
-                                    className='waiting-placeholder-mark'
-                                >
-                                    ?
-                                </div>
+                            <div className='vs-player vs-player-opponent vs-player-waiting'>
+                                <span className='vs-player-tag'>P2</span>
+                                <div className='vs-waiting-mark'>?</div>
                             </div>
                         )}
                     </section>
 
-                    <div className='waiting-cta'>{waitingRoomAction}</div>
+                    {isCountdown ? (
+                        <div className='waiting-cta'>
+                            <ActionButton
+                                className='start-action'
+                                disabled
+                                variant='secondary'
+                            >
+                                {`${uiText.countdownPrefix} ${multiplayerCountdownValue ?? 3}`}
+                            </ActionButton>
+                        </div>
+                    ) : (
+                        <p className='vs-waiting-hint'>
+                            {uiText.waitingForPlayer}
+                        </p>
+                    )}
 
                     {activeToastMessage ? (
                         <div aria-live='polite' className='waiting-toast-layer'>
