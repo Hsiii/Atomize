@@ -25,3 +25,7 @@
 .secondary-action {
     width: 100%;
 }
+
+.action-button-rounded {
+    border-radius: var(--radius-pill);
+}

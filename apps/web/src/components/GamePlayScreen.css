@@ -87,12 +87,10 @@
 .combo-backspace-button.app-action-button {
     aspect-ratio: 1;
     padding: 0;
-    border-radius: 50%;
     background: var(--color-secondary);
 }
 
 .combo-enter-button.app-action-button {
-    border-radius: var(--radius-panel);
     background: var(--color-primary-strong);
 }
 

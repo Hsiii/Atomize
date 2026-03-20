@@ -177,6 +177,7 @@ export function SingleGameScreen({
                                     isTimeUp
                                 }
                                 onClick={handleBackspace}
+                                shape='rounded'
                                 variant='secondary'
                             >
                                 <span className='control-button-content'>
@@ -196,6 +197,7 @@ export function SingleGameScreen({
                                     isSoloComboRunning
                                 }
                                 onClick={handleSubmit}
+                                shape='rounded'
                                 variant='secondary'
                             >
                                 <span className='control-button-content'>

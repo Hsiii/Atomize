@@ -994,6 +994,7 @@ export function MultiplayerGameScreen({
                                     visibleQueue.length === 0
                                 }
                                 onClick={handleBackspace}
+                                shape='rounded'
                                 variant='secondary'
                             >
                                 <span className='control-button-content'>
@@ -1011,6 +1012,7 @@ export function MultiplayerGameScreen({
                                     isInputDisabled || visibleQueue.length === 0
                                 }
                                 onClick={handleSubmitClick}
+                                shape='rounded'
                                 variant='secondary'
                             >
                                 <span className='control-button-content'>
