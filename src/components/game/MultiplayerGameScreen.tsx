@@ -79,10 +79,9 @@ export function MultiplayerGameScreen({
     const isMatchFinished = multiplayerSnapshot?.status === 'finished';
     const [isBlobRevealActive, setIsBlobRevealActive] = useState(false);
     const hasInitializedStageRef = useRef(false);
-    const isInputDisabled = isMultiplayerInputDisabled || isBlobRevealActive;
+    const isInputDisabled = isMultiplayerInputDisabled;
     const showKeypadDisabledState =
-        (isMultiplayerInputDisabled && !isMultiplayerComboRunning) ||
-        isBlobRevealActive;
+        isMultiplayerInputDisabled && !isMultiplayerComboRunning;
     const canSubmitSolvedBlob =
         currentMultiplayerPlayer?.stage.remainingValue === 1;
     const [visibleQueue, setVisibleQueue] = useState<Prime[]>(
@@ -849,7 +848,6 @@ export function MultiplayerGameScreen({
 
             if (event.key === 'Backspace') {
                 if (
-                    isBlobRevealActive ||
                     isMultiplayerComboRunning ||
                     visibleQueueRef.current.length === 0
                 ) {
