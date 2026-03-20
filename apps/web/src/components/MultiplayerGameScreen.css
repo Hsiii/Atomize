@@ -60,9 +60,52 @@
 }
 
 .multiplayer-hp-bar {
+    --hp-loss-duration: 0ms;
     position: relative;
     display: grid;
     gap: var(--space-2);
+}
+
+@keyframes multiplayer-hp-shake {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    20% {
+        transform: translateX(-0.35rem);
+    }
+
+    40% {
+        transform: translateX(0.3rem);
+    }
+
+    60% {
+        transform: translateX(-0.2rem);
+    }
+
+    80% {
+        transform: translateX(0.14rem);
+    }
+}
+
+@keyframes multiplayer-hp-flash {
+    0% {
+        opacity: 0.8;
+    }
+
+    35% {
+        opacity: 0.46;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+.multiplayer-hp-bar--hit {
+    animation: multiplayer-hp-shake var(--hp-loss-duration)
+        cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .multiplayer-hp-copy {
@@ -90,6 +133,20 @@
     background: var(--color-track);
 }
 
+.multiplayer-hp-track::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--color-danger);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.multiplayer-hp-bar--hit .multiplayer-hp-track::after {
+    animation: multiplayer-hp-flash calc(var(--hp-loss-duration) + 120ms)
+        ease-out;
+}
+
 .multiplayer-hp-fill {
     display: block;
     height: 100%;
@@ -99,6 +156,7 @@
         var(--color-primary-strong),
         var(--color-secondary)
     );
+    transition: width var(--hp-loss-duration) cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .multiplayer-damage-pop {

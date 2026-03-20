@@ -20,6 +20,11 @@ type DamagePop = {
     value: number;
 };
 
+type HpImpact = {
+    token: string;
+    durationMs: number;
+};
+
 type AttackParticle = {
     id: number;
     side: 'enemy' | 'self';
@@ -37,6 +42,7 @@ type AttackEffectState = {
 type PendingAttack = {
     id: number;
     damage: number;
+    isFinisher: boolean;
     sourceSide: 'enemy' | 'self';
     targetHp: number;
     targetSide: 'enemy' | 'self';
@@ -65,6 +71,11 @@ export function MultiplayerGameScreen({
 }: MultiplayerGameScreenProps): JSX.Element {
     const blobRevealTotalMs = 3000;
     const keyboardDigitBufferWindowMs = 250;
+    const damagePopLifetimeMs = 780;
+    const hpImpactTailMs = 240;
+    const hpLossBaseDurationMs = 220;
+    const hpLossPerPointDurationMs = 28;
+    const hpZeroHoldMs = 900;
     const isMatchFinished = multiplayerSnapshot?.status === 'finished';
     const [isBlobRevealActive, setIsBlobRevealActive] = useState(false);
     const hasInitializedStageRef = useRef(false);
@@ -95,13 +106,24 @@ export function MultiplayerGameScreen({
     const [displayedEnemyHp, setDisplayedEnemyHp] = useState(
         opponentPlayer?.hp ?? 0
     );
+    const [hpImpacts, setHpImpacts] = useState<{
+        enemy?: HpImpact;
+        self?: HpImpact;
+    }>({});
+    const [isResultDialogVisible, setIsResultDialogVisible] = useState(false);
+    const [pendingResultDialogEventId, setPendingResultDialogEventId] =
+        useState<number>();
     const previousEventIdRef = useRef<number | undefined>(undefined);
     const animationFrameRef = useRef<number | undefined>(undefined);
+    const timeoutIdsRef = useRef<number[]>([]);
+    const resultDialogTimerRef = useRef<number | undefined>(undefined);
     const overlayRef = useRef<HTMLDivElement | null>(null);
     const selfBlobRef = useRef<HTMLDivElement | null>(null);
     const enemyBlobRef = useRef<HTMLDivElement | null>(null);
     const selfHealthRef = useRef<HTMLDivElement | null>(null);
     const enemyHealthRef = useRef<HTMLDivElement | null>(null);
+    const displayedSelfHpRef = useRef(displayedSelfHp);
+    const displayedEnemyHpRef = useRef(displayedEnemyHp);
     const currentPlayerWon =
         isMatchFinished &&
         Boolean(currentMultiplayerPlayer && currentMultiplayerPlayer.hp > 0);
@@ -210,16 +232,71 @@ export function MultiplayerGameScreen({
             if (animationFrameRef.current !== undefined) {
                 cancelAnimationFrame(animationFrameRef.current);
             }
+
+            for (const timerId of timeoutIdsRef.current) {
+                globalThis.clearTimeout(timerId);
+            }
+            timeoutIdsRef.current = [];
+
+            if (resultDialogTimerRef.current !== undefined) {
+                globalThis.clearTimeout(resultDialogTimerRef.current);
+                resultDialogTimerRef.current = undefined;
+            }
         },
         []
     );
 
     useEffect(() => {
+        displayedSelfHpRef.current = displayedSelfHp;
+    }, [displayedSelfHp]);
+
+    useEffect(() => {
+        displayedEnemyHpRef.current = displayedEnemyHp;
+    }, [displayedEnemyHp]);
+
+    useEffect(() => {
+        if (isMatchFinished) {
+            return;
+        }
+
+        if (resultDialogTimerRef.current !== undefined) {
+            globalThis.clearTimeout(resultDialogTimerRef.current);
+            resultDialogTimerRef.current = undefined;
+        }
+
+        setPendingResultDialogEventId(undefined);
+        setIsResultDialogVisible(false);
+    }, [isMatchFinished]);
+
+    useEffect(() => {
+        if (
+            !isMatchFinished ||
+            isResultDialogVisible ||
+            pendingResultDialogEventId !== undefined ||
+            hasPendingAttackEvent ||
+            queuedAttacks.length > 0 ||
+            activeAttackId !== undefined
+        ) {
+            return;
+        }
+
+        setIsResultDialogVisible(true);
+    }, [
+        activeAttackId,
+        hasPendingAttackEvent,
+        isMatchFinished,
+        isResultDialogVisible,
+        pendingResultDialogEventId,
+        queuedAttacks.length,
+    ]);
+
+    useEffect(() => {
         if (!currentMultiplayerPlayer || !opponentPlayer) {
-            setDisplayedSelfHp(currentMultiplayerPlayer?.hp ?? 0);
-            setDisplayedEnemyHp(opponentPlayer?.hp ?? 0);
+            setDisplayedHp('self', currentMultiplayerPlayer?.hp ?? 0);
+            setDisplayedHp('enemy', opponentPlayer?.hp ?? 0);
             setQueuedAttacks([]);
             setActiveAttackId(undefined);
+            setHpImpacts({});
             return;
         }
 
@@ -231,8 +308,8 @@ export function MultiplayerGameScreen({
             return;
         }
 
-        setDisplayedSelfHp(currentMultiplayerPlayer.hp);
-        setDisplayedEnemyHp(opponentPlayer.hp);
+        setDisplayedHp('self', currentMultiplayerPlayer.hp);
+        setDisplayedHp('enemy', opponentPlayer.hp);
     }, [
         activeAttackId,
         currentMultiplayerPlayer,
@@ -264,6 +341,7 @@ export function MultiplayerGameScreen({
                 {
                     id: lastEvent.id,
                     damage: lastEvent.damage,
+                    isFinisher: false,
                     sourceSide,
                     targetHp: lastEvent.targetHp,
                     targetSide,
@@ -278,12 +356,7 @@ export function MultiplayerGameScreen({
                     ? 'self'
                     : 'enemy';
 
-            if (side === 'self') {
-                setDisplayedSelfHp(lastEvent.sourceHp);
-            } else {
-                setDisplayedEnemyHp(lastEvent.sourceHp);
-            }
-            showDamagePop(side, lastEvent.damage);
+            resolveHpLoss(side, lastEvent.sourceHp, lastEvent.damage);
             return;
         }
 
@@ -299,6 +372,7 @@ export function MultiplayerGameScreen({
                 {
                     id: lastEvent.id,
                     damage: lastEvent.damage,
+                    isFinisher: true,
                     sourceSide,
                     targetHp: lastEvent.loserHp,
                     targetSide,
@@ -311,12 +385,11 @@ export function MultiplayerGameScreen({
             lastEvent.loserPlayerId === currentMultiplayerPlayer?.id
                 ? 'self'
                 : 'enemy';
-        if (loserSide === 'self') {
-            setDisplayedSelfHp(lastEvent.loserHp);
-        } else {
-            setDisplayedEnemyHp(lastEvent.loserHp);
-        }
-        showDamagePop(loserSide, lastEvent.damage);
+
+        resolveHpLoss(loserSide, lastEvent.loserHp, lastEvent.damage, {
+            eventId: lastEvent.id,
+            isFinisher: true,
+        });
     }, [currentMultiplayerPlayer?.id, multiplayerSnapshot?.lastEvent]);
 
     useEffect(() => {
@@ -327,13 +400,15 @@ export function MultiplayerGameScreen({
         const nextAttack = queuedAttacks[0];
 
         const completeAttack = () => {
-            if (nextAttack.targetSide === 'self') {
-                setDisplayedSelfHp(nextAttack.targetHp);
-            } else {
-                setDisplayedEnemyHp(nextAttack.targetHp);
-            }
-
-            showDamagePop(nextAttack.targetSide, nextAttack.damage);
+            resolveHpLoss(
+                nextAttack.targetSide,
+                nextAttack.targetHp,
+                nextAttack.damage,
+                {
+                    eventId: nextAttack.id,
+                    isFinisher: nextAttack.isFinisher,
+                }
+            );
             setQueuedAttacks((currentQueue: readonly PendingAttack[]) =>
                 currentQueue.filter(
                     (queuedAttack) => queuedAttack.id !== nextAttack.id
@@ -371,6 +446,127 @@ export function MultiplayerGameScreen({
         }
 
         digitBufferRef.current = '';
+    }
+
+    function scheduleTimeout(callback: () => void, delayMs: number): number {
+        const timerId = globalThis.setTimeout(
+            () => {
+                timeoutIdsRef.current = timeoutIdsRef.current.filter(
+                    (currentTimerId) => currentTimerId !== timerId
+                );
+                callback();
+            },
+            delayMs,
+            undefined
+        );
+
+        timeoutIdsRef.current = [...timeoutIdsRef.current, timerId];
+        return timerId;
+    }
+
+    function setDisplayedHp(side: 'enemy' | 'self', nextHp: number) {
+        if (side === 'self') {
+            displayedSelfHpRef.current = nextHp;
+            setDisplayedSelfHp(nextHp);
+            return;
+        }
+
+        displayedEnemyHpRef.current = nextHp;
+        setDisplayedEnemyHp(nextHp);
+    }
+
+    function getDisplayedHp(side: 'enemy' | 'self'): number {
+        return side === 'self'
+            ? displayedSelfHpRef.current
+            : displayedEnemyHpRef.current;
+    }
+
+    function getHpLossDuration(previousHp: number, nextHp: number): number {
+        const deductedHp = Math.max(0, previousHp - nextHp);
+
+        if (deductedHp === 0) {
+            return 0;
+        }
+
+        return Math.min(
+            1200,
+            hpLossBaseDurationMs + deductedHp * hpLossPerPointDurationMs
+        );
+    }
+
+    function queueResultDialogReveal(eventId: number, delayMs: number) {
+        if (resultDialogTimerRef.current !== undefined) {
+            globalThis.clearTimeout(resultDialogTimerRef.current);
+            resultDialogTimerRef.current = undefined;
+        }
+
+        setPendingResultDialogEventId(eventId);
+        setIsResultDialogVisible(false);
+
+        if (delayMs <= 0) {
+            setPendingResultDialogEventId(undefined);
+            setIsResultDialogVisible(true);
+            return;
+        }
+
+        resultDialogTimerRef.current = scheduleTimeout(() => {
+            resultDialogTimerRef.current = undefined;
+            setPendingResultDialogEventId(undefined);
+            setIsResultDialogVisible(true);
+        }, delayMs);
+    }
+
+    function resolveHpLoss(
+        side: 'enemy' | 'self',
+        nextHp: number,
+        damage: number,
+        finishState?: {
+            eventId: number;
+            isFinisher: boolean;
+        }
+    ) {
+        const previousHp = getDisplayedHp(side);
+        const durationMs = getHpLossDuration(previousHp, nextHp);
+        const deductedHp = Math.max(0, previousHp - nextHp);
+
+        if (deductedHp > 0) {
+            const impactToken = globalThis.crypto.randomUUID();
+
+            setHpImpacts((currentImpacts) => ({
+                ...currentImpacts,
+                [side]: {
+                    token: impactToken,
+                    durationMs,
+                },
+            }));
+
+            scheduleTimeout(() => {
+                setHpImpacts((currentImpacts) => {
+                    if (currentImpacts[side]?.token !== impactToken) {
+                        return currentImpacts;
+                    }
+
+                    return {
+                        ...currentImpacts,
+                        [side]: undefined,
+                    };
+                });
+            }, durationMs + hpImpactTailMs);
+        }
+
+        setDisplayedHp(side, nextHp);
+
+        if (damage > 0) {
+            showDamagePop(side, damage);
+        }
+
+        if (!finishState?.isFinisher) {
+            return;
+        }
+
+        const zeroHoldMs = deductedHp > 0 && nextHp === 0 ? hpZeroHoldMs : 0;
+
+        queueResultDialogReveal(finishState.eventId, durationMs + zeroHoldMs);
     }
 
     function queuePrime(prime: Prime) {
@@ -496,15 +692,11 @@ export function MultiplayerGameScreen({
             { id, side, value },
         ]);
 
-        globalThis.setTimeout(
-            () => {
-                setDamagePops((currentPops: readonly DamagePop[]) =>
-                    currentPops.filter((currentPop) => currentPop.id !== id)
-                );
-            },
-            780,
-            undefined
-        );
+        scheduleTimeout(() => {
+            setDamagePops((currentPops: readonly DamagePop[]) =>
+                currentPops.filter((currentPop) => currentPop.id !== id)
+            );
+        }, damagePopLifetimeMs);
     }
 
     function startAttackEffect(
@@ -697,6 +889,7 @@ export function MultiplayerGameScreen({
                                 (damagePop) => damagePop.side === 'enemy'
                             )}
                             hp={displayedEnemyHp}
+                            impact={hpImpacts.enemy}
                             label={opponentPlayer?.name ?? uiText.opponent}
                             maxHp={multiplayerSnapshot?.maxHp ?? 1}
                             outerRef={enemyHealthRef}
@@ -723,6 +916,7 @@ export function MultiplayerGameScreen({
                                 (damagePop) => damagePop.side === 'self'
                             )}
                             hp={displayedSelfHp}
+                            impact={hpImpacts.self}
                             label={uiText.you}
                             maxHp={multiplayerSnapshot?.maxHp ?? 1}
                             outerRef={selfHealthRef}
@@ -828,7 +1022,7 @@ export function MultiplayerGameScreen({
                     </div>
                 </section>
 
-                {isMatchFinished ? (
+                {isMatchFinished && isResultDialogVisible ? (
                     <ScoreDialog
                         comboCount={currentMultiplayerPlayer?.maxCombo ?? 0}
                         onReturnHome={onBack}
@@ -845,6 +1039,7 @@ export function MultiplayerGameScreen({
 type BattleHpBarProps = {
     damagePop: DamagePop | undefined;
     hp: number;
+    impact: HpImpact | undefined;
     label: string;
     maxHp: number;
     outerRef: React.RefObject<HTMLDivElement | null>;
@@ -854,6 +1049,7 @@ type BattleHpBarProps = {
 function BattleHpBar({
     damagePop,
     hp,
+    impact,
     label,
     maxHp,
     outerRef,
@@ -863,8 +1059,13 @@ function BattleHpBar({
 
     return (
         <div
-            className={`multiplayer-hp-bar multiplayer-hp-bar-${side}`}
+            className={`multiplayer-hp-bar multiplayer-hp-bar-${side}${impact ? ' multiplayer-hp-bar--hit' : ''}`}
             ref={outerRef}
+            style={
+                {
+                    '--hp-loss-duration': `${impact?.durationMs ?? 0}ms`,
+                } as CSSProperties
+            }
         >
             <div className='multiplayer-hp-copy'>
                 <span className='label'>{label}</span>
