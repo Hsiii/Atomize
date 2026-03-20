@@ -80,7 +80,6 @@ export function MenuScreen({
     const isOpponentGuest = isGuestName(opponentName);
     const initials = playerName.slice(0, 1).toUpperCase();
     const opponentInitials = (opponentName ?? '').slice(0, 1).toUpperCase();
-    const isWaitingForOpponent = isInRoom && !hasOpponent;
     const shouldShowReadyAction = isInRoom && hasOpponent;
     const shouldShowStartAction = !shouldShowReadyAction;
     const showCurrentReadyIndicator = hasOpponent && isCurrentPlayerReady;
@@ -236,7 +235,6 @@ export function MenuScreen({
                         {shouldShowStartAction ? (
                             <ActionButton
                                 className='menu-start-btn'
-                                disabled={isWaitingForOpponent}
                                 onClick={onStartSoloGame}
                                 variant='primary'
                             >
