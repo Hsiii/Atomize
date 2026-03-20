@@ -55,6 +55,13 @@ export const uiText = {
     victory: 'Victory',
     defeat: 'Defeat',
     remainingUnit: 'left',
+    onlineSection: 'Online',
+    inviteSent: 'Invite sent!',
+    inviteReceived: 'invited you to room',
+    inviteButton: 'Invite',
+    copyCode: 'Copy Code',
+    codeCopied: 'Copied!',
+    noOnlinePlayers: 'No other players online.',
 } as const;
 
 export type MenuMode = 'default' | 'create-room' | 'join-room';
@@ -66,4 +73,9 @@ export type MultiplayerState = {
     statusText: string;
     roomId: string;
     isHost: boolean;
+};
+
+export type OnlineLobbyUser = {
+    playerId: string;
+    name: string;
 };

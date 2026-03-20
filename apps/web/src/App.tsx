@@ -14,6 +14,7 @@ import {
     uiText,
     type MenuMode,
     type MultiplayerState,
+    type OnlineLobbyUser,
     type Screen,
 } from './app-state';
 import { MenuScreen } from './components/MenuScreen';
@@ -126,7 +127,9 @@ export default function App() {
         isHost: false,
     });
     const [roomIdInput, setRoomIdInput] = useState('');
+    const [onlineUsers, setOnlineUsers] = useState<OnlineLobbyUser[]>([]);
     const channelRef = useRef<RealtimeChannel | null>(null);
+    const lobbyChannelRef = useRef<RealtimeChannel | null>(null);
     const supabaseRef = useRef<SupabaseClient | null>(null);
     const latestSoloStateRef = useRef(soloState);
     const latestMultiplayerRef = useRef(multiplayer);
@@ -331,6 +334,90 @@ export default function App() {
         };
     }, []);
 
+    useEffect(() => {
+        const supabase = supabaseRef.current;
+
+        if (screen !== 'multi-lobby' || !supabase) {
+            if (lobbyChannelRef.current && supabase) {
+                void supabase.removeChannel(lobbyChannelRef.current);
+                lobbyChannelRef.current = null;
+            }
+
+            setOnlineUsers([]);
+            return undefined;
+        }
+
+        const currentPlayerId = latestMultiplayerRef.current.playerId
+            ?? crypto.randomUUID();
+
+        const lobbyChannel = supabase.channel('atomize:lobby', {
+            config: { presence: { key: currentPlayerId } },
+        });
+
+        function syncPresenceState() {
+            const state = lobbyChannel.presenceState<{
+                playerId: string;
+                name: string;
+            }>();
+            const users: OnlineLobbyUser[] = [];
+
+            for (const presences of Object.values(state)) {
+                for (const entry of presences) {
+                    if (entry.playerId !== currentPlayerId) {
+                        users.push({
+                            playerId: entry.playerId,
+                            name: entry.name,
+                        });
+                    }
+                }
+            }
+
+            setOnlineUsers(users);
+        }
+
+        lobbyChannel
+            .on('presence', { event: 'sync' }, syncPresenceState)
+            .on('broadcast', { event: 'room_invite' }, ({ payload }) => {
+                const invite = payload as {
+                    type: 'room_invite';
+                    roomCode: string;
+                    fromName: string;
+                    targetPlayerId: string;
+                };
+
+                if (invite.targetPlayerId !== currentPlayerId) {
+                    return;
+                }
+
+                const currentState = latestMultiplayerRef.current;
+
+                if (currentState.roomId) {
+                    return;
+                }
+
+                setRoomIdInput(invite.roomCode);
+                setMenuMode('join-room');
+                showLobbyToast(
+                    `${invite.fromName} ${uiText.inviteReceived} ${invite.roomCode}`
+                );
+            })
+            .subscribe(async (status) => {
+                if (status === 'SUBSCRIBED') {
+                    await lobbyChannel.track({
+                        playerId: currentPlayerId,
+                        name: playerName,
+                    });
+                }
+            });
+
+        lobbyChannelRef.current = lobbyChannel;
+
+        return () => {
+            void supabase.removeChannel(lobbyChannel);
+            lobbyChannelRef.current = null;
+        };
+    }, [screen, playerName]);
+
     function handleSoloComboSubmit(queue: readonly Prime[]) {
         if (
             soloTimeLeft === 0 ||
@@ -390,6 +477,28 @@ export default function App() {
         setRoomIdInput('');
         setMenuMode('default');
         setScreen('menu');
+    }
+
+    async function invitePlayer(targetPlayerId: string) {
+        const currentState = latestMultiplayerRef.current;
+        const lobbyChannel = lobbyChannelRef.current;
+
+        if (!currentState.roomId || !lobbyChannel) {
+            return;
+        }
+
+        await lobbyChannel.send({
+            type: 'broadcast',
+            event: 'room_invite',
+            payload: {
+                type: 'room_invite',
+                roomCode: currentState.roomId,
+                fromName: playerName,
+                targetPlayerId,
+            },
+        });
+
+        showLobbyToast(uiText.inviteSent);
     }
 
     function setStatusText(statusText: string) {
@@ -944,10 +1053,12 @@ export default function App() {
                 transientToastMessage={lobbyToast.message}
                 isJoinPending={isPendingGuestJoin(multiplayer)}
                 roomIdInput={roomIdInput}
+                onlineUsers={onlineUsers}
                 onBack={returnToMenu}
                 onRoomIdInputChange={handleRoomIdInputChange}
                 onJoinRoom={joinRoom}
                 onCreateRoom={createRoom}
+                onInvitePlayer={invitePlayer}
             />
         );
     }

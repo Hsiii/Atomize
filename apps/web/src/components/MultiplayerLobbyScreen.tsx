@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { JSX } from 'react';
+import { Copy, Check, Send } from 'lucide-react';
 
-import type { MenuMode, MultiplayerState } from '../app-state';
+import type { MenuMode, MultiplayerState, OnlineLobbyUser } from '../app-state';
 import { uiText } from '../app-state';
 
 import './MultiplayerLobbyScreen.css';
@@ -18,10 +19,12 @@ type MultiplayerLobbyScreenProps = {
     transientToastMessage: string | null;
     isJoinPending: boolean;
     roomIdInput: string;
+    onlineUsers: OnlineLobbyUser[];
     onBack: () => void | Promise<void>;
     onRoomIdInputChange: (value: string) => void;
     onJoinRoom: () => void | Promise<void>;
     onCreateRoom: () => void | Promise<void>;
+    onInvitePlayer: (targetPlayerId: string) => void | Promise<void>;
 };
 
 export function MultiplayerLobbyScreen({
@@ -32,16 +35,19 @@ export function MultiplayerLobbyScreen({
     transientToastMessage,
     isJoinPending,
     roomIdInput,
+    onlineUsers,
     onBack,
     onRoomIdInputChange,
     onJoinRoom,
     onCreateRoom,
+    onInvitePlayer,
 }: MultiplayerLobbyScreenProps): JSX.Element {
     const [localToastMessage, setLocalToastMessage] = useState<
         string | undefined
     >(undefined);
     const [visibleTransientToastMessage, setVisibleTransientToastMessage] =
         useState<string | undefined>(undefined);
+    const [codeCopied, setCodeCopied] = useState(false);
     const isJoinFlow = menuMode === 'join-room';
     const shouldShowWaitingRoom = Boolean(multiplayer.roomId);
     const isJoinButtonReady = roomIdInput.length === 4;
@@ -61,6 +67,7 @@ export function MultiplayerLobbyScreen({
         (player) => player.id !== multiplayer.playerId
     );
     const isCountdown = multiplayer.snapshot?.status === 'countdown';
+    const hasOpponent = Boolean(opponentPlayer);
 
     function handleActionError() {
         setLocalToastMessage(uiText.serverOffline);
@@ -125,6 +132,23 @@ export function MultiplayerLobbyScreen({
         }
 
         runAsyncAction(onJoinRoom);
+    }
+
+    function handleCopyCode() {
+        if (!multiplayer.roomId) {
+            return;
+        }
+
+        void navigator.clipboard.writeText(multiplayer.roomId).then(() => {
+            setCodeCopied(true);
+            globalThis.setTimeout(() => {
+                setCodeCopied(false);
+            }, 1500);
+        });
+    }
+
+    function handleInvite(targetPlayerId: string) {
+        runAsyncAction(() => onInvitePlayer(targetPlayerId));
     }
 
     if (!multiplayer.roomId && !shouldShowWaitingRoom) {
@@ -217,10 +241,66 @@ export function MultiplayerLobbyScreen({
                             </ActionButton>
                         </div>
                     ) : (
-                        <p className='vs-waiting-hint'>
-                            {uiText.waitingForPlayer}
-                        </p>
+                        <div className='lobby-actions'>
+                            <button
+                                className='lobby-copy-btn'
+                                onClick={handleCopyCode}
+                                type='button'
+                            >
+                                {codeCopied ? (
+                                    <Check size={16} />
+                                ) : (
+                                    <Copy size={16} />
+                                )}
+                                {codeCopied
+                                    ? uiText.codeCopied
+                                    : uiText.copyCode}
+                            </button>
+                        </div>
                     )}
+
+                    {!hasOpponent && !isCountdown ? (
+                        <section className='online-section'>
+                            <p className='online-header'>
+                                <span className='online-dot' />
+                                {uiText.onlineSection}
+                                <span className='online-count'>
+                                    {onlineUsers.length}
+                                </span>
+                            </p>
+
+                            {onlineUsers.length > 0 ? (
+                                <ul className='online-list'>
+                                    {onlineUsers.map((user) => (
+                                        <li
+                                            className='online-user'
+                                            key={user.playerId}
+                                        >
+                                            <span className='online-user-name'>
+                                                {user.name}
+                                            </span>
+                                            <button
+                                                className='online-invite-btn'
+                                                onClick={() => {
+                                                    handleInvite(
+                                                        user.playerId
+                                                    );
+                                                }}
+                                                type='button'
+                                            >
+                                                <Send size={13} />
+                                                {uiText.inviteButton}
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className='online-empty'>
+                                    {uiText.noOnlinePlayers}
+                                </p>
+                            )}
+                        </section>
+                    ) : undefined}
 
                     {activeToastMessage ? (
                         <div aria-live='polite' className='waiting-toast-layer'>
