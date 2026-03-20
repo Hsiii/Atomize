@@ -898,7 +898,8 @@ export function useMultiplayerGame({
     }
 
     async function sendMultiplayerPenalty(
-        snapshotOverride?: RoomSnapshot
+        snapshotOverride?: RoomSnapshot,
+        preservedStage?: RoomSnapshot['stage']
     ): Promise<boolean> {
         const currentState = latestMultiplayerRef.current;
 
@@ -915,7 +916,8 @@ export function useMultiplayerGame({
 
             const nextSnapshot = applyBattlePenalty(
                 snapshot,
-                currentState.playerId
+                currentState.playerId,
+                preservedStage
             );
             updateSnapshot(nextSnapshot, '');
             return await broadcastMessage({
@@ -928,6 +930,7 @@ export function useMultiplayerGame({
         return await broadcastMessage({
             type: 'combo_penalty',
             playerId: currentState.playerId,
+            preservedStage,
         });
     }
 
@@ -1049,7 +1052,8 @@ export function useMultiplayerGame({
 
         const nextSnapshot = applyBattlePenalty(
             currentState.snapshot,
-            message.playerId
+            message.playerId,
+            message.preservedStage
         );
 
         updateSnapshot(nextSnapshot, '');
@@ -1101,7 +1105,7 @@ export function useMultiplayerGame({
 
         if (hasRedundantBufferedPrimes) {
             setMultiplayerPrimeQueue([]);
-            await sendMultiplayerPenalty();
+            await sendMultiplayerPenalty(undefined, outcome.stage);
             return undefined;
         }
 

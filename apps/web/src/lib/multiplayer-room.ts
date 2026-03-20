@@ -236,7 +236,8 @@ export function applyBattlePrimeSelection(
 
 export function applyBattlePenalty(
     snapshot: RoomSnapshot,
-    playerId: string
+    playerId: string,
+    preservedStage?: RoomSnapshot['stage']
 ): RoomSnapshot {
     if (snapshot.status !== 'playing') {
         return snapshot;
@@ -253,7 +254,7 @@ export function applyBattlePenalty(
         return snapshot;
     }
 
-    const resetStage = generateStage(snapshot.seed, actingPlayer.stageIndex);
+    const nextStage = preservedStage ?? actingPlayer.stage;
     const nextPlayers = snapshot.players.map((player) => {
         if (player.id !== playerId) {
             return player;
@@ -263,7 +264,7 @@ export function applyBattlePenalty(
             ...player,
             hp: Math.max(0, player.hp - WRONG_SELECTION_DAMAGE),
             combo: 0,
-            stage: resetStage,
+            stage: nextStage,
         };
     });
     const nextActingPlayer = nextPlayers.find(
@@ -305,7 +306,7 @@ export function applyBattlePenalty(
         {
             ...snapshot,
             stageIndex: actingPlayer.stageIndex,
-            stage: resetStage,
+            stage: nextStage,
         },
         nextPlayers,
         lastEvent

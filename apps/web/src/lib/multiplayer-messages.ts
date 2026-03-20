@@ -24,6 +24,7 @@ export type RoomBroadcastMessage =
     | {
           type: 'combo_penalty';
           playerId: string;
+          preservedStage?: RoomSnapshot['stage'];
       }
     | {
           type: 'room_error';
