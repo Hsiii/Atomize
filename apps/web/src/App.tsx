@@ -1169,11 +1169,11 @@ export default function App() {
                 onInvitePlayer={handleLobbyInvite}
                 onStartSoloGame={startSingleGame}
                 onToggleReady={toggleReady}
+                isInRoom={Boolean(multiplayer.roomId)}
                 onlineUsers={onlineUsers}
                 opponentName={opponentPlayer?.name ?? null}
                 pendingInvitation={pendingInvitation}
                 playerName={playerName}
-                roomId={multiplayer.roomId || null}
                 toastId={lobbyToast.id}
                 toastMessage={lobbyToast.message}
             />

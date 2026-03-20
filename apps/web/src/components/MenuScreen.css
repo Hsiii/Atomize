@@ -242,62 +242,16 @@
     width: min(100%, 16rem);
 }
 
-.menu-room-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.55rem;
+.menu-room-hint-block {
+    max-width: 13rem;
     padding: 0.85rem 1rem;
     border: 2px solid var(--color-outline-strong);
     border-radius: 1.1rem;
     background: rgba(255, 255, 255, 0.72);
 }
 
-.menu-room-label {
-    color: var(--color-ink-soft);
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    line-height: 1;
-    text-transform: uppercase;
-}
-
-.menu-room-code-row {
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-}
-
-.menu-room-code {
-    font-family: var(--font-family-display);
-    font-size: 1.6rem;
-    font-weight: 900;
-    letter-spacing: 0.18em;
-    line-height: 1;
-    text-indent: 0.18em;
-    color: var(--color-ink);
-}
-
-.menu-room-copy {
-    width: 2rem;
-    height: 2rem;
-    border: 1px solid var(--color-outline-strong);
-    border-radius: 50%;
-    background: var(--color-surface-strong);
-    color: var(--color-ink-soft);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-.menu-room-copy:hover {
-    color: var(--color-primary-strong);
-    border-color: var(--color-primary-strong);
-}
-
 .menu-room-hint {
-    max-width: 13rem;
+    display: block;
     color: var(--color-ink-soft);
     font-size: 0.75rem;
     font-weight: 600;

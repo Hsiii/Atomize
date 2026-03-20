@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { JSX } from 'react';
-import { Check, Copy, Plus, User, X } from 'lucide-react';
+import { Plus, User, X } from 'lucide-react';
 
-import type { OnlineLobbyUser, PendingInvitation } from '../app-state';
+import type { OnlineLobbyUser } from '../app-state';
 import { uiText } from '../app-state';
 
 import { ActionButton } from './ActionButton';
@@ -12,7 +12,7 @@ import './MenuScreen.css';
 type MenuScreenProps = {
     playerName: string;
     opponentName: string | null;
-    roomId: string | null;
+    isInRoom: boolean;
     isCurrentPlayerReady: boolean;
     isOpponentReady: boolean;
     onlineUsers: OnlineLobbyUser[];
@@ -22,7 +22,7 @@ type MenuScreenProps = {
     onInvitePlayer: (targetPlayerId: string) => void;
     onToggleReady: () => void;
     onEditName: (name: string) => void;
-    pendingInvitation: PendingInvitation | null;
+    pendingInvitation: { fromName: string; roomCode: string } | null;
     onAcceptInvitation: () => void;
     onDeclineInvitation: () => void;
 };
@@ -30,7 +30,7 @@ type MenuScreenProps = {
 export function MenuScreen({
     playerName,
     opponentName,
-    roomId,
+    isInRoom,
     isCurrentPlayerReady,
     isOpponentReady,
     onlineUsers,
@@ -48,7 +48,6 @@ export function MenuScreen({
     const [showProfileDialog, setShowProfileDialog] = useState(false);
     const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
     const [editingName, setEditingName] = useState(playerName);
-    const [codeCopied, setCodeCopied] = useState(false);
     const [visibleToast, setVisibleToast] = useState<string | undefined>(
         undefined
     );
@@ -75,27 +74,11 @@ export function MenuScreen({
     }, [toastId, toastMessage]);
 
     const hasOpponent = Boolean(opponentName);
-    const isInRoom = Boolean(roomId);
     const isGuest = playerName === uiText.guest;
     const initials = playerName.slice(0, 1).toUpperCase();
     const opponentInitials = (opponentName ?? '').slice(0, 1).toUpperCase();
     const shouldShowReadyAction = isInRoom && hasOpponent;
-
-    function handleCopyRoomCode() {
-        if (!roomId) {
-            return;
-        }
-
-        navigator.clipboard.writeText(roomId).then(
-            () => {
-                setCodeCopied(true);
-                globalThis.setTimeout(() => {
-                    setCodeCopied(false);
-                }, 1500);
-            },
-            () => undefined
-        );
-    }
+    const shouldShowSoloStart = !shouldShowReadyAction && !isInRoom;
 
     function handleProfileSave() {
         const trimmed = editingName.trim();
@@ -109,7 +92,12 @@ export function MenuScreen({
 
     function handleInvite(targetPlayerId: string) {
         onInvitePlayer(targetPlayerId);
-        setInvitedIds((prev) => new Set(prev).add(targetPlayerId));
+        setInvitedIds((prev: ReadonlySet<string>) => {
+            const nextInvitedIds = new Set(prev);
+
+            nextInvitedIds.add(targetPlayerId);
+            return nextInvitedIds;
+        });
     }
 
     return (
@@ -193,33 +181,11 @@ export function MenuScreen({
                             )}
                         </div>
 
-                        {isInRoom ? (
-                            <div className='menu-room-card'>
-                                <span className='menu-room-label'>
-                                    {uiText.roomCodeShort}
+                        {isInRoom && !hasOpponent ? (
+                            <div className='menu-room-hint-block'>
+                                <span className='menu-room-hint'>
+                                    {uiText.waitingForPlayer}
                                 </span>
-                                <div className='menu-room-code-row'>
-                                    <span className='menu-room-code'>
-                                        {roomId}
-                                    </span>
-                                    <button
-                                        aria-label={uiText.copyCode}
-                                        className='menu-room-copy'
-                                        onClick={handleCopyRoomCode}
-                                        type='button'
-                                    >
-                                        {codeCopied ? (
-                                            <Check size={14} />
-                                        ) : (
-                                            <Copy size={14} />
-                                        )}
-                                    </button>
-                                </div>
-                                {!hasOpponent ? (
-                                    <span className='menu-room-hint'>
-                                        {uiText.waitingForPlayer}
-                                    </span>
-                                ) : undefined}
                             </div>
                         ) : undefined}
 
@@ -232,7 +198,9 @@ export function MenuScreen({
                             >
                                 {uiText.ready}
                             </ActionButton>
-                        ) : !isInRoom ? (
+                        ) : undefined}
+
+                        {shouldShowSoloStart ? (
                             <ActionButton
                                 className='menu-start-btn'
                                 onClick={onStartSoloGame}
@@ -350,6 +318,16 @@ export function MenuScreen({
                                                 invitedIds.has(user.playerId);
                                             const isDisabled =
                                                 isUserInGame || isInvited;
+                                            let inviteButtonLabel: string =
+                                                uiText.inviteButton;
+
+                                            if (isUserInGame) {
+                                                inviteButtonLabel =
+                                                    uiText.inGame;
+                                            } else if (isInvited) {
+                                                inviteButtonLabel =
+                                                    uiText.invited;
+                                            }
 
                                             return (
                                                 <li
@@ -369,11 +347,7 @@ export function MenuScreen({
                                                         }}
                                                         type='button'
                                                     >
-                                                        {isUserInGame
-                                                            ? uiText.inGame
-                                                            : isInvited
-                                                              ? uiText.invited
-                                                              : uiText.inviteButton}
+                                                        {inviteButtonLabel}
                                                     </button>
                                                 </li>
                                             );
