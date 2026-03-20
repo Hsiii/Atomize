@@ -12,6 +12,7 @@
     align-items: center;
     justify-content: center;
     position: relative;
+    overflow: hidden;
 }
 
 .join-toast-layer {
@@ -25,27 +26,60 @@
     z-index: 10;
 }
 
+.join-title-orb {
+    --join-title-diameter: max(122vw, 122dvh);
+    position: absolute;
+    left: 50%;
+    top: calc(40dvh - var(--join-title-diameter));
+    width: var(--join-title-diameter);
+    height: var(--join-title-diameter);
+    margin: 0;
+    padding: 2.2rem;
+    padding-bottom: 7rem;
+    border: 0.2rem solid var(--color-outline-strong);
+    border-radius: 50%;
+    background: var(--color-primary);
+    overflow: hidden;
+    z-index: 1;
+    transform: translateX(-50%);
+}
+
+.join-title {
+    margin: 0;
+    position: absolute;
+    left: 50%;
+    top: calc(var(--join-title-diameter) - 20dvh);
+    width: min(88vw, 20rem);
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.02em;
+    font-family: var(--font-family-display);
+    font-size: 3.9rem;
+    font-weight: 900;
+    line-height: 0.86;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--color-text-inverse);
+    transform: translate(-50%, -50%);
+}
+
 .join-stage {
     position: relative;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-}
-
-.join-label {
-    margin: 0 0 var(--space-5);
-    font-family: var(--font-family-display);
-    font-size: 2.5rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    line-height: 1.1;
-    color: var(--color-ink);
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    margin-top: clamp(11rem, 24dvh, 15rem);
+    z-index: 2;
 }
 
 .join-orb {
-    width: min(72vw, 20rem);
-    height: min(72vw, 20rem);
+    width: min(70vw, 18rem);
+    height: min(70vw, 18rem);
     border-radius: 50%;
     background: var(--color-primary);
     display: flex;
@@ -108,9 +142,9 @@
 
 /* Go blob button, bottom-right of orb. */
 .join-go-blob {
-    position: absolute;
-    right: -2rem;
-    bottom: -2rem;
+    position: relative;
+    right: auto;
+    bottom: auto;
     width: 7rem;
     min-height: 7rem;
     aspect-ratio: 1;
@@ -172,6 +206,51 @@
 
     75% {
         transform: translate(2px, 1px) rotate(6deg);
+    }
+}
+
+@media (max-width: 768px) {
+    .join-title {
+        width: min(90vw, 18rem);
+        font-size: 3.35rem;
+    }
+
+    .join-stage {
+        margin-top: clamp(10rem, 23dvh, 13rem);
+    }
+}
+
+@media (max-width: 480px) {
+    .join-title-orb {
+        padding: 1.5rem;
+        padding-bottom: 4.25rem;
+    }
+
+    .join-title {
+        width: min(88vw, 16rem);
+        font-size: 2.95rem;
+        line-height: 0.88;
+    }
+
+    .join-stage {
+        gap: 1rem;
+        margin-top: clamp(9rem, 21dvh, 11.5rem);
+    }
+
+    .join-orb {
+        width: min(72vw, 16rem);
+        height: min(72vw, 16rem);
+    }
+
+    .join-bar {
+        width: 1.9rem;
+        font-size: 2.45rem;
+    }
+
+    .join-go-blob {
+        width: 6.25rem;
+        min-height: 6.25rem;
+        gap: 0.35rem;
     }
 }
 

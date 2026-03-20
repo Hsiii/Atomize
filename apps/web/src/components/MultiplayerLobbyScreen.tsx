@@ -222,9 +222,14 @@ export function MultiplayerLobbyScreen({
                             </div>
                         ) : undefined}
 
-                        <div className='join-stage'>
-                            <p className='join-label'>{uiText.roomCode}</p>
+                        <div aria-hidden='true' className='join-title-orb'>
+                            <p className='join-title'>
+                                <span>{uiText.joinRoom.split(' ')[0]}</span>
+                                <span>{uiText.joinRoom.split(' ')[1]}</span>
+                            </p>
+                        </div>
 
+                        <div className='join-stage'>
                             {/* The hidden input inside handles keyboard interaction. */}
                             <div
                                 className='join-orb'
