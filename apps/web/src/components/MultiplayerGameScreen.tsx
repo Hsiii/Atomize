@@ -981,9 +981,7 @@ export function MultiplayerGameScreen({
                                 {prime}
                             </PrimeKeyButton>
                         ))}
-                    </div>
 
-                    <div className='combo-actions-column'>
                         <ActionButton
                             aria-label={uiText.backspace}
                             className='combo-backspace-button'

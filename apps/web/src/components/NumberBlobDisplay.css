@@ -1,21 +1,13 @@
 .number-blob-display {
     --number-blob-scale-factor: 1;
     --number-blob-size: min(74vw, 21.5rem);
-    --number-blob-padding: clamp(
-        calc(1.15rem * var(--number-blob-scale-factor)),
-        calc(4vw * var(--number-blob-scale-factor)),
-        calc(1.75rem * var(--number-blob-scale-factor))
-    );
-    --number-blob-main-font-size: clamp(
-        calc(4.4rem * var(--number-blob-scale-factor)),
-        calc(22vw * var(--number-blob-scale-factor)),
-        calc(7.8rem * var(--number-blob-scale-factor))
+    --number-blob-padding: calc(1.75rem * var(--number-blob-scale-factor));
+    --number-blob-main-font-size: calc(
+        7.8rem * var(--number-blob-scale-factor)
     );
     --number-blob-clear-font-size: var(--number-blob-main-font-size);
-    --number-blob-split-font-size: clamp(
-        calc(1.65rem * var(--number-blob-scale-factor)),
-        calc(5vw * var(--number-blob-scale-factor)),
-        calc(2.2rem * var(--number-blob-scale-factor))
+    --number-blob-split-font-size: calc(
+        2.2rem * var(--number-blob-scale-factor)
     );
     --number-blob-split-padding: calc(0.8rem * var(--number-blob-scale-factor));
     --number-blob-border-width: calc(2px * var(--number-blob-scale-factor));
@@ -378,9 +370,28 @@
     }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 768px) {
+    .number-blob-display {
+        --number-blob-padding: calc(1.4rem * var(--number-blob-scale-factor));
+        --number-blob-main-font-size: calc(
+            6rem * var(--number-blob-scale-factor)
+        );
+        --number-blob-split-font-size: calc(
+            1.9rem * var(--number-blob-scale-factor)
+        );
+    }
+}
+
+@media (max-width: 480px) {
     .number-blob-display {
         --number-blob-size: min(78vw, 18.6rem);
+        --number-blob-padding: calc(1.15rem * var(--number-blob-scale-factor));
+        --number-blob-main-font-size: calc(
+            4.4rem * var(--number-blob-scale-factor)
+        );
+        --number-blob-split-font-size: calc(
+            1.65rem * var(--number-blob-scale-factor)
+        );
     }
 
     .number-blob-display-size-enemy,

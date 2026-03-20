@@ -84,7 +84,7 @@
 
 .score-dialog-title {
     display: block;
-    font-size: clamp(1.75rem, 8vw, 2.5rem);
+    font-size: 2.5rem;
     font-weight: 800;
     line-height: 1.1;
     letter-spacing: 0.06em;
@@ -141,7 +141,7 @@
     display: block;
     margin: 0;
     font-family: var(--font-family-numeric);
-    font-size: clamp(2.5rem, 12vw, 3.5rem);
+    font-size: 3.5rem;
     font-weight: var(--font-weight-number-emphasis);
     line-height: 1;
     color: var(--color-primary);
@@ -167,7 +167,7 @@
     display: block;
     margin: 0;
     font-family: var(--font-family-numeric);
-    font-size: clamp(2.4rem, 10vw, 3.2rem);
+    font-size: 3.2rem;
     font-weight: var(--font-weight-number-emphasis);
     line-height: 1;
     color: var(--color-primary);
@@ -223,7 +223,19 @@
     color: var(--color-ink-soft);
 }
 
-@media (max-width: 360px) {
+@media (max-width: 480px) {
+    .score-dialog-title {
+        font-size: 1.75rem;
+    }
+
+    .score-dialog-combo-value {
+        font-size: 2.5rem;
+    }
+
+    .score-dialog-stat-value {
+        font-size: 2.4rem;
+    }
+
     .score-dialog-stats--split {
         flex-wrap: wrap;
         gap: var(--space-6);

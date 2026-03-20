@@ -17,17 +17,14 @@
 
 .single-value-display strong {
     display: block;
-    font-size: clamp(5rem, 28vw, 8rem);
+    font-size: 8rem;
     line-height: 0.92;
     font-variant-numeric: tabular-nums;
 }
 
 .single-controls-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(
-            var(--size-control-rail-min),
-            0.26fr
-        );
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-3);
     align-items: stretch;
 }
@@ -50,27 +47,16 @@
 }
 
 .solo-keypad {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 0.75fr);
+    grid-template-rows: repeat(3, minmax(0, 1fr));
     margin-top: 0;
     gap: var(--space-keypad-gap-compact);
-    align-items: center;
-}
-
-.solo-keypad button {
-    min-height: 0;
-}
-
-.combo-actions-column {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: repeat(3, minmax(0, 1fr));
-    gap: var(--space-3);
-    min-width: 0;
 }
 
 .combo-backspace-button,
 .combo-enter-button {
     width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -80,20 +66,20 @@
 }
 
 .combo-backspace-button {
-    aspect-ratio: 1;
-    align-self: center;
+    grid-column: 4;
+    grid-row: 1;
     border-radius: var(--radius-orb);
     background: var(--color-secondary);
 }
 
 .combo-enter-button {
-    min-height: 100%;
-    grid-row: span 2;
+    grid-column: 4;
+    grid-row: 2 / 4;
     border-radius: var(--radius-pill);
     background: var(--color-primary-strong);
 }
 
-.combo-actions-column .control-icon {
+.combo-backspace-button .control-icon {
     width: 1.9rem;
     height: 1.9rem;
     stroke-width: 2.35;
@@ -111,12 +97,15 @@
     height: 2.2rem;
 }
 
-@media (max-width: 420px) {
-    .single-controls-grid {
-        grid-template-columns: minmax(0, 1fr) minmax(
-                var(--size-control-rail-min-mobile),
-                0.24fr
-            );
+@media (max-width: 768px) {
+    .single-value-display strong {
+        font-size: 6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .single-value-display strong {
+        font-size: 5rem;
     }
 
     .solo-keypad {

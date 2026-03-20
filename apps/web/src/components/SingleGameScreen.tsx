@@ -164,9 +164,7 @@ export function SingleGameScreen({
                                 {prime}
                             </PrimeKeyButton>
                         ))}
-                    </div>
 
-                    <div className='combo-actions-column'>
                         <ActionButton
                             aria-label={uiText.backspace}
                             className='combo-backspace-button'

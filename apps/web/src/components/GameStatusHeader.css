@@ -92,7 +92,7 @@
     display: inline-block;
     margin-top: var(--space-0);
     font-family: var(--font-family-numeric);
-    font-size: clamp(1.15rem, 4vw, 1.45rem);
+    font-size: 1.45rem;
     font-weight: var(--font-weight-number-emphasis);
     line-height: 1;
     color: var(--color-primary);
@@ -127,5 +127,11 @@
     100% {
         opacity: 0;
         transform: translateY(-0.8rem) scale(1);
+    }
+}
+
+@media (max-width: 480px) {
+    .single-score-pill strong {
+        font-size: 1.15rem;
     }
 }

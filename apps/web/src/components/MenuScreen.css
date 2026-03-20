@@ -25,8 +25,8 @@
     width: var(--menu-title-diameter);
     height: var(--menu-title-diameter);
     margin: 0;
-    padding: clamp(1.25rem, 4vw, 2.5rem);
-    padding-bottom: clamp(3.5rem, 10vw, 8rem);
+    padding: 2.5rem;
+    padding-bottom: 8rem;
     border: 0.2rem solid var(--color-outline-strong);
     border-radius: 50%;
     background: var(--color-primary);
@@ -43,7 +43,7 @@
     width: min(96vw, 34rem);
     max-width: 100%;
     font-family: var(--font-family-display);
-    font-size: clamp(4.35rem, 15.8vw, 8.8rem);
+    font-size: 8.8rem;
     line-height: 0.82;
     font-weight: 900;
     letter-spacing: 0.03em;
@@ -67,12 +67,12 @@
 
 .menu-actions-shell {
     position: absolute;
-    inset: clamp(12.5rem, 31vh, 19rem) 0 clamp(0.75rem, 7vh, 3rem);
+    inset: 19rem 0 3rem;
     z-index: 1;
 }
 
 .menu-actions-shell-play {
-    inset: clamp(10.85rem, 27.5vh, 16.5rem) 0 clamp(0.75rem, 7vh, 3rem);
+    inset: 16.5rem 0 3rem;
 }
 
 .menu-actions {
@@ -86,10 +86,10 @@
     --blob-x: 0px;
     --blob-y: 0px;
     --blob-scale: 1;
-    width: clamp(4.6rem, 19vw, 6.3rem);
-    min-height: clamp(4.6rem, 19vw, 6.3rem);
+    width: 6.3rem;
+    min-height: 6.3rem;
     aspect-ratio: 1;
-    padding: clamp(0.7rem, 2.4vw, 1rem) clamp(0.55rem, 2vw, 0.9rem);
+    padding: 1rem 0.9rem;
     border: 1px solid var(--color-border-contrast);
     border-radius: 50%;
     background: var(--color-primary);
@@ -101,7 +101,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: clamp(0.4rem, 1.4vw, 0.65rem);
+    gap: 0.65rem;
     overflow: hidden;
     transform: translateY(0) scale(var(--blob-scale));
     transform-origin: center;
@@ -130,15 +130,15 @@
 }
 
 .menu-blob-icon {
-    width: clamp(1.2rem, 5.2vw, 1.95rem);
-    height: clamp(1.2rem, 5.2vw, 1.95rem);
+    width: 1.95rem;
+    height: 1.95rem;
     stroke-width: 1.9;
     position: relative;
     z-index: 1;
 }
 
 .menu-blob-text {
-    font-size: clamp(0.72rem, 2.5vw, 0.98rem);
+    font-size: 0.98rem;
     font-weight: 700;
     line-height: 1.12;
     letter-spacing: 0.04em;
@@ -183,13 +183,73 @@
     background: var(--color-secondary);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
+    .menu-title-orb {
+        padding: 1.8rem;
+        padding-bottom: 5.5rem;
+    }
+
+    .hero-title {
+        font-size: 6.5rem;
+    }
+
+    .menu-actions-shell {
+        inset: 16rem 0 1.5rem;
+    }
+
     .menu-actions-shell-play {
-        inset: 11.6rem 0 0.4rem;
+        inset: 13.5rem 0 1.5rem;
+    }
+
+    .menu-blob-button {
+        width: 5.4rem;
+        min-height: 5.4rem;
+        padding: 0.85rem 0.7rem;
+        gap: 0.5rem;
+    }
+
+    .menu-blob-icon {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+
+    .menu-blob-text {
+        font-size: 0.84rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .menu-title-orb {
+        padding: 1.25rem;
+        padding-bottom: 3.5rem;
+    }
+
+    .hero-title {
+        font-size: 4.35rem;
     }
 
     .menu-actions-shell {
         inset: 13.5rem 0 0.4rem;
+    }
+
+    .menu-actions-shell-play {
+        inset: 11.6rem 0 0.4rem;
+    }
+
+    .menu-blob-button {
+        width: 4.6rem;
+        min-height: 4.6rem;
+        padding: 0.7rem 0.55rem;
+        gap: 0.4rem;
+    }
+
+    .menu-blob-icon {
+        width: 1.2rem;
+        height: 1.2rem;
+    }
+
+    .menu-blob-text {
+        font-size: 0.72rem;
     }
 }
 

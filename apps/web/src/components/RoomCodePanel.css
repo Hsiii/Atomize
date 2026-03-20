@@ -7,9 +7,16 @@
 
 .code-panel strong,
 .room-code-visual {
-    font-size: clamp(2.4rem, 16vw, 4rem);
+    font-size: 4rem;
     letter-spacing: 0.16em;
     text-indent: 0.16em;
+}
+
+@media (max-width: 480px) {
+    .code-panel strong,
+    .room-code-visual {
+        font-size: 2.4rem;
+    }
 }
 
 .room-code-panel {
