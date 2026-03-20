@@ -105,6 +105,20 @@
     --number-blob-stage-color: var(--color-primary-strong);
 }
 
+.number-blob-display-multiplayer.number-blob-display-size-self
+    .number-main-blob,
+.number-blob-display-multiplayer.number-blob-display-size-self
+    .number-blob-clear-pop {
+    --number-blob-stage-color: var(--color-secondary);
+}
+
+.number-blob-display-multiplayer.number-blob-display-size-enemy
+    .number-main-blob,
+.number-blob-display-multiplayer.number-blob-display-size-enemy
+    .number-blob-clear-pop {
+    --number-blob-stage-color: var(--color-primary-strong);
+}
+
 .number-blob-display-size-enemy {
     --number-blob-scale-factor: 0.5;
     --number-blob-size: min(
