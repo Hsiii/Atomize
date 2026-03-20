@@ -72,6 +72,10 @@
     animation: dialog-enter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
 }
 
+.score-dialog--split {
+    width: min(100%, 22rem);
+}
+
 .score-dialog-header {
     width: 100%;
     padding: var(--space-7) var(--space-8);
@@ -93,11 +97,6 @@
     flex-direction: column;
     align-items: center;
     gap: var(--space-4);
-    width: min(100%, 12rem);
-    padding: var(--space-6) var(--space-5);
-    border: 2px solid var(--color-primary);
-    border-radius: calc(var(--radius-panel) - 0.375rem);
-    background: var(--color-surface-raised);
     animation: stat-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s both;
 }
 
@@ -105,9 +104,28 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: var(--space-4);
     width: 100%;
     padding: var(--space-8) var(--space-8) var(--space-6);
+}
+
+.score-dialog-stats--split {
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 0;
+}
+
+.score-dialog-stats--split > .score-dialog-stat {
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: center;
+}
+
+.score-dialog-stat--score {
+    animation-delay: 0.3s;
+}
+
+.score-dialog-stat--combo {
+    animation-delay: 0.45s;
 }
 
 .score-dialog-combo-ring {
@@ -169,12 +187,49 @@
     animation: button-slide 0.3s ease-out 0.55s both;
 }
 
-@media (max-width: 480px) {
-    .score-dialog-stats {
-        padding-inline: var(--space-6);
+/* Victory variant — gold accent */
+.score-dialog--victory {
+    border-color: var(--color-gold);
+}
+
+.score-dialog--victory .score-dialog-header {
+    background: var(--color-gold);
+}
+
+.score-dialog--victory .score-dialog-combo-ring {
+    border-color: var(--color-gold);
+}
+
+.score-dialog--victory .score-dialog-combo-value,
+.score-dialog--victory .score-dialog-stat-value {
+    color: var(--color-gold);
+}
+
+/* Defeat variant — muted */
+.score-dialog--defeat {
+    border-color: var(--color-ink-soft);
+}
+
+.score-dialog--defeat .score-dialog-header {
+    background: var(--color-ink-soft);
+}
+
+.score-dialog--defeat .score-dialog-combo-ring {
+    border-color: var(--color-ink-soft);
+}
+
+.score-dialog--defeat .score-dialog-combo-value,
+.score-dialog--defeat .score-dialog-stat-value {
+    color: var(--color-ink-soft);
+}
+
+@media (max-width: 360px) {
+    .score-dialog-stats--split {
+        flex-wrap: wrap;
+        gap: var(--space-6);
     }
 
-    .score-dialog-stat {
-        width: 100%;
+    .score-dialog-stat--combo {
+        border-left: 0;
     }
 }

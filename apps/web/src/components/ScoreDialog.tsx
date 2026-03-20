@@ -19,6 +19,8 @@ export function ScoreDialog({
     score,
     title,
 }: ScoreDialogProps): JSX.Element {
+    const hasScoreStat = score !== undefined;
+
     function handleReturnHomeClick() {
         Promise.resolve(onReturnHome()).catch(() => undefined);
     }
@@ -28,7 +30,7 @@ export function ScoreDialog({
             <section
                 aria-labelledby='score-dialog-title'
                 aria-modal='true'
-                className='score-dialog'
+                className={`score-dialog${hasScoreStat ? ' score-dialog--split' : ''}${title === uiText.victory ? ' score-dialog--victory' : ''}${title === uiText.defeat ? ' score-dialog--defeat' : ''}`}
                 role='dialog'
             >
                 <header className='score-dialog-header'>
@@ -39,11 +41,13 @@ export function ScoreDialog({
                         {title}
                     </span>
                 </header>
-                <div className='score-dialog-stats'>
+                <div
+                    className={`score-dialog-stats${hasScoreStat ? ' score-dialog-stats--split' : ''}`}
+                >
                     {score === undefined ? undefined : (
                         <section
                             aria-label={uiText.score}
-                            className='score-dialog-stat'
+                            className='score-dialog-stat score-dialog-stat--score'
                         >
                             <p className='score-dialog-summary'>
                                 {uiText.score}
@@ -52,24 +56,29 @@ export function ScoreDialog({
                                 <strong className='score-dialog-stat-value'>
                                     {score}
                                 </strong>
-                                <span className='score-dialog-stat-unit'>
-                                    {uiText.scoreUnit}
-                                </span>
                             </div>
                         </section>
                     )}
                     <section
                         aria-label={uiText.maxCombo}
-                        className='score-dialog-stat'
+                        className={`score-dialog-stat${hasScoreStat ? ' score-dialog-stat--combo' : ''}`}
                     >
                         <p className='score-dialog-summary'>
                             {uiText.maxCombo}
                         </p>
-                        <div className='score-dialog-combo-ring'>
-                            <strong className='score-dialog-combo-value'>
-                                x{comboCount}
-                            </strong>
-                        </div>
+                        {hasScoreStat ? (
+                            <div className='score-dialog-stat-value-block'>
+                                <strong className='score-dialog-stat-value'>
+                                    {comboCount}
+                                </strong>
+                            </div>
+                        ) : (
+                            <div className='score-dialog-combo-ring'>
+                                <strong className='score-dialog-combo-value'>
+                                    x{comboCount}
+                                </strong>
+                            </div>
+                        )}
                     </section>
                 </div>
                 <ActionButton onClick={handleReturnHomeClick} variant='primary'>
