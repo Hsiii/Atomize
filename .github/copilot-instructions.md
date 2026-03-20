@@ -13,14 +13,17 @@
 - Always use global style variables for colors, fonts, and spacing
 - Always use global string constants for text.
 
-## Dev
+## Lint
 
 - Always fixes lint errors after making changes.
 - Always directly read the editor for lint error status, never use commands.
-- Always follow conventional commits when writing commit messages, don't use `style` type wrongly, it's for formatting changes.
-- Always assume there're other agents working, so when committing, only commit the part you changed, never commit all files.
-- Always commit your changes
+
+## Commit
+
+- Always commit your changes.
 - Always check the change you've made in the browser before committing, never commit without confirmation.
+- Always follow conventional commits when writing commit messages, don't use `style` type wrongly, it's for formatting changes.
+- Always assume there're other agents working, so when committing, only commit the part you changed, never directly add and commit change files.
 
 ## Planing
 
