@@ -35,7 +35,6 @@ export const uiText = {
     countdownPrefix: 'Starting in',
     configHint: 'Server setup required for multiplayer.',
     idleStatus: 'Server idle',
-    waitingForPlayer: 'Waiting for the second player to join.',
     multiplayerSyncStalled:
         'Realtime sync stalled. Input unlocked, but room sync may lag.',
     timeUp: "Time's Up",

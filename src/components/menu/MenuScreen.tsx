@@ -215,14 +215,6 @@ export function MenuScreen({
                             )}
                         </div>
 
-                        {isInRoom && !hasOpponent ? (
-                            <div className='menu-room-hint-block'>
-                                <span className='menu-room-hint'>
-                                    {uiText.waitingForPlayer}
-                                </span>
-                            </div>
-                        ) : undefined}
-
                         {shouldShowReadyAction ? (
                             <ActionButton
                                 aria-pressed={isCurrentPlayerReady}
