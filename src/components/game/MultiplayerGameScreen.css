@@ -85,7 +85,7 @@
 }
 
 .multiplayer-hp-bar {
-    --hp-loss-duration: 0ms;
+    --hp-transition-duration: 0ms;
     position: relative;
     display: grid;
     gap: var(--space-2);
@@ -129,8 +129,44 @@
 }
 
 .multiplayer-hp-bar--hit {
-    animation: multiplayer-hp-shake var(--hp-loss-duration)
+    animation: multiplayer-hp-shake var(--hp-transition-duration)
         cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes multiplayer-hp-regen-rise {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    45% {
+        transform: translateY(-0.18rem);
+    }
+
+    72% {
+        transform: translateY(-0.08rem);
+    }
+}
+
+@keyframes multiplayer-hp-regen-shine {
+    0% {
+        opacity: 0;
+        transform: translateX(-150%) skewX(-18deg);
+    }
+
+    20% {
+        opacity: 0.88;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateX(520%) skewX(-18deg);
+    }
+}
+
+.multiplayer-hp-bar--regen {
+    animation: multiplayer-hp-regen-rise var(--hp-transition-duration)
+        cubic-bezier(0.2, 0.9, 0.24, 1);
 }
 
 .multiplayer-hp-copy {
@@ -195,15 +231,33 @@
 }
 
 .multiplayer-hp-bar--hit .multiplayer-hp-track::after {
-    animation: multiplayer-hp-flash calc(var(--hp-loss-duration) + 120ms)
+    animation: multiplayer-hp-flash calc(var(--hp-transition-duration) + 120ms)
         ease-out;
+}
+
+.multiplayer-hp-track::before {
+    content: '';
+    position: absolute;
+    top: -45%;
+    left: 0;
+    width: 18%;
+    height: 190%;
+    background: var(--color-gold-strong);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.multiplayer-hp-bar--regen .multiplayer-hp-track::before {
+    animation: multiplayer-hp-regen-shine
+        calc(var(--hp-transition-duration) + 180ms) ease-out;
 }
 
 .multiplayer-hp-fill {
     display: block;
     height: 100%;
     border-radius: inherit;
-    transition: width var(--hp-loss-duration) cubic-bezier(0.22, 1, 0.36, 1);
+    transition: width var(--hp-transition-duration)
+        cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .multiplayer-hp-bar-self .multiplayer-hp-fill {
@@ -214,7 +268,7 @@
     background: var(--color-primary-strong);
 }
 
-.multiplayer-damage-pop {
+.multiplayer-hp-pop {
     position: absolute;
     right: 0;
     bottom: calc(100% + var(--space-timer-gap));
@@ -226,12 +280,83 @@
     pointer-events: none;
 }
 
-.multiplayer-hp-bar-self .multiplayer-damage-pop {
+.multiplayer-hp-pop-damage {
+    color: var(--color-primary-strong);
+}
+
+.multiplayer-hp-bar-self .multiplayer-hp-pop-damage {
     color: var(--color-secondary);
 }
 
-.multiplayer-hp-bar-enemy .multiplayer-damage-pop {
+.multiplayer-hp-bar-enemy .multiplayer-hp-pop-damage {
     color: var(--color-primary-strong);
+}
+
+.multiplayer-hp-pop-regen {
+    color: var(--color-gold);
+}
+
+.multiplayer-perfect-burst {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    z-index: 4;
+    display: grid;
+    place-items: center;
+    width: 58%;
+    aspect-ratio: 1;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    animation: multiplayer-perfect-burst 1120ms cubic-bezier(0.16, 0.9, 0.2, 1)
+        forwards;
+}
+
+.multiplayer-perfect-burst-enemy {
+    width: 72%;
+}
+
+.multiplayer-perfect-burst-halo {
+    position: absolute;
+    inset: 18%;
+    border: 2px solid color-mix(in srgb, var(--color-gold-strong) 70%, white);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-gold-soft) 86%, transparent);
+}
+
+.multiplayer-perfect-burst-label {
+    position: relative;
+    z-index: 1;
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--color-gold-soft) 92%, white 8%);
+    color: var(--color-gold-strong);
+    font-family: var(--type-action-label-family);
+    font-size: clamp(0.7rem, 1.8vw, 1rem);
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+@keyframes multiplayer-perfect-burst {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -44%) scale(0.42);
+    }
+
+    20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.04);
+    }
+
+    68% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -58%) scale(0.9);
+    }
 }
 
 .multiplayer-attack-layer {

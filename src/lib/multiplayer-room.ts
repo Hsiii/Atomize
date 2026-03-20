@@ -9,6 +9,19 @@ import type { BattleEvent, Prime, RoomPlayer, RoomSnapshot } from '../core';
 const STARTING_HP = 500;
 const WRONG_SELECTION_DAMAGE = 4;
 
+function computePerfectSolveRegen(
+    hp: number,
+    maxHp: number,
+    factorDamageTotal: number,
+    perfectSolve: boolean
+): number {
+    if (!perfectSolve) {
+        return 0;
+    }
+
+    return Math.max(0, Math.min(maxHp - hp, Math.round(factorDamageTotal / 2)));
+}
+
 export function createRoomSnapshot(
     roomId: string,
     hostId: string,
@@ -133,17 +146,26 @@ export function applyBattlePrimeSelection(
         options?.suppressAttack === true && !selection.cleared;
     const { pendingFactorDamage } = actingPlayer;
     const factorDamage = computeBattleFactorDamage(prime);
+    const totalFactorDamage = pendingFactorDamage + factorDamage;
+    const perfectSolve = selection.cleared && pendingFactorDamage > 0;
     const comboDamage = selection.cleared ? computeBattleComboDamage(combo) : 0;
+    const regen = computePerfectSolveRegen(
+        actingPlayer.hp,
+        snapshot.maxHp,
+        totalFactorDamage,
+        perfectSolve
+    );
     const nextPendingFactorDamage = shouldSuppressAttack
         ? pendingFactorDamage + factorDamage
         : 0;
     const damage: number = shouldSuppressAttack
         ? 0
-        : pendingFactorDamage + factorDamage + comboDamage;
+        : totalFactorDamage + comboDamage;
     const nextPlayers = snapshot.players.map((player) => {
         if (player.id === playerId) {
             return {
                 ...player,
+                hp: Math.min(snapshot.maxHp, player.hp + regen),
                 pendingFactorDamage: nextPendingFactorDamage,
                 combo,
                 maxCombo: selection.cleared
@@ -191,6 +213,8 @@ export function applyBattlePrimeSelection(
                   loserPlayerId: nextTargetPlayer.id,
                   sourcePlayerId: playerId,
                   damage,
+                  regen,
+                  perfectSolve,
                   combo,
                   cause: 'attack',
                   sourceStageIndex: actingPlayer.stageIndex,
@@ -204,6 +228,8 @@ export function applyBattlePrimeSelection(
                   sourcePlayerId: playerId,
                   targetPlayerId: nextTargetPlayer.id,
                   damage,
+                  regen,
+                  perfectSolve,
                   combo,
                   sourceStageIndex: actingPlayer.stageIndex,
                   nextStageIndex: stageIndex,
@@ -273,6 +299,8 @@ export function applyBattlePenalty(
                   loserPlayerId: nextActingPlayer.id,
                   sourcePlayerId: playerId,
                   damage: WRONG_SELECTION_DAMAGE,
+                  regen: 0,
+                  perfectSolve: false,
                   combo: 0,
                   cause: 'self-hit',
                   sourceStageIndex: actingPlayer.stageIndex,

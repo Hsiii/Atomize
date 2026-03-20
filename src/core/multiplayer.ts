@@ -20,6 +20,8 @@ export type BattleEvent =
           sourcePlayerId: string;
           targetPlayerId: string;
           damage: number;
+          regen: number;
+          perfectSolve: boolean;
           combo: number;
           sourceStageIndex: number;
           nextStageIndex: number;
@@ -43,6 +45,8 @@ export type BattleEvent =
           loserPlayerId: string;
           sourcePlayerId: string;
           damage: number;
+          regen: number;
+          perfectSolve: boolean;
           combo: number;
           cause: 'attack' | 'self-hit';
           sourceStageIndex: number;
