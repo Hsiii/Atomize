@@ -169,8 +169,19 @@ export function MultiplayerGameScreen({
         if (!hasInitializedStageRef.current) {
             hasInitializedStageRef.current = true;
             previousStageIndexRef.current = currentStageIndex;
-            setIsBlobRevealActive(false);
-            return undefined;
+            setIsBlobRevealActive(true);
+
+            const initialTimer = globalThis.setTimeout(
+                () => {
+                    setIsBlobRevealActive(false);
+                },
+                blobRevealTotalMs,
+                undefined
+            );
+
+            return () => {
+                globalThis.clearTimeout(initialTimer);
+            };
         }
 
         if (previousStageIndexRef.current === currentStageIndex) {
@@ -205,8 +216,19 @@ export function MultiplayerGameScreen({
 
         if (previousOpponentStageIndexRef.current === undefined) {
             previousOpponentStageIndexRef.current = opponentStageIndex;
-            setIsOpponentRevealActive(false);
-            return undefined;
+            setIsOpponentRevealActive(true);
+
+            const initialTimer = globalThis.setTimeout(
+                () => {
+                    setIsOpponentRevealActive(false);
+                },
+                blobRevealTotalMs,
+                undefined
+            );
+
+            return () => {
+                globalThis.clearTimeout(initialTimer);
+            };
         }
 
         if (previousOpponentStageIndexRef.current === opponentStageIndex) {
