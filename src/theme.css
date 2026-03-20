@@ -37,6 +37,7 @@
     --type-display-status-family: var(--font-family-numeric);
     --type-display-status-size: clamp(1.65rem, 6vw, 3rem);
     --type-display-status-weight: 800;
+    --type-display-status-soft-weight: 700;
     --type-display-status-line-height: 1;
     --type-display-status-letter-spacing: 0.08em;
     --type-display-status-support-line-height: 1.2;
