@@ -97,7 +97,7 @@
     flex-direction: column;
     align-items: center;
     gap: 0.65rem;
-    width: 6.25rem;
+    min-width: 5.5rem;
     min-height: 7.2rem;
 }
 
