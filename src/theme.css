@@ -59,7 +59,7 @@
     --type-metric-inline-color: var(--color-primary);
 
     --type-action-label-family: var(--font-family-base);
-    --type-action-label-size: clamp(0.9rem, 2.8vw, 1.1rem);
+    --type-action-label-size: clamp(1rem, 3vw, 1.2rem);
     --type-action-label-weight: 700;
     --type-action-label-line-height: 1.1;
     --type-action-label-letter-spacing: 0.01em;
