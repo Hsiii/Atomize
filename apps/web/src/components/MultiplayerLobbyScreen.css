@@ -5,19 +5,28 @@
 
 /* ===== Join Room Layout ===== */
 
+.join-screen {
+    padding: 0;
+    justify-content: flex-start;
+    align-items: stretch;
+    background: var(--color-page-bg);
+}
+
 .join-layout {
     flex: 1;
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     position: relative;
     overflow: hidden;
 }
 
 .join-toast-layer {
     position: absolute;
-    top: 0;
+    top: max(var(--space-7), env(safe-area-inset-top));
     left: 0;
     right: 0;
     display: flex;
@@ -34,9 +43,8 @@
     width: var(--join-title-diameter);
     height: var(--join-title-diameter);
     margin: 0;
-    padding: 2.2rem;
-    padding-bottom: 7rem;
-    border: 0.2rem solid var(--color-outline-strong);
+    padding: 0;
+    border: none;
     border-radius: 50%;
     background: var(--color-primary);
     overflow: hidden;
@@ -48,7 +56,7 @@
     margin: 0;
     position: absolute;
     left: 50%;
-    top: calc(var(--join-title-diameter) - 20dvh);
+    top: calc(var(--join-title-diameter) - 17dvh);
     width: min(88vw, 20rem);
     max-width: 100%;
     display: flex;
@@ -67,13 +75,8 @@
 }
 
 .join-stage {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1.25rem;
-    margin-top: clamp(11rem, 24dvh, 15rem);
+    position: absolute;
+    inset: 0;
     z-index: 2;
 }
 
@@ -85,9 +88,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
+    position: absolute;
+    left: 50%;
+    top: 57%;
     cursor: text;
     border: 1px solid var(--color-border-contrast);
+    transform: translate(-50%, -50%);
 }
 
 .join-orb-bars {
@@ -142,9 +148,9 @@
 
 /* Go blob button, bottom-right of orb. */
 .join-go-blob {
-    position: relative;
-    right: auto;
-    bottom: auto;
+    position: absolute;
+    left: calc(50% + min(23vw, 5rem));
+    top: calc(57% + min(33vw, 8.5rem));
     width: 7rem;
     min-height: 7rem;
     aspect-ratio: 1;
@@ -161,14 +167,15 @@
     cursor: pointer;
     touch-action: manipulation;
     transition: transform 160ms ease;
+    transform: translate(-50%, -50%);
 }
 
 .join-go-blob:hover {
-    transform: scale(1.06);
+    transform: translate(-50%, -50%) scale(1.06);
 }
 
 .join-go-blob:active {
-    transform: scale(0.96);
+    transform: translate(-50%, -50%) scale(0.96);
 }
 
 .join-go-icon {
@@ -214,16 +221,11 @@
         width: min(90vw, 18rem);
         font-size: 3.35rem;
     }
-
-    .join-stage {
-        margin-top: clamp(10rem, 23dvh, 13rem);
-    }
 }
 
 @media (max-width: 480px) {
     .join-title-orb {
-        padding: 1.5rem;
-        padding-bottom: 4.25rem;
+        --join-title-diameter: max(126vw, 126dvh);
     }
 
     .join-title {
@@ -232,14 +234,10 @@
         line-height: 0.88;
     }
 
-    .join-stage {
-        gap: 1rem;
-        margin-top: clamp(9rem, 21dvh, 11.5rem);
-    }
-
     .join-orb {
         width: min(72vw, 16rem);
         height: min(72vw, 16rem);
+        top: 58%;
     }
 
     .join-bar {
@@ -251,6 +249,8 @@
         width: 6.25rem;
         min-height: 6.25rem;
         gap: 0.35rem;
+        left: calc(50% + min(24vw, 4.7rem));
+        top: calc(58% + min(36vw, 8rem));
     }
 }
 

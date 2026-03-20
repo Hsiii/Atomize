@@ -209,7 +209,7 @@ export function MultiplayerLobbyScreen({
         return (
             <main className='app-shell fullscreen-shell'>
                 <BackButton onBack={onBack} />
-                <section className='screen lobby-screen'>
+                <section className='screen lobby-screen join-screen'>
                     <div className='join-layout'>
                         {activeToastMessage ? (
                             <div
