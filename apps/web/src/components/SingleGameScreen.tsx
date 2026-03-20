@@ -203,7 +203,7 @@ export function SingleGameScreen({
                         comboCount={soloState.maxCombo}
                         onReturnHome={onBack}
                         score={soloState.score}
-                        title={uiText.score}
+                        title={uiText.timeUp}
                     />
                 ) : undefined}
             </section>

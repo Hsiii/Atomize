@@ -6,7 +6,7 @@ export const uiText = {
     score: 'Score',
     scoreUnit: 'pt',
     timerPenalty: '-1s',
-    returnHome: 'Top',
+    returnHome: 'Back to Top',
     health: 'HP',
     healthUnit: 'HP',
     combo: 'Combo',
@@ -60,6 +60,7 @@ export const uiText = {
     waitingForPlayer: 'Waiting for the second player to join.',
     multiplayerSyncStalled:
         'Realtime sync stalled. Input unlocked, but room sync may lag.',
+    timeUp: "Time's Up",
     victory: 'Victory',
     defeat: 'Defeat',
     remainingUnit: 'left',
