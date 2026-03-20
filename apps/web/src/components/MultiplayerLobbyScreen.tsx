@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { JSX, KeyboardEvent } from 'react';
-import { ArrowLeft, Copy, Check } from 'lucide-react';
+import { ArrowLeft, Check, Copy } from 'lucide-react';
 
 import type { MenuMode, MultiplayerState, OnlineLobbyUser } from '../app-state';
 import { uiText } from '../app-state';
@@ -129,14 +129,21 @@ export function MultiplayerLobbyScreen({
         runAsyncAction(onJoinRoom);
     }, [isJoinButtonReady, isJoinPending, onJoinRoom]);
 
-    // Auto-submit when 4 digits are entered (desktop)
+    // Reset auto-submit guard only when input changes.
     useEffect(() => {
-        if (!isJoinFlow || !isJoinButtonReady || isJoinPending) {
+        if (!isJoinButtonReady) {
             hasAutoSubmitted.current = false;
-            return;
         }
+    }, [isJoinButtonReady]);
 
-        if (hasAutoSubmitted.current) {
+    // Auto-submit when four digits are entered.
+    useEffect(() => {
+        if (
+            !isJoinFlow ||
+            !isJoinButtonReady ||
+            isJoinPending ||
+            hasAutoSubmitted.current
+        ) {
             return;
         }
 
@@ -165,16 +172,25 @@ export function MultiplayerLobbyScreen({
             return;
         }
 
-        void navigator.clipboard.writeText(multiplayer.roomId).then(() => {
-            setCodeCopied(true);
-            globalThis.setTimeout(() => {
-                setCodeCopied(false);
-            }, 1500);
-        });
+        navigator.clipboard.writeText(multiplayer.roomId).then(
+            () => {
+                setCodeCopied(true);
+                globalThis.setTimeout(
+                    () => {
+                        setCodeCopied(false);
+                    },
+                    1500,
+                    undefined
+                );
+            },
+            () => undefined
+        );
     }
 
     function handleInvite(targetPlayerId: string) {
-        runAsyncAction(() => onInvitePlayer(targetPlayerId));
+        runAsyncAction(async () => {
+            await onInvitePlayer(targetPlayerId);
+        });
     }
 
     if (!multiplayer.roomId && !shouldShowWaitingRoom) {
@@ -194,8 +210,7 @@ export function MultiplayerLobbyScreen({
                             </div>
                         ) : undefined}
 
-                        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions -- captures Enter from child input */}
-                        <div onKeyDown={handleRoomCodeKeyDown}>
+                        <div onKeyDown={handleRoomCodeKeyDown} role='group'>
                             <RoomCodePanel
                                 editable
                                 onChange={onRoomIdInputChange}
@@ -267,13 +282,13 @@ export function MultiplayerLobbyScreen({
 
                     <div
                         className={`arena-player arena-p2${
-                            !opponentPlayer ? ' arena-p2-open' : ''
+                            opponentPlayer ? '' : ' arena-p2-open'
                         }`}
                     >
                         <span className='arena-label'>P2</span>
                         <span
                             className={`arena-name${
-                                !opponentPlayer ? ' arena-name-waiting' : ''
+                                opponentPlayer ? '' : ' arena-name-waiting'
                             }`}
                         >
                             {opponentPlayer?.name ?? '?'}
