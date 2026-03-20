@@ -58,6 +58,11 @@ type PerfectBurst = {
     side: 'enemy' | 'self';
 };
 
+type DisplayedBlobState = {
+    stageIndex: number | undefined;
+    value: number | undefined;
+};
+
 type MultiplayerGameScreenProps = {
     playablePrimes: Prime[];
     currentMultiplayerPlayer: RoomPlayer | undefined;
@@ -107,7 +112,6 @@ export function MultiplayerGameScreen({
     const digitBufferTimerRef = useRef<number | undefined>(undefined);
     const previousStageIndexRef = useRef<number | undefined>(undefined);
     const previousOpponentStageIndexRef = useRef<number | undefined>(undefined);
-    const currentStageIndex = currentMultiplayerPlayer?.stage.stageIndex ?? -1;
     const opponentPlayer = multiplayerSnapshot?.players.find(
         (player) => player.id !== currentMultiplayerPlayer?.id
     );
@@ -122,6 +126,16 @@ export function MultiplayerGameScreen({
     const [displayedEnemyHp, setDisplayedEnemyHp] = useState(
         opponentPlayer?.hp ?? 0
     );
+    const [displayedSelfBlob, setDisplayedSelfBlob] =
+        useState<DisplayedBlobState>({
+            stageIndex: currentMultiplayerPlayer?.stage.stageIndex,
+            value: currentMultiplayerPlayer?.stage.remainingValue,
+        });
+    const [displayedEnemyBlob, setDisplayedEnemyBlob] =
+        useState<DisplayedBlobState>({
+            stageIndex: opponentPlayer?.stage.stageIndex,
+            value: opponentPlayer?.stage.targetValue,
+        });
     const [hpImpacts, setHpImpacts] = useState<{
         enemy?: HpImpact;
         self?: HpImpact;
@@ -141,6 +155,17 @@ export function MultiplayerGameScreen({
     const enemyHealthRef = useRef<HTMLDivElement | null>(null);
     const displayedSelfHpRef = useRef(displayedSelfHp);
     const displayedEnemyHpRef = useRef(displayedEnemyHp);
+    const latestSelfBlobRef = useRef(displayedSelfBlob);
+    const latestEnemyBlobRef = useRef(displayedEnemyBlob);
+    const liveSelfBlobRef = useRef<DisplayedBlobState>({
+        stageIndex: currentMultiplayerPlayer?.stage.stageIndex,
+        value: currentMultiplayerPlayer?.stage.remainingValue,
+    });
+    const liveEnemyBlobRef = useRef<DisplayedBlobState>({
+        stageIndex: opponentPlayer?.stage.stageIndex,
+        value: opponentPlayer?.stage.targetValue,
+    });
+    const currentStageIndex = displayedSelfBlob.stageIndex ?? -1;
     const currentPlayerWon =
         isMatchFinished &&
         Boolean(currentMultiplayerPlayer && currentMultiplayerPlayer.hp > 0);
@@ -221,7 +246,7 @@ export function MultiplayerGameScreen({
     }, [blobRevealTotalMs, currentStageIndex]);
 
     useLayoutEffect(() => {
-        const opponentStageIndex = opponentPlayer?.stage.stageIndex;
+        const opponentStageIndex = displayedEnemyBlob.stageIndex;
 
         if (opponentStageIndex === undefined) {
             previousOpponentStageIndexRef.current = undefined;
@@ -264,7 +289,7 @@ export function MultiplayerGameScreen({
         return () => {
             globalThis.clearTimeout(timer);
         };
-    }, [blobRevealTotalMs, opponentPlayer?.stage.stageIndex]);
+    }, [blobRevealTotalMs, displayedEnemyBlob.stageIndex]);
 
     useEffect(
         () => () => {
@@ -292,6 +317,30 @@ export function MultiplayerGameScreen({
     useEffect(() => {
         displayedEnemyHpRef.current = displayedEnemyHp;
     }, [displayedEnemyHp]);
+
+    useEffect(() => {
+        latestSelfBlobRef.current = displayedSelfBlob;
+    }, [displayedSelfBlob]);
+
+    useEffect(() => {
+        latestEnemyBlobRef.current = displayedEnemyBlob;
+    }, [displayedEnemyBlob]);
+
+    useEffect(() => {
+        liveSelfBlobRef.current = {
+            stageIndex: currentMultiplayerPlayer?.stage.stageIndex,
+            value: currentMultiplayerPlayer?.stage.remainingValue,
+        };
+        liveEnemyBlobRef.current = {
+            stageIndex: opponentPlayer?.stage.stageIndex,
+            value: opponentPlayer?.stage.targetValue,
+        };
+    }, [
+        currentMultiplayerPlayer?.stage.remainingValue,
+        currentMultiplayerPlayer?.stage.stageIndex,
+        opponentPlayer?.stage.stageIndex,
+        opponentPlayer?.stage.targetValue,
+    ]);
 
     useEffect(() => {
         if (isMatchFinished) {
@@ -333,6 +382,14 @@ export function MultiplayerGameScreen({
         if (!currentMultiplayerPlayer || !opponentPlayer) {
             setDisplayedHp('self', currentMultiplayerPlayer?.hp ?? 0);
             setDisplayedHp('enemy', opponentPlayer?.hp ?? 0);
+            setDisplayedSelfBlob({
+                stageIndex: currentMultiplayerPlayer?.stage.stageIndex,
+                value: currentMultiplayerPlayer?.stage.remainingValue,
+            });
+            setDisplayedEnemyBlob({
+                stageIndex: opponentPlayer?.stage.stageIndex,
+                value: opponentPlayer?.stage.targetValue,
+            });
             setQueuedAttacks([]);
             setActiveAttackId(undefined);
             setHpImpacts({});
@@ -350,13 +407,20 @@ export function MultiplayerGameScreen({
 
         setDisplayedHp('self', currentMultiplayerPlayer.hp);
         setDisplayedHp('enemy', opponentPlayer.hp);
+        setDisplayedSelfBlob(liveSelfBlobRef.current);
+        setDisplayedEnemyBlob(liveEnemyBlobRef.current);
     }, [
         activeAttackId,
         currentMultiplayerPlayer,
         currentMultiplayerPlayer?.hp,
+        currentMultiplayerPlayer?.stage.remainingValue,
+        currentMultiplayerPlayer?.stage.stageIndex,
         hasPendingAttackEvent,
         opponentPlayer,
         opponentPlayer?.hp,
+        opponentPlayer?.stage.stageIndex,
+        opponentPlayer?.stage.targetValue,
+        perfectBurst?.id,
         queuedAttacks.length,
     ]);
 
@@ -703,6 +767,18 @@ export function MultiplayerGameScreen({
         nextHp: number,
         regen: number
     ): number {
+        if (side === 'self') {
+            setDisplayedSelfBlob((currentBlob) => ({
+                ...currentBlob,
+                value: 1,
+            }));
+        } else {
+            setDisplayedEnemyBlob((currentBlob) => ({
+                ...currentBlob,
+                value: 1,
+            }));
+        }
+
         setPerfectBurst({ id: eventId, side });
 
         scheduleTimeout(() => {
@@ -1082,13 +1158,8 @@ export function MultiplayerGameScreen({
                                 isStageRevealActive={isBlobRevealActive}
                                 mode='multiplayer'
                                 size='self'
-                                stageIndex={
-                                    currentMultiplayerPlayer?.stage.stageIndex
-                                }
-                                value={
-                                    currentMultiplayerPlayer?.stage
-                                        .remainingValue
-                                }
+                                stageIndex={displayedSelfBlob.stageIndex}
+                                value={displayedSelfBlob.value}
                             />
                             {perfectBurst?.side === 'self' ? (
                                 <div
@@ -1116,8 +1187,8 @@ export function MultiplayerGameScreen({
                                 isStageRevealActive={isOpponentRevealActive}
                                 mode='multiplayer'
                                 size='enemy'
-                                stageIndex={opponentPlayer?.stage.stageIndex}
-                                value={opponentPlayer?.stage.targetValue}
+                                stageIndex={displayedEnemyBlob.stageIndex}
+                                value={displayedEnemyBlob.value}
                             />
                             {perfectBurst?.side === 'enemy' ? (
                                 <div
