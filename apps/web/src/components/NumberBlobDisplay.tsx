@@ -407,6 +407,7 @@ export function NumberBlobDisplay({
                         className={`number-main-blob${
                             isStageRevealActive ? ' is-stage-reveal' : ''
                         }${clearPop ? ' is-cleared' : ''}`}
+                        key={stageIndex}
                     >
                         <strong className={valueClassName}>
                             {displayedValue}
