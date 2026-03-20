@@ -84,6 +84,7 @@ export function MultiplayerGameScreen({
         isMultiplayerInputDisabled && !isMultiplayerComboRunning;
     const canSubmitSolvedBlob =
         currentMultiplayerPlayer?.stage.remainingValue === 1;
+    const [bufferedPrimeInput, setBufferedPrimeInput] = useState('');
     const [visibleQueue, setVisibleQueue] = useState<Prime[]>(
         multiplayerPrimeQueue
     );
@@ -469,6 +470,7 @@ export function MultiplayerGameScreen({
         }
 
         digitBufferRef.current = '';
+        setBufferedPrimeInput('');
     }
 
     function scheduleTimeout(callback: () => void, delayMs: number): number {
@@ -602,6 +604,7 @@ export function MultiplayerGameScreen({
 
     function scheduleBufferedPrimeCommit(nextBuffer: string) {
         digitBufferRef.current = nextBuffer;
+        setBufferedPrimeInput(nextBuffer);
 
         const timerId = digitBufferTimerRef.current;
 
@@ -684,7 +687,32 @@ export function MultiplayerGameScreen({
     }
 
     function handleBackspace() {
-        if (isMultiplayerComboRunning || visibleQueueRef.current.length === 0) {
+        if (isMultiplayerComboRunning) {
+            return;
+        }
+
+        if (digitBufferRef.current.length > 0) {
+            const nextBuffer = digitBufferRef.current.slice(0, -1);
+
+            if (nextBuffer.length === 0) {
+                clearDigitBuffer();
+                return;
+            }
+
+            const hasMatchingPrime = playablePrimes.some((prime) =>
+                String(prime).startsWith(nextBuffer)
+            );
+
+            if (!hasMatchingPrime) {
+                clearDigitBuffer();
+                return;
+            }
+
+            scheduleBufferedPrimeCommit(nextBuffer);
+            return;
+        }
+
+        if (visibleQueueRef.current.length === 0) {
             return;
         }
 
@@ -849,7 +877,8 @@ export function MultiplayerGameScreen({
             if (event.key === 'Backspace') {
                 if (
                     isMultiplayerComboRunning ||
-                    visibleQueueRef.current.length === 0
+                    (digitBufferRef.current.length === 0 &&
+                        visibleQueueRef.current.length === 0)
                 ) {
                     return;
                 }
@@ -1005,9 +1034,9 @@ export function MultiplayerGameScreen({
                                 aria-label={uiText.backspace}
                                 className='combo-backspace-button'
                                 disabled={
-                                    isBlobRevealActive ||
                                     isMultiplayerComboRunning ||
-                                    visibleQueue.length === 0
+                                    (visibleQueue.length === 0 &&
+                                        bufferedPrimeInput.length === 0)
                                 }
                                 onClick={handleBackspace}
                                 shape='rounded'
