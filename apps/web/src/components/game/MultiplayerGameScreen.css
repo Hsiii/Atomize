@@ -70,23 +70,18 @@
     --number-blob-scale-factor: 0.44;
 }
 
-.multiplayer-column-self .number-blob-field,
-.multiplayer-column-enemy .number-blob-field {
-    filter: drop-shadow(0 1rem 1.2rem rgba(13, 20, 27, 0.18));
-}
-
 .multiplayer-column-self .number-blob-field::before {
     inset: auto 12% 6%;
     height: 14%;
-    background: rgba(8, 16, 23, 0.2);
-    filter: blur(14px);
+    background: transparent;
+    filter: none;
 }
 
 .multiplayer-column-enemy .number-blob-field::before {
     inset: auto 24% 10%;
     height: 9%;
-    background: rgba(8, 16, 23, 0.14);
-    filter: blur(9px);
+    background: transparent;
+    filter: none;
 }
 
 .multiplayer-hp-bar {
@@ -159,7 +154,7 @@
 }
 
 .multiplayer-hp-bar-enemy .multiplayer-hp-name {
-    color: var(--color-primary);
+    color: var(--color-primary-strong);
 }
 
 .multiplayer-hp-stat {
@@ -175,7 +170,7 @@
 }
 
 .multiplayer-hp-bar-enemy .multiplayer-hp-stat {
-    color: var(--color-primary);
+    color: var(--color-primary-strong);
 }
 
 .multiplayer-hp-track {
@@ -221,7 +216,7 @@
 }
 
 .multiplayer-hp-bar-enemy .multiplayer-hp-fill {
-    background: var(--color-primary);
+    background: var(--color-primary-strong);
 }
 
 .multiplayer-damage-pop {
