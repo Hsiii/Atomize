@@ -191,10 +191,34 @@
     line-height: var(--type-action-label-line-height);
 }
 
-.slot-user-icon {
-    width: 1.6rem;
-    height: 1.6rem;
-    stroke-width: 2.2;
+.slot-user-icon-filled {
+    position: relative;
+    width: 1.7rem;
+    height: 1.55rem;
+    display: inline-block;
+}
+
+.slot-user-icon-filled::before,
+.slot-user-icon-filled::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    background: currentColor;
+    transform: translateX(-50%);
+}
+
+.slot-user-icon-filled::before {
+    top: 0;
+    width: 0.62rem;
+    height: 0.62rem;
+    border-radius: 50%;
+}
+
+.slot-user-icon-filled::after {
+    bottom: 0;
+    width: 1.3rem;
+    height: 0.78rem;
+    border-radius: 0.78rem 0.78rem 0.24rem 0.24rem;
 }
 
 .slot-name {

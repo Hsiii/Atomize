@@ -1,24 +1,8 @@
-import { PRIME_POOL } from '../core';
-
 import { uiText } from '../app-state';
 import type { MultiplayerState } from '../app-state';
+import { PRIME_POOL } from '../core';
 
 const playerNameStorageKey = 'atomize.playerName';
-const usedPlayerNamesStorageKey = 'atomize.usedPlayerNames';
-const fallbackPlayerNames = [
-    'Nova',
-    'Orbit',
-    'Pulse',
-    'Quark',
-    'Comet',
-    'Prism',
-    'Drift',
-    'Echo',
-    'Cipher',
-    'Flux',
-    'Ion',
-    'Pixel',
-] as const;
 
 export const soloDurationSeconds = 60;
 export const playablePrimes = PRIME_POOL.slice(0, 9);
@@ -65,15 +49,12 @@ export function persistPlayerName(playerName: string): void {
     }
 
     globalThis.localStorage.setItem(playerNameStorageKey, normalizedName);
+}
 
-    const nextUsedNames = [
-        normalizedName,
-        ...getUsedPlayerNames().filter((name) => name !== normalizedName),
-    ].slice(0, fallbackPlayerNames.length);
-
-    globalThis.localStorage.setItem(
-        usedPlayerNamesStorageKey,
-        JSON.stringify(nextUsedNames)
+export function isGuestName(value: string | undefined): boolean {
+    return (
+        normalizePlayerName(value ?? '').toLocaleLowerCase() ===
+        uiText.guest.toLocaleLowerCase()
     );
 }
 
@@ -97,33 +78,6 @@ export function isPendingGuestJoin(multiplayer: MultiplayerState): boolean {
     );
 }
 
-function getUsedPlayerNames(): readonly string[] {
-    const rawValue = globalThis.localStorage.getItem(usedPlayerNamesStorageKey);
-
-    if (!rawValue) {
-        return [];
-    }
-
-    try {
-        const parsedValue = JSON.parse(rawValue) as unknown;
-        return isArray(parsedValue)
-            ? parsedValue
-                  .map((name) => normalizePlayerName(String(name)))
-                  .filter(Boolean)
-            : [];
-    } catch {
-        return [];
-    }
-}
-
 function normalizePlayerName(value: string): string {
     return value.trim().replaceAll(/\s+/g, ' ').slice(0, 24);
-}
-
-function isArray(value: unknown): value is readonly unknown[] {
-    return (
-        value !== null &&
-        typeof value === 'object' &&
-        value.constructor === Array
-    );
 }

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import type { JSX } from 'react';
-import { Check, Plus, User, X } from 'lucide-react';
+import { Check, Plus, X } from 'lucide-react';
 
 import type { OnlineLobbyUser } from '../../app-state';
 import { uiText } from '../../app-state';
+import { isGuestName } from '../../lib/app-helpers';
 import { ActionButton } from '../game/ui/ActionButton';
 
 import './MenuScreen.css';
@@ -77,7 +78,8 @@ export function MenuScreen({
     }, [toastId, toastMessage]);
 
     const hasOpponent = Boolean(opponentName);
-    const isGuest = playerName === uiText.guest;
+    const isCurrentPlayerGuest = isGuestName(playerName);
+    const isOpponentGuest = isGuestName(opponentName);
     const initials = playerName.slice(0, 1).toUpperCase();
     const opponentInitials = (opponentName ?? '').slice(0, 1).toUpperCase();
     const shouldShowReadyAction = isInRoom && hasOpponent;
@@ -152,8 +154,8 @@ export function MenuScreen({
                                         }}
                                         type='button'
                                     >
-                                        {isGuest ? (
-                                            <User className='slot-user-icon' />
+                                        {isCurrentPlayerGuest ? (
+                                            <span className='slot-user-icon-filled' />
                                         ) : (
                                             <span className='slot-initials'>
                                                 {initials}
@@ -176,9 +178,13 @@ export function MenuScreen({
                                 <div className='menu-slot-column'>
                                     <div className='slot-circle-shell'>
                                         <div className='slot-circle slot-p2-filled'>
-                                            <span className='slot-initials'>
-                                                {opponentInitials}
-                                            </span>
+                                            {isOpponentGuest ? (
+                                                <span className='slot-user-icon-filled' />
+                                            ) : (
+                                                <span className='slot-initials'>
+                                                    {opponentInitials}
+                                                </span>
+                                            )}
                                         </div>
                                         {showOpponentReadyIndicator ? (
                                             <span

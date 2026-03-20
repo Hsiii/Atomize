@@ -27,7 +27,6 @@ export const uiText = {
     settings: 'Settings',
     playerName: 'Player Name',
     saveName: 'Save',
-    randomName: 'Randomize',
     close: 'Close',
     namePlaceholder: 'Enter your name',
     backspace: 'Backspace',
