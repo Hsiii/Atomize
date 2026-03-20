@@ -57,11 +57,17 @@ export const uiText = {
     remainingUnit: 'left',
     onlineSection: 'Online',
     inviteSent: 'Invite sent!',
-    inviteReceived: 'invited you to room',
+    inviteReceived: 'invited you to play!',
     inviteButton: 'Invite',
     copyCode: 'Copy Code',
     codeCopied: 'Copied!',
     noOnlinePlayers: 'No other players online.',
+    inviteTitle: 'Online Players',
+    editName: 'Edit Name',
+    accept: 'Accept',
+    decline: 'Decline',
+    inGame: 'In Game',
+    start: 'Start',
 } as const;
 
 export type MenuMode = 'default' | 'create-room' | 'join-room';
@@ -78,4 +84,10 @@ export type MultiplayerState = {
 export type OnlineLobbyUser = {
     playerId: string;
     name: string;
+    status: 'lobby' | 'in-game';
+};
+
+export type PendingInvitation = {
+    fromName: string;
+    roomCode: string;
 };

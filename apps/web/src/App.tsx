@@ -15,6 +15,7 @@ import {
     type MenuMode,
     type MultiplayerState,
     type OnlineLobbyUser,
+    type PendingInvitation,
     type Screen,
 } from './app-state';
 import { MenuScreen } from './components/MenuScreen';
@@ -114,7 +115,9 @@ export default function App() {
     const [multiplayerCountdownValue, setMultiplayerCountdownValue] = useState<
         number | null
     >(null);
-    const [playerName] = useState(() => getInitialPlayerName());
+    const [playerName, setPlayerName] = useState(() => getInitialPlayerName());
+    const [pendingInvitation, setPendingInvitation] =
+        useState<PendingInvitation | null>(null);
     const [lobbyToast, setLobbyToast] = useState<LobbyToastState>({
         id: 0,
         message: null,
@@ -131,6 +134,8 @@ export default function App() {
     const channelRef = useRef<RealtimeChannel | null>(null);
     const lobbyChannelRef = useRef<RealtimeChannel | null>(null);
     const supabaseRef = useRef<SupabaseClient | null>(null);
+    const lobbyPlayerIdRef = useRef(crypto.randomUUID());
+    const screenRef = useRef(screen);
     const latestSoloStateRef = useRef(soloState);
     const latestMultiplayerRef = useRef(multiplayer);
     const joinLookupTimeoutRef = useRef<number | null>(null);
@@ -158,6 +163,10 @@ export default function App() {
     useEffect(() => {
         latestMultiplayerRef.current = multiplayer;
     }, [multiplayer]);
+
+    useEffect(() => {
+        screenRef.current = screen;
+    }, [screen]);
 
     useEffect(() => {
         if (multiplayer.snapshot?.status === 'playing') {
@@ -337,18 +346,11 @@ export default function App() {
     useEffect(() => {
         const supabase = supabaseRef.current;
 
-        if (screen !== 'multi-lobby' || !supabase) {
-            if (lobbyChannelRef.current && supabase) {
-                void supabase.removeChannel(lobbyChannelRef.current);
-                lobbyChannelRef.current = null;
-            }
-
-            setOnlineUsers([]);
+        if (!supabase) {
             return undefined;
         }
 
-        const currentPlayerId = latestMultiplayerRef.current.playerId
-            ?? crypto.randomUUID();
+        const currentPlayerId = lobbyPlayerIdRef.current;
 
         const lobbyChannel = supabase.channel('atomize:lobby', {
             config: { presence: { key: currentPlayerId } },
@@ -358,6 +360,7 @@ export default function App() {
             const state = lobbyChannel.presenceState<{
                 playerId: string;
                 name: string;
+                status: 'lobby' | 'in-game';
             }>();
             const users: OnlineLobbyUser[] = [];
 
@@ -367,6 +370,7 @@ export default function App() {
                         users.push({
                             playerId: entry.playerId,
                             name: entry.name,
+                            status: entry.status ?? 'lobby',
                         });
                     }
                 }
@@ -389,23 +393,30 @@ export default function App() {
                     return;
                 }
 
+                if (screenRef.current !== 'menu') {
+                    return;
+                }
+
                 const currentState = latestMultiplayerRef.current;
 
                 if (currentState.roomId) {
                     return;
                 }
 
-                setRoomIdInput(invite.roomCode);
-                setMenuMode('join-room');
-                showLobbyToast(
-                    `${invite.fromName} ${uiText.inviteReceived} ${invite.roomCode}`
-                );
+                setPendingInvitation({
+                    fromName: invite.fromName,
+                    roomCode: invite.roomCode,
+                });
             })
             .subscribe(async (status) => {
                 if (status === 'SUBSCRIBED') {
                     await lobbyChannel.track({
                         playerId: currentPlayerId,
                         name: playerName,
+                        status:
+                            screenRef.current === 'menu'
+                                ? 'lobby'
+                                : 'in-game',
                     });
                 }
             });
@@ -416,6 +427,20 @@ export default function App() {
             void supabase.removeChannel(lobbyChannel);
             lobbyChannelRef.current = null;
         };
+    }, [playerName]);
+
+    useEffect(() => {
+        const lobbyChannel = lobbyChannelRef.current;
+
+        if (!lobbyChannel) {
+            return;
+        }
+
+        void lobbyChannel.track({
+            playerId: lobbyPlayerIdRef.current,
+            name: playerName,
+            status: screen === 'menu' ? 'lobby' : 'in-game',
+        });
     }, [screen, playerName]);
 
     function handleSoloComboSubmit(queue: readonly Prime[]) {
@@ -476,7 +501,112 @@ export default function App() {
         });
         setRoomIdInput('');
         setMenuMode('default');
+        setPendingInvitation(null);
         setScreen('menu');
+    }
+
+    function handleEditName(name: string) {
+        setPlayerName(name);
+        persistPlayerName(name);
+    }
+
+    async function handleLobbyInvite(targetPlayerId: string) {
+        let currentState = latestMultiplayerRef.current;
+
+        if (!currentState.roomId) {
+            const roomId = createRoomId();
+            const playerId = crypto.randomUUID();
+            const snapshot = createRoomSnapshot(roomId, playerId, playerName);
+
+            setMultiplayer((prev) => ({
+                ...prev,
+                playerId,
+                snapshot,
+                roomId,
+                isHost: true,
+                statusText: '',
+            }));
+
+            await subscribeToRoom(roomId, playerId, true, async () => {
+                updateSnapshot(snapshot, '');
+                await broadcastMessage({
+                    type: 'room_state',
+                    snapshot,
+                    sourcePlayerId: playerId,
+                });
+
+                const lobbyChannel = lobbyChannelRef.current;
+
+                if (lobbyChannel) {
+                    await lobbyChannel.send({
+                        type: 'broadcast',
+                        event: 'room_invite',
+                        payload: {
+                            type: 'room_invite',
+                            roomCode: roomId,
+                            fromName: playerName,
+                            targetPlayerId,
+                        },
+                    });
+                }
+            });
+
+            showLobbyToast(uiText.inviteSent);
+            return;
+        }
+
+        await invitePlayer(targetPlayerId);
+    }
+
+    async function handleAcceptInvitation() {
+        if (!pendingInvitation) {
+            return;
+        }
+
+        const roomCode = pendingInvitation.roomCode;
+        setPendingInvitation(null);
+
+        const playerId = crypto.randomUUID();
+
+        await subscribeToRoom(roomCode, playerId, false, async () => {
+            const sendJoinRequest = () => {
+                const currentState = latestMultiplayerRef.current;
+
+                if (!isPendingGuestJoin(currentState)) {
+                    clearPendingJoinTimers();
+                    return;
+                }
+
+                void broadcastMessage({
+                    type: 'join_request',
+                    playerId,
+                    playerName,
+                });
+            };
+
+            sendJoinRequest();
+            clearPendingJoinTimers();
+
+            joinRetryIntervalRef.current = window.setInterval(
+                sendJoinRequest,
+                joinRoomRetryIntervalMs
+            );
+
+            joinLookupTimeoutRef.current = window.setTimeout(() => {
+                const currentState = latestMultiplayerRef.current;
+
+                if (!isPendingGuestJoin(currentState)) {
+                    clearPendingJoinTimers();
+                    return;
+                }
+
+                void failPendingJoin(uiText.joinMissingRoomToast);
+            }, joinRoomLookupTimeoutMs);
+        });
+    }
+
+    function handleDeclineInvitation() {
+        setPendingInvitation(null);
     }
 
     async function invitePlayer(targetPlayerId: string) {
@@ -1017,11 +1147,24 @@ export default function App() {
     }
 
     if (screen === 'menu') {
+        const opponentPlayer = multiplayer.snapshot?.players.find(
+            (player) => player.id !== multiplayer.playerId
+        );
+
         return (
             <MenuScreen
-                onStartSingleGame={startSingleGame}
-                onStartCreateRoomFlow={startCreateRoomFlow}
-                onStartJoinRoomFlow={startJoinRoomFlow}
+                countdownValue={multiplayerCountdownValue}
+                onAcceptInvitation={handleAcceptInvitation}
+                onDeclineInvitation={handleDeclineInvitation}
+                onEditName={handleEditName}
+                onInvitePlayer={handleLobbyInvite}
+                onStartSoloGame={startSingleGame}
+                onlineUsers={onlineUsers}
+                opponentName={opponentPlayer?.name ?? null}
+                pendingInvitation={pendingInvitation}
+                playerName={playerName}
+                toastId={lobbyToast.id}
+                toastMessage={lobbyToast.message}
             />
         );
     }
