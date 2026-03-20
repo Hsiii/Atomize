@@ -23,6 +23,7 @@ type ClearPop = {
 type NumberBlobDisplayProps = {
     value: number | undefined;
     stageIndex?: number;
+    stageAdvanceSolvedStateKey?: number;
     isComboRunning?: boolean;
     isStageRevealActive?: boolean;
     mode?: BlobMode;
@@ -105,6 +106,7 @@ function createClearSplitEchoes(
 export function NumberBlobDisplay({
     value,
     stageIndex = 0,
+    stageAdvanceSolvedStateKey = 0,
     isComboRunning = false,
     isStageRevealActive = false,
     mode = 'solo',
@@ -121,6 +123,9 @@ export function NumberBlobDisplay({
     const [isImpactActive, setIsImpactActive] = useState(false);
     const previousValueRef = useRef<number | undefined>(undefined);
     const previousStageIndexRef = useRef<number | undefined>(undefined);
+    const consumedStageAdvanceSolvedStateKeyRef = useRef(
+        stageAdvanceSolvedStateKey
+    );
     const echoIdRef = useRef(0);
     const clearPrepTimerRef = useRef<number | undefined>(undefined);
     const clearEchoTimerRef = useRef<number | undefined>(undefined);
@@ -180,6 +185,12 @@ export function NumberBlobDisplay({
         const didStageAdvance = stageIndex > (previousStageIndex ?? stageIndex);
 
         if (didStageAdvance && previousValue > 1) {
+            const shouldShowSolvedState =
+                stageAdvanceSolvedStateKey !==
+                consumedStageAdvanceSolvedStateKeyRef.current;
+
+            consumedStageAdvanceSolvedStateKeyRef.current =
+                stageAdvanceSolvedStateKey;
             clearTimer(clearPrepTimerRef.current);
             clearPrepTimerRef.current = undefined;
             clearTimer(clearEchoTimerRef.current);
@@ -190,14 +201,20 @@ export function NumberBlobDisplay({
                 echoIdRef.current,
                 previousValue
             );
-            const nextClearPop: ClearPop = {
-                id: echoIdRef.current + clearEchoes.length,
-                value: 1,
-            };
+            const nextClearPop = shouldShowSolvedState
+                ? {
+                      id: echoIdRef.current + clearEchoes.length,
+                      value: 1,
+                  }
+                : undefined;
 
             echoIdRef.current += clearEchoes.length + 1;
             setIsImpactActive(false);
-            setDisplayedValue(1);
+            setClearPop(undefined);
+
+            if (shouldShowSolvedState) {
+                setDisplayedValue(1);
+            }
 
             clearPrepTimerRef.current = globalThis.setTimeout(
                 () => {
@@ -207,7 +224,11 @@ export function NumberBlobDisplay({
                             ...clearEchoes,
                         ]);
                     }
-                    setClearPop(nextClearPop);
+
+                    if (nextClearPop) {
+                        setClearPop(nextClearPop);
+                    }
+
                     setDisplayedValue(value);
 
                     clearEchoTimerRef.current = globalThis.setTimeout(
@@ -229,19 +250,21 @@ export function NumberBlobDisplay({
                         undefined
                     );
 
-                    clearPopTimerRef.current = globalThis.setTimeout(
-                        () => {
-                            setClearPop(
-                                (currentClearPop: ClearPop | undefined) =>
-                                    currentClearPop?.id === nextClearPop.id
-                                        ? undefined
-                                        : currentClearPop
-                            );
-                            clearPopTimerRef.current = undefined;
-                        },
-                        260,
-                        undefined
-                    );
+                    if (nextClearPop) {
+                        clearPopTimerRef.current = globalThis.setTimeout(
+                            () => {
+                                setClearPop(
+                                    (currentClearPop: ClearPop | undefined) =>
+                                        currentClearPop?.id === nextClearPop.id
+                                            ? undefined
+                                            : currentClearPop
+                                );
+                                clearPopTimerRef.current = undefined;
+                            },
+                            260,
+                            undefined
+                        );
+                    }
 
                     clearPrepTimerRef.current = undefined;
                 },
@@ -351,7 +374,7 @@ export function NumberBlobDisplay({
         previousStageIndexRef.current = stageIndex;
 
         return undefined;
-    }, [isStageRevealActive, stageIndex, value]);
+    }, [isStageRevealActive, stageAdvanceSolvedStateKey, stageIndex, value]);
 
     return (
         <div

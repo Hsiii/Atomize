@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+
+import type { Screen } from '../app-state';
 import {
     advanceSoloState,
     applyPrimeSelection,
@@ -6,8 +8,6 @@ import {
     createInitialSoloState,
 } from '../core';
 import type { Prime } from '../core';
-
-import type { Screen } from '../app-state';
 import {
     createSoloRunSeed,
     playablePrimes,
@@ -28,6 +28,7 @@ type UseSoloGameResult = {
     soloCountdownProgress: number;
     soloPrimeQueue: Prime[];
     isSoloComboRunning: boolean;
+    soloStageAdvanceSolvedStateKey: number;
     soloTimerPenaltyPopKey: number;
     handleSoloComboSubmit: (queue: readonly Prime[]) => void;
     startSingleGame: () => void;
@@ -46,6 +47,8 @@ export function useSoloGame({
     const [soloTimeLeft, setSoloTimeLeft] = useState(soloDurationSeconds);
     const [soloPrimeQueue, setSoloPrimeQueue] = useState<Prime[]>([]);
     const [isSoloComboRunning, setIsSoloComboRunning] = useState(false);
+    const [soloStageAdvanceSolvedStateKey, setSoloStageAdvanceSolvedStateKey] =
+        useState(0);
     const [soloTimerPenaltyPopKey, setSoloTimerPenaltyPopKey] = useState(0);
     const latestSoloStateRef = useRef(soloState);
 
@@ -126,6 +129,9 @@ export function useSoloGame({
                     outcome.cleared && soloPrimeQueue.length > 1;
 
                 if (hasRedundantBufferedPrimes) {
+                    setSoloStageAdvanceSolvedStateKey(
+                        (currentKey) => currentKey + 1
+                    );
                     setSoloState(applySoloPenalty(nextState));
                     setSoloPrimeQueue([]);
                     setSoloTimeLeft((currentTime) =>
@@ -172,6 +178,7 @@ export function useSoloGame({
         setSoloTimeLeft(soloDurationSeconds);
         setSoloPrimeQueue([]);
         setIsSoloComboRunning(false);
+        setSoloStageAdvanceSolvedStateKey(0);
         setSoloTimerPenaltyPopKey(0);
         onScreenChange('single');
     }
@@ -179,6 +186,7 @@ export function useSoloGame({
     function resetSoloGame() {
         setSoloPrimeQueue([]);
         setIsSoloComboRunning(false);
+        setSoloStageAdvanceSolvedStateKey(0);
         setSoloTimerPenaltyPopKey(0);
     }
 
@@ -189,6 +197,7 @@ export function useSoloGame({
         soloCountdownProgress,
         soloPrimeQueue,
         isSoloComboRunning,
+        soloStageAdvanceSolvedStateKey,
         soloTimerPenaltyPopKey,
         handleSoloComboSubmit,
         startSingleGame,

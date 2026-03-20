@@ -21,6 +21,7 @@ type SingleGameScreenProps = {
     soloCountdownProgress: number;
     soloPrimeQueue: Prime[];
     isSoloComboRunning: boolean;
+    soloStageAdvanceSolvedStateKey: number;
     soloTimerPenaltyPopKey: number;
     onBack: () => void | Promise<void>;
     onSubmit: (queue: readonly Prime[]) => void;
@@ -34,6 +35,7 @@ export function SingleGameScreen({
     soloCountdownProgress,
     soloPrimeQueue,
     isSoloComboRunning,
+    soloStageAdvanceSolvedStateKey,
     soloTimerPenaltyPopKey,
     onBack,
     onSubmit,
@@ -144,6 +146,9 @@ export function SingleGameScreen({
                         isComboRunning={isSoloComboRunning}
                         isStageRevealActive={isBlobRevealActive}
                         mode='solo'
+                        stageAdvanceSolvedStateKey={
+                            soloStageAdvanceSolvedStateKey
+                        }
                         stageIndex={currentStageIndex}
                         value={soloState.currentStage.remainingValue}
                     />

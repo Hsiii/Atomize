@@ -85,6 +85,9 @@ export default function App(): JSX.Element {
                 playablePrimes={soloGame.playablePrimes}
                 soloCountdownProgress={soloGame.soloCountdownProgress}
                 soloPrimeQueue={soloGame.soloPrimeQueue}
+                soloStageAdvanceSolvedStateKey={
+                    soloGame.soloStageAdvanceSolvedStateKey
+                }
                 soloState={soloGame.soloState}
                 soloTimeLeft={soloGame.soloTimeLeft}
                 soloTimerPenaltyPopKey={soloGame.soloTimerPenaltyPopKey}
