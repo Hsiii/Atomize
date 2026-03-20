@@ -1114,8 +1114,7 @@ export function useMultiplayerGame({
         }
 
         const batchComboDamage =
-            shouldBatchComboDamage ??
-            isExactStageClearCombo(currentPlayer.stage, queuedPrimes);
+            shouldBatchComboDamage ?? queuedPrimes.length > 1;
 
         const outcome = applyPrimeSelection(currentPlayer.stage, prime);
 
@@ -1160,25 +1159,6 @@ export function useMultiplayerGame({
         );
 
         return undefined;
-    }
-
-    function isExactStageClearCombo(
-        stage: RoomSnapshot['stage'],
-        queuedPrimes: readonly Prime[]
-    ): boolean {
-        let currentStage = stage;
-
-        for (const prime of queuedPrimes) {
-            const outcome = applyPrimeSelection(currentStage, prime);
-
-            if (outcome.kind === 'wrong') {
-                return false;
-            }
-
-            currentStage = outcome.stage;
-        }
-
-        return currentStage.remainingValue === 1;
     }
 
     function getEffectiveMultiplayerSnapshot(
