@@ -496,19 +496,6 @@ export default function App() {
         setScreen('single');
     }
 
-    function startCreateRoomFlow() {
-        setMenuMode('create-room');
-        setScreen('multi-lobby');
-        setStatusText(uiText.openingRoom);
-        void createRoom();
-    }
-
-    function startJoinRoomFlow() {
-        setMenuMode('join-room');
-        setStatusText(uiText.idleStatus);
-        setScreen('multi-lobby');
-    }
-
     function handleRoomIdInputChange(value: string) {
         setRoomIdInput(normalizeRoomId(value));
     }
@@ -1359,24 +1346,6 @@ function getInitialPlayerName(): string {
     }
 
     return uiText.guest;
-}
-
-function getRandomUnusedPlayerName(currentName?: string): string {
-    if (typeof window === 'undefined') {
-        return fallbackPlayerNames[0];
-    }
-
-    const usedNames = new Set(
-        getUsedPlayerNames().filter((name) => name !== currentName)
-    );
-    const availableNames = fallbackPlayerNames.filter(
-        (name) => !usedNames.has(name)
-    );
-    const sourceNames =
-        availableNames.length > 0 ? availableNames : fallbackPlayerNames;
-    const randomIndex = Math.floor(Math.random() * sourceNames.length);
-
-    return sourceNames[randomIndex] ?? fallbackPlayerNames[0];
 }
 
 function getUsedPlayerNames(): string[] {
