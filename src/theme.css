@@ -34,15 +34,15 @@
     --type-display-results-line-height: 1;
     --type-display-results-color: var(--color-primary);
 
-    --type-display-status-family: var(--font-family-numeric);
-    --type-display-status-size: clamp(1.65rem, 6vw, 3rem);
-    --type-display-status-weight: 800;
-    --type-display-status-soft-weight: 700;
-    --type-display-status-line-height: 1;
-    --type-display-status-letter-spacing: 0.08em;
-    --type-display-status-support-line-height: 1.2;
-    --type-display-status-echo-line-height: 0.88;
-    --type-display-status-color: var(--color-secondary);
+    --type-display-burst-family: var(--font-family-numeric);
+    --type-display-burst-size: clamp(1.65rem, 6vw, 3rem);
+    --type-display-burst-weight: 800;
+    --type-display-burst-soft-weight: 700;
+    --type-display-burst-line-height: 1;
+    --type-display-burst-letter-spacing: 0.08em;
+    --type-display-burst-support-line-height: 1.2;
+    --type-display-burst-echo-line-height: 0.88;
+    --type-display-burst-color: var(--color-secondary);
 
     --type-title-panel-family: var(--font-family-display);
     --type-title-panel-size: clamp(1.75rem, 4vw, 2.5rem);
@@ -51,13 +51,6 @@
     --type-title-panel-letter-spacing: 0.06em;
     --type-title-panel-text-transform: uppercase;
     --type-title-panel-color: var(--color-text-inverse);
-
-    --type-title-compact-family: var(--font-family-display);
-    --type-title-compact-size: clamp(1.1rem, 2.8vw, 1.3rem);
-    --type-title-compact-weight: 800;
-    --type-title-compact-line-height: 1;
-    --type-title-compact-letter-spacing: 0.03em;
-    --type-title-compact-color: var(--color-text-inverse);
 
     --type-metric-inline-family: var(--font-family-numeric);
     --type-metric-inline-size: clamp(0.88rem, 2.4vw, 1.45rem);
@@ -173,7 +166,7 @@
     --size-buffer-strip-min-height: 4rem;
     --font-size-keypad-digit: var(--type-display-input-size);
     --font-size-keypad-digit-mobile: var(--type-display-input-compact-size);
-    --font-size-buffer-strip: var(--type-display-status-size);
+    --font-size-buffer-strip: var(--type-display-burst-size);
     --size-menu-title-orb: 17rem;
     --size-menu-blob-min-height: 7.2rem;
     --size-menu-blob-icon: 1.9rem;

@@ -17,10 +17,10 @@
 }
 
 .combo-bar-value {
-    color: var(--type-display-status-color);
-    font-family: var(--type-display-status-family);
-    font-size: var(--type-display-status-size);
-    font-weight: var(--type-display-status-soft-weight);
-    line-height: var(--type-display-status-support-line-height);
+    color: var(--type-display-burst-color);
+    font-family: var(--type-display-burst-family);
+    font-size: var(--type-display-burst-size);
+    font-weight: var(--type-display-burst-soft-weight);
+    line-height: var(--type-display-burst-support-line-height);
     font-variant-numeric: tabular-nums;
 }

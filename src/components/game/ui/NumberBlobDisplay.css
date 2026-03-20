@@ -7,7 +7,7 @@
     );
     --number-blob-clear-font-size: var(--number-blob-main-font-size);
     --number-blob-split-font-size: calc(
-        var(--type-display-status-size) * var(--number-blob-scale-factor)
+        var(--type-display-burst-size) * var(--number-blob-scale-factor)
     );
     --number-blob-split-padding: calc(0.8rem * var(--number-blob-scale-factor));
     --number-blob-border-width: calc(2px * var(--number-blob-scale-factor));
@@ -247,11 +247,11 @@
 
 .number-blob-split-value {
     display: block;
-    font-family: var(--type-display-status-family);
+    font-family: var(--type-display-burst-family);
     font-size: var(--number-blob-split-font-size);
-    line-height: var(--type-display-status-echo-line-height);
+    line-height: var(--type-display-burst-echo-line-height);
     font-variant-numeric: tabular-nums;
-    font-weight: var(--type-display-status-weight);
+    font-weight: var(--type-display-burst-weight);
     color: var(--type-display-game-color);
 }
 
