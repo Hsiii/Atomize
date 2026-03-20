@@ -1,14 +1,9 @@
 import {
     applyPrimeSelection,
-    computeBattleDamage,
+    computeBattleHitDamage,
     generateStage,
 } from '../core';
-import type {
-    BattleEvent,
-    Prime,
-    RoomPlayer,
-    RoomSnapshot,
-} from '../core';
+import type { BattleEvent, Prime, RoomPlayer, RoomSnapshot } from '../core';
 
 const STARTING_HP = 500;
 const WRONG_SELECTION_DAMAGE = 8;
@@ -143,36 +138,31 @@ export function applyBattlePrimeSelection(
         return applyBattlePenalty(snapshot, playerId);
     }
 
-    if (!selection.cleared) {
-        return withPlayers(
-            {
-                ...snapshot,
-                stageIndex: actingPlayer.stageIndex,
-                stage: selection.stage,
-            },
-            snapshot.players.map((player) => {
-                if (player.id !== playerId) {
-                    return player;
-                }
-
-                return {
-                    ...player,
-                    stage: selection.stage,
-                };
-            })
-        );
-    }
-
-    const combo = actingPlayer.combo + 1;
-    const damage = computeBattleDamage(selection.stage, combo);
-    const stageIndex = actingPlayer.stageIndex + 1;
-    const nextStage = generateStage(snapshot.seed, stageIndex);
+    const solvedFactorCount =
+        actingPlayer.stage.factors.length -
+        selection.stage.remainingFactors.length;
+    const damage = computeBattleHitDamage(
+        actingPlayer.stage,
+        actingPlayer.combo,
+        solvedFactorCount
+    );
+    const combo = selection.cleared
+        ? actingPlayer.combo + 1
+        : actingPlayer.combo;
+    const stageIndex = selection.cleared
+        ? actingPlayer.stageIndex + 1
+        : actingPlayer.stageIndex;
+    const nextStage = selection.cleared
+        ? generateStage(snapshot.seed, stageIndex)
+        : selection.stage;
     const nextPlayers = snapshot.players.map((player) => {
         if (player.id === playerId) {
             return {
                 ...player,
                 combo,
-                maxCombo: Math.max(player.maxCombo, combo),
+                maxCombo: selection.cleared
+                    ? Math.max(player.maxCombo, combo)
+                    : player.maxCombo,
                 stageIndex,
                 stage: nextStage,
             };

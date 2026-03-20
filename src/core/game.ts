@@ -175,3 +175,29 @@ export function computeBattleDamage(
         Math.min(clearedStage.stageIndex, 6)
     );
 }
+
+export function computeBattleHitDamage(
+    stage: StageState,
+    combo: number,
+    solvedFactorCount: number
+): number {
+    const totalFactorCount = stage.factors.length;
+
+    if (totalFactorCount === 0 || solvedFactorCount <= 0) {
+        return 0;
+    }
+
+    const clampedSolvedFactorCount = Math.min(
+        solvedFactorCount,
+        totalFactorCount
+    );
+    const totalDamage = computeBattleDamage(stage, combo);
+    const previousResolvedDamage = Math.round(
+        (totalDamage * (clampedSolvedFactorCount - 1)) / totalFactorCount
+    );
+    const resolvedDamage = Math.round(
+        (totalDamage * clampedSolvedFactorCount) / totalFactorCount
+    );
+
+    return resolvedDamage - previousResolvedDamage;
+}
