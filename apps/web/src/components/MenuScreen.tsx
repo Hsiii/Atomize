@@ -82,6 +82,14 @@ export function MenuScreen({
     const shouldShowReadyAction = isInRoom && hasOpponent;
     const shouldShowSoloStart = !shouldShowReadyAction && !isInRoom;
 
+    useEffect(() => {
+        if (!hasOpponent) {
+            return;
+        }
+
+        setShowInviteDialog(false);
+    }, [hasOpponent]);
+
     function handleProfileSave() {
         const trimmed = editingName.trim();
 
