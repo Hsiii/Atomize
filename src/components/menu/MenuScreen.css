@@ -191,43 +191,19 @@
     line-height: var(--type-action-label-line-height);
 }
 
-.slot-user-icon-filled {
-    position: relative;
+.slot-user-icon {
     width: 1.7rem;
-    height: 1.55rem;
-    display: inline-block;
-}
-
-.slot-user-icon-filled::before,
-.slot-user-icon-filled::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    background: currentColor;
-    transform: translateX(-50%);
-}
-
-.slot-user-icon-filled::before {
-    top: 0;
-    width: 0.62rem;
-    height: 0.62rem;
-    border-radius: 50%;
-}
-
-.slot-user-icon-filled::after {
-    bottom: 0;
-    width: 1.3rem;
-    height: 0.78rem;
-    border-radius: 0.78rem 0.78rem 0.24rem 0.24rem;
+    height: 1.7rem;
+    stroke-width: 2.4;
 }
 
 .slot-name {
-    display: block;
-    width: 100%;
+    display: inline-block;
     font-family: var(--type-body-meta-family);
     font-size: var(--type-body-meta-size);
     font-weight: var(--type-body-meta-weight);
     letter-spacing: var(--type-body-meta-letter-spacing);
+    line-height: var(--type-body-meta-line-height);
     opacity: 0.85;
     color: inherit;
     max-width: 6rem;
@@ -574,6 +550,15 @@
 }
 
 @media (max-width: 480px) {
+    .menu-slot-column {
+        min-width: 4.8rem;
+    }
+
+    .slot-circle-shell {
+        width: 4.8rem;
+        height: 4.8rem;
+    }
+
     .slot-circle {
         width: 4.8rem;
         height: 4.8rem;
