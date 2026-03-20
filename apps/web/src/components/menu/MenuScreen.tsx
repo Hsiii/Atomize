@@ -85,12 +85,13 @@ export function MenuScreen({
     const isMultiplayerCountdown = multiplayerCountdownValue !== undefined;
     const showCurrentReadyBadge = hasOpponent && isCurrentPlayerReady;
     const showOpponentReadyBadge = hasOpponent && isOpponentReady;
+    const isReadyButtonDisabled = isMultiplayerCountdown;
     let readyButtonLabel: string = isCurrentPlayerReady
         ? uiText.cancelReady
         : uiText.ready;
 
-    if (isMultiplayerCountdown && isCurrentPlayerReady) {
-        readyButtonLabel = `${uiText.cancelReady} (${String(multiplayerCountdownValue)})`;
+    if (isMultiplayerCountdown) {
+        readyButtonLabel = `${uiText.startingIn} ${String(multiplayerCountdownValue)}...`;
     }
 
     useEffect(() => {
@@ -215,6 +216,7 @@ export function MenuScreen({
                         {shouldShowReadyAction ? (
                             <ActionButton
                                 className='menu-start-btn'
+                                disabled={isReadyButtonDisabled}
                                 onClick={() => {
                                     detachAction(onToggleReady());
                                 }}
