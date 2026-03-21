@@ -7,16 +7,21 @@
 
 .single-top-bar {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: var(--single-top-bar-side-width, auto) minmax(
+            0,
+            1fr
+        ) var(--single-top-bar-side-width, auto);
     align-items: center;
     column-gap: var(--space-4);
     padding: 0;
+    width: 100%;
 }
 
 .single-top-bar-side {
     min-width: 0;
     display: flex;
     align-items: center;
+    width: 100%;
 }
 
 .single-top-bar-side-start {
