@@ -606,6 +606,15 @@
 @media (max-width: 480px) {
     .dialog-invite .dialog-body {
         touch-action: pan-y;
+        scrollbar-gutter: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .dialog-invite .dialog-body::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+        display: none;
     }
 
     .invite-btn {
