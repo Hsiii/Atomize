@@ -22,7 +22,10 @@ export type ComboQueueCallbacks = {
         prime: Prime,
         suppressAttack: boolean,
         perfectSolveEligible: boolean
-    ) => Promise<{ shouldAbort?: boolean } | undefined>;
+    ) =>
+        | Promise<{ shouldAbort?: boolean } | undefined>
+        | { shouldAbort?: boolean }
+        | undefined;
 };
 
 export async function processComboQueue(

@@ -398,7 +398,7 @@ export function useLocalCpuGame({
                 const localPlayerId = latestPlayerIdRef.current;
 
                 if (!snapshot || !localPlayerId) {
-                    return;
+                    return undefined;
                 }
 
                 updateSnapshot(
@@ -407,6 +407,8 @@ export function useLocalCpuGame({
                         perfectSolveEligible,
                     })
                 );
+
+                return undefined;
             },
         });
     }
