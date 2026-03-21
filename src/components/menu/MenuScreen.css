@@ -158,7 +158,7 @@
 .slot-p2-empty {
     position: relative;
     background: var(--color-button-subtle-bg);
-    color: var(--color-button-subtle-text);
+    color: var(--color-primary-strong);
     border-color: transparent;
 }
 
