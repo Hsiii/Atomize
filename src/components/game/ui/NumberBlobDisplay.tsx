@@ -22,6 +22,7 @@ type ClearPop = {
 
 type NumberBlobDisplayProps = {
     value: number | undefined;
+    targetId?: number;
     stageIndex?: number;
     stageAdvanceSolvedStateKey?: number;
     isComboRunning?: boolean;
@@ -106,29 +107,26 @@ function createClearSplitEchoes(
 
 export function NumberBlobDisplay({
     value,
-    stageIndex = 0,
-    stageAdvanceSolvedStateKey = 0,
+    targetId,
+    stageIndex,
+    stageAdvanceSolvedStateKey,
     isComboRunning = false,
     isStageRevealActive = false,
     concealValues = false,
     mode = 'solo',
     size,
 }: NumberBlobDisplayProps): JSX.Element {
+    const resolvedTargetId =
+        targetId ?? stageAdvanceSolvedStateKey ?? stageIndex ?? 0;
     const [splitEchos, setSplitEchos] = useState<SplitEcho[]>([]);
     const [clearPop, setClearPop] = useState<ClearPop>();
     const [displayedValue, setDisplayedValue] = useState<number | undefined>(
         value
     );
     const [availableSize, setAvailableSize] = useState<number>();
-    const valueClassName = (
-        isStageRevealActive ? ' is-value-hidden' : ''
-    ).trim();
     const [isImpactActive, setIsImpactActive] = useState(false);
     const previousValueRef = useRef<number | undefined>(undefined);
-    const previousStageIndexRef = useRef<number | undefined>(undefined);
-    const consumedStageAdvanceSolvedStateKeyRef = useRef(
-        stageAdvanceSolvedStateKey
-    );
+    const previousTargetIdRef = useRef<number | undefined>(undefined);
     const echoIdRef = useRef(0);
     const clearPrepTimerRef = useRef<number | undefined>(undefined);
     const clearEchoTimerRef = useRef<number | undefined>(undefined);
@@ -240,29 +238,25 @@ export function NumberBlobDisplay({
             impactTimerRef.current = undefined;
             setDisplayedValue(value);
             previousValueRef.current = value;
-            previousStageIndexRef.current = stageIndex;
+            previousTargetIdRef.current = resolvedTargetId;
             return undefined;
         }
 
         const previousValue = previousValueRef.current;
-        const previousStageIndex = previousStageIndexRef.current;
+        const previousTargetId = previousTargetIdRef.current;
 
         if (typeof previousValue !== 'number') {
             setDisplayedValue(value);
             previousValueRef.current = value;
-            previousStageIndexRef.current = stageIndex;
+            previousTargetIdRef.current = resolvedTargetId;
             return undefined;
         }
 
-        const didStageAdvance = stageIndex > (previousStageIndex ?? stageIndex);
+        const didTargetRefresh =
+            previousTargetId !== undefined &&
+            resolvedTargetId !== previousTargetId;
 
-        if (didStageAdvance && previousValue > 1) {
-            const shouldShowSolvedState =
-                stageAdvanceSolvedStateKey !==
-                consumedStageAdvanceSolvedStateKeyRef.current;
-
-            consumedStageAdvanceSolvedStateKeyRef.current =
-                stageAdvanceSolvedStateKey;
+        if (didTargetRefresh && previousValue > 1) {
             clearTimer(clearPrepTimerRef.current);
             clearPrepTimerRef.current = undefined;
             clearTimer(clearEchoTimerRef.current);
@@ -272,20 +266,15 @@ export function NumberBlobDisplay({
             const clearEchoes = concealValues
                 ? []
                 : createClearSplitEchoes(echoIdRef.current, previousValue);
-            const nextClearPop = shouldShowSolvedState
-                ? {
-                      id: echoIdRef.current + clearEchoes.length,
-                      value: 1,
-                  }
-                : undefined;
+            const nextClearPop = {
+                id: echoIdRef.current + clearEchoes.length,
+                value: 1,
+            };
 
             echoIdRef.current += clearEchoes.length + 1;
             setIsImpactActive(false);
             setClearPop(undefined);
-
-            if (shouldShowSolvedState) {
-                setDisplayedValue(1);
-            }
+            setDisplayedValue(1);
 
             clearPrepTimerRef.current = globalThis.setTimeout(
                 () => {
@@ -296,9 +285,7 @@ export function NumberBlobDisplay({
                         ]);
                     }
 
-                    if (nextClearPop) {
-                        setClearPop(nextClearPop);
-                    }
+                    setClearPop(nextClearPop);
 
                     setDisplayedValue(value);
 
@@ -321,21 +308,19 @@ export function NumberBlobDisplay({
                         undefined
                     );
 
-                    if (nextClearPop) {
-                        clearPopTimerRef.current = globalThis.setTimeout(
-                            () => {
-                                setClearPop(
-                                    (currentClearPop: ClearPop | undefined) =>
-                                        currentClearPop?.id === nextClearPop.id
-                                            ? undefined
-                                            : currentClearPop
-                                );
-                                clearPopTimerRef.current = undefined;
-                            },
-                            260,
-                            undefined
-                        );
-                    }
+                    clearPopTimerRef.current = globalThis.setTimeout(
+                        () => {
+                            setClearPop(
+                                (currentClearPop: ClearPop | undefined) =>
+                                    currentClearPop?.id === nextClearPop.id
+                                        ? undefined
+                                        : currentClearPop
+                            );
+                            clearPopTimerRef.current = undefined;
+                        },
+                        260,
+                        undefined
+                    );
 
                     clearPrepTimerRef.current = undefined;
                 },
@@ -344,7 +329,7 @@ export function NumberBlobDisplay({
             );
 
             previousValueRef.current = value;
-            previousStageIndexRef.current = stageIndex;
+            previousTargetIdRef.current = resolvedTargetId;
 
             return undefined;
         }
@@ -352,11 +337,7 @@ export function NumberBlobDisplay({
         if (value !== previousValue) {
             let poppedValue: number | undefined;
 
-            if (
-                stageIndex === previousStageIndex &&
-                value > 1 &&
-                value < previousValue
-            ) {
+            if (!didTargetRefresh && value > 1 && value < previousValue) {
                 const nextPoppedValue = previousValue / value;
 
                 if (Number.isInteger(nextPoppedValue)) {
@@ -412,7 +393,7 @@ export function NumberBlobDisplay({
                 );
 
                 previousValueRef.current = value;
-                previousStageIndexRef.current = stageIndex;
+                previousTargetIdRef.current = resolvedTargetId;
 
                 return undefined;
             }
@@ -432,26 +413,18 @@ export function NumberBlobDisplay({
             );
 
             previousValueRef.current = value;
-            previousStageIndexRef.current = stageIndex;
+            previousTargetIdRef.current = resolvedTargetId;
 
             return undefined;
         }
 
-        if (!isStageRevealActive) {
-            setDisplayedValue(value);
-        }
+        setDisplayedValue(value);
 
         previousValueRef.current = value;
-        previousStageIndexRef.current = stageIndex;
+        previousTargetIdRef.current = resolvedTargetId;
 
         return undefined;
-    }, [
-        concealValues,
-        isStageRevealActive,
-        stageAdvanceSolvedStateKey,
-        stageIndex,
-        value,
-    ]);
+    }, [concealValues, isStageRevealActive, resolvedTargetId, value]);
 
     return (
         <div
@@ -468,9 +441,7 @@ export function NumberBlobDisplay({
             }
         >
             <div
-                className={`number-blob-field${
-                    clearPop || isStageRevealActive ? ' is-blob-hidden' : ''
-                }`}
+                className={`number-blob-field${clearPop ? ' is-blob-hidden' : ''}`}
             >
                 {clearPop ? (
                     <div
@@ -512,14 +483,10 @@ export function NumberBlobDisplay({
                     }`}
                 >
                     <div
-                        className={`number-main-blob${
-                            isStageRevealActive ? ' is-stage-reveal' : ''
-                        }${clearPop ? ' is-cleared' : ''}`}
-                        key={stageIndex}
+                        className={`number-main-blob${clearPop ? ' is-cleared' : ''}`}
+                        key={targetId}
                     >
-                        <strong className={valueClassName}>
-                            {displayedValue}
-                        </strong>
+                        <strong>{displayedValue}</strong>
                     </div>
                 </div>
             </div>

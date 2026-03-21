@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { JSX } from 'react';
 import { CircleArrowUp, Delete } from 'lucide-react';
 
@@ -41,12 +41,7 @@ export function SingleGameScreen({
     onSubmit,
     formatCountdown,
 }: SingleGameScreenProps): JSX.Element {
-    const blobRevealTotalMs = 3000;
     const isTimeUp = soloTimeLeft === 0;
-    const currentStageIndex = soloState.currentStage.stageIndex;
-    const [isBlobRevealActive, setIsBlobRevealActive] = useState(false);
-    const hasInitializedStageRef = useRef(false);
-    const previousStageIndexRef = useRef<number | null>(null);
     const isInputDisabled = isTimeUp || isSoloComboRunning;
     const [visibleQueue, setVisibleQueue] = useState<Prime[]>(soloPrimeQueue);
     const visibleQueueRef = useRef(visibleQueue);
@@ -55,46 +50,6 @@ export function SingleGameScreen({
         visibleQueueRef.current = soloPrimeQueue;
         setVisibleQueue(soloPrimeQueue);
     }, [soloPrimeQueue]);
-
-    useLayoutEffect(() => {
-        if (!hasInitializedStageRef.current) {
-            hasInitializedStageRef.current = true;
-            previousStageIndexRef.current = currentStageIndex;
-            setIsBlobRevealActive(true);
-
-            const initialTimer = globalThis.setTimeout(
-                () => {
-                    setIsBlobRevealActive(false);
-                },
-                blobRevealTotalMs,
-                undefined
-            );
-
-            return () => {
-                globalThis.clearTimeout(initialTimer);
-            };
-        }
-
-        if (previousStageIndexRef.current === currentStageIndex) {
-            return undefined;
-        }
-
-        previousStageIndexRef.current = currentStageIndex;
-
-        setIsBlobRevealActive(true);
-
-        const timer = globalThis.setTimeout(
-            () => {
-                setIsBlobRevealActive(false);
-            },
-            blobRevealTotalMs,
-            undefined
-        );
-
-        return () => {
-            globalThis.clearTimeout(timer);
-        };
-    }, [blobRevealTotalMs, currentStageIndex]);
 
     function setLocalQueue(nextQueue: readonly Prime[]) {
         const normalizedQueue = [...nextQueue];
@@ -146,12 +101,8 @@ export function SingleGameScreen({
                 <section aria-live='polite' className='single-value-display'>
                     <NumberBlobDisplay
                         isComboRunning={isSoloComboRunning}
-                        isStageRevealActive={isBlobRevealActive}
                         mode='solo'
-                        stageAdvanceSolvedStateKey={
-                            soloStageAdvanceSolvedStateKey
-                        }
-                        stageIndex={currentStageIndex}
+                        targetId={soloStageAdvanceSolvedStateKey}
                         value={soloState.currentStage.remainingValue}
                     />
                 </section>

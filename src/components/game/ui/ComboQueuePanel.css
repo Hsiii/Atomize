@@ -25,12 +25,16 @@
 
 .combo-bar.compact-queue {
     display: grid;
-    grid-template-columns: repeat(5, max-content);
+    grid-template-columns: repeat(7, max-content);
     justify-content: center;
     align-content: center;
-    column-gap: 0.12rem;
-    row-gap: 0.24rem;
-    padding-block: 0.38rem;
+    column-gap: 0.14rem;
+    row-gap: 0.28rem;
+    padding-block: 0.34rem;
+}
+
+.combo-bar.compact-queue .combo-bar-item {
+    gap: 0.12rem;
 }
 
 .combo-bar-chip {
@@ -51,10 +55,12 @@
 }
 
 .combo-bar.compact-queue .combo-bar-chip {
-    min-width: 1.1rem;
-    height: 1.1rem;
-    padding: 0 0.28rem;
-    font-size: 0.62rem;
+    min-width: 1.55rem;
+    width: 1.55rem;
+    height: 1.55rem;
+    padding: 0;
+    font-size: 0.68rem;
+    letter-spacing: -0.03em;
 }
 
 .combo-bar-sep {
@@ -66,5 +72,5 @@
 }
 
 .combo-bar.compact-queue .combo-bar-sep {
-    font-size: 0.58rem;
+    font-size: 0.72rem;
 }
