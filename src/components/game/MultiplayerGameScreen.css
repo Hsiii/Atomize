@@ -85,7 +85,12 @@
 }
 
 .multiplayer-hp-bar {
-    --hp-transition-duration: 0ms;
+    --hp-hit-duration: 0ms;
+    --hp-regen-duration: 0ms;
+    --hp-transition-duration: max(
+        var(--hp-hit-duration),
+        var(--hp-regen-duration)
+    );
     position: relative;
     display: grid;
     gap: var(--space-2);
@@ -129,7 +134,7 @@
 }
 
 .multiplayer-hp-bar--hit {
-    animation: multiplayer-hp-shake var(--hp-transition-duration)
+    animation: multiplayer-hp-shake var(--hp-hit-duration)
         cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -236,7 +241,7 @@
 }
 
 .multiplayer-hp-bar--hit .multiplayer-hp-track::after {
-    animation: multiplayer-hp-flash calc(var(--hp-transition-duration) + 120ms)
+    animation: multiplayer-hp-flash calc(var(--hp-hit-duration) + 120ms)
         ease-out;
 }
 
@@ -253,8 +258,8 @@
 }
 
 .multiplayer-hp-bar--regen .multiplayer-hp-track::before {
-    animation: multiplayer-hp-regen-shine
-        calc(var(--hp-transition-duration) + 180ms) ease-out;
+    animation: multiplayer-hp-regen-shine calc(var(--hp-regen-duration) + 180ms)
+        ease-out;
 }
 
 .multiplayer-hp-fill {
@@ -274,11 +279,25 @@
 }
 
 .multiplayer-hp-pop {
+    --multiplayer-hp-pop-index: 0;
+    --multiplayer-hp-pop-count: 1;
     --multiplayer-hp-pop-bottom: calc(100% - var(--space-1));
     position: absolute;
     left: 50%;
-    bottom: var(--multiplayer-hp-pop-bottom);
-    transform: translateX(-50%);
+    bottom: calc(
+        var(--multiplayer-hp-pop-bottom) + var(--multiplayer-hp-pop-index) *
+            1.15rem
+    );
+    transform: translateX(
+        calc(
+            -50% +
+                (
+                    var(--multiplayer-hp-pop-index) -
+                        (var(--multiplayer-hp-pop-count) - 1) / 2
+                ) *
+                1.85rem
+        )
+    );
     font-family: var(--type-action-label-family);
     font-size: var(--type-action-label-size);
     font-weight: var(--type-action-label-weight);

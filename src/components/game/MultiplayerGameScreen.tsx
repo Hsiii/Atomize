@@ -27,6 +27,11 @@ type HpImpact = {
     kind: 'hit' | 'regen';
 };
 
+type SideHpImpacts = {
+    hit?: HpImpact;
+    regen?: HpImpact;
+};
+
 type AttackParticle = {
     id: number;
     side: 'enemy' | 'self';
@@ -116,8 +121,8 @@ export function MultiplayerGameScreen({
         opponentPlayer?.hp ?? 0
     );
     const [hpImpacts, setHpImpacts] = useState<{
-        enemy?: HpImpact;
-        self?: HpImpact;
+        enemy?: SideHpImpacts;
+        self?: SideHpImpacts;
     }>({});
     const [isResultDialogVisible, setIsResultDialogVisible] = useState(false);
     const [pendingResultDialogEventId, setPendingResultDialogEventId] =
@@ -704,21 +709,36 @@ export function MultiplayerGameScreen({
             setHpImpacts((currentImpacts) => ({
                 ...currentImpacts,
                 [side]: {
-                    token: impactToken,
-                    durationMs,
-                    kind: 'hit',
+                    ...currentImpacts[side],
+                    hit: {
+                        token: impactToken,
+                        durationMs,
+                        kind: 'hit',
+                    },
                 },
             }));
 
             scheduleTimeout(() => {
                 setHpImpacts((currentImpacts) => {
-                    if (currentImpacts[side]?.token !== impactToken) {
+                    if (currentImpacts[side]?.hit?.token !== impactToken) {
                         return currentImpacts;
+                    }
+
+                    const nextSideImpacts = {
+                        ...currentImpacts[side],
+                        hit: undefined,
+                    };
+
+                    if (!nextSideImpacts.regen) {
+                        return {
+                            ...currentImpacts,
+                            [side]: undefined,
+                        };
                     }
 
                     return {
                         ...currentImpacts,
-                        [side]: undefined,
+                        [side]: nextSideImpacts,
                     };
                 });
             }, durationMs + hpImpactTailMs);
@@ -762,21 +782,36 @@ export function MultiplayerGameScreen({
             setHpImpacts((currentImpacts) => ({
                 ...currentImpacts,
                 [side]: {
-                    token: impactToken,
-                    durationMs,
-                    kind: 'regen',
+                    ...currentImpacts[side],
+                    regen: {
+                        token: impactToken,
+                        durationMs,
+                        kind: 'regen',
+                    },
                 },
             }));
 
             scheduleTimeout(() => {
                 setHpImpacts((currentImpacts) => {
-                    if (currentImpacts[side]?.token !== impactToken) {
+                    if (currentImpacts[side]?.regen?.token !== impactToken) {
                         return currentImpacts;
+                    }
+
+                    const nextSideImpacts = {
+                        ...currentImpacts[side],
+                        regen: undefined,
+                    };
+
+                    if (!nextSideImpacts.hit) {
+                        return {
+                            ...currentImpacts,
+                            [side]: undefined,
+                        };
                     }
 
                     return {
                         ...currentImpacts,
-                        [side]: undefined,
+                        [side]: nextSideImpacts,
                     };
                 });
             }, durationMs + hpImpactTailMs);
@@ -1260,11 +1295,11 @@ export function MultiplayerGameScreen({
         <main className='app-shell fullscreen-shell'>
             <section className='screen game-screen single-game-screen multiplayer-game-screen'>
                 <BattleHpBar
-                    damagePop={damagePops.find(
+                    damagePops={damagePops.filter(
                         (damagePop) => damagePop.side === 'enemy'
                     )}
                     hp={displayedEnemyHp}
-                    impact={hpImpacts.enemy}
+                    impacts={hpImpacts.enemy}
                     label={opponentPlayer?.name ?? uiText.opponent}
                     maxHp={multiplayerSnapshot?.maxHp ?? 1}
                     outerRef={enemyHealthRef}
@@ -1341,11 +1376,11 @@ export function MultiplayerGameScreen({
 
                 <section className='single-controls-grid multiplayer-controls-grid'>
                     <BattleHpBar
-                        damagePop={damagePops.find(
+                        damagePops={damagePops.filter(
                             (damagePop) => damagePop.side === 'self'
                         )}
                         hp={displayedSelfHp}
-                        impact={hpImpacts.self}
+                        impacts={hpImpacts.self}
                         label={uiText.you}
                         maxHp={multiplayerSnapshot?.maxHp ?? 1}
                         outerRef={selfHealthRef}
@@ -1427,9 +1462,9 @@ export function MultiplayerGameScreen({
 }
 
 type BattleHpBarProps = {
-    damagePop: DamagePop | undefined;
+    damagePops: readonly DamagePop[];
     hp: number;
-    impact: HpImpact | undefined;
+    impacts: SideHpImpacts | undefined;
     label: string;
     maxHp: number;
     outerRef: React.RefObject<HTMLDivElement | null>;
@@ -1439,8 +1474,8 @@ type BattleHpBarProps = {
 
 function BattleHpBar({
     hp,
-    impact,
-    damagePop,
+    impacts,
+    damagePops,
     label,
     maxHp,
     outerRef,
@@ -1448,14 +1483,23 @@ function BattleHpBar({
     side,
 }: BattleHpBarProps): JSX.Element {
     const hpRatio = Math.max(0, Math.min(100, (hp / Math.max(maxHp, 1)) * 100));
+    const classNames = [
+        'multiplayer-hp-bar',
+        `multiplayer-hp-bar-${side}`,
+        impacts?.hit ? 'multiplayer-hp-bar--hit' : '',
+        impacts?.regen ? 'multiplayer-hp-bar--regen' : '',
+    ]
+        .filter(Boolean)
+        .join(' ');
 
     return (
         <div
-            className={`multiplayer-hp-bar multiplayer-hp-bar-${side}${impact ? ` multiplayer-hp-bar--${impact.kind}` : ''}`}
+            className={classNames}
             ref={outerRef}
             style={
                 {
-                    '--hp-transition-duration': `${impact?.durationMs ?? 0}ms`,
+                    '--hp-hit-duration': `${impacts?.hit?.durationMs ?? 0}ms`,
+                    '--hp-regen-duration': `${impacts?.regen?.durationMs ?? 0}ms`,
                 } as CSSProperties
             }
         >
@@ -1479,15 +1523,21 @@ function BattleHpBar({
                 />
             </div>
 
-            {damagePop ? (
+            {damagePops.map((damagePop, index) => (
                 <span
                     className={`multiplayer-hp-pop multiplayer-hp-pop-${damagePop.kind}`}
                     key={damagePop.id}
+                    style={
+                        {
+                            '--multiplayer-hp-pop-index': index,
+                            '--multiplayer-hp-pop-count': damagePops.length,
+                        } as CSSProperties
+                    }
                 >
                     {damagePop.kind === 'regen' ? '+' : '-'}
                     {damagePop.value}
                 </span>
-            ) : undefined}
+            ))}
         </div>
     );
 }
