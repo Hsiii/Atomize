@@ -114,12 +114,12 @@
 .duo-score-player-name {
     margin: 0;
     padding-bottom: var(--space-3);
-    font-family: var(--type-title-panel-family);
+    font-family: var(--type-metric-inline-family);
     font-size: var(--type-metric-inline-size);
-    font-weight: var(--type-title-panel-weight);
-    line-height: var(--type-title-panel-line-height);
-    letter-spacing: var(--type-title-panel-letter-spacing);
-    text-transform: var(--type-title-panel-text-transform);
+    font-weight: var(--type-metric-inline-weight);
+    line-height: var(--type-metric-inline-line-height);
+    letter-spacing: var(--type-action-label-caps-letter-spacing);
+    text-transform: var(--type-action-label-caps-text-transform);
     color: var(--color-ink);
     border-bottom: 2px solid var(--color-border-soft);
 }

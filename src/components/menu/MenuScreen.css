@@ -216,11 +216,11 @@
 
 .slot-name {
     display: inline-block;
-    font-family: var(--type-body-meta-family);
-    font-size: var(--type-action-label-size);
-    font-weight: var(--type-body-meta-weight);
-    letter-spacing: var(--type-body-meta-letter-spacing);
-    line-height: var(--type-body-meta-line-height);
+    font-family: var(--type-metric-inline-family);
+    font-size: var(--type-metric-inline-size);
+    font-weight: var(--type-metric-inline-weight);
+    letter-spacing: var(--type-action-label-caps-letter-spacing);
+    line-height: var(--type-metric-inline-line-height);
     opacity: 0.85;
     color: inherit;
     max-width: 6rem;
@@ -495,9 +495,9 @@
 }
 
 .invite-name {
-    font-family: var(--type-body-meta-family);
-    font-size: var(--type-action-label-size);
-    font-weight: var(--type-body-meta-weight);
+    font-family: var(--type-metric-inline-family);
+    font-size: var(--type-metric-inline-size);
+    font-weight: var(--type-metric-inline-weight);
     color: var(--color-ink);
     overflow: hidden;
     text-overflow: ellipsis;
