@@ -37,6 +37,7 @@ type NumberBlobDisplayProps = {
 const echoAngles = [-58, -26, 18, 52];
 const clearPopPrepDurationMs = 140;
 const faultAnimationDurationMs = 620;
+const localStageRevealDurationMs = 3000;
 
 function createSplitEcho(
     id: number,
@@ -131,6 +132,8 @@ export function NumberBlobDisplay({
     const [availableSize, setAvailableSize] = useState<number>();
     const [isImpactActive, setIsImpactActive] = useState(false);
     const [isFaultAnimationActive, setIsFaultAnimationActive] = useState(false);
+    const [isLocalStageRevealActive, setIsLocalStageRevealActive] =
+        useState(false);
     const previousValueRef = useRef<number | undefined>(undefined);
     const previousTargetIdRef = useRef<number | undefined>(undefined);
     const previousFaultKeyRef = useRef<string | undefined>(undefined);
@@ -143,7 +146,10 @@ export function NumberBlobDisplay({
     const impactTimerRef = useRef<number | undefined>(undefined);
     const faultTimerRef = useRef<number | undefined>(undefined);
     const faultAnimationFrameRef = useRef<number | undefined>(undefined);
+    const localStageRevealTimerRef = useRef<number | undefined>(undefined);
     const containerRef = useRef<HTMLDivElement | null>(null);
+    const effectiveStageRevealActive =
+        isStageRevealActive || isLocalStageRevealActive;
 
     useLayoutEffect(() => {
         const container = containerRef.current;
@@ -229,6 +235,8 @@ export function NumberBlobDisplay({
             impactTimerRef.current = undefined;
             clearTimer(faultTimerRef.current);
             faultTimerRef.current = undefined;
+            clearTimer(localStageRevealTimerRef.current);
+            localStageRevealTimerRef.current = undefined;
             if (faultAnimationFrameRef.current !== undefined) {
                 globalThis.cancelAnimationFrame(faultAnimationFrameRef.current);
                 faultAnimationFrameRef.current = undefined;
@@ -288,6 +296,9 @@ export function NumberBlobDisplay({
             echoTimerRef.current = undefined;
             clearTimer(impactTimerRef.current);
             impactTimerRef.current = undefined;
+            clearTimer(localStageRevealTimerRef.current);
+            localStageRevealTimerRef.current = undefined;
+            setIsLocalStageRevealActive(false);
             setDisplayedValue(value);
             previousValueRef.current = value;
             previousTargetIdRef.current = resolvedTargetId;
@@ -321,6 +332,9 @@ export function NumberBlobDisplay({
 
             echoIdRef.current += clearEchoes.length;
             setIsImpactActive(false);
+            clearTimer(localStageRevealTimerRef.current);
+            localStageRevealTimerRef.current = undefined;
+            setIsLocalStageRevealActive(false);
             setClearPop(undefined);
             setDisplayedValue(previousValue);
 
@@ -334,6 +348,20 @@ export function NumberBlobDisplay({
                     }
 
                     setDisplayedValue(value);
+
+                    if (mode === 'solo') {
+                        setIsLocalStageRevealActive(true);
+                        localStageRevealTimerRef.current =
+                            globalThis.setTimeout(
+                                () => {
+                                    setIsLocalStageRevealActive(false);
+                                    localStageRevealTimerRef.current =
+                                        undefined;
+                                },
+                                localStageRevealDurationMs,
+                                undefined
+                            );
+                    }
 
                     clearEchoTimerRef.current = globalThis.setTimeout(
                         () => {
@@ -456,7 +484,7 @@ export function NumberBlobDisplay({
         previousTargetIdRef.current = resolvedTargetId;
 
         return undefined;
-    }, [concealValues, isStageRevealActive, resolvedTargetId, value]);
+    }, [concealValues, isStageRevealActive, mode, resolvedTargetId, value]);
 
     return (
         <div
@@ -517,12 +545,14 @@ export function NumberBlobDisplay({
                     <div
                         className={`number-main-blob${
                             clearPop ? ' is-cleared' : ''
-                        }${isStageRevealActive ? ' is-stage-reveal' : ''}`}
+                        }${effectiveStageRevealActive ? ' is-stage-reveal' : ''}`}
                         key={resolvedTargetId}
                     >
                         <strong
                             className={
-                                isStageRevealActive ? ' is-value-hidden' : ''
+                                effectiveStageRevealActive
+                                    ? ' is-value-hidden'
+                                    : ''
                             }
                         >
                             {displayedValue}
