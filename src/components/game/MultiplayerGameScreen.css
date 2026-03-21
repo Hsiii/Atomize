@@ -276,7 +276,7 @@
 .multiplayer-hp-pop {
     position: absolute;
     left: 50%;
-    bottom: calc(100% + var(--space-timer-gap));
+    bottom: calc(100% - var(--space-1));
     transform: translateX(-50%);
     font-family: var(--type-action-label-family);
     font-size: var(--type-action-label-size);
@@ -299,7 +299,7 @@
 @keyframes multiplayer-hp-pop {
     0% {
         opacity: 0;
-        transform: translateX(-50%) translateY(0.45rem) scale(0.92);
+        transform: translateX(-50%) translateY(0.2rem) scale(0.92);
     }
 
     20% {
@@ -308,7 +308,7 @@
 
     100% {
         opacity: 0;
-        transform: translateX(-50%) translateY(-0.8rem) scale(1);
+        transform: translateX(-50%) translateY(-0.35rem) scale(1);
     }
 }
 
