@@ -12,6 +12,26 @@
     padding-left: max(var(--space-5), env(safe-area-inset-left));
 }
 
+.multiplayer-controls-grid {
+    position: relative;
+}
+
+.tutorial-highlight-frame {
+    border-radius: var(--radius-panel);
+    outline: 2px solid rgba(22, 138, 173, 0.38);
+    outline-offset: 0.2rem;
+}
+
+.tutorial-highlight-frame-queue {
+    width: 100%;
+}
+
+.multiplayer-keypad.tutorial-highlight-frame,
+.tutorial-highlight-button {
+    outline: 2px solid rgba(22, 138, 173, 0.38);
+    outline-offset: 0.12rem;
+}
+
 .multiplayer-board {
     position: relative;
     flex: 1;

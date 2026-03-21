@@ -1,16 +1,10 @@
 import { useState } from 'react';
 import type { JSX } from 'react';
-import { X } from 'lucide-react';
 
 import { uiText } from '../../../app-state';
+import { ActionButton } from './ActionButton';
 
-type DesktopKeyboardHintProps = {
-    className?: string;
-};
-
-export function DesktopKeyboardHint({
-    className,
-}: DesktopKeyboardHintProps): JSX.Element {
+export function DesktopKeyboardHint(): JSX.Element {
     const [isDismissed, setIsDismissed] = useState(false);
 
     if (isDismissed) {
@@ -18,33 +12,19 @@ export function DesktopKeyboardHint({
     }
 
     return (
-        <aside
-            className={`desktop-keyboard-hint${className ? ` ${className}` : ''}`}
-        >
-            <div className='desktop-keyboard-hint-header'>
-                <span className='desktop-keyboard-hint-title'>
-                    {uiText.keyboardHintTitle}
-                </span>
-                <button
-                    aria-label={uiText.close}
-                    className='desktop-keyboard-hint-close'
-                    onClick={() => {
-                        setIsDismissed(true);
-                    }}
-                    type='button'
-                >
-                    <X aria-hidden='true' size={18} />
-                </button>
-            </div>
-            <div className='desktop-keyboard-hint-body'>
-                <span className='desktop-keyboard-hint-copy'>
-                    {uiText.keyboardHintLead}
-                </span>
-                <span className='desktop-keyboard-hint-key'>4</span>
-                <span className='desktop-keyboard-hint-copy'>
-                    {uiText.keyboardHintTail}
-                </span>
-            </div>
-        </aside>
+        <section className='tutorial-hint desktop-keyboard-hint'>
+            <h2 className='tutorial-hint-title'>{uiText.keyboardHintTitle}</h2>
+            <p className='tutorial-hint-body'>
+                {`${uiText.keyboardHintLead} 4 ${uiText.keyboardHintTail}`}
+            </p>
+            <ActionButton
+                onClick={() => {
+                    setIsDismissed(true);
+                }}
+                variant='primary'
+            >
+                {uiText.tutorialGotIt}
+            </ActionButton>
+        </section>
     );
 }

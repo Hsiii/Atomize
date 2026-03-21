@@ -9,12 +9,68 @@
     position: relative;
 }
 
-.desktop-keyboard-hint {
-    display: none;
+/* ── Tutorial hint ── */
+
+.tutorial-hint {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    display: grid;
+    gap: var(--space-3);
+    width: min(100%, 28rem);
+    margin-inline: auto;
+    padding: var(--space-5) var(--space-6);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface-base);
+    pointer-events: none;
 }
 
-.desktop-keyboard-hint-body {
-    pointer-events: none;
+.tutorial-hint--top {
+    top: 0;
+    border-radius: 0 0 var(--radius-panel) var(--radius-panel);
+}
+
+.tutorial-hint--bottom {
+    bottom: 0;
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+}
+
+.tutorial-hint-title {
+    margin: 0;
+    font-family: var(--type-action-label-family);
+    font-size: 0.88rem;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+}
+
+.tutorial-hint-body {
+    margin: 0;
+    color: var(--color-ink-soft);
+    font-family: var(--type-action-label-family);
+    font-size: 0.86rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.tutorial-hint .app-action-button {
+    pointer-events: auto;
+}
+
+@media (max-width: 480px) {
+    .tutorial-hint {
+        width: 100%;
+        padding: var(--space-4) var(--space-5);
+    }
+}
+
+/* ── Desktop keyboard hint (tutorial-hint variant) ── */
+
+.desktop-keyboard-hint {
+    display: none;
 }
 
 .single-value-display {
@@ -229,86 +285,12 @@
 
 @media (min-width: 900px) {
     .desktop-keyboard-hint {
-        position: absolute;
-        top: 5.25rem;
+        display: grid;
+        top: 0;
         right: max(var(--space-5), env(safe-area-inset-right));
-        z-index: 5;
-        display: block;
+        left: auto;
         width: min(15rem, calc(100vw - 3rem));
-        border-radius: var(--radius-panel);
-        background: var(--color-surface-strong);
-        border: 2px solid var(--color-primary);
-        overflow: hidden;
-    }
-
-    .desktop-keyboard-hint-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: var(--space-3);
-        padding: var(--space-4) var(--space-5);
-        background: var(--color-primary);
-        color: var(--color-text-inverse);
-    }
-
-    .desktop-keyboard-hint-title {
-        font-family: var(--type-action-label-family);
-        font-size: var(--type-action-label-size);
-        font-weight: var(--type-action-label-weight);
-        letter-spacing: var(--type-action-label-caps-letter-spacing);
-        text-transform: var(--type-action-label-caps-text-transform);
-    }
-
-    .desktop-keyboard-hint-close {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 2rem;
-        height: 2rem;
-        padding: 0;
-        border: 0;
-        border-radius: var(--radius-pill);
-        background: transparent;
-        color: var(--color-text-inverse);
-        opacity: 0.8;
-        cursor: pointer;
-        transition: opacity 0.15s ease;
-    }
-
-    .desktop-keyboard-hint-close:hover {
-        opacity: 1;
-    }
-
-    .desktop-keyboard-hint-body {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: var(--space-2);
-        padding: var(--space-5);
-        color: var(--color-ink);
-        font-family: var(--type-body-meta-family);
-        font-size: var(--type-body-meta-size);
-        font-weight: var(--type-body-meta-weight);
-        line-height: var(--type-body-meta-line-height);
-    }
-
-    .desktop-keyboard-hint-key {
-        min-width: 1.8rem;
-        padding: 0.18rem 0.45rem;
-        border-radius: var(--radius-pill);
-        background: color-mix(in srgb, var(--color-primary) 14%, white);
-        color: var(--color-primary);
-        font-family: var(--type-action-label-family);
-        font-size: var(--type-action-label-size);
-        font-weight: var(--type-action-label-weight);
-        letter-spacing: var(--type-action-label-caps-letter-spacing);
-        line-height: 1.2;
-        text-align: center;
-        text-transform: var(--type-action-label-caps-text-transform);
-    }
-
-    .desktop-keyboard-hint-copy {
-        white-space: nowrap;
+        margin-inline: 0;
     }
 }
 

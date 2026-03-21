@@ -64,7 +64,7 @@ export const uiText = {
     start: 'Start',
     atomized: 'Atomized',
     keyboardHintTitle: 'Hint',
-    keyboardHintLead: 'Use',
+    keyboardHintLead: 'Press digit',
     keyboardHintTail: 'to input 23',
     bestScore: 'Best',
     newBest: 'New Best!',
@@ -73,7 +73,8 @@ export const uiText = {
     pause: 'Pause',
     resume: 'Resume',
     paused: 'Paused',
-    tutorialCpu: 'Tutorial',
+    tutorialCpu: 'Bot',
+    tutorialYou: 'You',
     tutorialTitle: 'Tutorial',
     tutorialStartLesson: 'Start lesson',
     tutorialContinue: 'Continue',
@@ -113,7 +114,7 @@ export const uiText = {
         'Press Enter to turn the clear into a stronger combo hit.',
     tutorialEnemyTurnTitle: 'Watch the enemy turn',
     tutorialEnemyTurnBody:
-        'The tutorial CPU attacks with the same rules you do. Watch the HP bars while it moves.',
+        'The bot attacks with the same rules you do. Watch the HP bars while it moves.',
     tutorialEnemyAttackTitle: 'Incoming damage',
     tutorialEnemyAttackBody:
         'Enemy hits shave your lower HP bar. The fight is a race to zero, so clean factor chains matter.',
