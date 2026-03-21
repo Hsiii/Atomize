@@ -96,7 +96,7 @@
     flex-direction: column;
     align-items: center;
     gap: 0.1rem;
-    padding: var(--space-7) var(--space-8) var(--space-5);
+    padding: var(--space-7) var(--space-8) 0;
     animation: stat-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
 }
 
@@ -118,6 +118,16 @@
     font-weight: var(--type-display-results-weight);
     line-height: var(--type-display-results-line-height);
     color: var(--color-primary);
+}
+
+/* ── Best score row (fixed height for stable layout) ── */
+
+.score-dialog-best-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 1.6rem;
+    padding: var(--space-2) var(--space-8) var(--space-5);
 }
 
 /* ── Secondary stats (2-col) ── */
@@ -185,7 +195,6 @@
 
 .score-dialog-new-best {
     display: inline-block;
-    margin-top: var(--space-2);
     padding: 0.15rem 0.6rem;
     border-radius: var(--radius-pill);
     background: var(--color-gold);
@@ -202,8 +211,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.3em;
-    margin-top: var(--space-3);
-    padding: 0.2rem 0.6rem;
+    padding: 0.15rem 0.55rem;
     border-radius: var(--radius-pill);
     background: var(--color-surface-accent);
 }

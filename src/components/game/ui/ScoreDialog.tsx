@@ -56,6 +56,8 @@ export function ScoreDialog({
                         {uiText.score}
                     </span>
                     <strong className='score-dialog-hero-value'>{score}</strong>
+                </div>
+                <div className='score-dialog-best-row'>
                     {isNewBest ? (
                         <span className='score-dialog-new-best'>
                             {uiText.newBest}
