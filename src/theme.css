@@ -131,10 +131,10 @@
     --color-button-disabled-text: var(--color-disabled-text);
     --color-game-self: var(--color-primary-strong);
     --color-game-opponent: #5e8097;
-    --color-game-keypad-bg: rgba(22, 138, 173, 0.2);
-    --color-game-keypad-text: var(--color-primary-strong);
-    --color-game-keypad-active-bg: var(--color-primary-strong);
-    --color-game-keypad-active-text: var(--color-text-inverse);
+    --color-game-keypad-bg: rgba(16, 27, 46, 0.08);
+    --color-game-keypad-text: rgba(16, 27, 46, 0.82);
+    --color-game-keypad-active-bg: rgba(16, 27, 46, 0.14);
+    --color-game-keypad-active-text: rgba(16, 27, 46, 0.92);
 
     --space-0: 0;
     --space-1: 0.3rem;
