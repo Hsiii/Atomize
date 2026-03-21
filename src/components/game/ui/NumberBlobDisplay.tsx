@@ -36,6 +36,7 @@ type NumberBlobDisplayProps = {
 
 const echoAngles = [-58, -26, 18, 52];
 const clearPopPrepDurationMs = 140;
+const faultAnimationDurationMs = 400;
 
 function createSplitEcho(
     id: number,
@@ -129,8 +130,10 @@ export function NumberBlobDisplay({
     );
     const [availableSize, setAvailableSize] = useState<number>();
     const [isImpactActive, setIsImpactActive] = useState(false);
+    const [isFaultAnimationActive, setIsFaultAnimationActive] = useState(false);
     const previousValueRef = useRef<number | undefined>(undefined);
     const previousTargetIdRef = useRef<number | undefined>(undefined);
+    const previousFaultKeyRef = useRef<string | undefined>(undefined);
     const echoIdRef = useRef(0);
     const clearPrepTimerRef = useRef<number | undefined>(undefined);
     const clearEchoTimerRef = useRef<number | undefined>(undefined);
@@ -138,6 +141,8 @@ export function NumberBlobDisplay({
     const valueTimerRef = useRef<number | undefined>(undefined);
     const echoTimerRef = useRef<number | undefined>(undefined);
     const impactTimerRef = useRef<number | undefined>(undefined);
+    const faultTimerRef = useRef<number | undefined>(undefined);
+    const faultAnimationFrameRef = useRef<number | undefined>(undefined);
     const containerRef = useRef<HTMLDivElement | null>(null);
 
     useLayoutEffect(() => {
@@ -222,9 +227,52 @@ export function NumberBlobDisplay({
             echoTimerRef.current = undefined;
             clearTimer(impactTimerRef.current);
             impactTimerRef.current = undefined;
+            clearTimer(faultTimerRef.current);
+            faultTimerRef.current = undefined;
+            if (faultAnimationFrameRef.current !== undefined) {
+                globalThis.cancelAnimationFrame(faultAnimationFrameRef.current);
+                faultAnimationFrameRef.current = undefined;
+            }
         },
         []
     );
+
+    useEffect(() => {
+        if (!isFaultActive || faultKey === undefined) {
+            return undefined;
+        }
+
+        if (previousFaultKeyRef.current === faultKey) {
+            return undefined;
+        }
+
+        previousFaultKeyRef.current = faultKey;
+        clearTimer(faultTimerRef.current);
+        faultTimerRef.current = undefined;
+
+        if (faultAnimationFrameRef.current !== undefined) {
+            globalThis.cancelAnimationFrame(faultAnimationFrameRef.current);
+        }
+
+        setIsFaultAnimationActive(false);
+
+        faultAnimationFrameRef.current = globalThis.requestAnimationFrame(
+            () => {
+                faultAnimationFrameRef.current = undefined;
+                setIsFaultAnimationActive(true);
+                faultTimerRef.current = globalThis.setTimeout(
+                    () => {
+                        setIsFaultAnimationActive(false);
+                        faultTimerRef.current = undefined;
+                    },
+                    faultAnimationDurationMs,
+                    undefined
+                );
+            }
+        );
+
+        return undefined;
+    }, [faultKey, isFaultActive]);
 
     useEffect(() => {
         if (typeof value !== 'number') {
@@ -464,8 +512,7 @@ export function NumberBlobDisplay({
                 <div
                     className={`number-main-blob-shell${
                         isImpactActive ? ' is-impact-active' : ''
-                    }${isFaultActive ? ' is-fault-active' : ''}`}
-                    key={isFaultActive ? faultKey : undefined}
+                    }${isFaultAnimationActive ? ' is-fault-active' : ''}`}
                 >
                     <div
                         className={`number-main-blob${
