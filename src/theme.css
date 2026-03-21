@@ -117,7 +117,7 @@
     --color-toast-bg: rgba(24, 78, 119, 0.96);
     --color-toast-text: rgba(255, 255, 255, 0.96);
 
-    --color-button-primary-bg: var(--color-primary);
+    --color-button-primary-bg: var(--color-primary-strong);
     --color-button-primary-text: var(--color-text-inverse);
     --color-button-accent-bg: var(--color-primary-strong);
     --color-button-accent-text: var(--color-text-inverse);
@@ -126,7 +126,7 @@
     --color-button-danger-bg: var(--color-danger);
     --color-button-danger-text: var(--color-text-inverse);
     --color-button-subtle-bg: var(--color-surface-accent);
-    --color-button-subtle-text: var(--color-primary-strong);
+    --color-button-subtle-text: var(--color-primary);
     --color-button-disabled-bg: var(--color-disabled-bg);
     --color-button-disabled-text: var(--color-disabled-text);
 
