@@ -293,7 +293,7 @@ export function MenuScreen({
                             <div className='dialog-body'>
                                 <input
                                     className='dialog-input'
-                                    maxLength={24}
+                                    maxLength={8}
                                     onChange={(event) => {
                                         setEditingName(event.target.value);
                                     }}

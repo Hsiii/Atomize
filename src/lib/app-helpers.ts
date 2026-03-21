@@ -72,5 +72,5 @@ export function isPendingGuestJoin(multiplayer: MultiplayerState): boolean {
 }
 
 function normalizePlayerName(value: string): string {
-    return value.trim().replaceAll(/\s+/g, ' ').slice(0, 24);
+    return value.trim().replaceAll(/\s+/g, ' ').slice(0, 8);
 }
