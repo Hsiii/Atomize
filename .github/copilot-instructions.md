@@ -9,9 +9,10 @@
 
 ## Frontend
 
-- Always check the front-end design skill when the task is front-end related.
+- Always check the front-end design skill.
 - Always use global style variables for colors, fonts, and spacing
 - Always use global string constants for text.
+- Always use existing components, never create new ones if not necessary.
 
 ## Lint
 
