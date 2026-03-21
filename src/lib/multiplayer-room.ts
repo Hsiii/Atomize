@@ -254,7 +254,7 @@ export function applyBattlePenalty(
     snapshot: RoomSnapshot,
     playerId: string,
     preservedStage?: RoomSnapshot['stage'],
-    extraReleasedDamage = 0
+    releasedDamageOverride?: number
 ): RoomSnapshot {
     if (snapshot.status !== 'playing') {
         return snapshot;
@@ -272,8 +272,10 @@ export function applyBattlePenalty(
     }
 
     const nextStage = preservedStage ?? actingPlayer.stage;
-    const releasedDamage =
-        actingPlayer.pendingFactorDamage + Math.max(0, extraReleasedDamage);
+    const releasedDamage = Math.max(
+        0,
+        releasedDamageOverride ?? actingPlayer.pendingFactorDamage
+    );
     const nextPlayers = snapshot.players.map((player) => {
         if (player.id === playerId) {
             return {

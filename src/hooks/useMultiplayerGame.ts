@@ -929,7 +929,7 @@ export function useMultiplayerGame({
     async function sendMultiplayerPenalty(
         snapshotOverride?: RoomSnapshot,
         preservedStage?: RoomSnapshot['stage'],
-        extraReleasedDamage = 0
+        releasedDamageOverride?: number
     ): Promise<boolean> {
         const currentState = latestMultiplayerRef.current;
         const gameplaySnapshot = getEffectiveMultiplayerSnapshot(
@@ -941,18 +941,31 @@ export function useMultiplayerGame({
             return false;
         }
 
+        const actingPlayer = gameplaySnapshot.players.find(
+            (player) => player.id === currentState.playerId
+        );
+
+        if (!actingPlayer) {
+            return false;
+        }
+
+        const releasedDamage = Math.max(
+            0,
+            releasedDamageOverride ?? actingPlayer.pendingFactorDamage
+        );
+
         const nextSnapshot = applyBattlePenalty(
             gameplaySnapshot,
             currentState.playerId,
             preservedStage,
-            extraReleasedDamage
+            releasedDamage
         );
         updateSnapshot(nextSnapshot, '');
         return await broadcastMessage({
             type: 'combo_penalty',
             playerId: currentState.playerId,
             preservedStage,
-            extraReleasedDamage,
+            releasedDamage,
         });
     }
 
@@ -1093,7 +1106,7 @@ export function useMultiplayerGame({
             currentState.snapshot,
             message.playerId,
             message.preservedStage,
-            message.extraReleasedDamage
+            message.releasedDamage
         );
 
         updateSnapshot(nextSnapshot, '');
@@ -1170,10 +1183,13 @@ export function useMultiplayerGame({
 
         if (hasRedundantBufferedPrimes) {
             setMultiplayerPrimeQueue([]);
+            const releasedDamage =
+                currentPlayer.pendingFactorDamage +
+                computeBattleFactorDamage(prime);
             await sendMultiplayerPenalty(
                 undefined,
                 outcome.stage,
-                computeBattleFactorDamage(prime)
+                releasedDamage
             );
             return undefined;
         }
