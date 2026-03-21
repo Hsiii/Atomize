@@ -31,7 +31,12 @@ type UseLocalCpuGameResult = {
     isMultiplayerInputDisabled: boolean;
     currentMultiplayerPlayer: RoomPlayer | undefined;
     isLocalCpuGameActive: boolean;
+    opponentName: string | undefined;
+    isCurrentPlayerReady: boolean;
+    isOpponentReady: boolean;
+    isInRoom: boolean;
     startLocalCpuGame: () => void;
+    toggleReady: () => void;
     handleMultiplayerComboSubmit: (queue: readonly Prime[]) => Promise<void>;
     resetLocalCpuGame: () => void;
 };
@@ -57,11 +62,17 @@ export function useLocalCpuGame({
     const currentMultiplayerPlayer = multiplayerSnapshot?.players.find(
         (player) => player.id === playerId
     );
+    const cpuPlayer = multiplayerSnapshot?.players.find(
+        (player) => player.id === cpuPlayerId
+    );
     const isLocalCpuGameActive =
         Boolean(playerId) &&
         multiplayerSnapshot?.players.some(
             (player) => player.id === cpuPlayerId
         ) === true;
+    const isCurrentPlayerReady = currentMultiplayerPlayer?.ready ?? false;
+    const isOpponentReady = cpuPlayer?.ready ?? false;
+    const isInRoom = Boolean(multiplayerSnapshot?.roomId);
     const isMultiplayerInputDisabled =
         !multiplayerSnapshot ||
         multiplayerSnapshot.status !== 'playing' ||
@@ -97,7 +108,7 @@ export function useLocalCpuGame({
         const localPlayer = snapshot?.players.find(
             (player) => player.id === latestPlayerIdRef.current
         );
-        const cpuPlayer = snapshot?.players.find(
+        const currentCpuPlayer = snapshot?.players.find(
             (player) => player.id === cpuPlayerId
         );
 
@@ -105,9 +116,9 @@ export function useLocalCpuGame({
             !snapshot ||
             snapshot.status !== 'playing' ||
             !localPlayer ||
-            !cpuPlayer ||
+            !currentCpuPlayer ||
             localPlayer.hp === 0 ||
-            cpuPlayer.hp === 0
+            currentCpuPlayer.hp === 0
         ) {
             return undefined;
         }
@@ -117,7 +128,7 @@ export function useLocalCpuGame({
                 cpuTurnTimeoutRef.current = undefined;
                 performCpuTurn();
             },
-            getCpuThinkDelay(cpuPlayer),
+            getCpuThinkDelay(currentCpuPlayer),
             undefined
         );
 
@@ -151,22 +162,52 @@ export function useLocalCpuGame({
             return;
         }
 
-        const playingSnapshot: RoomSnapshot = {
+        const waitingSnapshot: RoomSnapshot = {
             ...twoPlayerSnapshot,
             countdownEndsAt: undefined,
-            status: 'playing',
-            players: twoPlayerSnapshot.players.map((player) => ({
-                ...player,
-                ready: true,
-            })),
+            status: 'waiting',
+            players: twoPlayerSnapshot.players.map((player) =>
+                player.id === cpuPlayerId
+                    ? { ...player, ready: true }
+                    : { ...player, ready: false }
+            ),
         };
 
         latestPlayerIdRef.current = localPlayerId;
         setPlayerId(localPlayerId);
-        updateSnapshot(playingSnapshot);
+        updateSnapshot(waitingSnapshot);
         setMultiplayerPrimeQueue([]);
         setIsMultiplayerComboRunning(false);
-        onScreenChange('multi-game');
+    }
+
+    function toggleReady() {
+        const snapshot = latestSnapshotRef.current;
+        const localPlayerId = latestPlayerIdRef.current;
+
+        if (!snapshot || !localPlayerId || snapshot.status !== 'waiting') {
+            return;
+        }
+
+        const nextSnapshot: RoomSnapshot = {
+            ...snapshot,
+            players: snapshot.players.map((player) =>
+                player.id === localPlayerId
+                    ? { ...player, ready: !player.ready }
+                    : player
+            ),
+        };
+        const areAllPlayersReady = nextSnapshot.players.every(
+            (player) => player.ready
+        );
+
+        updateSnapshot({
+            ...nextSnapshot,
+            status: areAllPlayersReady ? 'playing' : 'waiting',
+        });
+
+        if (areAllPlayersReady) {
+            onScreenChange('multi-game');
+        }
     }
 
     async function handleMultiplayerComboSubmit(queue: readonly Prime[]) {
@@ -225,7 +266,12 @@ export function useLocalCpuGame({
         isMultiplayerInputDisabled,
         currentMultiplayerPlayer,
         isLocalCpuGameActive,
+        opponentName: cpuPlayer?.name,
+        isCurrentPlayerReady,
+        isOpponentReady,
+        isInRoom,
         startLocalCpuGame,
+        toggleReady,
         handleMultiplayerComboSubmit,
         resetLocalCpuGame,
     };
@@ -326,7 +372,7 @@ export function useLocalCpuGame({
 
     function performCpuTurn() {
         const snapshot = latestSnapshotRef.current;
-        const cpuPlayer = snapshot?.players.find(
+        const currentCpuPlayer = snapshot?.players.find(
             (player) => player.id === cpuPlayerId
         );
         const localPlayer = snapshot?.players.find(
@@ -336,29 +382,32 @@ export function useLocalCpuGame({
         if (
             !snapshot ||
             snapshot.status !== 'playing' ||
-            !cpuPlayer ||
+            !currentCpuPlayer ||
             !localPlayer ||
-            cpuPlayer.hp === 0 ||
+            currentCpuPlayer.hp === 0 ||
             localPlayer.hp === 0
         ) {
             return;
         }
 
-        if (cpuPlayer.stage.remainingValue === 1) {
+        if (currentCpuPlayer.stage.remainingValue === 1) {
             updateSnapshot(clearSolvedBattleStage(snapshot, cpuPlayerId));
             return;
         }
 
-        const selectedPrime = pickCpuPrime(cpuPlayer);
-        const outcome = applyPrimeSelection(cpuPlayer.stage, selectedPrime);
+        const selectedPrime = pickCpuPrime(currentCpuPlayer);
+        const outcome = applyPrimeSelection(
+            currentCpuPlayer.stage,
+            selectedPrime
+        );
 
         if (outcome.kind === 'wrong') {
             updateSnapshot(
                 applyBattlePenalty(
                     snapshot,
                     cpuPlayerId,
-                    cpuPlayer.stage,
-                    cpuPlayer.pendingFactorDamage
+                    currentCpuPlayer.stage,
+                    currentCpuPlayer.pendingFactorDamage
                 )
             );
             return;
@@ -367,15 +416,15 @@ export function useLocalCpuGame({
         updateSnapshot(
             applyBattlePrimeSelection(snapshot, cpuPlayerId, selectedPrime, {
                 perfectSolveEligible:
-                    cpuPlayer.stage.remainingValue ===
-                    cpuPlayer.stage.targetValue,
+                    currentCpuPlayer.stage.remainingValue ===
+                    currentCpuPlayer.stage.targetValue,
             })
         );
     }
 
-    function pickCpuPrime(cpuPlayer: RoomPlayer): Prime {
+    function pickCpuPrime(cpuRoomPlayer: RoomPlayer): Prime {
         const wrongPrimes = playablePrimes.filter(
-            (prime) => !cpuPlayer.stage.remainingFactors.includes(prime)
+            (prime) => !cpuRoomPlayer.stage.remainingFactors.includes(prime)
         );
         const shouldMiss =
             wrongPrimes.length > 0 && Math.random() < cpuMistakeChance;
@@ -384,8 +433,10 @@ export function useLocalCpuGame({
             return wrongPrimes[Math.floor(Math.random() * wrongPrimes.length)];
         }
 
-        return cpuPlayer.stage.remainingFactors[
-            Math.floor(Math.random() * cpuPlayer.stage.remainingFactors.length)
+        return cpuRoomPlayer.stage.remainingFactors[
+            Math.floor(
+                Math.random() * cpuRoomPlayer.stage.remainingFactors.length
+            )
         ];
     }
 }

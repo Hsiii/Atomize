@@ -11,6 +11,7 @@ import './MenuScreen.css';
 type MenuScreenProps = {
     playerName: string;
     opponentName: string | undefined;
+    isCpuOpponent?: boolean;
     isInRoom: boolean;
     isCurrentPlayerReady: boolean;
     isOpponentReady: boolean;
@@ -31,6 +32,7 @@ type MenuScreenProps = {
 export function MenuScreen({
     playerName,
     opponentName,
+    isCpuOpponent = false,
     isInRoom,
     isCurrentPlayerReady,
     isOpponentReady,
@@ -205,7 +207,9 @@ export function MenuScreen({
                                             </span>
                                         ) : undefined}
                                     </div>
-                                    <span className='slot-name'>
+                                    <span
+                                        className={`slot-name${isCpuOpponent ? ' slot-name-cpu' : ''}`}
+                                    >
                                         {displayOpponentName}
                                     </span>
                                 </div>
@@ -355,76 +359,73 @@ export function MenuScreen({
                                 </button>
                             </header>
                             <div className='dialog-body'>
-                                <button
-                                    className='invite-local-option'
-                                    onClick={handleStartCpuGame}
-                                    type='button'
-                                >
-                                    <span className='invite-local-title'>
-                                        {uiText.inviteCpu}
-                                    </span>
-                                    <span className='invite-local-hint'>
-                                        {uiText.inviteCpuHint}
-                                    </span>
-                                </button>
+                                <ul className='invite-list'>
+                                    <li className='invite-row'>
+                                        <span className='invite-name invite-name-cpu'>
+                                            {uiText.cpu}
+                                        </span>
+                                        <button
+                                            className='invite-btn'
+                                            onClick={handleStartCpuGame}
+                                            type='button'
+                                        >
+                                            {uiText.inviteButton}
+                                        </button>
+                                    </li>
+
+                                    {onlineUsers.map((user) => {
+                                        const isUserInGame =
+                                            user.status === 'in-game';
+                                        const isUserInTeam =
+                                            user.status === 'in-team';
+                                        const isInvited = invitedIds.has(
+                                            user.playerId
+                                        );
+                                        const isDisabled =
+                                            isUserInGame ||
+                                            isUserInTeam ||
+                                            isInvited;
+                                        let inviteButtonLabel: string =
+                                            uiText.inviteButton;
+
+                                        if (isUserInGame) {
+                                            inviteButtonLabel = uiText.inGame;
+                                        } else if (isUserInTeam) {
+                                            inviteButtonLabel = uiText.inTeam;
+                                        } else if (isInvited) {
+                                            inviteButtonLabel = uiText.invited;
+                                        }
+
+                                        return (
+                                            <li
+                                                className='invite-row'
+                                                key={user.playerId}
+                                            >
+                                                <span className='invite-name'>
+                                                    {user.name}
+                                                </span>
+                                                <button
+                                                    className={`invite-btn${isDisabled ? ' invite-btn-disabled' : ''}`}
+                                                    disabled={isDisabled}
+                                                    onClick={() => {
+                                                        handleInvite(
+                                                            user.playerId
+                                                        );
+                                                    }}
+                                                    type='button'
+                                                >
+                                                    {inviteButtonLabel}
+                                                </button>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
 
                                 {onlineUsers.length === 0 ? (
                                     <p className='invite-empty'>
                                         {uiText.noOnlinePlayers}
                                     </p>
-                                ) : (
-                                    <ul className='invite-list'>
-                                        {onlineUsers.map((user) => {
-                                            const isUserInGame =
-                                                user.status === 'in-game';
-                                            const isUserInTeam =
-                                                user.status === 'in-team';
-                                            const isInvited = invitedIds.has(
-                                                user.playerId
-                                            );
-                                            const isDisabled =
-                                                isUserInGame ||
-                                                isUserInTeam ||
-                                                isInvited;
-                                            let inviteButtonLabel: string =
-                                                uiText.inviteButton;
-
-                                            if (isUserInGame) {
-                                                inviteButtonLabel =
-                                                    uiText.inGame;
-                                            } else if (isUserInTeam) {
-                                                inviteButtonLabel =
-                                                    uiText.inTeam;
-                                            } else if (isInvited) {
-                                                inviteButtonLabel =
-                                                    uiText.invited;
-                                            }
-
-                                            return (
-                                                <li
-                                                    className='invite-row'
-                                                    key={user.playerId}
-                                                >
-                                                    <span className='invite-name'>
-                                                        {user.name}
-                                                    </span>
-                                                    <button
-                                                        className={`invite-btn${isDisabled ? ' invite-btn-disabled' : ''}`}
-                                                        disabled={isDisabled}
-                                                        onClick={() => {
-                                                            handleInvite(
-                                                                user.playerId
-                                                            );
-                                                        }}
-                                                        type='button'
-                                                    >
-                                                        {inviteButtonLabel}
-                                                    </button>
-                                                </li>
-                                            );
-                                        })}
-                                    </ul>
-                                )}
+                                ) : undefined}
                             </div>
                         </div>
                     </div>

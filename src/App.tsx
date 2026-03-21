@@ -49,11 +49,36 @@ export default function App(): JSX.Element {
     }
 
     if (screen === 'menu') {
+        const activeMenuGame = localCpuGame.isInRoom
+            ? {
+                  isCurrentPlayerReady: localCpuGame.isCurrentPlayerReady,
+                  isCpuOpponent: true,
+                  isInRoom: localCpuGame.isInRoom,
+                  isOpponentReady: localCpuGame.isOpponentReady,
+                  onToggleReady: localCpuGame.toggleReady,
+                  opponentName: localCpuGame.opponentName,
+                  pendingInvitation: undefined,
+                  toastId: 0,
+                  toastMessage: undefined,
+              }
+            : {
+                  isCurrentPlayerReady: multiplayerGame.isCurrentPlayerReady,
+                  isCpuOpponent: false,
+                  isInRoom: multiplayerGame.isInRoom,
+                  isOpponentReady: multiplayerGame.isOpponentReady,
+                  onToggleReady: multiplayerGame.toggleReady,
+                  opponentName: multiplayerGame.opponentName,
+                  pendingInvitation: multiplayerGame.pendingInvitation,
+                  toastId: multiplayerGame.lobbyToast.id,
+                  toastMessage: multiplayerGame.lobbyToast.message,
+              };
+
         return (
             <MenuScreen
-                isCurrentPlayerReady={multiplayerGame.isCurrentPlayerReady}
-                isInRoom={multiplayerGame.isInRoom}
-                isOpponentReady={multiplayerGame.isOpponentReady}
+                isCpuOpponent={activeMenuGame.isCpuOpponent}
+                isCurrentPlayerReady={activeMenuGame.isCurrentPlayerReady}
+                isInRoom={activeMenuGame.isInRoom}
+                isOpponentReady={activeMenuGame.isOpponentReady}
                 onAcceptInvitation={() => {
                     detachPromise(multiplayerGame.handleAcceptInvitation());
                 }}
@@ -71,13 +96,15 @@ export default function App(): JSX.Element {
                 }}
                 onStartSoloGame={soloGame.startSingleGame}
                 onToggleReady={() => {
-                    detachPromise(multiplayerGame.toggleReady());
+                    detachPromise(
+                        Promise.resolve(activeMenuGame.onToggleReady())
+                    );
                 }}
-                opponentName={multiplayerGame.opponentName}
-                pendingInvitation={multiplayerGame.pendingInvitation}
+                opponentName={activeMenuGame.opponentName}
+                pendingInvitation={activeMenuGame.pendingInvitation}
                 playerName={playerName}
-                toastId={multiplayerGame.lobbyToast.id}
-                toastMessage={multiplayerGame.lobbyToast.message}
+                toastId={activeMenuGame.toastId}
+                toastMessage={activeMenuGame.toastMessage}
             />
         );
     }
