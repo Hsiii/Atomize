@@ -9,8 +9,8 @@
     padding: 0;
     border: 0;
     border-radius: var(--radius-orb);
-    background: var(--color-keypad-button-bg);
-    color: var(--type-display-input-color);
+    background: var(--color-button-subtle-bg);
+    color: var(--color-button-subtle-text);
     font-family: var(--type-display-input-family);
     font-size: var(--prime-key-font-size);
     font-weight: var(--type-display-input-weight);
@@ -34,7 +34,7 @@
 }
 
 .prime-key-button[data-disabled='true'] {
-    background: var(--color-disabled-bg);
-    color: var(--color-disabled-text);
+    background: var(--color-button-disabled-bg);
+    color: var(--color-button-disabled-text);
     box-shadow: none;
 }

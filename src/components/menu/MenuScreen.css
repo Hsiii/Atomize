@@ -151,14 +151,14 @@
 }
 
 .slot-p1 {
-    background: var(--color-primary-strong);
-    color: var(--color-text-inverse);
+    background: var(--color-button-accent-bg);
+    color: var(--color-button-accent-text);
 }
 
 .slot-p2-empty {
     position: relative;
-    background: var(--color-surface-accent);
-    color: var(--color-primary-strong);
+    background: var(--color-button-subtle-bg);
+    color: var(--color-button-subtle-text);
     border-color: transparent;
 }
 
@@ -166,7 +166,7 @@
     content: '';
     position: absolute;
     inset: -2px;
-    border: 2px dashed var(--color-primary-strong);
+    border: 2px dashed var(--color-button-subtle-text);
     border-radius: inherit;
 }
 
@@ -189,8 +189,8 @@
 }
 
 .slot-p2-filled {
-    background: var(--color-primary-strong);
-    color: var(--color-text-inverse);
+    background: var(--color-button-accent-bg);
+    color: var(--color-button-accent-text);
     cursor: default;
 }
 
@@ -280,15 +280,15 @@
 .menu-start-btn.app-action-button {
     width: min(100%, 16rem);
     min-height: 3.5rem;
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-    color: var(--color-text-inverse);
+    background: var(--color-button-primary-bg);
+    border-color: var(--color-button-primary-bg);
+    color: var(--color-button-primary-text);
 }
 
 .menu-start-btn-ready:not(:disabled) {
-    background: var(--color-ready-button-bg);
-    border-color: var(--color-ready-button-bg);
-    color: var(--color-ready-button-text);
+    background: var(--color-button-primary-bg);
+    border-color: var(--color-button-primary-bg);
+    color: var(--color-button-primary-text);
     opacity: 1;
 }
 
@@ -503,8 +503,8 @@
     min-width: 5rem;
     padding: 0.3rem 0.7rem;
     border-radius: var(--radius-pill);
-    background: var(--color-primary-strong);
-    color: var(--type-action-label-color);
+    background: var(--color-button-accent-bg);
+    color: var(--color-button-accent-text);
     font-family: var(--type-action-label-family);
     font-size: var(--type-action-label-size);
     font-weight: var(--type-action-label-weight);
@@ -523,8 +523,8 @@
 }
 
 .invite-btn-disabled {
-    background: var(--color-disabled-bg);
-    color: var(--color-disabled-text);
+    background: var(--color-button-disabled-bg);
+    color: var(--color-button-disabled-text);
     cursor: not-allowed;
 }
 

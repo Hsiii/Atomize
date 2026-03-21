@@ -5,10 +5,10 @@
     width: var(--size-control-floating);
     height: var(--size-control-floating);
     z-index: 5;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    color: var(--color-secondary);
+    border: 1px solid var(--color-border-soft);
+    border-radius: 50%;
+    background: var(--color-button-subtle-bg);
+    color: var(--color-button-subtle-text);
     box-shadow: none;
 }
 

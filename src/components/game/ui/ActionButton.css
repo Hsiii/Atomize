@@ -15,12 +15,13 @@
 }
 
 .app-action-button.primary-action {
-    background: var(--color-primary-strong);
+    background: var(--color-button-accent-bg);
+    color: var(--color-button-accent-text);
 }
 
 .app-action-button.secondary-action {
-    background: var(--color-secondary);
-    color: var(--color-text-inverse);
+    background: var(--color-button-secondary-bg);
+    color: var(--color-button-secondary-text);
 }
 
 .primary-action,

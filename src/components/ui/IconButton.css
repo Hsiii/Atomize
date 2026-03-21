@@ -4,8 +4,8 @@
     padding: var(--space-0);
     border: 1px solid var(--color-border-soft);
     border-radius: 50%;
-    background: var(--color-surface-strong);
-    color: var(--color-secondary);
+    background: var(--color-button-subtle-bg);
+    color: var(--color-button-subtle-text);
     box-shadow: none;
     display: grid;
     place-items: center;
