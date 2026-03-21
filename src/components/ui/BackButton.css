@@ -1,14 +1,17 @@
-.icon-action.floating-back-button {
+.floating-back-button {
     position: fixed;
     top: max(var(--space-7), env(safe-area-inset-top));
     left: max(var(--space-7), env(safe-area-inset-left));
     width: var(--size-control-floating);
     height: var(--size-control-floating);
+    display: grid;
+    place-items: center;
     z-index: 5;
-    border: 1px solid var(--color-border-soft);
-    border-radius: 50%;
-    background: var(--color-button-subtle-bg);
-    color: var(--color-button-subtle-text);
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--color-secondary);
     box-shadow: none;
 }
 

@@ -5,8 +5,6 @@ import { uiText } from '../../app-state';
 
 import './BackButton.css';
 
-import { IconButton } from './IconButton';
-
 type BackButtonProps = {
     onBack: () => void | Promise<void>;
 };
@@ -17,11 +15,13 @@ export function BackButton({ onBack }: BackButtonProps): JSX.Element {
     }
 
     return (
-        <IconButton
+        <button
+            aria-label={uiText.back}
             className='floating-back-button'
-            icon={<ArrowLeft aria-hidden='true' className='control-icon' />}
-            label={uiText.back}
             onClick={handleBackClick}
-        />
+            type='button'
+        >
+            <ArrowLeft aria-hidden='true' className='control-icon' />
+        </button>
     );
 }
