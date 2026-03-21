@@ -150,7 +150,7 @@
 
 .score-dialog-summary {
     margin: 0;
-    min-height: calc(var(--type-action-label-support-line-height) * 2);
+    height: calc(2em * var(--type-action-label-support-line-height));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -165,18 +165,25 @@
 
 .score-dialog-stat-value-block {
     display: flex;
-    align-items: baseline;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--type-display-results-size);
+    line-height: var(--type-display-results-line-height);
     gap: var(--space-2);
+    height: calc(1em * var(--type-display-results-line-height));
+    width: 100%;
 }
 
 .score-dialog-stat-value {
-    display: block;
+    display: flex;
+    align-items: center;
     margin: 0;
     font-family: var(--type-display-results-family);
-    font-size: var(--type-display-results-size);
+    font-size: inherit;
     font-weight: var(--type-display-results-weight);
-    line-height: var(--type-display-results-line-height);
+    line-height: inherit;
     color: var(--type-display-results-color);
+    white-space: nowrap;
 }
 
 .score-dialog-stat-unit {
