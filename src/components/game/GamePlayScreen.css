@@ -33,8 +33,10 @@
 .single-controls-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
     gap: var(--space-3);
     align-items: stretch;
+    min-height: 0;
 }
 
 .keypad {
@@ -59,7 +61,7 @@
     grid-template-rows: repeat(3, minmax(0, 1fr));
     width: 100%;
     aspect-ratio: 1;
-    max-height: var(--size-keypad-cluster-max);
+    max-height: min(var(--size-keypad-cluster-max), calc(100dvh - 22rem));
     margin-top: 0;
     gap: var(--keypad-row-gap);
 }
@@ -70,7 +72,22 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--keypad-row-gap);
     align-items: stretch;
-    width: 100%;
+    width: min(
+        100%,
+        calc(
+            (
+                    (
+                            (
+                                    var(--size-keypad-cluster-max) -
+                                        (2 * var(--keypad-row-gap))
+                                ) /
+                                3
+                        ) *
+                        4
+                ) +
+                (3 * var(--keypad-row-gap))
+        )
+    );
     max-width: calc(
         (
                 (
@@ -84,6 +101,8 @@
             ) +
             (3 * var(--keypad-row-gap))
     );
+    justify-self: center;
+    align-self: center;
 }
 
 .keypad-row > .keypad {
