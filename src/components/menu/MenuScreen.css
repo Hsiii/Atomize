@@ -157,7 +157,7 @@
 
 .slot-p2-empty {
     position: relative;
-    background: rgba(22, 138, 173, 0.18);
+    background: var(--color-surface-accent);
     color: var(--color-primary-strong);
     border-color: transparent;
 }
@@ -283,9 +283,9 @@
 }
 
 .menu-start-btn-ready:not(:disabled) {
-    background: rgba(16, 27, 46, 0.62);
-    border-color: rgba(16, 27, 46, 0.62);
-    color: rgba(255, 255, 255, 0.74);
+    background: var(--color-ready-button-bg);
+    border-color: var(--color-ready-button-bg);
+    color: var(--color-ready-button-text);
     opacity: 1;
 }
 

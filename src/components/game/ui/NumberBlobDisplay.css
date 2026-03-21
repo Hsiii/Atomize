@@ -43,7 +43,7 @@
     inset: auto 22% 7%;
     height: 12%;
     border-radius: 50%;
-    background: rgba(16, 27, 46, 0.08);
+    background: var(--color-blob-shadow);
     filter: blur(10px);
     pointer-events: none;
     z-index: -1;
@@ -62,7 +62,8 @@
     width: 100%;
     aspect-ratio: 1;
     padding: var(--number-blob-padding);
-    border: var(--number-blob-border-width) solid rgba(255, 255, 255, 0.28);
+    border: var(--number-blob-border-width) solid
+        var(--color-border-inverse-soft);
     border-radius: 50%;
     background: var(--number-blob-stage-color);
     transform: translateY(0) scale(1);
@@ -175,7 +176,8 @@
     display: grid;
     place-items: center;
     padding: var(--number-blob-padding);
-    border: var(--number-blob-border-width) solid rgba(255, 255, 255, 0.28);
+    border: var(--number-blob-border-width) solid
+        var(--color-border-inverse-soft);
     border-radius: 50%;
     background: var(--number-blob-stage-color);
     animation: number-blob-clear-pop 260ms cubic-bezier(0.2, 0.9, 0.3, 1)
@@ -204,7 +206,8 @@
     display: grid;
     place-items: center;
     padding: var(--number-blob-split-padding);
-    border: var(--number-blob-border-width) solid rgba(255, 255, 255, 0.24);
+    border: var(--number-blob-border-width) solid
+        var(--color-border-inverse-subtle);
     border-radius: 50%;
     background: var(--color-secondary);
     transform: translate(-50%, -50%) rotate(var(--echo-angle)) translateY(0)

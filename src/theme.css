@@ -26,7 +26,7 @@
     --type-display-input-compact-size: 1.4rem;
     --type-display-input-weight: var(--font-weight-number-emphasis);
     --type-display-input-line-height: 1;
-    --type-display-input-color: var(--color-disabled-text);
+    --type-display-input-color: var(--color-keypad-button-text);
 
     --type-display-results-family: var(--font-family-numeric);
     --type-display-results-size: clamp(2.4rem, 5vw, 3.5rem);
@@ -89,28 +89,31 @@
     --color-secondary: #34a0a4;
     --color-ink: #101b2e;
     --color-ink-soft: rgba(16, 27, 46, 0.72);
+    --color-blob-shadow: rgba(16, 27, 46, 0.08);
     --color-text-inverse: #ffffff;
     --color-surface-base: rgba(255, 255, 255, 0.94);
     --color-surface-strong: #ffffff;
-    --color-surface-muted: rgba(24, 78, 119, 0.08);
-    --color-surface-subtle: rgba(24, 78, 119, 0.12);
     --color-surface-accent: rgba(22, 138, 173, 0.18);
     --color-border-soft: rgba(24, 78, 119, 0.2);
     --color-border-contrast: rgba(255, 255, 255, 0.26);
+    --color-border-inverse-soft: rgba(255, 255, 255, 0.28);
+    --color-border-inverse-subtle: rgba(255, 255, 255, 0.24);
     --color-outline-strong: rgba(24, 78, 119, 0.44);
+    --color-keypad-button-bg: rgba(24, 78, 119, 0.12);
+    --color-keypad-button-text: rgba(16, 27, 46, 0.54);
     --color-disabled-bg: rgba(24, 78, 119, 0.12);
     --color-disabled-text: rgba(16, 27, 46, 0.54);
     --color-page-bg: #f4f7fb;
     --color-track: rgba(16, 27, 46, 0.12);
     --color-danger: #c43a3a;
-    --color-success: #3d7a57;
     --color-gold: #d4a017;
     --color-gold-strong: #e8b825;
     --color-gold-soft: rgba(212, 160, 23, 0.14);
     --color-overlay-soft: rgba(16, 27, 46, 0.2);
     --color-overlay-strong: rgba(16, 27, 46, 0.26);
     --color-placeholder: rgba(16, 27, 46, 0.28);
-    --color-placeholder-mark: rgba(24, 78, 119, 0.08);
+    --color-ready-button-bg: rgba(16, 27, 46, 0.62);
+    --color-ready-button-text: rgba(255, 255, 255, 0.74);
     --color-toast-bg: rgba(24, 78, 119, 0.96);
     --color-toast-text: rgba(255, 255, 255, 0.96);
 

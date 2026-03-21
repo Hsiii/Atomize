@@ -8,7 +8,7 @@
     padding: 0;
     border: 0;
     border-radius: var(--radius-orb);
-    background: var(--color-disabled-bg);
+    background: var(--color-keypad-button-bg);
     color: var(--type-display-input-color);
     font-family: var(--type-display-input-family);
     font-size: var(--type-display-input-size);
