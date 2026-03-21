@@ -1418,10 +1418,6 @@ function BattleHpBar({
     side,
 }: BattleHpBarProps): JSX.Element {
     const hpRatio = Math.max(0, Math.min(100, (hp / Math.max(maxHp, 1)) * 100));
-    const popBottomOffset =
-        side === 'self'
-            ? 'calc(100% + var(--space-1))'
-            : 'calc(100% - var(--space-3))';
 
     return (
         <div
@@ -1430,7 +1426,6 @@ function BattleHpBar({
             style={
                 {
                     '--hp-transition-duration': `${impact?.durationMs ?? 0}ms`,
-                    '--multiplayer-hp-pop-bottom': popBottomOffset,
                 } as CSSProperties
             }
         >
