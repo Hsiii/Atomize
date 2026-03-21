@@ -138,6 +138,9 @@ export function MultiplayerGameScreen({
     const displayedEnemyHpRef = useRef(displayedEnemyHp);
     const currentStageIndex = currentMultiplayerPlayer?.stageIndex;
     const opponentStageIndex = opponentPlayer?.stageIndex;
+    const canSubmitSolvedStage =
+        currentMultiplayerPlayer?.stage.remainingValue === 1 &&
+        bufferedPrimeInput === '';
     const currentPlayerWon =
         isMatchFinished &&
         Boolean(currentMultiplayerPlayer && currentMultiplayerPlayer.hp > 0);
@@ -840,7 +843,10 @@ export function MultiplayerGameScreen({
     }
 
     async function submitVisibleQueue() {
-        if (isInputDisabled || visibleQueueRef.current.length === 0) {
+        if (
+            isInputDisabled ||
+            (visibleQueueRef.current.length === 0 && !canSubmitSolvedStage)
+        ) {
             return;
         }
 
@@ -1087,7 +1093,11 @@ export function MultiplayerGameScreen({
             }
 
             if (event.key === 'Enter') {
-                if (isInputDisabled || visibleQueueRef.current.length === 0) {
+                if (
+                    isInputDisabled ||
+                    (visibleQueueRef.current.length === 0 &&
+                        !canSubmitSolvedStage)
+                ) {
                     return;
                 }
 
@@ -1249,7 +1259,9 @@ export function MultiplayerGameScreen({
                                 aria-label={uiText.enterCombo}
                                 className='combo-enter-button'
                                 disabled={
-                                    isInputDisabled || visibleQueue.length === 0
+                                    isInputDisabled ||
+                                    (visibleQueue.length === 0 &&
+                                        !canSubmitSolvedStage)
                                 }
                                 onClick={handleSubmitClick}
                                 shape='rounded'
