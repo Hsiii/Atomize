@@ -179,7 +179,7 @@ export function MultiplayerGameScreen({
                 multiplayerSnapshot.lastEvent.sourcePlayerId ===
                     currentMultiplayerPlayer?.id))
     );
-    useEffect(() => {
+    useLayoutEffect(() => {
         visibleQueueRef.current = multiplayerPrimeQueue;
         setVisibleQueue(multiplayerPrimeQueue);
     }, [multiplayerPrimeQueue]);

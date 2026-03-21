@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { JSX } from 'react';
 import { CircleArrowUp, Delete } from 'lucide-react';
 
@@ -51,7 +51,7 @@ export function SingleGameScreen({
     >([]);
     const previousScoreRef = useRef(soloState.score);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         visibleQueueRef.current = soloPrimeQueue;
         setVisibleQueue(soloPrimeQueue);
     }, [soloPrimeQueue]);
