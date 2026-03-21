@@ -22,6 +22,7 @@
 
 - Always commit your changes.
 - Always check the change you've made in the browser before committing, never commit without confirmation.
+- Always commit your changes in chucks, separate atomically.
 - Always follow conventional commits when writing commit messages, don't use `style` type wrongly, it's for formatting changes.
 - Always assume there're other agents working, so when committing, only commit the part you changed, never directly add and commit change files.
 
