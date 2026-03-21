@@ -524,7 +524,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    letter-spacing: var(--type-action-label-caps-letter-spacing);
+    letter-spacing: var(--type-action-label-letter-spacing);
     transition: opacity 0.12s ease;
     text-align: center;
     line-height: 1;
@@ -598,10 +598,10 @@
 
 @media (max-width: 480px) {
     .invite-btn {
-        width: 5.75rem;
-        min-width: 5.75rem;
-        max-width: 5.75rem;
-        flex-basis: 5.75rem;
+        width: 6rem;
+        min-width: 6rem;
+        max-width: 6rem;
+        flex-basis: 6rem;
     }
 
     .menu-slot-column {
