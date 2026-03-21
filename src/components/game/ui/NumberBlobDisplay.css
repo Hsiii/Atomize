@@ -112,7 +112,9 @@
     width: 100%;
     max-width: 100%;
     font-family: var(--type-display-game-family);
-    font-size: var(--number-blob-main-font-size);
+    font-size: calc(
+        var(--number-blob-main-font-size) * var(--number-blob-digit-scale, 1)
+    );
     line-height: var(--type-display-game-line-height);
     font-variant-numeric: tabular-nums;
     font-weight: var(--type-display-game-weight);
@@ -268,7 +270,9 @@
 .number-blob-clear-pop-value {
     display: block;
     font-family: var(--type-display-game-family);
-    font-size: var(--number-blob-clear-font-size);
+    font-size: calc(
+        var(--number-blob-clear-font-size) * var(--number-blob-digit-scale, 1)
+    );
     line-height: var(--type-display-game-line-height);
     font-variant-numeric: tabular-nums;
     font-weight: var(--type-display-game-weight);

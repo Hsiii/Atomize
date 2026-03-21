@@ -581,7 +581,10 @@ export function NumberBlobDisplay({
                         className='number-blob-clear-pop'
                         key={clearPop.id}
                     >
-                        <span className='number-blob-clear-pop-value'>
+                        <span
+                            className='number-blob-clear-pop-value'
+                            style={getDigitScaleStyle(clearPop.value)}
+                        >
                             {concealValues ? '' : clearPop.value}
                         </span>
                     </div>
@@ -626,6 +629,7 @@ export function NumberBlobDisplay({
                                     ? ' is-value-hidden'
                                     : ''
                             }
+                            style={getDigitScaleStyle(displayedValue)}
                         >
                             {displayedValue}
                         </strong>
@@ -634,6 +638,33 @@ export function NumberBlobDisplay({
             </div>
         </div>
     );
+}
+
+const digitScaleThresholds: ReadonlyArray<[number, number]> = [
+    [7, 0.48],
+    [6, 0.58],
+    [5, 0.7],
+    [4, 0.82],
+];
+
+function getDigitScaleStyle(
+    value: number | undefined
+): CSSProperties | undefined {
+    if (value === undefined) {
+        return undefined;
+    }
+
+    const digits = String(value).length;
+
+    for (const [threshold, scale] of digitScaleThresholds) {
+        if (digits >= threshold) {
+            return {
+                '--number-blob-digit-scale': scale,
+            } as CSSProperties;
+        }
+    }
+
+    return undefined;
 }
 
 function clearTimer(timerId: number | undefined) {
