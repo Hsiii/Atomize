@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
 import type { Prime } from '../core';
-import { KEYBOARD_DIGIT_BUFFER_WINDOW_MS } from '../core/timing';
 
 type UsePrimeKeyboardControlsOptions = {
     canSubmit: boolean;
@@ -34,7 +33,6 @@ export function usePrimeKeyboardControls({
 }: UsePrimeKeyboardControlsOptions): UsePrimeKeyboardControlsResult {
     const [bufferedPrimeInput, setBufferedPrimeInput] = useState('');
     const bufferedPrimeInputRef = useRef(bufferedPrimeInput);
-    const bufferedPrimeTimerRef = useRef<number | undefined>(undefined);
 
     useEffect(() => {
         bufferedPrimeInputRef.current = bufferedPrimeInput;
@@ -51,13 +49,6 @@ export function usePrimeKeyboardControls({
     useEffect(() => clearBufferedPrimeInput, []);
 
     function clearBufferedPrimeInput() {
-        const timerId = bufferedPrimeTimerRef.current;
-
-        if (timerId !== undefined) {
-            globalThis.clearTimeout(timerId);
-            bufferedPrimeTimerRef.current = undefined;
-        }
-
         bufferedPrimeInputRef.current = '';
         setBufferedPrimeInput('');
     }
@@ -74,21 +65,9 @@ export function usePrimeKeyboardControls({
         }
     }
 
-    function scheduleBufferedPrimeCommit(nextBuffer: string) {
+    function setPendingDigit(nextBuffer: string) {
         bufferedPrimeInputRef.current = nextBuffer;
         setBufferedPrimeInput(nextBuffer);
-
-        const timerId = bufferedPrimeTimerRef.current;
-
-        if (timerId !== undefined) {
-            globalThis.clearTimeout(timerId);
-        }
-
-        bufferedPrimeTimerRef.current = globalThis.setTimeout(
-            commitBufferedPrimeInput,
-            KEYBOARD_DIGIT_BUFFER_WINDOW_MS,
-            undefined
-        );
     }
 
     function processFreshDigit(digit: string) {
@@ -113,7 +92,7 @@ export function usePrimeKeyboardControls({
             return;
         }
 
-        scheduleBufferedPrimeCommit(digit);
+        setPendingDigit(digit);
     }
 
     function handleDigitKey(digit: string) {
@@ -161,6 +140,10 @@ export function usePrimeKeyboardControls({
     }
 
     function handleSubmit() {
+        if (bufferedPrimeInputRef.current !== '') {
+            return;
+        }
+
         clearBufferedPrimeInput();
 
         if (!canSubmit) {
@@ -168,6 +151,15 @@ export function usePrimeKeyboardControls({
         }
 
         onSubmit();
+    }
+
+    function handleSpace() {
+        if (bufferedPrimeInputRef.current !== '') {
+            commitBufferedPrimeInput();
+            return;
+        }
+
+        handleSubmit();
     }
 
     useEffect(() => {
@@ -201,7 +193,13 @@ export function usePrimeKeyboardControls({
                 return;
             }
 
-            if (event.key === 'Enter' || event.key === ' ') {
+            if (event.key === ' ') {
+                event.preventDefault();
+                handleSpace();
+                return;
+            }
+
+            if (event.key === 'Enter') {
                 event.preventDefault();
                 handleSubmit();
                 return;
@@ -220,7 +218,7 @@ export function usePrimeKeyboardControls({
         return () => {
             globalThis.removeEventListener('keydown', handleWindowKeyDown);
         };
-    }, [canSubmit, handleSubmit, isComboRunning, queueLength]);
+    }, [canSubmit, isComboRunning, queueLength]);
 
     return {
         bufferedPrimeInput,
