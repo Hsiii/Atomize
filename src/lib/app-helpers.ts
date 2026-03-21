@@ -1,4 +1,3 @@
-import { uiText } from '../app-state';
 import type { MultiplayerState } from '../app-state';
 import { PRIME_POOL } from '../core';
 
@@ -34,11 +33,7 @@ export function getInitialPlayerName(): string {
         globalThis.localStorage.getItem(playerNameStorageKey) ?? ''
     );
 
-    if (storedName) {
-        return storedName;
-    }
-
-    return uiText.guest;
+    return storedName;
 }
 
 export function persistPlayerName(playerName: string): void {
@@ -49,13 +44,6 @@ export function persistPlayerName(playerName: string): void {
     }
 
     globalThis.localStorage.setItem(playerNameStorageKey, normalizedName);
-}
-
-export function isGuestName(value: string | undefined): boolean {
-    return (
-        normalizePlayerName(value ?? '').toLocaleLowerCase() ===
-        uiText.guest.toLocaleLowerCase()
-    );
 }
 
 export function createRoomId(): string {

@@ -58,7 +58,6 @@ export const uiText = {
     inTeam: 'In Team',
     inviteDeclined: 'Invitation declined',
     start: 'Start',
-    guest: 'Guest',
 } as const;
 
 export type Screen = 'menu' | 'single' | 'multi-game';

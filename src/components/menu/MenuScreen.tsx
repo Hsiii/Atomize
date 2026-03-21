@@ -4,7 +4,6 @@ import { Check, Plus, X } from 'lucide-react';
 
 import type { OnlineLobbyUser } from '../../app-state';
 import { uiText } from '../../app-state';
-import { isGuestName } from '../../lib/app-helpers';
 import { ActionButton } from '../game/ui/ActionButton';
 
 import './MenuScreen.css';
@@ -76,8 +75,8 @@ export function MenuScreen({
     }, [toastId, toastMessage]);
 
     const hasOpponent = Boolean(opponentName);
-    const isCurrentPlayerGuest = isGuestName(playerName);
-    const isOpponentGuest = isGuestName(opponentName);
+    const isCurrentPlayerGuest = !playerName.trim();
+    const isOpponentGuest = !opponentName?.trim();
     const initials = playerName.slice(0, 1).toUpperCase();
     const opponentInitials = (opponentName ?? '').slice(0, 1).toUpperCase();
     const shouldShowReadyAction = isInRoom && hasOpponent;
