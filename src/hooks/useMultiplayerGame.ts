@@ -1174,7 +1174,11 @@ export function useMultiplayerGame({
 
         if (outcome.kind === 'wrong') {
             setMultiplayerPrimeQueue([]);
-            await sendMultiplayerPrime(prime);
+            await sendMultiplayerPenalty(
+                undefined,
+                currentPlayer.stage,
+                currentPlayer.pendingFactorDamage
+            );
             return undefined;
         }
 
