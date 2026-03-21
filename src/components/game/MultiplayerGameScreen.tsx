@@ -1345,7 +1345,7 @@ export function MultiplayerGameScreen({
                                 mode='multiplayer'
                                 size='enemy'
                                 targetId={opponentPlayer?.stageIndex}
-                                value={opponentPlayer?.stage.remainingValue}
+                                value={opponentPlayer?.stage.targetValue}
                             />
                         </div>
                     </div>
