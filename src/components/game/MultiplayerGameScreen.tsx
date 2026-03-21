@@ -329,6 +329,9 @@ export function MultiplayerGameScreen({
     ]);
 
     useEffect(() => {
+        const pendingSelfHitEvent =
+            multiplayerSnapshot?.lastEvent?.type === 'self-hit' &&
+            multiplayerSnapshot.lastEvent.id !== previousEventIdRef.current;
         const pendingReleasedSelfHitEvent =
             multiplayerSnapshot?.lastEvent?.type === 'self-hit' &&
             multiplayerSnapshot.lastEvent.releasedDamage > 0 &&
@@ -351,6 +354,7 @@ export function MultiplayerGameScreen({
             queuedAttacks.length > 0 ||
             activeAttackId !== undefined ||
             hasPendingAttackEvent ||
+            pendingSelfHitEvent ||
             pendingReleasedSelfHitEvent ||
             pendingAnimatedAttackIdRef.current !== undefined
         ) {
