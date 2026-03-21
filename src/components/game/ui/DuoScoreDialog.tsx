@@ -114,7 +114,7 @@ function PlayerColumn({ player }: { player: DuoPlayerStats }): JSX.Element {
             <div className='duo-score-stat'>
                 <p className='duo-score-stat-label'>{uiText.maxCombo}</p>
                 <strong className='duo-score-stat-value'>
-                    x{player.maxCombo}
+                    {player.maxCombo}
                 </strong>
             </div>
         </div>
