@@ -16,8 +16,8 @@
     width: var(--size-control);
     height: var(--size-control);
     border-radius: var(--radius-pill);
-    background: var(--color-solo-flat-blue);
-    color: var(--color-text-inverse);
+    background: transparent;
+    color: var(--color-button-primary-bg);
 }
 
 .top-bar-back-button {
@@ -64,7 +64,7 @@
 }
 
 .single-game-screen .single-timer-bar {
-    background: var(--color-solo-flat-blue-track);
+    background: color-mix(in srgb, var(--color-button-primary-bg) 18%, white);
 }
 
 .single-timer-fill {
@@ -80,7 +80,7 @@
 }
 
 .single-game-screen .single-timer-fill {
-    background: var(--color-solo-flat-blue);
+    background: var(--color-button-primary-bg);
 }
 
 .single-timer-penalty {

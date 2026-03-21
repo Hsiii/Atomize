@@ -36,10 +36,10 @@
 }
 
 .number-blob-display-solo {
-    --number-blob-stage-color: var(--color-solo-flat-blue);
-    --number-blob-reveal-color: var(--color-solo-flat-blue);
-    --number-blob-split-color: var(--color-solo-flat-blue);
-    --number-blob-split-clear-color: var(--color-solo-flat-blue);
+    --number-blob-stage-color: var(--color-button-primary-bg);
+    --number-blob-reveal-color: var(--color-button-primary-bg);
+    --number-blob-split-color: var(--color-button-primary-bg);
+    --number-blob-split-clear-color: var(--color-button-primary-bg);
 }
 
 .number-blob-field {
