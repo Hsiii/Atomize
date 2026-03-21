@@ -6,21 +6,47 @@
 .combo-bar {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 0.35rem;
     width: 100%;
     min-height: var(--size-buffer-strip-min-height);
-    padding: 0 var(--space-buffer-strip-x);
-    border-radius: var(--radius-button);
-    border: 3px solid var(--color-secondary);
-    background: transparent;
-    text-align: center;
+    padding: 0.4rem var(--space-buffer-strip-x);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
 }
 
-.combo-bar-value {
-    color: var(--type-display-burst-color);
+.combo-bar::before,
+.combo-bar::after {
+    content: '';
+    flex: 1 1 0px;
+}
+
+.combo-bar::-webkit-scrollbar {
+    display: none;
+}
+
+.combo-bar-chip {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.4rem;
+    height: 2.4rem;
+    padding: 0 0.6rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-game-self);
+    color: var(--color-text-inverse);
     font-family: var(--type-display-burst-family);
-    font-size: var(--type-display-burst-size);
-    font-weight: var(--type-display-burst-soft-weight);
-    line-height: var(--type-display-burst-support-line-height);
+    font-size: 1.1rem;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
+}
+
+.combo-bar-sep {
+    flex-shrink: 0;
+    color: var(--color-ink-soft);
+    font-family: var(--type-display-burst-family);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1;
 }

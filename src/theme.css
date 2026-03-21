@@ -186,10 +186,9 @@
     --size-settings-height: 28rem;
     --size-score-dialog-width: 18rem;
     --size-room-panel-width: 22rem;
-    --size-buffer-strip-min-height: 4rem;
+    --size-buffer-strip-min-height: 3rem;
     --font-size-keypad-digit: var(--type-display-input-size);
     --font-size-keypad-digit-mobile: var(--type-display-input-compact-size);
-    --font-size-buffer-strip: var(--type-display-burst-size);
     --size-menu-title-orb: 17rem;
     --size-menu-blob-min-height: 7.2rem;
     --size-menu-blob-icon: 1.9rem;
