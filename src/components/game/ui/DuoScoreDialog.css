@@ -129,6 +129,15 @@
     border-bottom-color: var(--color-gold-soft);
 }
 
+.duo-score-crown {
+    width: 1.1em;
+    height: 1.1em;
+    vertical-align: -0.15em;
+    margin-right: 0.2em;
+    transform: rotate(-15deg);
+    filter: drop-shadow(0 0 2px var(--color-gold-soft));
+}
+
 .duo-score-player--loser .duo-score-player-name {
     color: var(--color-ink-soft);
 }

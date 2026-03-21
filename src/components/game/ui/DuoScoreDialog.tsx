@@ -104,7 +104,19 @@ function PlayerColumn({ player }: { player: DuoPlayerStats }): JSX.Element {
 
     return (
         <div className={`duo-score-player${modifier}`}>
-            <p className='duo-score-player-name'>{player.name}</p>
+            <p className='duo-score-player-name'>
+                {player.isWinner ? (
+                    <svg
+                        aria-hidden='true'
+                        className='duo-score-crown'
+                        fill='var(--color-gold)'
+                        viewBox='0 0 24 24'
+                    >
+                        <path d='M2.5 19h19v2h-19zm19.57-9.36c-.21-.8-1.04-1.28-1.84-1.06L14.92 10 12 3.51 9.08 10l-5.31-1.42c-.8-.21-1.62.27-1.83 1.07-.05.2-.06.4-.02.59l1.54 6.76h17.08l1.54-6.76c.09-.19.08-.39.03-.6z' />
+                    </svg>
+                ) : undefined}
+                {player.name}
+            </p>
             <dl className='duo-score-stat-list'>
                 <div className='duo-score-stat-row'>
                     <dt className='duo-score-stat-label'>{uiText.atomized}</dt>
