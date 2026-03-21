@@ -43,6 +43,50 @@ type LobbyToastState = {
     message: string | undefined;
 };
 
+type GameplayBroadcastMessage = Extract<
+    RoomBroadcastMessage,
+    {
+        type: 'prime_selected' | 'combo_penalty' | 'clear_solved_stage';
+    }
+>;
+
+type OrderedGameplayMessageState = {
+    lastAppliedOrder: number;
+    pendingMessages: Map<number, GameplayBroadcastMessage>;
+};
+
+function applyGameplayBroadcastMessage(
+    snapshot: RoomSnapshot,
+    message: GameplayBroadcastMessage
+): RoomSnapshot {
+    switch (message.type) {
+        case 'prime_selected': {
+            return applyBattlePrimeSelection(
+                snapshot,
+                message.playerId,
+                message.prime,
+                {
+                    suppressAttack: message.suppressAttack,
+                    perfectSolveEligible: message.perfectSolveEligible,
+                }
+            );
+        }
+
+        case 'combo_penalty': {
+            return applyBattlePenalty(
+                snapshot,
+                message.playerId,
+                message.preservedStage,
+                message.releasedDamage
+            );
+        }
+
+        case 'clear_solved_stage': {
+            return clearSolvedBattleStage(snapshot, message.playerId);
+        }
+    }
+}
+
 type UseMultiplayerGameOptions = {
     playerName: string;
     screen: Screen;
@@ -106,6 +150,10 @@ export function useMultiplayerGame({
     const latestMultiplayerRef = useRef(multiplayer);
     const joinLookupTimeoutRef = useRef<number | undefined>(undefined);
     const joinRetryIntervalRef = useRef<number | undefined>(undefined);
+    const localGameplayActionOrderRef = useRef(0);
+    const orderedGameplayMessagesRef = useRef<
+        Map<string, OrderedGameplayMessageState>
+    >(new Map());
 
     const effectiveMultiplayerSnapshot = getEffectiveMultiplayerSnapshot(
         multiplayer.snapshot,
@@ -341,6 +389,7 @@ export function useMultiplayerGame({
 
     async function resetMultiplayerGame() {
         await closeActiveChannel();
+        resetGameplayMessageOrdering();
         setMultiplayerPrimeQueue([]);
         setIsMultiplayerComboRunning(false);
         setMultiplayerState({
@@ -796,6 +845,7 @@ export function useMultiplayerGame({
             return undefined;
         }
 
+        resetGameplayMessageOrdering();
         await closeActiveChannel();
 
         const channel = supabase.channel(`atomize:${roomId}`, {
@@ -926,10 +976,12 @@ export function useMultiplayerGame({
             prime,
             { suppressAttack, perfectSolveEligible }
         );
+        const actionOrder = getNextGameplayActionOrder();
         updateSnapshot(nextSnapshot, '');
         const didBroadcast = await broadcastMessage({
             type: 'prime_selected',
             playerId: currentState.playerId,
+            actionOrder,
             prime,
             suppressAttack,
             perfectSolveEligible,
@@ -975,10 +1027,12 @@ export function useMultiplayerGame({
             preservedStage,
             releasedDamage
         );
+        const actionOrder = getNextGameplayActionOrder();
         updateSnapshot(nextSnapshot, '');
         return await broadcastMessage({
             type: 'combo_penalty',
             playerId: currentState.playerId,
+            actionOrder,
             preservedStage,
             releasedDamage,
         });
@@ -999,10 +1053,12 @@ export function useMultiplayerGame({
             gameplaySnapshot,
             currentState.playerId
         );
+        const actionOrder = getNextGameplayActionOrder();
         updateSnapshot(nextSnapshot, '');
         return await broadcastMessage({
             type: 'clear_solved_stage',
             playerId: currentState.playerId,
+            actionOrder,
         });
     }
 
@@ -1080,73 +1136,33 @@ export function useMultiplayerGame({
         message: RoomBroadcastMessage,
         localPlayerId: string
     ) {
-        const currentState = latestMultiplayerRef.current;
-
-        if (
-            message.type !== 'prime_selected' ||
-            !currentState.snapshot ||
-            message.playerId === localPlayerId
-        ) {
+        if (message.type !== 'prime_selected') {
             return;
         }
 
-        const nextSnapshot = applyBattlePrimeSelection(
-            currentState.snapshot,
-            message.playerId,
-            message.prime,
-            {
-                suppressAttack: message.suppressAttack,
-                perfectSolveEligible: message.perfectSolveEligible,
-            }
-        );
-
-        updateSnapshot(nextSnapshot, '');
+        enqueueOrderedGameplayMessage(message, localPlayerId);
     }
 
     function handleComboPenaltyBroadcast(
         message: RoomBroadcastMessage,
         localPlayerId: string
     ) {
-        const currentState = latestMultiplayerRef.current;
-
-        if (
-            message.type !== 'combo_penalty' ||
-            !currentState.snapshot ||
-            message.playerId === localPlayerId
-        ) {
+        if (message.type !== 'combo_penalty') {
             return;
         }
 
-        const nextSnapshot = applyBattlePenalty(
-            currentState.snapshot,
-            message.playerId,
-            message.preservedStage,
-            message.releasedDamage
-        );
-
-        updateSnapshot(nextSnapshot, '');
+        enqueueOrderedGameplayMessage(message, localPlayerId);
     }
 
     function handleClearSolvedStageBroadcast(
         message: RoomBroadcastMessage,
         localPlayerId: string
     ) {
-        const currentState = latestMultiplayerRef.current;
-
-        if (
-            message.type !== 'clear_solved_stage' ||
-            !currentState.snapshot ||
-            message.playerId === localPlayerId
-        ) {
+        if (message.type !== 'clear_solved_stage') {
             return;
         }
 
-        const nextSnapshot = clearSolvedBattleStage(
-            currentState.snapshot,
-            message.playerId
-        );
-
-        updateSnapshot(nextSnapshot, '');
+        enqueueOrderedGameplayMessage(message, localPlayerId);
     }
 
     async function processMultiplayerQueue(
@@ -1243,6 +1259,81 @@ export function useMultiplayerGame({
         );
 
         return undefined;
+    }
+
+    function enqueueOrderedGameplayMessage(
+        message: GameplayBroadcastMessage,
+        localPlayerId: string
+    ) {
+        const currentState = latestMultiplayerRef.current;
+
+        if (!currentState.snapshot || message.playerId === localPlayerId) {
+            return;
+        }
+
+        const orderedState = getOrderedGameplayMessageState(message.playerId);
+
+        if (message.actionOrder <= orderedState.lastAppliedOrder) {
+            return;
+        }
+
+        orderedState.pendingMessages.set(message.actionOrder, message);
+        applyOrderedGameplayMessages(message.playerId);
+    }
+
+    function applyOrderedGameplayMessages(playerId: string) {
+        const orderedState = getOrderedGameplayMessageState(playerId);
+        let nextMessage = orderedState.pendingMessages.get(
+            orderedState.lastAppliedOrder + 1
+        );
+
+        while (nextMessage) {
+            const currentState = latestMultiplayerRef.current;
+
+            if (!currentState.snapshot) {
+                break;
+            }
+
+            const nextSnapshot = applyGameplayBroadcastMessage(
+                currentState.snapshot,
+                nextMessage
+            );
+
+            orderedState.pendingMessages.delete(nextMessage.actionOrder);
+            orderedState.lastAppliedOrder = nextMessage.actionOrder;
+            updateSnapshot(nextSnapshot, '');
+            nextMessage = orderedState.pendingMessages.get(
+                orderedState.lastAppliedOrder + 1
+            );
+        }
+    }
+
+    function getOrderedGameplayMessageState(
+        playerId: string
+    ): OrderedGameplayMessageState {
+        const existingState = orderedGameplayMessagesRef.current.get(playerId);
+
+        if (existingState) {
+            return existingState;
+        }
+
+        const nextState: OrderedGameplayMessageState = {
+            lastAppliedOrder: 0,
+            pendingMessages: new Map(),
+        };
+
+        orderedGameplayMessagesRef.current.set(playerId, nextState);
+        return nextState;
+    }
+
+    function getNextGameplayActionOrder(): number {
+        localGameplayActionOrderRef.current++;
+        return localGameplayActionOrderRef.current;
+    }
+
+    function resetGameplayMessageOrdering() {
+        localGameplayActionOrderRef.current = 0;
+        orderedGameplayMessagesRef.current.clear();
     }
 
     function getEffectiveMultiplayerSnapshot(

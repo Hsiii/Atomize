@@ -157,6 +157,17 @@ export function MultiplayerGameScreen({
             (multiplayerSnapshot.lastEvent.type === 'finish' &&
                 multiplayerSnapshot.lastEvent.cause === 'attack'))
     );
+    const hasPendingSelfFaultEvent = Boolean(
+        multiplayerSnapshot?.lastEvent &&
+        multiplayerSnapshot.lastEvent.id !== previousEventIdRef.current &&
+        ((multiplayerSnapshot.lastEvent.type === 'self-hit' &&
+            multiplayerSnapshot.lastEvent.sourcePlayerId ===
+                currentMultiplayerPlayer?.id) ||
+            (multiplayerSnapshot.lastEvent.type === 'finish' &&
+                multiplayerSnapshot.lastEvent.cause === 'self-hit' &&
+                multiplayerSnapshot.lastEvent.sourcePlayerId ===
+                    currentMultiplayerPlayer?.id))
+    );
     useEffect(() => {
         visibleQueueRef.current = multiplayerPrimeQueue;
         setVisibleQueue(multiplayerPrimeQueue);
@@ -1255,7 +1266,8 @@ export function MultiplayerGameScreen({
                                 isFaultActive={selfFaultToken !== undefined}
                                 isStageRevealActive={
                                     isBlobRevealActive &&
-                                    selfFaultToken === undefined
+                                    selfFaultToken === undefined &&
+                                    !hasPendingSelfFaultEvent
                                 }
                                 mode='multiplayer'
                                 size='self'

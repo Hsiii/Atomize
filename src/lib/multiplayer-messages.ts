@@ -19,6 +19,7 @@ export type RoomBroadcastMessage =
     | {
           type: 'prime_selected';
           playerId: string;
+          actionOrder: number;
           prime: Prime;
           suppressAttack?: boolean;
           perfectSolveEligible?: boolean;
@@ -26,12 +27,14 @@ export type RoomBroadcastMessage =
     | {
           type: 'combo_penalty';
           playerId: string;
+          actionOrder: number;
           preservedStage?: RoomSnapshot['stage'];
           releasedDamage?: number;
       }
     | {
           type: 'clear_solved_stage';
           playerId: string;
+          actionOrder: number;
       }
     | {
           type: 'room_error';
