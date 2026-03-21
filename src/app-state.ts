@@ -57,6 +57,7 @@ export const uiText = {
     inGame: 'In Game',
     inTeam: 'In Team',
     inviteDeclined: 'Invitation declined',
+    guest: 'Guest',
     start: 'Start',
 } as const;
 

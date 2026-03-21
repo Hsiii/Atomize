@@ -1,3 +1,4 @@
+import { uiText } from '../app-state';
 import type { MultiplayerState } from '../app-state';
 import { PRIME_POOL } from '../core';
 
@@ -44,6 +45,10 @@ export function persistPlayerName(playerName: string): void {
     }
 
     globalThis.localStorage.setItem(playerNameStorageKey, normalizedName);
+}
+
+export function getDisplayPlayerName(value: string | undefined): string {
+    return normalizePlayerName(value ?? '') || uiText.guest;
 }
 
 export function createRoomId(): string {

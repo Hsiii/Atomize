@@ -77,6 +77,10 @@ export function MenuScreen({
     const hasOpponent = Boolean(opponentName);
     const isCurrentPlayerGuest = !playerName.trim();
     const isOpponentGuest = !opponentName?.trim();
+    const displayPlayerName = isCurrentPlayerGuest ? uiText.guest : playerName;
+    const displayOpponentName = isOpponentGuest
+        ? uiText.guest
+        : (opponentName ?? '');
     const initials = playerName.slice(0, 1).toUpperCase();
     const opponentInitials = (opponentName ?? '').slice(0, 1).toUpperCase();
     const shouldShowReadyAction = isInRoom && hasOpponent;
@@ -168,7 +172,9 @@ export function MenuScreen({
                                         </span>
                                     ) : undefined}
                                 </div>
-                                <span className='slot-name'>{playerName}</span>
+                                <span className='slot-name'>
+                                    {displayPlayerName}
+                                </span>
                             </div>
 
                             {hasOpponent ? (
@@ -193,7 +199,7 @@ export function MenuScreen({
                                         ) : undefined}
                                     </div>
                                     <span className='slot-name'>
-                                        {opponentName}
+                                        {displayOpponentName}
                                     </span>
                                 </div>
                             ) : (

@@ -9,6 +9,7 @@ import type { Prime, RoomSnapshot } from '../core';
 import {
     createRoomId,
     detachPromise,
+    getDisplayPlayerName,
     isPendingGuestJoin,
     playablePrimes,
     wait,
@@ -110,6 +111,7 @@ export function useMultiplayerGame({
         multiplayer.snapshot,
         screen
     );
+    const multiplayerPlayerName = getDisplayPlayerName(playerName);
     const multiplayerPlayers = effectiveMultiplayerSnapshot?.players ?? [];
     const currentMultiplayerPlayer = multiplayerPlayers.find(
         (player) => player.id === multiplayer.playerId
@@ -258,7 +260,7 @@ export function useMultiplayerGame({
                         lobbyChannel
                             .track({
                                 playerId: currentPlayerId,
-                                name: playerName,
+                                name: multiplayerPlayerName,
                                 status: presenceStatus,
                             })
                             .then(() => {
@@ -298,7 +300,7 @@ export function useMultiplayerGame({
                     if (entry.playerId !== currentPlayerId) {
                         users.push({
                             playerId: entry.playerId,
-                            name: entry.name,
+                            name: getDisplayPlayerName(entry.name),
                             status: entry.status,
                         });
                     }
@@ -307,7 +309,7 @@ export function useMultiplayerGame({
 
             setOnlineUsers(users);
         }
-    }, [playerName]);
+    }, [multiplayerPlayerName]);
 
     useEffect(() => {
         const lobbyChannel = lobbyChannelRef.current;
@@ -329,13 +331,13 @@ export function useMultiplayerGame({
         detachPromise(
             lobbyChannel.track({
                 playerId: lobbyPlayerIdRef.current,
-                name: playerName,
+                name: multiplayerPlayerName,
                 status,
             })
         );
 
         return undefined;
-    }, [playerName, screen, multiplayer.roomId]);
+    }, [multiplayerPlayerName, screen, multiplayer.roomId]);
 
     async function resetMultiplayerGame() {
         await closeActiveChannel();
@@ -371,7 +373,7 @@ export function useMultiplayerGame({
                 if (entry.playerId !== currentPlayerId) {
                     users.push({
                         playerId: entry.playerId,
-                        name: entry.name,
+                        name: getDisplayPlayerName(entry.name),
                         status: entry.status,
                     });
                 }
@@ -387,7 +389,11 @@ export function useMultiplayerGame({
         if (!currentState.roomId) {
             const roomId = createRoomId();
             const playerId = crypto.randomUUID();
-            const snapshot = createRoomSnapshot(roomId, playerId, playerName);
+            const snapshot = createRoomSnapshot(
+                roomId,
+                playerId,
+                multiplayerPlayerName
+            );
 
             setMultiplayer((prev) => ({
                 ...prev,
@@ -415,7 +421,7 @@ export function useMultiplayerGame({
                         payload: {
                             type: 'room_invite',
                             roomCode: roomId,
-                            fromName: playerName,
+                            fromName: multiplayerPlayerName,
                             fromPlayerId: lobbyPlayerIdRef.current,
                             targetPlayerId,
                         },
@@ -452,7 +458,7 @@ export function useMultiplayerGame({
                     broadcastMessage({
                         type: 'join_request',
                         playerId,
-                        playerName,
+                        playerName: multiplayerPlayerName,
                     })
                 );
             };
@@ -682,7 +688,7 @@ export function useMultiplayerGame({
             payload: {
                 type: 'room_invite',
                 roomCode: currentState.roomId,
-                fromName: playerName,
+                fromName: multiplayerPlayerName,
                 fromPlayerId: currentPlayerId,
                 targetPlayerId,
             },
