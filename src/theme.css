@@ -132,10 +132,8 @@
     --color-game-self: var(--color-primary-strong);
     --color-game-opponent: #5e8097;
     --color-game-keypad-bg: rgba(16, 27, 46, 0.08);
-    --color-game-keypad-border: rgba(16, 27, 46, 0.06);
     --color-game-keypad-text: rgba(16, 27, 46, 0.58);
     --color-game-keypad-active-bg: rgba(16, 27, 46, 0.14);
-    --color-game-keypad-active-border: rgba(16, 27, 46, 0.12);
     --color-game-keypad-active-text: rgba(16, 27, 46, 0.68);
 
     --space-0: 0;

@@ -7,7 +7,7 @@
     align-items: center;
     justify-content: center;
     padding: 0;
-    border: 1px solid var(--color-game-keypad-border);
+    border: 0;
     border-radius: var(--radius-pill);
     background: var(--color-game-keypad-bg);
     color: var(--color-game-keypad-text);
@@ -20,7 +20,6 @@
     transition:
         background-color 120ms ease,
         color 120ms ease,
-        border-color 120ms ease,
         transform 120ms ease;
 }
 
@@ -28,7 +27,6 @@
 .prime-key-button:active {
     background: var(--color-game-keypad-active-bg);
     color: var(--color-game-keypad-active-text);
-    border-color: var(--color-game-keypad-active-border);
 }
 
 .prime-key-button:active {
