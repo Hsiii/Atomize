@@ -229,56 +229,6 @@
     background: var(--color-ink-soft);
 }
 
-/* ── Confetti layer (reuse from ScoreDialog) ── */
-
-.duo-score-confetti-layer {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    pointer-events: none;
-    z-index: 1;
-}
-
-.duo-score-confetti-dot {
-    position: absolute;
-    width: var(--confetti-size);
-    height: var(--confetti-size);
-    border-radius: 50%;
-    animation: duo-confetti-burst 1.3s cubic-bezier(0.16, 0.9, 0.2, 1)
-        var(--confetti-delay) both;
-}
-
-.duo-score-confetti-dot:nth-child(3n + 1) {
-    background: var(--color-gold);
-}
-
-.duo-score-confetti-dot:nth-child(3n + 2) {
-    background: var(--color-gold-strong);
-}
-
-.duo-score-confetti-dot:nth-child(3n) {
-    background: var(--color-primary-strong);
-}
-
-@keyframes duo-confetti-burst {
-    0% {
-        opacity: 0;
-        transform: rotate(var(--confetti-angle)) translateY(0) scale(0);
-    }
-
-    30% {
-        opacity: 1;
-        transform: rotate(var(--confetti-angle))
-            translateY(calc(var(--confetti-distance) * -0.45)) scale(1.15);
-    }
-
-    100% {
-        opacity: 0;
-        transform: rotate(var(--confetti-angle))
-            translateY(calc(var(--confetti-distance) * -1)) scale(0.6);
-    }
-}
-
 @media (max-width: 480px) {
     .duo-score-dialog {
         width: min(100%, 20rem);
