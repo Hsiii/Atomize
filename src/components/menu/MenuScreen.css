@@ -166,7 +166,7 @@
     content: '';
     position: absolute;
     inset: -2px;
-    border: 2px dashed var(--color-button-subtle-text);
+    border: 2px dashed var(--color-primary-strong);
     border-radius: inherit;
 }
 
