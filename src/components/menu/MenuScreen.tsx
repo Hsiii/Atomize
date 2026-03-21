@@ -95,6 +95,12 @@ export function MenuScreen({
         setShowInviteDialog(false);
     }, [hasOpponent]);
 
+    useEffect(() => {
+        if (!isInRoom) {
+            setInvitedIds(new Set());
+        }
+    }, [isInRoom]);
+
     function handleProfileSave() {
         const trimmed = editingName.trim();
 
