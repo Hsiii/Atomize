@@ -7,6 +7,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    align-content: center;
     justify-content: center;
     column-gap: 0.15rem;
     row-gap: 0.35rem;
