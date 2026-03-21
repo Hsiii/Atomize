@@ -89,38 +89,18 @@
     color: var(--type-title-panel-color);
 }
 
-/* ── Stat list (vertical, like duo game) ── */
+/* ── Hero score ── */
 
-.score-dialog-stat-list {
-    margin: 0;
-    padding: var(--space-7) var(--space-8) var(--space-4);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-5);
-    width: 100%;
-}
-
-.score-dialog-stat-row {
+.score-dialog-hero {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.1rem;
-    animation: stat-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    padding: var(--space-7) var(--space-8) var(--space-5);
+    animation: stat-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
 }
 
-.score-dialog-stat-row--score {
-    animation-delay: 0.3s;
-}
-
-.score-dialog-stat-row--atomized {
-    animation-delay: 0.4s;
-}
-
-.score-dialog-stat-row--combo {
-    animation-delay: 0.5s;
-}
-
-.score-dialog-stat-label {
+.score-dialog-hero-label {
     margin: 0;
     font-family: var(--type-body-meta-family);
     font-size: var(--type-body-meta-size);
@@ -131,7 +111,54 @@
     color: var(--type-body-meta-color);
 }
 
-.score-dialog-stat-value {
+.score-dialog-hero-value {
+    margin: 0;
+    font-family: var(--type-display-results-family);
+    font-size: var(--type-display-results-size);
+    font-weight: var(--type-display-results-weight);
+    line-height: var(--type-display-results-line-height);
+    color: var(--color-primary);
+}
+
+/* ── Secondary stats (2-col) ── */
+
+.score-dialog-secondary {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    margin: 0;
+    padding: 0 var(--space-8) var(--space-6);
+    animation: stat-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.45s both;
+}
+
+.score-dialog-sec-stat {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+}
+
+.score-dialog-sec-divider {
+    width: 1px;
+    align-self: stretch;
+    background: var(--color-border-soft);
+    flex-shrink: 0;
+}
+
+.score-dialog-sec-label {
+    margin: 0;
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
+    line-height: var(--type-body-meta-line-height);
+    letter-spacing: var(--type-action-label-hero-letter-spacing);
+    text-transform: var(--type-action-label-wide-text-transform);
+    color: var(--type-body-meta-color);
+}
+
+.score-dialog-sec-value {
     margin: 0;
     font-family: var(--type-display-results-family);
     font-size: var(--type-display-results-size);
@@ -186,7 +213,8 @@
     background: var(--color-gold);
 }
 
-.score-dialog--victory .score-dialog-stat-value {
+.score-dialog--victory .score-dialog-hero-value,
+.score-dialog--victory .score-dialog-sec-value {
     color: var(--color-gold);
 }
 
@@ -201,6 +229,7 @@
     background: var(--color-ink-soft);
 }
 
-.score-dialog--defeat .score-dialog-stat-value {
+.score-dialog--defeat .score-dialog-hero-value,
+.score-dialog--defeat .score-dialog-sec-value {
     color: var(--color-ink-soft);
 }

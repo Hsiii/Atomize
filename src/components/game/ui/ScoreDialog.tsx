@@ -51,38 +51,38 @@ export function ScoreDialog({
                         {title}
                     </span>
                 </header>
-                <dl className='score-dialog-stat-list'>
-                    <div className='score-dialog-stat-row score-dialog-stat-row--score'>
-                        <dt className='score-dialog-stat-label'>
-                            {uiText.score}
-                        </dt>
-                        <dd className='score-dialog-stat-value'>{score}</dd>
-                        {isNewBest ? (
-                            <span className='score-dialog-new-best'>
-                                {uiText.newBest}
-                            </span>
-                        ) : undefined}
-                        {!isNewBest &&
-                        bestScore !== undefined &&
-                        bestScore > 0 ? (
-                            <span className='score-dialog-best-label'>
-                                {uiText.bestScore} {bestScore}
-                            </span>
-                        ) : undefined}
-                    </div>
-                    <div className='score-dialog-stat-row score-dialog-stat-row--atomized'>
-                        <dt className='score-dialog-stat-label'>
+                <div className='score-dialog-hero'>
+                    <span className='score-dialog-hero-label'>
+                        {uiText.score}
+                    </span>
+                    <strong className='score-dialog-hero-value'>{score}</strong>
+                    {isNewBest ? (
+                        <span className='score-dialog-new-best'>
+                            {uiText.newBest}
+                        </span>
+                    ) : undefined}
+                    {!isNewBest && bestScore !== undefined && bestScore > 0 ? (
+                        <span className='score-dialog-best-label'>
+                            {uiText.bestScore} {bestScore}
+                        </span>
+                    ) : undefined}
+                </div>
+                <dl className='score-dialog-secondary'>
+                    <div className='score-dialog-sec-stat'>
+                        <dt className='score-dialog-sec-label'>
                             {uiText.atomized}
                         </dt>
-                        <dd className='score-dialog-stat-value'>{atomized}</dd>
+                        <dd className='score-dialog-sec-value'>{atomized}</dd>
                     </div>
-                    <div className='score-dialog-stat-row score-dialog-stat-row--combo'>
-                        <dt className='score-dialog-stat-label'>
+                    <div
+                        aria-hidden='true'
+                        className='score-dialog-sec-divider'
+                    />
+                    <div className='score-dialog-sec-stat'>
+                        <dt className='score-dialog-sec-label'>
                             {uiText.maxCombo}
                         </dt>
-                        <dd className='score-dialog-stat-value'>
-                            {comboCount}
-                        </dd>
+                        <dd className='score-dialog-sec-value'>{comboCount}</dd>
                     </div>
                 </dl>
                 <div className='score-dialog-actions'>
