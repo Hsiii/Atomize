@@ -5,6 +5,7 @@ import type { Screen } from './app-state';
 import { MultiplayerGameScreen } from './components/game/MultiplayerGameScreen';
 import { SingleGameScreen } from './components/game/SingleGameScreen';
 import { MenuScreen } from './components/menu/MenuScreen';
+import { useLocalCpuGame } from './hooks/useLocalCpuGame';
 import { useMultiplayerGame } from './hooks/useMultiplayerGame';
 import { useSoloGame } from './hooks/useSoloGame';
 import {
@@ -26,6 +27,11 @@ export default function App(): JSX.Element {
         screen,
         onScreenChange: setScreen,
     });
+    const localCpuGame = useLocalCpuGame({
+        playerName,
+        screen,
+        onScreenChange: setScreen,
+    });
 
     useEffect(() => {
         persistPlayerName(playerName);
@@ -37,6 +43,7 @@ export default function App(): JSX.Element {
 
     async function returnToMenu() {
         await multiplayerGame.resetMultiplayerGame();
+        localCpuGame.resetLocalCpuGame();
         soloGame.resetSoloGame();
         setScreen('menu');
     }
@@ -59,6 +66,9 @@ export default function App(): JSX.Element {
                 }}
                 onlineUsers={multiplayerGame.onlineUsers}
                 onPrefetchInviteUsers={multiplayerGame.prefetchOnlineUsers}
+                onStartCpuGame={() => {
+                    localCpuGame.startLocalCpuGame();
+                }}
                 onStartSoloGame={soloGame.startSingleGame}
                 onToggleReady={() => {
                     detachPromise(multiplayerGame.toggleReady());
@@ -92,20 +102,44 @@ export default function App(): JSX.Element {
         );
     }
 
+    const activeBattleGame = localCpuGame.isLocalCpuGameActive
+        ? {
+              currentMultiplayerPlayer: localCpuGame.currentMultiplayerPlayer,
+              isMultiplayerComboRunning: localCpuGame.isMultiplayerComboRunning,
+              isMultiplayerInputDisabled:
+                  localCpuGame.isMultiplayerInputDisabled,
+              multiplayerPrimeQueue: localCpuGame.multiplayerPrimeQueue,
+              multiplayerSnapshot: localCpuGame.multiplayerSnapshot,
+              onSubmit: localCpuGame.handleMultiplayerComboSubmit,
+              playablePrimes: localCpuGame.playablePrimes,
+          }
+        : {
+              currentMultiplayerPlayer:
+                  multiplayerGame.currentMultiplayerPlayer,
+              isMultiplayerComboRunning:
+                  multiplayerGame.isMultiplayerComboRunning,
+              isMultiplayerInputDisabled:
+                  multiplayerGame.isMultiplayerInputDisabled,
+              multiplayerPrimeQueue: multiplayerGame.multiplayerPrimeQueue,
+              multiplayerSnapshot: multiplayerGame.multiplayer.snapshot,
+              onSubmit: multiplayerGame.handleMultiplayerComboSubmit,
+              playablePrimes: multiplayerGame.playablePrimes,
+          };
+
     return (
         <MultiplayerGameScreen
-            currentMultiplayerPlayer={multiplayerGame.currentMultiplayerPlayer}
+            currentMultiplayerPlayer={activeBattleGame.currentMultiplayerPlayer}
             isMultiplayerComboRunning={
-                multiplayerGame.isMultiplayerComboRunning
+                activeBattleGame.isMultiplayerComboRunning
             }
             isMultiplayerInputDisabled={
-                multiplayerGame.isMultiplayerInputDisabled
+                activeBattleGame.isMultiplayerInputDisabled
             }
-            multiplayerPrimeQueue={multiplayerGame.multiplayerPrimeQueue}
-            multiplayerSnapshot={multiplayerGame.multiplayer.snapshot}
+            multiplayerPrimeQueue={activeBattleGame.multiplayerPrimeQueue}
+            multiplayerSnapshot={activeBattleGame.multiplayerSnapshot}
             onBack={returnToMenu}
-            onSubmit={multiplayerGame.handleMultiplayerComboSubmit}
-            playablePrimes={multiplayerGame.playablePrimes}
+            onSubmit={activeBattleGame.onSubmit}
+            playablePrimes={activeBattleGame.playablePrimes}
         />
     );
 }

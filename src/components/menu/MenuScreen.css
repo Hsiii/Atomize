@@ -471,6 +471,49 @@
     padding-bottom: var(--space-4);
 }
 
+.invite-local-option {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    margin-bottom: var(--space-5);
+    padding: var(--space-5);
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-panel);
+    background: var(--color-button-subtle-bg);
+    color: var(--color-ink);
+    cursor: pointer;
+    text-align: left;
+    transition:
+        transform 0.12s ease,
+        background-color 0.12s ease;
+}
+
+.invite-local-option:hover {
+    transform: translateY(-1px);
+}
+
+.invite-local-option:active {
+    transform: translateY(0);
+}
+
+.invite-local-title {
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-action-label-weight);
+    letter-spacing: var(--type-action-label-caps-letter-spacing);
+    text-transform: var(--type-action-label-caps-text-transform);
+}
+
+.invite-local-hint {
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size, 0.95rem);
+    font-weight: var(--type-body-meta-weight);
+    line-height: var(--type-body-meta-line-height);
+    color: var(--type-body-meta-color);
+}
+
 .invite-list {
     list-style: none;
     margin: 0;

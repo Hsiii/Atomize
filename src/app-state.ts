@@ -46,6 +46,8 @@ export const uiText = {
     inviteSent: 'Invite sent!',
     inviteReceived: 'invited you to play!',
     inviteButton: 'Invite',
+    inviteCpu: 'Local CPU',
+    inviteCpuHint: 'Start a local match instantly.',
     invited: 'Invited',
     ready: 'Ready',
     startingIn: 'Start in',
@@ -58,6 +60,7 @@ export const uiText = {
     inTeam: 'In Team',
     inviteDeclined: 'Invitation declined',
     guest: 'Guest',
+    cpu: 'CPU',
     start: 'Start',
 } as const;
 

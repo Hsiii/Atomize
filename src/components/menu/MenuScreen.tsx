@@ -18,6 +18,7 @@ type MenuScreenProps = {
     toastMessage: string | undefined;
     toastId: number;
     onStartSoloGame: () => void;
+    onStartCpuGame: () => void | Promise<void>;
     onInvitePlayer: (targetPlayerId: string) => void | Promise<void>;
     onPrefetchInviteUsers: () => void;
     onToggleReady: () => void | Promise<void>;
@@ -37,6 +38,7 @@ export function MenuScreen({
     toastMessage,
     toastId,
     onStartSoloGame,
+    onStartCpuGame,
     onInvitePlayer,
     onPrefetchInviteUsers,
     onToggleReady,
@@ -127,6 +129,11 @@ export function MenuScreen({
     function handleOpenInviteDialog() {
         onPrefetchInviteUsers();
         setShowInviteDialog(true);
+    }
+
+    function handleStartCpuGame() {
+        setShowInviteDialog(false);
+        detachAction(onStartCpuGame());
     }
 
     return (
@@ -348,6 +355,19 @@ export function MenuScreen({
                                 </button>
                             </header>
                             <div className='dialog-body'>
+                                <button
+                                    className='invite-local-option'
+                                    onClick={handleStartCpuGame}
+                                    type='button'
+                                >
+                                    <span className='invite-local-title'>
+                                        {uiText.inviteCpu}
+                                    </span>
+                                    <span className='invite-local-hint'>
+                                        {uiText.inviteCpuHint}
+                                    </span>
+                                </button>
+
                                 {onlineUsers.length === 0 ? (
                                     <p className='invite-empty'>
                                         {uiText.noOnlinePlayers}
