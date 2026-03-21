@@ -94,6 +94,15 @@
     position: relative;
     display: grid;
     gap: var(--space-2);
+    width: min(100%, 28rem);
+}
+
+.multiplayer-hp-bar-enemy {
+    justify-self: end;
+}
+
+.multiplayer-hp-bar-self {
+    justify-self: start;
 }
 
 @keyframes multiplayer-hp-shake {
