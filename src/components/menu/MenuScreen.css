@@ -443,6 +443,12 @@
     font-family: var(--type-body-meta-family);
     font-size: var(--type-body-meta-size);
     font-weight: var(--type-body-meta-weight);
+    text-align: center;
+}
+
+.dialog-input:focus {
+    outline: none;
+    border-color: var(--color-outline-strong);
 }
 
 /* === Invite Dialog === */
