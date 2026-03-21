@@ -15,6 +15,7 @@ import './GamePlayScreen.css';
 import './MultiplayerGameScreen.css';
 
 import { COMBO_QUEUE_MAX_ITEMS, ComboQueuePanel } from './ui/ComboQueuePanel';
+import { DesktopKeyboardHint } from './ui/DesktopKeyboardHint';
 import { DuoScoreDialog } from './ui/DuoScoreDialog';
 import { GameControls } from './ui/GameControls';
 import { NumberBlobDisplay } from './ui/NumberBlobDisplay';
@@ -124,6 +125,8 @@ export function MultiplayerGameScreen({
     return (
         <main className='app-shell fullscreen-shell'>
             <section className='screen game-screen multiplayer-game-screen'>
+                <DesktopKeyboardHint />
+
                 <BattleHpBar
                     damagePops={battle.damagePops.filter(
                         (damagePop) => damagePop.side === 'enemy'

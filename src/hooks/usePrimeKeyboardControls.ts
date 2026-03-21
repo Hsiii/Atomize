@@ -71,6 +71,17 @@ export function usePrimeKeyboardControls({
     }
 
     function processFreshDigit(digit: string) {
+        if (digit === '4') {
+            const shortcutPrime = playablePrimes.find((prime) => prime === 23);
+
+            if (shortcutPrime !== undefined) {
+                clearBufferedPrimeInput();
+                onPrimeTap(shortcutPrime);
+            }
+
+            return;
+        }
+
         const matchingPrimes = playablePrimes.filter((prime) =>
             String(prime).startsWith(digit)
         );
@@ -86,7 +97,7 @@ export function usePrimeKeyboardControls({
             (prime) => String(prime).length > digit.length
         );
 
-        if (exactPrime !== undefined && !hasLongerMatch) {
+        if (exactPrime !== undefined && (digit !== '1' || !hasLongerMatch)) {
             clearBufferedPrimeInput();
             onPrimeTap(exactPrime);
             return;

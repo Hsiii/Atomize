@@ -63,6 +63,9 @@ export const uiText = {
     cpu: 'CPU',
     start: 'Start',
     atomized: 'Atomized',
+    keyboardHintTitle: 'Keyboard',
+    keyboardHintLead: 'Use',
+    keyboardHintTail: 'to input 23',
 } as const;
 
 export type Screen = 'menu' | 'single' | 'multi-game';

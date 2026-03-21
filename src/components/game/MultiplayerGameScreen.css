@@ -3,6 +3,7 @@
     --multiplayer-enemy-right: 1.25rem;
     --multiplayer-self-left: 1.25rem;
     --multiplayer-self-bottom: 1rem;
+    position: relative;
     flex: 1;
     gap: var(--space-4);
     padding-top: max(var(--space-4), env(safe-area-inset-top));
