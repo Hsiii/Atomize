@@ -170,6 +170,7 @@
 }
 
 .multiplayer-hp-copy {
+    position: relative;
     display: flex;
     align-items: baseline;
     justify-content: space-between;
@@ -177,11 +178,14 @@
 }
 
 .multiplayer-perfect-tag {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    margin-inline: auto;
+    width: fit-content;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-left: auto;
-    margin-right: auto;
     color: var(--color-gold);
     font-family: var(--type-action-label-family);
     font-size: clamp(0.76rem, 1.9vw, 1rem);
