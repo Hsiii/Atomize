@@ -506,7 +506,11 @@
 }
 
 .invite-btn {
-    min-width: 5rem;
+    box-sizing: border-box;
+    width: 5.75rem;
+    min-width: 5.75rem;
+    max-width: 5.75rem;
+    flex: 0 0 5.75rem;
     padding: 0.3rem 0.7rem;
     border-radius: var(--radius-pill);
     background: var(--color-button-primary-bg);
@@ -514,18 +518,21 @@
     font-family: var(--type-action-label-family);
     font-size: var(--type-action-label-size);
     font-weight: var(--type-action-label-weight);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     letter-spacing: var(--type-action-label-caps-letter-spacing);
-    transition: transform 0.12s ease;
+    transition: opacity 0.12s ease;
     text-align: center;
 }
 
 .invite-btn:hover {
-    transform: scale(1.04);
+    opacity: 0.9;
 }
 
 .invite-btn:active {
-    transform: scale(0.97);
+    opacity: 1;
 }
 
 .invite-btn-disabled {
@@ -536,7 +543,7 @@
 
 .invite-btn-disabled:hover,
 .invite-btn-disabled:active {
-    transform: none;
+    opacity: 1;
 }
 
 .invite-empty {
