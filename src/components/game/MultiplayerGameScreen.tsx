@@ -181,8 +181,19 @@ export function MultiplayerGameScreen({
 
         if (previousStageIndexRef.current === undefined) {
             previousStageIndexRef.current = currentStageIndex;
-            setIsBlobRevealActive(false);
-            return undefined;
+            setIsBlobRevealActive(true);
+
+            const initialTimer = globalThis.setTimeout(
+                () => {
+                    setIsBlobRevealActive(false);
+                },
+                blobRevealTotalMs,
+                undefined
+            );
+
+            return () => {
+                globalThis.clearTimeout(initialTimer);
+            };
         }
 
         if (previousStageIndexRef.current === currentStageIndex) {
