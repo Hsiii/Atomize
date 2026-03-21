@@ -1,0 +1,265 @@
+.duo-score-dialog-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: grid;
+    place-items: center;
+    padding: max(var(--space-8), env(safe-area-inset-top))
+        max(var(--space-8), env(safe-area-inset-right))
+        max(var(--space-8), env(safe-area-inset-bottom))
+        max(var(--space-8), env(safe-area-inset-left));
+    background: var(--color-overlay-soft);
+    backdrop-filter: blur(var(--blur-overlay));
+    animation: duo-scrim-fade 0.3s ease-out both;
+}
+
+@keyframes duo-scrim-fade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.duo-score-dialog {
+    width: min(100%, 24rem);
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface-base);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
+    animation: duo-dialog-enter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+}
+
+@keyframes duo-dialog-enter {
+    from {
+        opacity: 0;
+        transform: translateY(1.25rem) scale(0.94);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.duo-score-dialog-header {
+    width: 100%;
+    padding: var(--space-7) var(--space-8);
+    background: var(--color-primary);
+}
+
+.duo-score-dialog-title {
+    display: block;
+    font-family: var(--type-title-panel-family);
+    font-size: var(--type-title-panel-size);
+    font-weight: var(--type-title-panel-weight);
+    line-height: var(--type-title-panel-line-height);
+    letter-spacing: var(--type-title-panel-letter-spacing);
+    text-transform: var(--type-title-panel-text-transform);
+    color: var(--type-title-panel-color);
+}
+
+/* ── Players comparison ── */
+
+.duo-score-players {
+    display: flex;
+    width: 100%;
+    padding: var(--space-7) 0 var(--space-4);
+}
+
+.duo-score-player {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+    animation: duo-stat-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.duo-score-player:first-child {
+    animation-delay: 0.3s;
+}
+
+.duo-score-player:last-child {
+    animation-delay: 0.42s;
+}
+
+@keyframes duo-stat-pop {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    70% {
+        transform: scale(1.06);
+        opacity: 1;
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.duo-score-player-divider {
+    width: 1px;
+    align-self: stretch;
+    background: var(--color-border-soft);
+    flex-shrink: 0;
+}
+
+.duo-score-player-name {
+    margin: 0;
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-action-label-weight);
+    letter-spacing: var(--type-action-label-caps-letter-spacing);
+    text-transform: var(--type-action-label-caps-text-transform);
+    color: var(--color-ink);
+    line-height: var(--type-action-label-line-height);
+}
+
+.duo-score-player--winner .duo-score-player-name {
+    color: var(--color-gold);
+}
+
+.duo-score-player--loser .duo-score-player-name {
+    color: var(--color-ink-soft);
+}
+
+/* ── Stat rows ── */
+
+.duo-score-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.duo-score-stat-label {
+    margin: 0;
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
+    line-height: var(--type-body-meta-line-height);
+    letter-spacing: var(--type-action-label-hero-letter-spacing);
+    text-transform: var(--type-action-label-wide-text-transform);
+    color: var(--type-body-meta-color);
+}
+
+.duo-score-stat-value {
+    margin: 0;
+    font-family: var(--type-display-results-family);
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: var(--type-display-results-weight);
+    line-height: var(--type-display-results-line-height);
+    color: var(--color-primary);
+}
+
+.duo-score-player--winner .duo-score-stat-value {
+    color: var(--color-gold);
+}
+
+.duo-score-player--loser .duo-score-stat-value {
+    color: var(--color-ink-soft);
+}
+
+/* ── Button ── */
+
+.duo-score-dialog .app-action-button {
+    width: calc(100% - 2 * var(--space-8));
+    margin: var(--space-4) var(--space-8) var(--space-8);
+    animation: duo-button-slide 0.3s ease-out 0.55s both;
+}
+
+@keyframes duo-button-slide {
+    from {
+        opacity: 0;
+        transform: translateY(0.5rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Victory variant ── */
+
+.duo-score-dialog--victory {
+    border-color: var(--color-gold);
+}
+
+.duo-score-dialog--victory .duo-score-dialog-header {
+    background: var(--color-gold);
+}
+
+/* ── Defeat variant ── */
+
+.duo-score-dialog--defeat {
+    border-color: var(--color-ink-soft);
+    animation-duration: 0.65s;
+    animation-timing-function: cubic-bezier(0.34, 1.1, 0.64, 1);
+}
+
+.duo-score-dialog--defeat .duo-score-dialog-header {
+    background: var(--color-ink-soft);
+}
+
+/* ── Confetti layer (reuse from ScoreDialog) ── */
+
+.duo-score-confetti-layer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.duo-score-confetti-dot {
+    position: absolute;
+    width: var(--confetti-size);
+    height: var(--confetti-size);
+    border-radius: 50%;
+    animation: duo-confetti-burst 1.3s cubic-bezier(0.16, 0.9, 0.2, 1)
+        var(--confetti-delay) both;
+}
+
+.duo-score-confetti-dot:nth-child(3n + 1) {
+    background: var(--color-gold);
+}
+
+.duo-score-confetti-dot:nth-child(3n + 2) {
+    background: var(--color-gold-strong);
+}
+
+.duo-score-confetti-dot:nth-child(3n) {
+    background: var(--color-primary-strong);
+}
+
+@keyframes duo-confetti-burst {
+    0% {
+        opacity: 0;
+        transform: rotate(var(--confetti-angle)) translateY(0) scale(0);
+    }
+
+    30% {
+        opacity: 1;
+        transform: rotate(var(--confetti-angle))
+            translateY(calc(var(--confetti-distance) * -0.45)) scale(1.15);
+    }
+
+    100% {
+        opacity: 0;
+        transform: rotate(var(--confetti-angle))
+            translateY(calc(var(--confetti-distance) * -1)) scale(0.6);
+    }
+}
+
+@media (max-width: 480px) {
+    .duo-score-dialog {
+        width: min(100%, 20rem);
+    }
+}

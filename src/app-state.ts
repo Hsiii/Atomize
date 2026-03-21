@@ -62,6 +62,7 @@ export const uiText = {
     guest: 'Guest',
     cpu: 'CPU',
     start: 'Start',
+    atomized: 'Atomized',
 } as const;
 
 export type Screen = 'menu' | 'single' | 'multi-game';

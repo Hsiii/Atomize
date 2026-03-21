@@ -10,9 +10,9 @@ import './MultiplayerGameScreen.css';
 
 import { ActionButton } from './ui/ActionButton';
 import { COMBO_QUEUE_MAX_ITEMS, ComboQueuePanel } from './ui/ComboQueuePanel';
+import { DuoScoreDialog } from './ui/DuoScoreDialog';
 import { NumberBlobDisplay } from './ui/NumberBlobDisplay';
 import { PrimeKeyButton } from './ui/PrimeKeyButton';
-import { ScoreDialog } from './ui/ScoreDialog';
 
 type DamagePop = {
     id: string;
@@ -1293,7 +1293,7 @@ export function MultiplayerGameScreen({
 
     return (
         <main className='app-shell fullscreen-shell'>
-            <section className='screen game-screen single-game-screen multiplayer-game-screen'>
+            <section className='screen game-screen multiplayer-game-screen'>
                 <BattleHpBar
                     damagePops={damagePops.filter(
                         (damagePop) => damagePop.side === 'enemy'
@@ -1374,20 +1374,20 @@ export function MultiplayerGameScreen({
                     ) : undefined}
                 </section>
 
-                <section className='single-controls-grid multiplayer-controls-grid'>
-                    <BattleHpBar
-                        damagePops={damagePops.filter(
-                            (damagePop) => damagePop.side === 'self'
-                        )}
-                        hp={displayedSelfHp}
-                        impacts={hpImpacts.self}
-                        label={uiText.you}
-                        maxHp={multiplayerSnapshot?.maxHp ?? 1}
-                        outerRef={selfHealthRef}
-                        perfectActive={perfectBurst?.side === 'self'}
-                        side='self'
-                    />
+                <BattleHpBar
+                    damagePops={damagePops.filter(
+                        (damagePop) => damagePop.side === 'self'
+                    )}
+                    hp={displayedSelfHp}
+                    impacts={hpImpacts.self}
+                    label={uiText.you}
+                    maxHp={multiplayerSnapshot?.maxHp ?? 1}
+                    outerRef={selfHealthRef}
+                    perfectActive={perfectBurst?.side === 'self'}
+                    side='self'
+                />
 
+                <section className='multiplayer-controls-grid'>
                     <ComboQueuePanel queue={visibleQueue} />
 
                     <div className='keypad-row'>
@@ -1448,9 +1448,20 @@ export function MultiplayerGameScreen({
                 </section>
 
                 {isMatchFinished && isResultDialogVisible ? (
-                    <ScoreDialog
-                        comboCount={currentMultiplayerPlayer?.maxCombo ?? 0}
+                    <DuoScoreDialog
+                        currentPlayer={{
+                            name: currentMultiplayerPlayer?.name ?? uiText.you,
+                            maxCombo: currentMultiplayerPlayer?.maxCombo ?? 0,
+                            atomized: currentMultiplayerPlayer?.stageIndex ?? 0,
+                            isWinner: currentPlayerWon,
+                        }}
                         onReturnHome={onBack}
+                        opponent={{
+                            name: opponentPlayer?.name ?? uiText.opponent,
+                            maxCombo: opponentPlayer?.maxCombo ?? 0,
+                            atomized: opponentPlayer?.stageIndex ?? 0,
+                            isWinner: !currentPlayerWon,
+                        }}
                         title={
                             currentPlayerWon ? uiText.victory : uiText.defeat
                         }
