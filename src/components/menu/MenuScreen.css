@@ -356,12 +356,13 @@
 
 .dialog-scrim {
     position: fixed;
-    inset: 0 0 calc(-1 * env(safe-area-inset-bottom, 0px));
+    inset: calc(-1 * env(safe-area-inset-top, 0px)) 0
+        calc(-1 * env(safe-area-inset-bottom, 0px));
     z-index: 50;
     display: grid;
     place-items: center;
-    padding: 1.5rem;
-    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    padding: calc(1.5rem + env(safe-area-inset-top, 0px)) 1.5rem
+        calc(1.5rem + env(safe-area-inset-bottom, 0px));
     background: var(--color-overlay-soft);
     animation: menu-scrim-fade 0.2s ease-out;
 }
