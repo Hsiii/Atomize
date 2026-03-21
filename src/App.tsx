@@ -8,15 +8,20 @@ import { MenuScreen } from './components/menu/MenuScreen';
 import { useLocalCpuGame } from './hooks/useLocalCpuGame';
 import { useMultiplayerGame } from './hooks/useMultiplayerGame';
 import { useSoloGame } from './hooks/useSoloGame';
+import { useTutorialGame } from './hooks/useTutorialGame';
 import {
     detachPromise,
     formatCountdown,
     getInitialPlayerName,
+    isTutorialComplete,
+    markTutorialComplete,
     persistPlayerName,
 } from './lib/app-helpers';
 
 export default function App(): JSX.Element {
-    const [screen, setScreen] = useState<Screen>('menu');
+    const [screen, setScreen] = useState<Screen>(() =>
+        isTutorialComplete() ? 'menu' : 'tutorial'
+    );
     const [playerName, setPlayerName] = useState(() => getInitialPlayerName());
     const soloGame = useSoloGame({
         screen,
@@ -32,6 +37,17 @@ export default function App(): JSX.Element {
         screen,
         onScreenChange: setScreen,
     });
+    const tutorialGame = useTutorialGame({
+        playerName,
+        screen,
+        onScreenChange: setScreen,
+    });
+
+    useEffect(() => {
+        if (screen === 'tutorial' && !tutorialGame.isTutorialActive) {
+            tutorialGame.startTutorialGame();
+        }
+    }, [screen, tutorialGame.isTutorialActive]);
 
     useEffect(() => {
         persistPlayerName(playerName);
@@ -45,7 +61,33 @@ export default function App(): JSX.Element {
         await multiplayerGame.resetMultiplayerGame();
         localCpuGame.resetLocalCpuGame();
         soloGame.resetSoloGame();
+        tutorialGame.resetTutorialGame();
         setScreen('menu');
+    }
+
+    function handleTutorialReturn() {
+        markTutorialComplete();
+        tutorialGame.resetTutorialGame();
+        setScreen('menu');
+    }
+
+    if (screen === 'tutorial') {
+        return (
+            <MultiplayerGameScreen
+                currentMultiplayerPlayer={tutorialGame.currentMultiplayerPlayer}
+                isMultiplayerComboRunning={
+                    tutorialGame.isMultiplayerComboRunning
+                }
+                isMultiplayerInputDisabled={
+                    tutorialGame.isMultiplayerInputDisabled
+                }
+                multiplayerPrimeQueue={tutorialGame.multiplayerPrimeQueue}
+                multiplayerSnapshot={tutorialGame.multiplayerSnapshot}
+                onBack={handleTutorialReturn}
+                onSubmit={tutorialGame.handleMultiplayerComboSubmit}
+                playablePrimes={tutorialGame.playablePrimes}
+            />
+        );
     }
 
     if (screen === 'menu') {
@@ -112,9 +154,15 @@ export default function App(): JSX.Element {
     if (screen === 'single') {
         return (
             <SingleGameScreen
+                bestScore={soloGame.bestScore}
                 formatCountdown={formatCountdown}
+                isNewBest={soloGame.isNewBest}
+                isPaused={soloGame.isPaused}
                 isSoloComboRunning={soloGame.isSoloComboRunning}
                 onBack={returnToMenu}
+                onPause={soloGame.pause}
+                onResume={soloGame.resume}
+                onRetry={soloGame.startSingleGame}
                 onSubmit={soloGame.handleSoloComboSubmit}
                 playablePrimes={soloGame.playablePrimes}
                 soloCountdownProgress={soloGame.soloCountdownProgress}
@@ -139,6 +187,7 @@ export default function App(): JSX.Element {
               multiplayerSnapshot: localCpuGame.multiplayerSnapshot,
               onSubmit: localCpuGame.handleMultiplayerComboSubmit,
               playablePrimes: localCpuGame.playablePrimes,
+              onRematch: localCpuGame.rematchLocalCpuGame,
           }
         : {
               currentMultiplayerPlayer:
@@ -151,6 +200,7 @@ export default function App(): JSX.Element {
               multiplayerSnapshot: multiplayerGame.multiplayer.snapshot,
               onSubmit: multiplayerGame.handleMultiplayerComboSubmit,
               playablePrimes: multiplayerGame.playablePrimes,
+              onRematch: undefined,
           };
 
     return (
@@ -165,6 +215,7 @@ export default function App(): JSX.Element {
             multiplayerPrimeQueue={activeBattleGame.multiplayerPrimeQueue}
             multiplayerSnapshot={activeBattleGame.multiplayerSnapshot}
             onBack={returnToMenu}
+            onRematch={activeBattleGame.onRematch}
             onSubmit={activeBattleGame.onSubmit}
             playablePrimes={activeBattleGame.playablePrimes}
         />
