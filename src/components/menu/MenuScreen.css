@@ -487,6 +487,7 @@
 }
 
 .invite-btn {
+    min-width: 5rem;
     padding: 0.3rem 0.7rem;
     border-radius: var(--radius-pill);
     background: var(--color-primary-strong);
@@ -497,6 +498,7 @@
     cursor: pointer;
     letter-spacing: var(--type-action-label-caps-letter-spacing);
     transition: transform 0.12s ease;
+    text-align: center;
 }
 
 .invite-btn:hover {
