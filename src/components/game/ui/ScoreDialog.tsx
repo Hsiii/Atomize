@@ -63,7 +63,12 @@ export function ScoreDialog({
                     ) : undefined}
                     {!isNewBest && bestScore !== undefined && bestScore > 0 ? (
                         <span className='score-dialog-best-label'>
-                            {uiText.bestScore} {bestScore}
+                            <span className='score-dialog-best-prefix'>
+                                {uiText.bestScore}
+                            </span>
+                            <span className='score-dialog-best-value'>
+                                {bestScore}
+                            </span>
                         </span>
                     ) : undefined}
                 </div>

@@ -199,14 +199,30 @@
 }
 
 .score-dialog-best-label {
-    display: inline-block;
-    margin-top: var(--space-2);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    margin-top: var(--space-3);
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-accent);
+}
+
+.score-dialog-best-prefix {
     font-family: var(--type-body-meta-family);
     font-size: var(--type-body-meta-size);
     font-weight: var(--type-body-meta-weight);
     color: var(--type-body-meta-color);
     letter-spacing: var(--type-action-label-caps-letter-spacing);
     text-transform: var(--type-action-label-caps-text-transform);
+}
+
+.score-dialog-best-value {
+    font-family: var(--type-metric-inline-family);
+    font-size: var(--type-metric-inline-size);
+    font-weight: var(--type-metric-inline-weight);
+    line-height: var(--type-metric-inline-line-height);
+    color: var(--color-primary);
 }
 
 /* Victory variant — gold celebration */
