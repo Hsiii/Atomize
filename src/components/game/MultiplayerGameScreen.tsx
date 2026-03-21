@@ -75,6 +75,7 @@ export function MultiplayerGameScreen({
         battleVisualsBusy: battle.isAnimating,
         currentPlayer: currentMultiplayerPlayer,
         enabled: tutorialMode,
+        isComboRunning: isMultiplayerComboRunning,
         lastEvent: multiplayerSnapshot?.lastEvent,
         onAllowCpuAttack,
         onTutorialComplete,
@@ -88,6 +89,19 @@ export function MultiplayerGameScreen({
         visibleQueueRef.current = multiplayerPrimeQueue;
         setVisibleQueue(multiplayerPrimeQueue);
     }, [multiplayerPrimeQueue]);
+
+    useEffect(() => {
+        if (
+            !tutorialMode ||
+            tutorial.expectedQueue === undefined ||
+            visibleQueueRef.current.length === 0 ||
+            hasQueuePrefix(visibleQueueRef.current, tutorial.expectedQueue)
+        ) {
+            return;
+        }
+
+        setLocalQueue([]);
+    }, [tutorial.expectedQueue, tutorialMode]);
 
     function setLocalQueue(nextQueue: readonly Prime[]) {
         const normalizedQueue = [...nextQueue];
@@ -437,6 +451,7 @@ function useBattleTutorial({
     battleVisualsBusy,
     currentPlayer,
     enabled,
+    isComboRunning,
     lastEvent,
     onAllowCpuAttack,
     onTutorialComplete,
@@ -446,6 +461,7 @@ function useBattleTutorial({
     battleVisualsBusy: boolean;
     currentPlayer: RoomPlayer | undefined;
     enabled: boolean;
+    isComboRunning: boolean;
     lastEvent: RoomSnapshot['lastEvent'];
     onAllowCpuAttack: (() => void) | undefined;
     onTutorialComplete: (() => void) | undefined;
@@ -526,12 +542,9 @@ function useBattleTutorial({
         if (step === 'stage-one-submit') {
             if (currentPlayer.stageIndex >= 1 && !battleVisualsBusy) {
                 setStep('stage-one-result');
-                return;
             }
 
-            if (hasQueue(queue, [2])) {
-                setStep('stage-one-queue');
-            }
+            return;
         }
 
         if (step === 'stage-two-prime' && hasQueue(queue, [2])) {
@@ -558,12 +571,9 @@ function useBattleTutorial({
                 !battleVisualsBusy
             ) {
                 setStep('stage-two-result');
-                return;
             }
 
-            if (hasQueue(queue, [2])) {
-                setStep('stage-two-queue');
-            }
+            return;
         }
 
         if (step === 'stage-two-finish' && hasQueue(queue, [5])) {
@@ -574,12 +584,9 @@ function useBattleTutorial({
         if (step === 'stage-two-finish-submit') {
             if (currentPlayer.stageIndex >= 2 && !battleVisualsBusy) {
                 setStep('enemy-turn');
-                return;
             }
 
-            if (queue.length === 0) {
-                setStep('stage-two-finish');
-            }
+            return;
         }
 
         if (step === 'enemy-turn' && enemyAttackSeen && !battleVisualsBusy) {
@@ -606,6 +613,7 @@ function useBattleTutorial({
 
     if (!enabled) {
         return {
+            expectedQueue: undefined,
             getPrimeDisabledState: undefined,
             handleAction: undefined,
             highlightedPrime: undefined,
@@ -617,27 +625,30 @@ function useBattleTutorial({
         };
     }
 
+    const resolvedStep = resolveTutorialQueueStep(step, queue, isComboRunning);
     const lesson =
-        step === 'enemy-turn' && enemyTurnAcknowledged
+        resolvedStep === 'enemy-turn' && enemyTurnAcknowledged
             ? undefined
-            : getTutorialLesson(step);
-    const highlightTarget = getTutorialHighlightTarget(step, queue);
+            : getTutorialLesson(resolvedStep);
+    const expectedQueue = getTutorialExpectedQueue(resolvedStep);
+    const highlightTarget = getTutorialHighlightTarget(resolvedStep, queue);
     const isInteractionBlocked =
         lesson?.isBlocking === true ||
-        (step === 'enemy-turn' && enemyTurnAcknowledged);
-    const highlightedPrime = getHighlightedPrime(step, queue);
+        (resolvedStep === 'enemy-turn' && enemyTurnAcknowledged);
+    const highlightedPrime = getHighlightedPrime(resolvedStep, queue);
     const isSubmitLocked =
         !isInteractionBlocked &&
-        (step === 'stage-one-prime' ||
-            step === 'stage-one-queue' ||
-            step === 'stage-two-prime' ||
-            step === 'stage-two-queue' ||
-            step === 'stage-two-finish' ||
-            step === 'enemy-turn' ||
-            (step === 'stage-one-submit' && !hasQueue(queue, [2, 3])) ||
-            (step === 'stage-two-submit' && !hasQueue(queue, [2, 3])) ||
-            (step === 'stage-two-finish-submit' && !hasQueue(queue, [5])) ||
-            (step === 'try-wrong-prime' && !hasQueue(queue, [3])));
+        (resolvedStep === 'stage-one-prime' ||
+            resolvedStep === 'stage-one-queue' ||
+            resolvedStep === 'stage-two-prime' ||
+            resolvedStep === 'stage-two-queue' ||
+            resolvedStep === 'stage-two-finish' ||
+            resolvedStep === 'enemy-turn' ||
+            (resolvedStep === 'stage-one-submit' && !hasQueue(queue, [2, 3])) ||
+            (resolvedStep === 'stage-two-submit' && !hasQueue(queue, [2, 3])) ||
+            (resolvedStep === 'stage-two-finish-submit' &&
+                !hasQueue(queue, [5])) ||
+            (resolvedStep === 'try-wrong-prime' && !hasQueue(queue, [3])));
 
     const handleAction = () => {
         if (step === 'intro') {
@@ -678,18 +689,18 @@ function useBattleTutorial({
     };
 
     return {
+        expectedQueue,
         getPrimeDisabledState(prime: Prime) {
             if (isInteractionBlocked) {
                 return true;
             }
 
-            const allowedPrime = getTutorialAllowedPrime(step, queue);
-
+            const allowedPrime = getTutorialAllowedPrime(resolvedStep, queue);
             if (allowedPrime !== undefined) {
                 return prime !== allowedPrime;
             }
 
-            return locksTutorialPrimeInput(step, queue);
+            return locksTutorialPrimeInput(resolvedStep, queue);
         },
         handleAction,
         highlightedPrime,
@@ -699,6 +710,46 @@ function useBattleTutorial({
         isSubmitLocked,
         lesson,
     };
+}
+
+function resolveTutorialQueueStep(
+    step: TutorialStep,
+    queue: readonly Prime[],
+    isComboRunning: boolean
+): TutorialStep {
+    if (isComboRunning) {
+        return step;
+    }
+
+    if (step === 'stage-one-prime' || step === 'stage-one-queue') {
+        if (hasQueue(queue, [2, 3])) {
+            return 'stage-one-submit';
+        }
+
+        if (hasQueue(queue, [2])) {
+            return 'stage-one-queue';
+        }
+
+        return 'stage-one-prime';
+    }
+
+    if (step === 'stage-two-prime' || step === 'stage-two-queue') {
+        if (hasQueue(queue, [2, 3])) {
+            return 'stage-two-submit';
+        }
+
+        if (hasQueue(queue, [2])) {
+            return 'stage-two-queue';
+        }
+
+        return 'stage-two-prime';
+    }
+
+    if (step === 'stage-two-finish') {
+        return hasQueue(queue, [5]) ? 'stage-two-finish-submit' : step;
+    }
+
+    return step;
 }
 
 function getTutorialLesson(step: TutorialStep): TutorialLesson | undefined {
@@ -928,11 +979,14 @@ function getHighlightedPrime(
 function getTutorialExpectedQueue(
     step: TutorialStep
 ): readonly Prime[] | undefined {
-    if (step === 'stage-one-prime' || step === 'stage-two-prime') {
-        return [2];
-    }
-
-    if (step === 'stage-one-queue' || step === 'stage-two-queue') {
+    if (
+        step === 'stage-one-prime' ||
+        step === 'stage-one-queue' ||
+        step === 'stage-one-submit' ||
+        step === 'stage-two-prime' ||
+        step === 'stage-two-queue' ||
+        step === 'stage-two-submit'
+    ) {
         return [2, 3];
     }
 
