@@ -246,35 +246,6 @@
     }
 }
 
-/* === Countdown === */
-
-.menu-countdown {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.countdown-number {
-    font-family: var(--type-display-burst-family);
-    font-size: var(--type-display-burst-size);
-    font-weight: var(--type-display-burst-weight);
-    letter-spacing: var(--type-display-burst-letter-spacing);
-    color: var(--color-ink);
-    animation: countdown-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes countdown-pop {
-    0% {
-        transform: scale(0.6);
-        opacity: 0;
-    }
-
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
 /* === Start Button === */
 
 .menu-start-btn.app-action-button {
