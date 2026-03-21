@@ -274,9 +274,10 @@
 }
 
 .multiplayer-hp-pop {
+    --multiplayer-hp-pop-bottom: calc(100% - var(--space-1));
     position: absolute;
     left: 50%;
-    bottom: calc(100% - var(--space-1));
+    bottom: var(--multiplayer-hp-pop-bottom);
     transform: translateX(-50%);
     font-family: var(--type-action-label-family);
     font-size: var(--type-action-label-size);
@@ -294,6 +295,14 @@
 
 .multiplayer-hp-pop-regen {
     color: var(--color-gold);
+}
+
+.multiplayer-hp-bar-self .multiplayer-hp-pop {
+    --multiplayer-hp-pop-bottom: calc(100% + var(--space-1));
+}
+
+.multiplayer-hp-bar-enemy .multiplayer-hp-pop {
+    --multiplayer-hp-pop-bottom: calc(100% - var(--space-3));
 }
 
 @keyframes multiplayer-hp-pop {
