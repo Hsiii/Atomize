@@ -113,21 +113,21 @@
 
 .number-blob-display-multiplayer .number-main-blob,
 .number-blob-display-multiplayer .number-blob-clear-pop {
-    --number-blob-stage-color: var(--color-primary-strong);
+    --number-blob-stage-color: var(--color-game-opponent);
 }
 
 .number-blob-display-multiplayer.number-blob-display-size-self
     .number-main-blob,
 .number-blob-display-multiplayer.number-blob-display-size-self
     .number-blob-clear-pop {
-    --number-blob-stage-color: var(--color-secondary);
+    --number-blob-stage-color: var(--color-game-self);
 }
 
 .number-blob-display-multiplayer.number-blob-display-size-enemy
     .number-main-blob,
 .number-blob-display-multiplayer.number-blob-display-size-enemy
     .number-blob-clear-pop {
-    --number-blob-stage-color: var(--color-primary-strong);
+    --number-blob-stage-color: var(--color-game-opponent);
 }
 
 .number-blob-display-size-enemy {

@@ -206,11 +206,11 @@
 }
 
 .multiplayer-hp-bar-self .multiplayer-hp-name {
-    color: var(--color-secondary);
+    color: var(--color-game-self);
 }
 
 .multiplayer-hp-bar-enemy .multiplayer-hp-name {
-    color: var(--color-primary-strong);
+    color: var(--color-game-opponent);
 }
 
 .multiplayer-hp-stat {
@@ -222,11 +222,11 @@
 }
 
 .multiplayer-hp-bar-self .multiplayer-hp-stat {
-    color: var(--color-secondary);
+    color: var(--color-game-self);
 }
 
 .multiplayer-hp-bar-enemy .multiplayer-hp-stat {
-    color: var(--color-primary-strong);
+    color: var(--color-game-opponent);
 }
 
 .multiplayer-hp-track {
@@ -278,11 +278,11 @@
 }
 
 .multiplayer-hp-bar-self .multiplayer-hp-fill {
-    background: var(--color-secondary);
+    background: var(--color-game-self);
 }
 
 .multiplayer-hp-bar-enemy .multiplayer-hp-fill {
-    background: var(--color-primary-strong);
+    background: var(--color-game-opponent);
 }
 
 .multiplayer-hp-pop {
@@ -298,15 +298,15 @@
 }
 
 .multiplayer-hp-pop-damage {
-    color: var(--color-primary-strong);
+    color: var(--color-game-opponent);
 }
 
 .multiplayer-hp-bar-self .multiplayer-hp-pop-damage {
-    color: var(--color-secondary);
+    color: var(--color-game-self);
 }
 
 .multiplayer-hp-bar-enemy .multiplayer-hp-pop-damage {
-    color: var(--color-primary-strong);
+    color: var(--color-game-opponent);
 }
 
 .multiplayer-hp-pop-regen {
@@ -379,21 +379,21 @@
 }
 
 .multiplayer-attack-particle-self {
-    background: var(--color-secondary);
+    background: var(--color-game-self);
 }
 
 .multiplayer-attack-particle-enemy {
-    background: var(--color-primary-strong);
+    background: var(--color-game-opponent);
 }
 
 .multiplayer-attack-particle-ring.multiplayer-attack-particle-self {
     background: transparent;
-    border: 2px solid var(--color-secondary);
+    border: 2px solid var(--color-game-self);
 }
 
 .multiplayer-attack-particle-ring.multiplayer-attack-particle-enemy {
     background: transparent;
-    border: 2px solid var(--color-primary-strong);
+    border: 2px solid var(--color-game-opponent);
 }
 
 .multiplayer-controls-grid {

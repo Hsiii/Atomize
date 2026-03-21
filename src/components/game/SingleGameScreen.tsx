@@ -48,7 +48,6 @@ export function SingleGameScreen({
     const hasInitializedStageRef = useRef(false);
     const previousStageIndexRef = useRef<number | null>(null);
     const isInputDisabled = isTimeUp || isSoloComboRunning;
-    const showKeypadDisabledState = isTimeUp;
     const [visibleQueue, setVisibleQueue] = useState<Prime[]>(soloPrimeQueue);
     const visibleQueueRef = useRef(visibleQueue);
 
@@ -161,11 +160,9 @@ export function SingleGameScreen({
                         <div className='keypad solo-keypad'>
                             {playablePrimes.map((prime) => (
                                 <PrimeKeyButton
-                                    interactionDisabled={isInputDisabled}
                                     key={prime}
                                     onPress={handlePrimeTap}
                                     prime={prime}
-                                    visuallyDisabled={showKeypadDisabledState}
                                 >
                                     {prime}
                                 </PrimeKeyButton>

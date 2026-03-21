@@ -9,14 +9,28 @@
     padding: 0;
     border: 0;
     border-radius: var(--radius-pill);
-    background: var(--color-button-subtle-bg);
-    color: var(--color-button-subtle-text);
+    background: var(--color-game-keypad-bg);
+    color: var(--color-game-keypad-text);
     font-family: var(--type-display-input-family);
     font-size: var(--prime-key-font-size);
     font-weight: var(--type-display-input-weight);
     line-height: var(--type-display-input-line-height);
     font-variant-numeric: tabular-nums;
     box-shadow: none;
+    transition:
+        background-color 120ms ease,
+        color 120ms ease,
+        transform 120ms ease;
+}
+
+.prime-key-button:focus-visible,
+.prime-key-button:active {
+    background: var(--color-game-keypad-active-bg);
+    color: var(--color-game-keypad-active-text);
+}
+
+.prime-key-button:active {
+    transform: scale(0.97);
 }
 
 @media (min-width: 900px) and (min-aspect-ratio: 4/3) {
@@ -31,10 +45,4 @@
     justify-content: center;
     min-width: 0;
     transform: translateY(-0.02em);
-}
-
-.prime-key-button[data-disabled='true'] {
-    background: var(--color-button-disabled-bg);
-    color: var(--color-button-disabled-text);
-    box-shadow: none;
 }

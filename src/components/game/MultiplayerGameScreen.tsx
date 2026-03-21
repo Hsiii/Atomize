@@ -100,8 +100,6 @@ export function MultiplayerGameScreen({
     const [isBlobRevealActive, setIsBlobRevealActive] = useState(false);
     const hasInitializedStageRef = useRef(false);
     const isInputDisabled = isMultiplayerInputDisabled;
-    const showKeypadDisabledState =
-        isMultiplayerInputDisabled && !isMultiplayerComboRunning;
     const canSubmitSolvedBlob =
         currentMultiplayerPlayer?.stage.remainingValue === 1;
     const [bufferedPrimeInput, setBufferedPrimeInput] = useState('');
@@ -1309,11 +1307,9 @@ export function MultiplayerGameScreen({
                         <div className='keypad solo-keypad multiplayer-keypad'>
                             {playablePrimes.map((prime) => (
                                 <PrimeKeyButton
-                                    interactionDisabled={isInputDisabled}
                                     key={`room-${prime}`}
                                     onPress={handlePrimeTap}
                                     prime={prime}
-                                    visuallyDisabled={showKeypadDisabledState}
                                 >
                                     {prime}
                                 </PrimeKeyButton>

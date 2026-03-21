@@ -129,6 +129,12 @@
     --color-button-subtle-text: var(--color-primary);
     --color-button-disabled-bg: var(--color-disabled-bg);
     --color-button-disabled-text: var(--color-disabled-text);
+    --color-game-self: var(--color-primary-strong);
+    --color-game-opponent: #5e8097;
+    --color-game-keypad-bg: rgba(22, 138, 173, 0.2);
+    --color-game-keypad-text: var(--color-primary-strong);
+    --color-game-keypad-active-bg: var(--color-primary-strong);
+    --color-game-keypad-active-text: var(--color-text-inverse);
 
     --space-0: 0;
     --space-1: 0.3rem;
