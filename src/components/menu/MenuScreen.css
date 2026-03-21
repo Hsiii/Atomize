@@ -151,14 +151,15 @@
 }
 
 .slot-p1 {
-    background: var(--color-primary-strong);
-    color: var(--color-text-inverse);
+    background: var(--color-menu-player-icon-bg);
+    color: var(--color-menu-player-icon-ink);
+    border-color: transparent;
 }
 
 .slot-p2-empty {
     position: relative;
-    background: var(--color-surface-accent);
-    color: var(--color-primary-strong);
+    background: var(--color-menu-player-icon-bg);
+    color: var(--color-menu-player-icon-ink);
     border-color: transparent;
 }
 
@@ -166,7 +167,7 @@
     content: '';
     position: absolute;
     inset: -2px;
-    border: 2px dashed var(--color-primary-strong);
+    border: 2px dashed var(--color-menu-player-icon-outline);
     border-radius: inherit;
 }
 
@@ -189,8 +190,9 @@
 }
 
 .slot-p2-filled {
-    background: var(--color-primary);
-    color: var(--color-text-inverse);
+    background: var(--color-menu-player-icon-bg);
+    color: var(--color-menu-player-icon-ink);
+    border-color: transparent;
     cursor: default;
 }
 
@@ -277,9 +279,12 @@
 
 /* === Start Button === */
 
-.menu-start-btn {
+.menu-start-btn.app-action-button {
     width: min(100%, 16rem);
     min-height: 3.5rem;
+    background: var(--color-menu-primary-button-bg);
+    border-color: var(--color-menu-primary-button-bg);
+    color: var(--color-menu-primary-button-text);
 }
 
 .menu-start-btn-ready:not(:disabled) {
