@@ -1,34 +1,31 @@
-import { Fragment, useEffect, useRef } from 'react';
 import type { JSX } from 'react';
 
 import './ComboQueuePanel.css';
+
+export const COMBO_QUEUE_ROW_CAPACITY = 5;
+export const COMBO_QUEUE_MAX_ITEMS = COMBO_QUEUE_ROW_CAPACITY * 2;
 
 type ComboQueuePanelProps = {
     queue: readonly number[];
 };
 
 export function ComboQueuePanel({ queue }: ComboQueuePanelProps): JSX.Element {
-    const barRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const el = barRef.current;
-        if (el) {
-            el.scrollLeft = el.scrollWidth;
-        }
-    }, [queue]);
+    const isCompactQueue = queue.length > COMBO_QUEUE_ROW_CAPACITY;
 
     return (
         <section aria-live='polite' className='combo-panel'>
-            <div className='combo-bar' ref={barRef}>
+            <div
+                className={`combo-bar${isCompactQueue ? ' compact-queue' : ''}`}
+            >
                 {queue.map((val, idx) => (
-                    <Fragment key={idx}>
-                        {idx > 0 && (
+                    <span className='combo-bar-item' key={`${val}-${idx}`}>
+                        <span className='combo-bar-chip'>{val}</span>
+                        {idx < queue.length - 1 ? (
                             <span aria-hidden='true' className='combo-bar-sep'>
                                 {'\u00D7'}
                             </span>
-                        )}
-                        <span className='combo-bar-chip'>{val}</span>
-                    </Fragment>
+                        ) : undefined}
+                    </span>
                 ))}
             </div>
         </section>

@@ -9,7 +9,7 @@ import './GamePlayScreen.css';
 import './MultiplayerGameScreen.css';
 
 import { ActionButton } from './ui/ActionButton';
-import { ComboQueuePanel } from './ui/ComboQueuePanel';
+import { COMBO_QUEUE_MAX_ITEMS, ComboQueuePanel } from './ui/ComboQueuePanel';
 import { NumberBlobDisplay } from './ui/NumberBlobDisplay';
 import { PrimeKeyButton } from './ui/PrimeKeyButton';
 import { ScoreDialog } from './ui/ScoreDialog';
@@ -791,7 +791,10 @@ export function MultiplayerGameScreen({
     }
 
     function queuePrime(prime: Prime) {
-        if (isInputDisabled) {
+        if (
+            isInputDisabled ||
+            visibleQueueRef.current.length >= COMBO_QUEUE_MAX_ITEMS
+        ) {
             return;
         }
 

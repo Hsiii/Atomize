@@ -9,7 +9,7 @@ import './GamePlayScreen.css';
 
 import { GameStatusHeader } from './GameStatusHeader';
 import { ActionButton } from './ui/ActionButton';
-import { ComboQueuePanel } from './ui/ComboQueuePanel';
+import { COMBO_QUEUE_MAX_ITEMS, ComboQueuePanel } from './ui/ComboQueuePanel';
 import { NumberBlobDisplay } from './ui/NumberBlobDisplay';
 import { PrimeKeyButton } from './ui/PrimeKeyButton';
 import { ScoreDialog } from './ui/ScoreDialog';
@@ -104,7 +104,10 @@ export function SingleGameScreen({
     }
 
     function handlePrimeTap(prime: Prime) {
-        if (isInputDisabled) {
+        if (
+            isInputDisabled ||
+            visibleQueueRef.current.length >= COMBO_QUEUE_MAX_ITEMS
+        ) {
             return;
         }
 
