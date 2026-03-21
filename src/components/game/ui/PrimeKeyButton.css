@@ -1,4 +1,5 @@
 .prime-key-button {
+    --prime-key-font-size: var(--type-display-input-size);
     aspect-ratio: 1;
     min-height: 0;
     width: 100%;
@@ -11,11 +12,17 @@
     background: var(--color-keypad-button-bg);
     color: var(--type-display-input-color);
     font-family: var(--type-display-input-family);
-    font-size: var(--type-display-input-size);
+    font-size: var(--prime-key-font-size);
     font-weight: var(--type-display-input-weight);
     line-height: var(--type-display-input-line-height);
     font-variant-numeric: tabular-nums;
     box-shadow: none;
+}
+
+@media (min-width: 900px) and (min-aspect-ratio: 4/3) {
+    .prime-key-button {
+        --prime-key-font-size: clamp(1.7rem, 4.8vw, 3.7rem);
+    }
 }
 
 .prime-key-button-label {

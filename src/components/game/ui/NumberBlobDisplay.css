@@ -1,5 +1,6 @@
 .number-blob-display {
     --number-blob-scale-factor: 1;
+    --number-blob-font-size-base: var(--type-display-game-size);
     --number-blob-max-size: 21.5rem;
     --number-blob-size: min(
         var(--number-blob-available-size, 100%),
@@ -7,7 +8,7 @@
     );
     --number-blob-padding: calc(1.75rem * var(--number-blob-scale-factor));
     --number-blob-main-font-size: calc(
-        var(--type-display-game-size) * var(--number-blob-scale-factor)
+        var(--number-blob-font-size-base) * var(--number-blob-scale-factor)
     );
     --number-blob-clear-font-size: var(--number-blob-main-font-size);
     --number-blob-split-font-size: calc(
@@ -335,6 +336,13 @@
     .number-blob-display-size-enemy,
     .number-blob-display-size-self {
         --number-blob-max-size: calc(17.7rem * var(--number-blob-scale-factor));
+    }
+}
+
+@media (min-width: 900px) and (min-aspect-ratio: 4/3) {
+    .number-blob-display {
+        --number-blob-font-size-base: clamp(3.8rem, 10vw, 6.3rem);
+        --number-blob-max-size: 19rem;
     }
 }
 
