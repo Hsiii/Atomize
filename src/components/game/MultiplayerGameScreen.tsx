@@ -93,6 +93,7 @@ export function MultiplayerGameScreen({
     const hpZeroHoldMs = 900;
     const isMatchFinished = multiplayerSnapshot?.status === 'finished';
     const isInputDisabled = isMultiplayerInputDisabled;
+    const [isBlobRevealActive, setIsBlobRevealActive] = useState(false);
     const [isOpponentRevealActive, setIsOpponentRevealActive] = useState(false);
     const [bufferedPrimeInput, setBufferedPrimeInput] = useState('');
     const [visibleQueue, setVisibleQueue] = useState<Prime[]>(
@@ -124,6 +125,7 @@ export function MultiplayerGameScreen({
     const [perfectBurst, setPerfectBurst] = useState<PerfectBurst>();
     const [selfFaultToken, setSelfFaultToken] = useState<string>();
     const previousEventIdRef = useRef<number | undefined>(undefined);
+    const previousStageIndexRef = useRef<number | undefined>(undefined);
     const previousOpponentStageIndexRef = useRef<number | undefined>(undefined);
     const animationFrameRef = useRef<number | undefined>(undefined);
     const timeoutIdsRef = useRef<number[]>([]);
@@ -140,6 +142,7 @@ export function MultiplayerGameScreen({
     const completedReleasedSelfHitEventIdRef = useRef<number | undefined>(
         undefined
     );
+    const currentStageIndex = currentMultiplayerPlayer?.stageIndex;
     const opponentStageIndex = opponentPlayer?.stageIndex;
     const canSubmitSolvedStage =
         currentMultiplayerPlayer?.stage.remainingValue === 1 &&
@@ -168,6 +171,39 @@ export function MultiplayerGameScreen({
     }, [isInputDisabled]);
 
     useEffect(() => clearDigitBuffer, []);
+
+    useLayoutEffect(() => {
+        if (currentStageIndex === undefined) {
+            previousStageIndexRef.current = undefined;
+            setIsBlobRevealActive(false);
+            return undefined;
+        }
+
+        if (previousStageIndexRef.current === undefined) {
+            previousStageIndexRef.current = currentStageIndex;
+            setIsBlobRevealActive(false);
+            return undefined;
+        }
+
+        if (previousStageIndexRef.current === currentStageIndex) {
+            return undefined;
+        }
+
+        previousStageIndexRef.current = currentStageIndex;
+        setIsBlobRevealActive(true);
+
+        const timer = globalThis.setTimeout(
+            () => {
+                setIsBlobRevealActive(false);
+            },
+            blobRevealTotalMs,
+            undefined
+        );
+
+        return () => {
+            globalThis.clearTimeout(timer);
+        };
+    }, [blobRevealTotalMs, currentStageIndex]);
 
     useLayoutEffect(() => {
         if (opponentStageIndex === undefined) {
@@ -1206,6 +1242,10 @@ export function MultiplayerGameScreen({
                                 faultKey={selfFaultToken}
                                 isComboRunning={isMultiplayerComboRunning}
                                 isFaultActive={selfFaultToken !== undefined}
+                                isStageRevealActive={
+                                    isBlobRevealActive &&
+                                    selfFaultToken === undefined
+                                }
                                 mode='multiplayer'
                                 size='self'
                                 targetId={currentMultiplayerPlayer?.stageIndex}
