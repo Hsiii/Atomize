@@ -223,7 +223,7 @@
     line-height: var(--type-body-meta-line-height);
     opacity: 0.85;
     color: inherit;
-    max-width: 6rem;
+    max-width: 9rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
