@@ -202,7 +202,7 @@
 }
 
 .multiplayer-hp-name {
-    font-weight: var(--type-body-meta-weight);
+    font-weight: var(--type-metric-inline-weight);
     text-transform: var(--type-action-label-wide-text-transform);
     letter-spacing: var(--type-action-label-wide-letter-spacing);
     line-height: var(--type-action-label-wide-line-height);
