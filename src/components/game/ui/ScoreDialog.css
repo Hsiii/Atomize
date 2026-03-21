@@ -201,9 +201,73 @@
     animation: button-slide 0.3s ease-out 0.55s both;
 }
 
-/* Defeat variant — muted */
+/* Victory variant — gold celebration */
+.score-dialog--victory .score-dialog-header {
+    background: var(--color-gold);
+}
+
+.score-dialog--victory .score-dialog-stat-value,
+.score-dialog--victory .score-dialog-combo-value {
+    color: var(--color-gold);
+}
+
+.score-dialog--victory .score-dialog-combo-ring {
+    border-color: var(--color-gold);
+}
+
+.score-dialog-confetti-layer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.score-dialog-confetti-dot {
+    position: absolute;
+    width: var(--confetti-size);
+    height: var(--confetti-size);
+    border-radius: 50%;
+    animation: confetti-burst 1.3s cubic-bezier(0.16, 0.9, 0.2, 1)
+        var(--confetti-delay) both;
+}
+
+.score-dialog-confetti-dot:nth-child(3n + 1) {
+    background: var(--color-gold);
+}
+
+.score-dialog-confetti-dot:nth-child(3n + 2) {
+    background: var(--color-gold-strong);
+}
+
+.score-dialog-confetti-dot:nth-child(3n) {
+    background: var(--color-primary-strong);
+}
+
+@keyframes confetti-burst {
+    0% {
+        opacity: 0;
+        transform: rotate(var(--confetti-angle)) translateY(0) scale(0);
+    }
+
+    30% {
+        opacity: 1;
+        transform: rotate(var(--confetti-angle))
+            translateY(calc(var(--confetti-distance) * -0.45)) scale(1.15);
+    }
+
+    100% {
+        opacity: 0;
+        transform: rotate(var(--confetti-angle))
+            translateY(calc(var(--confetti-distance) * -1)) scale(0.6);
+    }
+}
+
+/* Defeat variant — muted, slower entrance */
 .score-dialog--defeat {
     border-color: var(--color-ink-soft);
+    animation-duration: 0.65s;
+    animation-timing-function: cubic-bezier(0.34, 1.1, 0.64, 1);
 }
 
 .score-dialog--defeat .score-dialog-header {
