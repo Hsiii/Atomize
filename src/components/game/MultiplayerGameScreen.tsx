@@ -136,7 +136,11 @@ export function MultiplayerGameScreen({
     const enemyHealthRef = useRef<HTMLDivElement | null>(null);
     const displayedSelfHpRef = useRef(displayedSelfHp);
     const displayedEnemyHpRef = useRef(displayedEnemyHp);
+    const pendingAnimatedAttackIdRef = useRef<number | undefined>(undefined);
     const perfectSolveEndTimeRef = useRef<Map<number, number>>(new Map());
+    const completedReleasedSelfHitEventIdRef = useRef<number | undefined>(
+        undefined
+    );
     const currentStageIndex = currentMultiplayerPlayer?.stageIndex;
     const opponentStageIndex = opponentPlayer?.stageIndex;
     const canSubmitSolvedStage =
@@ -323,6 +327,12 @@ export function MultiplayerGameScreen({
     ]);
 
     useEffect(() => {
+        const pendingReleasedSelfHitEvent =
+            multiplayerSnapshot?.lastEvent?.type === 'self-hit' &&
+            multiplayerSnapshot.lastEvent.releasedDamage > 0 &&
+            completedReleasedSelfHitEventIdRef.current !==
+                multiplayerSnapshot.lastEvent.id;
+
         if (!currentMultiplayerPlayer || !opponentPlayer) {
             setDisplayedHp('self', currentMultiplayerPlayer?.hp ?? 0);
             setDisplayedHp('enemy', opponentPlayer?.hp ?? 0);
@@ -337,7 +347,9 @@ export function MultiplayerGameScreen({
         if (
             queuedAttacks.length > 0 ||
             activeAttackId !== undefined ||
-            hasPendingAttackEvent
+            hasPendingAttackEvent ||
+            pendingReleasedSelfHitEvent ||
+            pendingAnimatedAttackIdRef.current !== undefined
         ) {
             return;
         }
@@ -349,6 +361,7 @@ export function MultiplayerGameScreen({
         currentMultiplayerPlayer,
         currentMultiplayerPlayer?.hp,
         hasPendingAttackEvent,
+        multiplayerSnapshot?.lastEvent,
         opponentPlayer,
         opponentPlayer?.hp,
         queuedAttacks.length,
@@ -397,10 +410,18 @@ export function MultiplayerGameScreen({
             resolveHpLoss(side, lastEvent.sourceHp, lastEvent.damage);
 
             if (lastEvent.releasedDamage > 0) {
+                const releasedAttackId = lastEvent.id * 1000 + 1;
+                const restoredTargetHp = Math.min(
+                    multiplayerSnapshot.maxHp,
+                    lastEvent.targetHp + lastEvent.releasedDamage
+                );
+
+                pendingAnimatedAttackIdRef.current = releasedAttackId;
+                setDisplayedHp(targetSide, restoredTargetHp);
                 setQueuedAttacks((currentQueue: readonly PendingAttack[]) => [
                     ...currentQueue,
                     {
-                        id: lastEvent.id * 1000 + 1,
+                        id: releasedAttackId,
                         damage: lastEvent.releasedDamage,
                         isFinisher: false,
                         perfectSolve: false,
@@ -498,6 +519,14 @@ export function MultiplayerGameScreen({
                     (queuedAttack) => queuedAttack.id !== nextAttack.id
                 )
             );
+
+            if (pendingAnimatedAttackIdRef.current === nextAttack.id) {
+                completedReleasedSelfHitEventIdRef.current = Math.floor(
+                    nextAttack.id / 1000
+                );
+                pendingAnimatedAttackIdRef.current = undefined;
+            }
+
             setActiveAttackId(undefined);
         };
 
