@@ -504,8 +504,8 @@
     min-width: 5rem;
     padding: 0.3rem 0.7rem;
     border-radius: var(--radius-pill);
-    background: var(--color-button-secondary-bg);
-    color: var(--color-button-secondary-text);
+    background: var(--color-button-primary-bg);
+    color: var(--color-button-primary-text);
     font-family: var(--type-action-label-family);
     font-size: var(--type-action-label-size);
     font-weight: var(--type-action-label-weight);
