@@ -136,6 +136,7 @@ export function MultiplayerGameScreen({
     const enemyHealthRef = useRef<HTMLDivElement | null>(null);
     const displayedSelfHpRef = useRef(displayedSelfHp);
     const displayedEnemyHpRef = useRef(displayedEnemyHp);
+    const perfectSolveEndTimeRef = useRef<Map<number, number>>(new Map());
     const currentStageIndex = currentMultiplayerPlayer?.stageIndex;
     const opponentStageIndex = opponentPlayer?.stageIndex;
     const canSubmitSolvedStage =
@@ -271,6 +272,8 @@ export function MultiplayerGameScreen({
                 globalThis.clearTimeout(resultDialogTimerRef.current);
                 resultDialogTimerRef.current = undefined;
             }
+
+            perfectSolveEndTimeRef.current.clear();
         },
         []
     );
@@ -327,6 +330,7 @@ export function MultiplayerGameScreen({
             setActiveAttackId(undefined);
             setHpImpacts({});
             setPerfectBurst(undefined);
+            perfectSolveEndTimeRef.current.clear();
             return;
         }
 
@@ -453,6 +457,14 @@ export function MultiplayerGameScreen({
         }
 
         const nextAttack = queuedAttacks[0];
+        const remainingPerfectSolveMs = nextAttack.perfectSolve
+            ? triggerPerfectSolve(
+                  nextAttack.sourceSide,
+                  nextAttack.id,
+                  nextAttack.sourceHp,
+                  nextAttack.sourceRegen
+              )
+            : 0;
 
         const completeAttack = () => {
             const lossResult = resolveHpLoss(
@@ -460,14 +472,9 @@ export function MultiplayerGameScreen({
                 nextAttack.targetHp,
                 nextAttack.damage
             );
-            const regenDelayMs = nextAttack.perfectSolve
-                ? triggerPerfectSolve(
-                      nextAttack.sourceSide,
-                      nextAttack.id,
-                      nextAttack.sourceHp,
-                      nextAttack.sourceRegen
-                  )
-                : 0;
+            const resultRevealDelayMs = nextAttack.perfectSolve
+                ? Math.max(remainingPerfectSolveDuration(nextAttack.id), 0)
+                : remainingPerfectSolveMs;
 
             if (nextAttack.isFinisher) {
                 const zeroHoldMs =
@@ -477,9 +484,14 @@ export function MultiplayerGameScreen({
 
                 queueResultDialogReveal(
                     nextAttack.id,
-                    Math.max(lossResult.durationMs + zeroHoldMs, regenDelayMs)
+                    Math.max(
+                        lossResult.durationMs + zeroHoldMs,
+                        resultRevealDelayMs
+                    )
                 );
             }
+
+            perfectSolveEndTimeRef.current.delete(nextAttack.id);
 
             setQueuedAttacks((currentQueue: readonly PendingAttack[]) =>
                 currentQueue.filter(
@@ -579,6 +591,16 @@ export function MultiplayerGameScreen({
             980,
             hpRegenBaseDurationMs + gainedHp * hpRegenPerPointDurationMs
         );
+    }
+
+    function remainingPerfectSolveDuration(eventId: number): number {
+        const endTime = perfectSolveEndTimeRef.current.get(eventId);
+
+        if (endTime === undefined) {
+            return 0;
+        }
+
+        return Math.max(0, endTime - performance.now());
     }
 
     function queueResultDialogReveal(eventId: number, delayMs: number) {
@@ -725,12 +747,21 @@ export function MultiplayerGameScreen({
 
         const previousHp = getDisplayedHp(side);
         const regenDurationMs = getHpGainDuration(previousHp, nextHp);
+        const totalDurationMs = Math.max(
+            perfectBurstDurationMs,
+            regenDurationMs
+        );
+
+        perfectSolveEndTimeRef.current.set(
+            eventId,
+            performance.now() + totalDurationMs
+        );
 
         if (regen > 0) {
             resolveHpGain(side, nextHp, regen);
         }
 
-        return Math.max(perfectBurstDurationMs, regenDurationMs);
+        return totalDurationMs;
     }
 
     function queuePrime(prime: Prime) {
