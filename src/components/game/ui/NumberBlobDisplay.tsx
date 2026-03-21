@@ -36,7 +36,7 @@ type NumberBlobDisplayProps = {
 
 const echoAngles = [-58, -26, 18, 52];
 const clearPopPrepDurationMs = 140;
-const faultAnimationDurationMs = 400;
+const faultAnimationDurationMs = 620;
 
 function createSplitEcho(
     id: number,
