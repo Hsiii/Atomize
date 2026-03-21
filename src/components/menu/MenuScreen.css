@@ -431,19 +431,21 @@
 /* === Invite Dialog === */
 
 .dialog-invite {
-    --invite-row-height: 4rem;
+    --invite-row-height: 3.4rem;
+    --invite-row-gap: 0.9rem;
     --invite-visible-rows: 4.5;
-    max-height: min(
-        70dvh,
-        calc((var(--invite-row-height) * var(--invite-visible-rows)) + 5.5rem)
+    --invite-list-visible-height: calc(
+        (var(--invite-row-height) * var(--invite-visible-rows)) +
+            (var(--invite-row-gap) * (var(--invite-visible-rows) - 1))
     );
+    max-height: min(70dvh, calc(var(--invite-list-visible-height) + 5.5rem));
     display: flex;
     flex-direction: column;
 }
 
 .dialog-invite .dialog-body {
     flex: 1;
-    max-height: calc(var(--invite-row-height) * var(--invite-visible-rows));
+    max-height: var(--invite-list-visible-height);
     overflow-y: auto;
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
@@ -453,6 +455,8 @@
 }
 
 .invite-list {
+    display: grid;
+    row-gap: var(--invite-row-gap);
     list-style: none;
     margin: 0;
     padding: 0;
@@ -464,17 +468,29 @@
 }
 
 .invite-row {
+    position: relative;
     box-sizing: border-box;
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     justify-content: space-between;
-    min-height: var(--invite-row-height);
+    column-gap: var(--space-7);
+    height: var(--invite-row-height);
     padding: 0;
-    border-bottom: 1px solid var(--color-border-soft);
 }
 
-.invite-row:last-child {
-    border-bottom: none;
+.invite-row::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: calc(var(--invite-row-gap) * -0.5);
+    left: 0;
+    height: 1px;
+    background: var(--color-border-soft);
+}
+
+.invite-row:last-child::after {
+    content: none;
 }
 
 .invite-name {
