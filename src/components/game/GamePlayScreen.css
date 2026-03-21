@@ -13,7 +13,6 @@
     display: none;
 }
 
-.desktop-keyboard-hint-header,
 .desktop-keyboard-hint-body {
     pointer-events: none;
 }
@@ -235,22 +234,24 @@
         right: max(var(--space-5), env(safe-area-inset-right));
         z-index: 5;
         display: block;
-        width: min(12rem, calc(100vw - 3rem));
+        width: min(15rem, calc(100vw - 3rem));
         border-radius: var(--radius-panel);
         background: var(--color-surface-strong);
         border: 2px solid var(--color-primary);
         overflow: hidden;
-        box-shadow: 0 0.6rem 1.4rem
-            color-mix(in srgb, var(--color-ink) 12%, transparent);
     }
 
     .desktop-keyboard-hint-header {
         display: flex;
         align-items: center;
-        justify-content: flex-start;
-        padding: var(--space-3) var(--space-4);
+        justify-content: space-between;
+        gap: var(--space-3);
+        padding: var(--space-4) var(--space-5);
         background: var(--color-primary);
         color: var(--color-text-inverse);
+    }
+
+    .desktop-keyboard-hint-title {
         font-family: var(--type-action-label-family);
         font-size: var(--type-action-label-size);
         font-weight: var(--type-action-label-weight);
@@ -258,11 +259,32 @@
         text-transform: var(--type-action-label-caps-text-transform);
     }
 
+    .desktop-keyboard-hint-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        padding: 0;
+        border: 0;
+        border-radius: var(--radius-pill);
+        background: transparent;
+        color: var(--color-text-inverse);
+        opacity: 0.8;
+        cursor: pointer;
+        transition: opacity 0.15s ease;
+    }
+
+    .desktop-keyboard-hint-close:hover {
+        opacity: 1;
+    }
+
     .desktop-keyboard-hint-body {
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
         gap: var(--space-2);
-        padding: var(--space-4);
+        padding: var(--space-5);
         color: var(--color-ink);
         font-family: var(--type-body-meta-family);
         font-size: var(--type-body-meta-size);
