@@ -12,6 +12,14 @@
     padding: 0;
 }
 
+.single-game-screen .top-bar-back-button {
+    width: var(--size-control);
+    height: var(--size-control);
+    border-radius: var(--radius-pill);
+    background: var(--color-solo-flat-blue);
+    color: var(--color-text-inverse);
+}
+
 .top-bar-back-button {
     padding: var(--space-0);
     border: 0;
@@ -55,6 +63,10 @@
     background: var(--color-track);
 }
 
+.single-game-screen .single-timer-bar {
+    background: var(--color-solo-flat-blue-track);
+}
+
 .single-timer-fill {
     display: block;
     height: 100%;
@@ -65,6 +77,10 @@
         var(--color-secondary)
     );
     transition: width 1s linear;
+}
+
+.single-game-screen .single-timer-fill {
+    background: var(--color-solo-flat-blue);
 }
 
 .single-timer-penalty {
@@ -131,4 +147,3 @@
         transform: translateY(-0.8rem) scale(1);
     }
 }
-
