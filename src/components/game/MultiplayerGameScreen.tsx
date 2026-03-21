@@ -981,6 +981,7 @@ export function MultiplayerGameScreen({
     function triggerSelfFault() {
         const token = globalThis.crypto.randomUUID();
 
+        setIsBlobRevealActive(false);
         setSelfFaultToken(token);
 
         scheduleTimeout(() => {
