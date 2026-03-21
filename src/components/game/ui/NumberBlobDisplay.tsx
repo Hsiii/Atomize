@@ -274,7 +274,7 @@ export function NumberBlobDisplay({
             echoIdRef.current += clearEchoes.length + 1;
             setIsImpactActive(false);
             setClearPop(undefined);
-            setDisplayedValue(1);
+            setDisplayedValue(previousValue);
 
             clearPrepTimerRef.current = globalThis.setTimeout(
                 () => {
