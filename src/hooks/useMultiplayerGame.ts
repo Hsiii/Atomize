@@ -234,7 +234,7 @@ export function useMultiplayerGame({
 
                 showLobbyToast(uiText.inviteDeclined);
                 detachPromise(closeActiveChannel());
-                setMultiplayer({
+                setMultiplayerState({
                     playerId: undefined,
                     snapshot: undefined,
                     statusText: uiText.idleStatus,
@@ -343,7 +343,7 @@ export function useMultiplayerGame({
         await closeActiveChannel();
         setMultiplayerPrimeQueue([]);
         setIsMultiplayerComboRunning(false);
-        setMultiplayer({
+        setMultiplayerState({
             playerId: undefined,
             snapshot: undefined,
             statusText: uiText.idleStatus,
@@ -395,7 +395,7 @@ export function useMultiplayerGame({
                 multiplayerPlayerName
             );
 
-            setMultiplayer((prev) => ({
+            setMultiplayerState((prev) => ({
                 ...prev,
                 playerId,
                 snapshot,
@@ -551,7 +551,7 @@ export function useMultiplayerGame({
             ready: nextReadyState,
         });
 
-        setMultiplayer((prev) => {
+        setMultiplayerState((prev) => {
             if (!prev.snapshot || !prev.playerId) {
                 return prev;
             }
@@ -635,7 +635,7 @@ export function useMultiplayerGame({
     };
 
     function setStatusText(statusText: string) {
-        setMultiplayer((currentState) => ({
+        setMultiplayerState((currentState) => ({
             ...currentState,
             statusText,
         }));
@@ -664,13 +664,28 @@ export function useMultiplayerGame({
         showLobbyToast(message);
         clearPendingJoinTimers();
         await closeActiveChannel();
-        setMultiplayer({
+        setMultiplayerState({
             playerId: undefined,
             snapshot: undefined,
             statusText: uiText.idleStatus,
             roomId: '',
             isHost: false,
         });
+    }
+
+    function setMultiplayerState(
+        nextState:
+            | MultiplayerState
+            | ((currentState: MultiplayerState) => MultiplayerState)
+    ) {
+        const currentState = latestMultiplayerRef.current;
+        const resolvedState =
+            typeof nextState === 'function'
+                ? nextState(currentState)
+                : nextState;
+
+        latestMultiplayerRef.current = resolvedState;
+        setMultiplayer(resolvedState);
     }
 
     async function invitePlayer(targetPlayerId: string) {
@@ -743,16 +758,16 @@ export function useMultiplayerGame({
     }
 
     function updateSnapshot(snapshot: RoomSnapshot, statusText?: string) {
-        setMultiplayer((currentState) => ({
-            ...(shouldIgnoreSnapshotRegression(currentState.snapshot, snapshot)
+        setMultiplayerState((currentState) =>
+            shouldIgnoreSnapshotRegression(currentState.snapshot, snapshot)
                 ? currentState
                 : {
                       ...currentState,
                       snapshot,
                       roomId: snapshot.roomId,
                       statusText: statusText ?? currentState.statusText,
-                  }),
-        }));
+                  }
+        );
     }
 
     async function closeActiveChannel() {
@@ -856,7 +871,7 @@ export function useMultiplayerGame({
 
         channelRef.current = channel;
 
-        setMultiplayer((currentState) => ({
+        setMultiplayerState((currentState) => ({
             ...currentState,
             playerId,
             roomId: isHost ? roomId : currentState.roomId,
