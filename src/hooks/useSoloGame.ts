@@ -149,6 +149,9 @@ export function useSoloGame({
                 );
 
                 if (outcome.cleared) {
+                    setSoloStageAdvanceSolvedStateKey(
+                        (currentKey) => currentKey + 1
+                    );
                     setIsSoloComboRunning(false);
                 }
             },

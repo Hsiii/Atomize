@@ -394,10 +394,49 @@ export function NumberBlobDisplay({
             return undefined;
         }
 
+        if (didTargetRefresh) {
+            clearTimer(clearPrepTimerRef.current);
+            clearPrepTimerRef.current = undefined;
+            clearTimer(clearEchoTimerRef.current);
+            clearEchoTimerRef.current = undefined;
+            clearTimer(clearPopTimerRef.current);
+            clearPopTimerRef.current = undefined;
+            clearTimer(valueTimerRef.current);
+            valueTimerRef.current = undefined;
+            clearTimer(echoTimerRef.current);
+            echoTimerRef.current = undefined;
+            clearTimer(impactTimerRef.current);
+            impactTimerRef.current = undefined;
+            clearTimer(localStageRevealTimerRef.current);
+            localStageRevealTimerRef.current = undefined;
+
+            setSplitEchos([]);
+            setClearPop(undefined);
+            setIsImpactActive(false);
+            setDisplayedValue(value);
+
+            if (mode === 'solo') {
+                setIsLocalStageRevealActive(true);
+                localStageRevealTimerRef.current = globalThis.setTimeout(
+                    () => {
+                        setIsLocalStageRevealActive(false);
+                        localStageRevealTimerRef.current = undefined;
+                    },
+                    localStageRevealDurationMs,
+                    undefined
+                );
+            }
+
+            previousValueRef.current = value;
+            previousTargetIdRef.current = resolvedTargetId;
+
+            return undefined;
+        }
+
         if (value !== previousValue) {
             let poppedValue: number | undefined;
 
-            if (!didTargetRefresh && value > 1 && value < previousValue) {
+            if (value > 1 && value < previousValue) {
                 const nextPoppedValue = previousValue / value;
 
                 if (Number.isInteger(nextPoppedValue)) {
