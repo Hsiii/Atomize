@@ -17,6 +17,8 @@
     min-height: 0;
     display: block;
     overflow: visible;
+    width: min(100%, 32rem);
+    margin-inline: auto;
 }
 
 .multiplayer-column {
