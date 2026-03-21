@@ -164,11 +164,6 @@
     }
 }
 
-.multiplayer-hp-bar--regen {
-    animation: multiplayer-hp-regen-rise var(--hp-transition-duration)
-        cubic-bezier(0.2, 0.9, 0.24, 1);
-}
-
 .multiplayer-hp-copy {
     display: flex;
     align-items: baseline;
