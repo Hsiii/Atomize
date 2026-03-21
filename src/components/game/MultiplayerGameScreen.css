@@ -174,11 +174,6 @@
     align-items: baseline;
     justify-content: space-between;
     gap: var(--space-3);
-    font-family: var(--type-body-meta-family);
-    font-size: var(--type-body-meta-size);
-    font-weight: var(--type-body-meta-weight);
-    line-height: var(--type-body-meta-line-height);
-    letter-spacing: var(--type-action-label-caps-letter-spacing);
 }
 
 .multiplayer-perfect-tag {
@@ -198,11 +193,13 @@
         forwards;
 }
 
-.multiplayer-hp-name {
+.multiplayer-hp-name,
+.multiplayer-hp-stat {
+    font-family: var(--type-metric-inline-family);
+    font-size: var(--type-metric-inline-size);
     font-weight: var(--type-metric-inline-weight);
-    text-transform: var(--type-action-label-wide-text-transform);
-    letter-spacing: var(--type-action-label-wide-letter-spacing);
-    line-height: var(--type-action-label-wide-line-height);
+    letter-spacing: var(--type-action-label-caps-letter-spacing);
+    line-height: var(--type-metric-inline-line-height);
 }
 
 .multiplayer-hp-bar-self .multiplayer-hp-name {
@@ -214,11 +211,7 @@
 }
 
 .multiplayer-hp-stat {
-    font-family: var(--type-metric-inline-family);
-    font-size: var(--type-metric-inline-size);
-    font-weight: var(--type-metric-inline-weight);
     font-variant-numeric: tabular-nums;
-    line-height: var(--type-metric-inline-line-height);
 }
 
 .multiplayer-hp-bar-self .multiplayer-hp-stat {
