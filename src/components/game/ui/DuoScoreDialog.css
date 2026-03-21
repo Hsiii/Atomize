@@ -113,30 +113,42 @@
 
 .duo-score-player-name {
     margin: 0;
-    font-family: var(--type-action-label-family);
-    font-size: var(--type-action-label-size);
-    font-weight: var(--type-action-label-weight);
+    padding: var(--space-2) var(--space-5);
+    font-family: var(--type-metric-inline-family);
+    font-size: var(--type-metric-inline-size);
+    font-weight: var(--type-metric-inline-weight);
+    line-height: var(--type-metric-inline-line-height);
     letter-spacing: var(--type-action-label-caps-letter-spacing);
     text-transform: var(--type-action-label-caps-text-transform);
-    color: var(--color-ink);
-    line-height: var(--type-action-label-line-height);
+    color: var(--color-text-inverse);
+    background: var(--color-primary);
+    border-radius: var(--radius-pill);
 }
 
 .duo-score-player--winner .duo-score-player-name {
-    color: var(--color-gold);
+    background: var(--color-gold);
 }
 
 .duo-score-player--loser .duo-score-player-name {
-    color: var(--color-ink-soft);
+    background: var(--color-ink-soft);
 }
 
-/* ── Stat rows ── */
+/* ── Stat list ── */
 
-.duo-score-stat {
+.duo-score-stat-list {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    width: 100%;
+}
+
+.duo-score-stat-row {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-1);
+    gap: 0.1rem;
 }
 
 .duo-score-stat-label {
@@ -153,7 +165,7 @@
 .duo-score-stat-value {
     margin: 0;
     font-family: var(--type-display-results-family);
-    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-size: var(--type-display-results-size);
     font-weight: var(--type-display-results-weight);
     line-height: var(--type-display-results-line-height);
     color: var(--color-primary);

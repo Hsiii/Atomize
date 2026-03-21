@@ -105,18 +105,16 @@ function PlayerColumn({ player }: { player: DuoPlayerStats }): JSX.Element {
     return (
         <div className={`duo-score-player${modifier}`}>
             <p className='duo-score-player-name'>{player.name}</p>
-            <div className='duo-score-stat'>
-                <p className='duo-score-stat-label'>{uiText.atomized}</p>
-                <strong className='duo-score-stat-value'>
-                    {player.atomized}
-                </strong>
-            </div>
-            <div className='duo-score-stat'>
-                <p className='duo-score-stat-label'>{uiText.maxCombo}</p>
-                <strong className='duo-score-stat-value'>
-                    {player.maxCombo}
-                </strong>
-            </div>
+            <dl className='duo-score-stat-list'>
+                <div className='duo-score-stat-row'>
+                    <dt className='duo-score-stat-label'>{uiText.atomized}</dt>
+                    <dd className='duo-score-stat-value'>{player.atomized}</dd>
+                </div>
+                <div className='duo-score-stat-row'>
+                    <dt className='duo-score-stat-label'>{uiText.maxCombo}</dt>
+                    <dd className='duo-score-stat-value'>{player.maxCombo}</dd>
+                </div>
+            </dl>
         </div>
     );
 }
