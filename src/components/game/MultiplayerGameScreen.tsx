@@ -34,8 +34,7 @@ type AttackParticle = {
     y: number;
     size: number;
     opacity: number;
-    shape: 'circle' | 'diamond' | 'ring';
-    rotation: number;
+    shape: 'ball' | 'circle' | 'ring';
 };
 
 type AttackEffectState = {
@@ -962,21 +961,6 @@ export function MultiplayerGameScreen({
                     endPoint.y,
                     accel
                 );
-                const nextT = Math.min(1, accel + 0.01);
-                const nx = quadraticBezier(
-                    startPoint.x,
-                    controlPoint.x,
-                    endPoint.x,
-                    nextT
-                );
-                const ny = quadraticBezier(
-                    startPoint.y,
-                    controlPoint.y,
-                    endPoint.y,
-                    nextT
-                );
-                const angle =
-                    Math.atan2(ny - ly, nx - lx) * (180 / Math.PI) + 45;
 
                 particles.push({
                     id: 0,
@@ -985,8 +969,7 @@ export function MultiplayerGameScreen({
                     y: ly,
                     size: leadSize,
                     opacity: Math.min(1, leadT * 5),
-                    shape: 'diamond',
-                    rotation: angle,
+                    shape: 'ball',
                 });
             }
 
@@ -1027,7 +1010,6 @@ export function MultiplayerGameScreen({
                     size: trailBaseSize * Math.max(0.5, 1 - i * 0.06),
                     opacity: (1 - t * 0.65) * Math.min(1, t * 8),
                     shape: 'circle',
-                    rotation: 0,
                 });
             }
 
@@ -1048,7 +1030,6 @@ export function MultiplayerGameScreen({
                         size: leadSize * 0.5 * (1 - easeOut * 0.4),
                         opacity: (1 - easeOut) * 0.9,
                         shape: 'ring',
-                        rotation: 0,
                     });
                 }
             }
@@ -1206,7 +1187,6 @@ export function MultiplayerGameScreen({
                                             '--particle-y': `${particle.y}px`,
                                             '--particle-opacity':
                                                 particle.opacity,
-                                            '--particle-rotation': `${particle.rotation}deg`,
                                         } as CSSProperties
                                     }
                                 />
