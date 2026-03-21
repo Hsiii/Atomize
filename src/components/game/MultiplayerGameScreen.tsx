@@ -393,11 +393,20 @@ export function MultiplayerGameScreen({
             resolveHpLoss(side, lastEvent.sourceHp, lastEvent.damage);
 
             if (lastEvent.releasedDamage > 0) {
-                resolveHpLoss(
-                    targetSide,
-                    lastEvent.targetHp,
-                    lastEvent.releasedDamage
-                );
+                setQueuedAttacks((currentQueue: readonly PendingAttack[]) => [
+                    ...currentQueue,
+                    {
+                        id: lastEvent.id * 1000 + 1,
+                        damage: lastEvent.releasedDamage,
+                        isFinisher: false,
+                        perfectSolve: false,
+                        sourceHp: lastEvent.sourceHp,
+                        sourceRegen: 0,
+                        sourceSide: side,
+                        targetHp: lastEvent.targetHp,
+                        targetSide,
+                    },
+                ]);
             }
 
             return;
