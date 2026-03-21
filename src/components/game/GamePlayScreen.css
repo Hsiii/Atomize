@@ -139,6 +139,7 @@
 }
 
 .combo-enter-button.app-action-button {
+    padding: 0;
     background: var(--color-primary-strong);
 }
 
