@@ -388,8 +388,18 @@ export function MultiplayerGameScreen({
                 lastEvent.sourcePlayerId === currentMultiplayerPlayer?.id
                     ? 'self'
                     : 'enemy';
+            const targetSide = side === 'self' ? 'enemy' : 'self';
 
             resolveHpLoss(side, lastEvent.sourceHp, lastEvent.damage);
+
+            if (lastEvent.releasedDamage > 0) {
+                resolveHpLoss(
+                    targetSide,
+                    lastEvent.targetHp,
+                    lastEvent.releasedDamage
+                );
+            }
+
             return;
         }
 

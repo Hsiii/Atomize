@@ -4,7 +4,7 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 
 import { uiText } from '../app-state';
 import type { MultiplayerState, OnlineLobbyUser, Screen } from '../app-state';
-import { applyPrimeSelection } from '../core';
+import { applyPrimeSelection, computeBattleFactorDamage } from '../core';
 import type { Prime, RoomSnapshot } from '../core';
 import {
     createRoomId,
@@ -928,7 +928,8 @@ export function useMultiplayerGame({
 
     async function sendMultiplayerPenalty(
         snapshotOverride?: RoomSnapshot,
-        preservedStage?: RoomSnapshot['stage']
+        preservedStage?: RoomSnapshot['stage'],
+        extraReleasedDamage = 0
     ): Promise<boolean> {
         const currentState = latestMultiplayerRef.current;
         const gameplaySnapshot = getEffectiveMultiplayerSnapshot(
@@ -943,13 +944,15 @@ export function useMultiplayerGame({
         const nextSnapshot = applyBattlePenalty(
             gameplaySnapshot,
             currentState.playerId,
-            preservedStage
+            preservedStage,
+            extraReleasedDamage
         );
         updateSnapshot(nextSnapshot, '');
         return await broadcastMessage({
             type: 'combo_penalty',
             playerId: currentState.playerId,
             preservedStage,
+            extraReleasedDamage,
         });
     }
 
@@ -1089,7 +1092,8 @@ export function useMultiplayerGame({
         const nextSnapshot = applyBattlePenalty(
             currentState.snapshot,
             message.playerId,
-            message.preservedStage
+            message.preservedStage,
+            message.extraReleasedDamage
         );
 
         updateSnapshot(nextSnapshot, '');
@@ -1166,7 +1170,11 @@ export function useMultiplayerGame({
 
         if (hasRedundantBufferedPrimes) {
             setMultiplayerPrimeQueue([]);
-            await sendMultiplayerPenalty(undefined, outcome.stage);
+            await sendMultiplayerPenalty(
+                undefined,
+                outcome.stage,
+                computeBattleFactorDamage(prime)
+            );
             return undefined;
         }
 

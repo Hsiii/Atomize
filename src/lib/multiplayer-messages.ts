@@ -27,6 +27,7 @@ export type RoomBroadcastMessage =
           type: 'combo_penalty';
           playerId: string;
           preservedStage?: RoomSnapshot['stage'];
+          extraReleasedDamage?: number;
       }
     | {
           type: 'clear_solved_stage';
