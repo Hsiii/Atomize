@@ -278,6 +278,30 @@
     background: var(--color-game-opponent);
 }
 
+.multiplayer-hp-bar--danger .multiplayer-hp-fill {
+    background: var(--color-danger);
+}
+
+.multiplayer-hp-bar--danger .multiplayer-hp-stat {
+    color: var(--color-danger);
+    animation: hp-danger-pulse 1.2s ease-in-out infinite;
+}
+
+.multiplayer-hp-bar--danger .multiplayer-hp-name {
+    color: var(--color-danger);
+}
+
+@keyframes hp-danger-pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.68;
+    }
+}
+
 .multiplayer-hp-pop {
     --multiplayer-hp-pop-index: 0;
     --multiplayer-hp-pop-count: 1;

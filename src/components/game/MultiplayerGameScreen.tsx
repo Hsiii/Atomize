@@ -1483,11 +1483,13 @@ function BattleHpBar({
     side,
 }: BattleHpBarProps): JSX.Element {
     const hpRatio = Math.max(0, Math.min(100, (hp / Math.max(maxHp, 1)) * 100));
+    const isDanger = hp > 0 && hpRatio < 25;
     const classNames = [
         'multiplayer-hp-bar',
         `multiplayer-hp-bar-${side}`,
         impacts?.hit ? 'multiplayer-hp-bar--hit' : '',
         impacts?.regen ? 'multiplayer-hp-bar--regen' : '',
+        isDanger ? 'multiplayer-hp-bar--danger' : '',
     ]
         .filter(Boolean)
         .join(' ');
