@@ -21,6 +21,7 @@ export type RoomBroadcastMessage =
           playerId: string;
           prime: Prime;
           suppressAttack?: boolean;
+          perfectSolveEligible?: boolean;
       }
     | {
           type: 'combo_penalty';

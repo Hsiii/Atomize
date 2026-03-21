@@ -887,7 +887,8 @@ export function useMultiplayerGame({
 
     async function sendMultiplayerPrime(
         prime: Prime,
-        suppressAttack = false
+        suppressAttack = false,
+        perfectSolveEligible = false
     ): Promise<MultiplayerSendResult> {
         const currentState = latestMultiplayerRef.current;
         const gameplaySnapshot = getEffectiveMultiplayerSnapshot(
@@ -908,7 +909,7 @@ export function useMultiplayerGame({
             gameplaySnapshot,
             currentState.playerId,
             prime,
-            { suppressAttack }
+            { suppressAttack, perfectSolveEligible }
         );
         updateSnapshot(nextSnapshot, '');
         const didBroadcast = await broadcastMessage({
@@ -916,6 +917,7 @@ export function useMultiplayerGame({
             playerId: currentState.playerId,
             prime,
             suppressAttack,
+            perfectSolveEligible,
         });
 
         return {
@@ -1061,7 +1063,10 @@ export function useMultiplayerGame({
             currentState.snapshot,
             message.playerId,
             message.prime,
-            { suppressAttack: message.suppressAttack }
+            {
+                suppressAttack: message.suppressAttack,
+                perfectSolveEligible: message.perfectSolveEligible,
+            }
         );
 
         updateSnapshot(nextSnapshot, '');
@@ -1115,7 +1120,8 @@ export function useMultiplayerGame({
     async function processMultiplayerQueue(
         queuedPrimes: readonly Prime[],
         index = 0,
-        shouldBatchComboDamage?: boolean
+        shouldBatchComboDamage?: boolean,
+        perfectSolveEligible?: boolean
     ): Promise<undefined> {
         if (index >= queuedPrimes.length) {
             return undefined;
@@ -1142,6 +1148,10 @@ export function useMultiplayerGame({
 
         const batchComboDamage =
             shouldBatchComboDamage ?? queuedPrimes.length > 1;
+        const comboPerfectSolveEligible =
+            perfectSolveEligible ??
+            currentPlayer.stage.remainingValue ===
+                currentPlayer.stage.targetValue;
 
         const outcome = applyPrimeSelection(currentPlayer.stage, prime);
 
@@ -1168,7 +1178,8 @@ export function useMultiplayerGame({
 
         const sendResult = await sendMultiplayerPrime(
             prime,
-            batchComboDamage && !outcome.cleared && !isFinalQueuedPrime
+            batchComboDamage && !outcome.cleared && !isFinalQueuedPrime,
+            comboPerfectSolveEligible
         );
 
         if (!sendResult.didBroadcast) {
@@ -1184,7 +1195,8 @@ export function useMultiplayerGame({
         await processMultiplayerQueue(
             queuedPrimes,
             index + 1,
-            batchComboDamage
+            batchComboDamage,
+            comboPerfectSolveEligible
         );
 
         return undefined;

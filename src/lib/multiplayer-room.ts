@@ -110,6 +110,7 @@ export function applyBattlePrimeSelection(
     prime: Prime,
     options?: {
         suppressAttack?: boolean;
+        perfectSolveEligible?: boolean;
     }
 ): RoomSnapshot {
     if (snapshot.status !== 'playing') {
@@ -147,7 +148,8 @@ export function applyBattlePrimeSelection(
     const { pendingFactorDamage } = actingPlayer;
     const factorDamage = computeBattleFactorDamage(prime);
     const totalFactorDamage = pendingFactorDamage + factorDamage;
-    const perfectSolve = selection.cleared && pendingFactorDamage > 0;
+    const perfectSolve =
+        selection.cleared && options?.perfectSolveEligible === true;
     const comboDamage = selection.cleared ? computeBattleComboDamage(combo) : 0;
     const regen = computePerfectSolveRegen(
         actingPlayer.hp,
