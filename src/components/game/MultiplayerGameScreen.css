@@ -297,14 +297,6 @@
     color: var(--color-gold);
 }
 
-.multiplayer-hp-bar-self .multiplayer-hp-pop {
-    --multiplayer-hp-pop-bottom: calc(100% + var(--space-1));
-}
-
-.multiplayer-hp-bar-enemy .multiplayer-hp-pop {
-    --multiplayer-hp-pop-bottom: calc(100% - var(--space-3));
-}
-
 @keyframes multiplayer-hp-pop {
     0% {
         opacity: 0;
