@@ -534,8 +534,8 @@
     color: var(--type-body-meta-color);
     text-align: center;
     padding: var(--space-7) 0;
-    font-family: var(--type-body-meta-family);
-    font-size: var(--type-body-meta-size);
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
     font-weight: var(--type-body-meta-weight);
 }
 
@@ -551,8 +551,8 @@
 
 .invitation-text {
     margin: 0;
-    font-family: var(--type-body-meta-family);
-    font-size: var(--type-body-meta-size);
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
     font-weight: var(--type-body-meta-weight);
     line-height: var(--type-body-meta-relaxed-line-height);
     color: var(--color-ink);
