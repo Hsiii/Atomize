@@ -266,12 +266,8 @@ export function NumberBlobDisplay({
             const clearEchoes = concealValues
                 ? []
                 : createClearSplitEchoes(echoIdRef.current, previousValue);
-            const nextClearPop = {
-                id: echoIdRef.current + clearEchoes.length,
-                value: 1,
-            };
 
-            echoIdRef.current += clearEchoes.length + 1;
+            echoIdRef.current += clearEchoes.length;
             setIsImpactActive(false);
             setClearPop(undefined);
             setDisplayedValue(previousValue);
@@ -284,8 +280,6 @@ export function NumberBlobDisplay({
                             ...clearEchoes,
                         ]);
                     }
-
-                    setClearPop(nextClearPop);
 
                     setDisplayedValue(value);
 
@@ -305,20 +299,6 @@ export function NumberBlobDisplay({
                             clearEchoTimerRef.current = undefined;
                         },
                         820,
-                        undefined
-                    );
-
-                    clearPopTimerRef.current = globalThis.setTimeout(
-                        () => {
-                            setClearPop(
-                                (currentClearPop: ClearPop | undefined) =>
-                                    currentClearPop?.id === nextClearPop.id
-                                        ? undefined
-                                        : currentClearPop
-                            );
-                            clearPopTimerRef.current = undefined;
-                        },
-                        260,
                         undefined
                     );
 
