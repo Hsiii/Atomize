@@ -8,13 +8,12 @@ import {
     createInitialSoloState,
 } from '../core';
 import type { Prime } from '../core';
+import { SOLO_COMBO_STEP_DELAY_MS } from '../core/timing';
 import {
     createSoloRunSeed,
     playablePrimes,
     soloDurationSeconds,
 } from '../lib/app-helpers';
-
-const soloComboStepDelayMs = 280;
 
 type UseSoloGameOptions = {
     screen: Screen;
@@ -155,7 +154,7 @@ export function useSoloGame({
                     setIsSoloComboRunning(false);
                 }
             },
-            soloComboStepDelayMs,
+            SOLO_COMBO_STEP_DELAY_MS,
             undefined
         );
 

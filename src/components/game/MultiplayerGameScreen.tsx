@@ -4,6 +4,19 @@ import { CircleArrowUp, Delete } from 'lucide-react';
 
 import { uiText } from '../../app-state';
 import type { Prime, RoomPlayer, RoomSnapshot } from '../../core';
+import {
+    BLOB_REVEAL_TOTAL_MS,
+    DAMAGE_POP_LIFETIME_MS,
+    HP_IMPACT_TAIL_MS,
+    HP_LOSS_BASE_DURATION_MS,
+    HP_LOSS_PER_POINT_DURATION_MS,
+    HP_REGEN_BASE_DURATION_MS,
+    HP_REGEN_PER_POINT_DURATION_MS,
+    HP_ZERO_HOLD_MS,
+    KEYBOARD_DIGIT_BUFFER_WINDOW_MS,
+    PERFECT_BURST_DURATION_MS,
+    SELF_FAULT_DURATION_MS,
+} from '../../core/timing';
 
 import './GamePlayScreen.css';
 import './MultiplayerGameScreen.css';
@@ -85,17 +98,6 @@ export function MultiplayerGameScreen({
     onBack,
     onSubmit,
 }: MultiplayerGameScreenProps): JSX.Element {
-    const blobRevealTotalMs = 3000;
-    const keyboardDigitBufferWindowMs = 250;
-    const damagePopLifetimeMs = 780;
-    const selfFaultDurationMs = 600;
-    const perfectBurstDurationMs = 1120;
-    const hpImpactTailMs = 240;
-    const hpLossBaseDurationMs = 220;
-    const hpLossPerPointDurationMs = 28;
-    const hpRegenBaseDurationMs = 260;
-    const hpRegenPerPointDurationMs = 24;
-    const hpZeroHoldMs = 900;
     const isMatchFinished = multiplayerSnapshot?.status === 'finished';
     const isInputDisabled = isMultiplayerInputDisabled;
     const [isBlobRevealActive, setIsBlobRevealActive] = useState(false);
@@ -215,7 +217,7 @@ export function MultiplayerGameScreen({
                 () => {
                     setIsBlobRevealActive(false);
                 },
-                blobRevealTotalMs,
+                BLOB_REVEAL_TOTAL_MS,
                 undefined
             );
 
@@ -235,14 +237,14 @@ export function MultiplayerGameScreen({
             () => {
                 setIsBlobRevealActive(false);
             },
-            blobRevealTotalMs,
+            BLOB_REVEAL_TOTAL_MS,
             undefined
         );
 
         return () => {
             globalThis.clearTimeout(timer);
         };
-    }, [blobRevealTotalMs, currentStageIndex]);
+    }, [currentStageIndex]);
 
     useLayoutEffect(() => {
         if (opponentStageIndex === undefined) {
@@ -259,7 +261,7 @@ export function MultiplayerGameScreen({
                 () => {
                     setIsOpponentRevealActive(false);
                 },
-                blobRevealTotalMs,
+                BLOB_REVEAL_TOTAL_MS,
                 undefined
             );
 
@@ -279,14 +281,14 @@ export function MultiplayerGameScreen({
             () => {
                 setIsOpponentRevealActive(false);
             },
-            blobRevealTotalMs,
+            BLOB_REVEAL_TOTAL_MS,
             undefined
         );
 
         return () => {
             globalThis.clearTimeout(timer);
         };
-    }, [blobRevealTotalMs, opponentStageIndex]);
+    }, [opponentStageIndex]);
 
     useEffect(
         () => () => {
@@ -536,7 +538,7 @@ export function MultiplayerGameScreen({
             if (nextAttack.isFinisher) {
                 const zeroHoldMs =
                     lossResult.deductedHp > 0 && nextAttack.targetHp === 0
-                        ? hpZeroHoldMs
+                        ? HP_ZERO_HOLD_MS
                         : 0;
 
                 queueResultDialogReveal(
@@ -632,32 +634,6 @@ export function MultiplayerGameScreen({
             : displayedEnemyHpRef.current;
     }
 
-    function getHpLossDuration(previousHp: number, nextHp: number): number {
-        const deductedHp = Math.max(0, previousHp - nextHp);
-
-        if (deductedHp === 0) {
-            return 0;
-        }
-
-        return Math.min(
-            1200,
-            hpLossBaseDurationMs + deductedHp * hpLossPerPointDurationMs
-        );
-    }
-
-    function getHpGainDuration(previousHp: number, nextHp: number): number {
-        const gainedHp = Math.max(0, nextHp - previousHp);
-
-        if (gainedHp === 0) {
-            return 0;
-        }
-
-        return Math.min(
-            980,
-            hpRegenBaseDurationMs + gainedHp * hpRegenPerPointDurationMs
-        );
-    }
-
     function remainingPerfectSolveDuration(eventId: number): number {
         const endTime = perfectSolveEndTimeRef.current.get(eventId);
 
@@ -741,7 +717,7 @@ export function MultiplayerGameScreen({
                         [side]: nextSideImpacts,
                     };
                 });
-            }, durationMs + hpImpactTailMs);
+            }, durationMs + HP_IMPACT_TAIL_MS);
         }
 
         setDisplayedHp(side, nextHp);
@@ -757,7 +733,7 @@ export function MultiplayerGameScreen({
             };
         }
 
-        const zeroHoldMs = deductedHp > 0 && nextHp === 0 ? hpZeroHoldMs : 0;
+        const zeroHoldMs = deductedHp > 0 && nextHp === 0 ? HP_ZERO_HOLD_MS : 0;
 
         queueResultDialogReveal(finishState.eventId, durationMs + zeroHoldMs);
 
@@ -814,7 +790,7 @@ export function MultiplayerGameScreen({
                         [side]: nextSideImpacts,
                     };
                 });
-            }, durationMs + hpImpactTailMs);
+            }, durationMs + HP_IMPACT_TAIL_MS);
         }
 
         setDisplayedHp(side, nextHp);
@@ -838,12 +814,12 @@ export function MultiplayerGameScreen({
             setPerfectBurst((currentBurst) =>
                 currentBurst?.id === eventId ? undefined : currentBurst
             );
-        }, perfectBurstDurationMs);
+        }, PERFECT_BURST_DURATION_MS);
 
         const previousHp = getDisplayedHp(side);
         const regenDurationMs = getHpGainDuration(previousHp, nextHp);
         const totalDurationMs = Math.max(
-            perfectBurstDurationMs,
+            PERFECT_BURST_DURATION_MS,
             regenDurationMs
         );
 
@@ -892,7 +868,7 @@ export function MultiplayerGameScreen({
                     queuePrime(bufferedPrime);
                 }
             },
-            keyboardDigitBufferWindowMs,
+            KEYBOARD_DIGIT_BUFFER_WINDOW_MS,
             undefined
         );
     }
@@ -1022,7 +998,7 @@ export function MultiplayerGameScreen({
             setDamagePops((currentPops: readonly DamagePop[]) =>
                 currentPops.filter((currentPop) => currentPop.id !== id)
             );
-        }, damagePopLifetimeMs);
+        }, DAMAGE_POP_LIFETIME_MS);
     }
 
     /**
@@ -1040,7 +1016,7 @@ export function MultiplayerGameScreen({
             setSelfFaultToken((currentToken) =>
                 currentToken === token ? undefined : currentToken
             );
-        }, selfFaultDurationMs);
+        }, SELF_FAULT_DURATION_MS);
     }
 
     function startAttackEffect(
@@ -1482,6 +1458,32 @@ type BattleHpBarProps = {
     perfectActive: boolean | undefined;
     side: 'enemy' | 'self';
 };
+
+function getHpLossDuration(previousHp: number, nextHp: number): number {
+    const deductedHp = Math.max(0, previousHp - nextHp);
+
+    if (deductedHp === 0) {
+        return 0;
+    }
+
+    return Math.min(
+        1200,
+        HP_LOSS_BASE_DURATION_MS + deductedHp * HP_LOSS_PER_POINT_DURATION_MS
+    );
+}
+
+function getHpGainDuration(previousHp: number, nextHp: number): number {
+    const gainedHp = Math.max(0, nextHp - previousHp);
+
+    if (gainedHp === 0) {
+        return 0;
+    }
+
+    return Math.min(
+        980,
+        HP_REGEN_BASE_DURATION_MS + gainedHp * HP_REGEN_PER_POINT_DURATION_MS
+    );
+}
 
 function BattleHpBar({
     hp,

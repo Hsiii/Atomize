@@ -4,6 +4,10 @@ import type { Screen } from '../app-state';
 import { uiText } from '../app-state';
 import { applyPrimeSelection, computeBattleFactorDamage } from '../core';
 import type { Prime, RoomPlayer, RoomSnapshot } from '../core';
+import {
+    BLOB_REVEAL_TOTAL_MS,
+    MULTIPLAYER_COMBO_STEP_DELAY_MS,
+} from '../core/timing';
 import { getDisplayPlayerName, playablePrimes, wait } from '../lib/app-helpers';
 import {
     addPlayerToRoom,
@@ -14,9 +18,7 @@ import {
 } from '../lib/multiplayer-room';
 
 const cpuPlayerId = 'local-cpu';
-const multiplayerComboStepDelayMs = 220;
 const cpuMistakeChance = 0.14;
-const cpuBlobRevealTotalMs = 3000;
 
 type UseLocalCpuGameOptions = {
     playerName: string;
@@ -129,7 +131,7 @@ export function useLocalCpuGame({
                 cpuRevealTimeoutRef.current = undefined;
                 setIsCpuBlobRevealActive(false);
             },
-            cpuBlobRevealTotalMs,
+            BLOB_REVEAL_TOTAL_MS,
             undefined
         );
 
@@ -415,7 +417,7 @@ export function useLocalCpuGame({
             return;
         }
 
-        await wait(multiplayerComboStepDelayMs);
+        await wait(MULTIPLAYER_COMBO_STEP_DELAY_MS);
         await processMultiplayerQueue(
             queuedPrimes,
             index + 1,

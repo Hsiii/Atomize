@@ -6,6 +6,7 @@ import { uiText } from '../app-state';
 import type { MultiplayerState, OnlineLobbyUser, Screen } from '../app-state';
 import { applyPrimeSelection, computeBattleFactorDamage } from '../core';
 import type { Prime, RoomSnapshot } from '../core';
+import { MULTIPLAYER_COMBO_STEP_DELAY_MS } from '../core/timing';
 import {
     createRoomId,
     detachPromise,
@@ -33,7 +34,6 @@ import {
     getMissingSupabaseEnvVars,
 } from '../lib/supabase';
 
-const multiplayerComboStepDelayMs = 220;
 const realtimeSendTimeoutMs = 1500;
 const joinRoomLookupTimeoutMs = 5000;
 const joinRoomRetryIntervalMs = 1200;
@@ -1250,7 +1250,7 @@ export function useMultiplayerGame({
             return undefined;
         }
 
-        await wait(multiplayerComboStepDelayMs);
+        await wait(MULTIPLAYER_COMBO_STEP_DELAY_MS);
         await processMultiplayerQueue(
             queuedPrimes,
             index + 1,
