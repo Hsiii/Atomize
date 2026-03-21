@@ -478,7 +478,7 @@
 }
 
 .slot-name-cpu,
-.invite-name-cpu {
+.invite-name.invite-name-cpu {
     color: var(--color-secondary);
 }
 
