@@ -26,6 +26,8 @@ type NumberBlobDisplayProps = {
     stageIndex?: number;
     stageAdvanceSolvedStateKey?: number;
     isComboRunning?: boolean;
+    isFaultActive?: boolean;
+    faultKey?: string;
     isStageRevealActive?: boolean;
     concealValues?: boolean;
     mode?: BlobMode;
@@ -111,6 +113,8 @@ export function NumberBlobDisplay({
     stageIndex,
     stageAdvanceSolvedStateKey,
     isComboRunning = false,
+    isFaultActive = false,
+    faultKey,
     isStageRevealActive = false,
     concealValues = false,
     mode = 'solo',
@@ -460,7 +464,8 @@ export function NumberBlobDisplay({
                 <div
                     className={`number-main-blob-shell${
                         isImpactActive ? ' is-impact-active' : ''
-                    }`}
+                    }${isFaultActive ? ' is-fault-active' : ''}`}
+                    key={isFaultActive ? faultKey : undefined}
                 >
                     <div
                         className={`number-main-blob${

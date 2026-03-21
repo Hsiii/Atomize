@@ -275,30 +275,21 @@
 
 .multiplayer-hp-pop {
     position: absolute;
-    right: 0;
+    left: 50%;
     bottom: calc(100% + var(--space-timer-gap));
+    transform: translateX(-50%);
     font-family: var(--type-action-label-family);
     font-size: var(--type-action-label-size);
     font-weight: var(--type-action-label-weight);
     line-height: var(--type-action-label-line-height);
     animation: timer-penalty-pop 0.7s ease-out forwards;
+    text-align: center;
+    white-space: nowrap;
     pointer-events: none;
 }
 
 .multiplayer-hp-pop-damage {
-    color: var(--color-game-opponent);
-}
-
-.multiplayer-hp-bar-self .multiplayer-hp-pop-damage {
-    color: var(--color-game-self);
-    background: transparent;
-    border: 0;
-    box-shadow: none;
-    backdrop-filter: none;
-}
-
-.multiplayer-hp-bar-enemy .multiplayer-hp-pop-damage {
-    color: var(--color-game-opponent);
+    color: var(--color-danger);
 }
 
 .multiplayer-hp-pop-regen {

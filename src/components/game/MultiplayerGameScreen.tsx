@@ -83,6 +83,7 @@ export function MultiplayerGameScreen({
     const blobRevealTotalMs = 3000;
     const keyboardDigitBufferWindowMs = 250;
     const damagePopLifetimeMs = 780;
+    const selfFaultDurationMs = 600;
     const perfectBurstDurationMs = 1120;
     const hpImpactTailMs = 240;
     const hpLossBaseDurationMs = 220;
@@ -122,6 +123,7 @@ export function MultiplayerGameScreen({
     const [pendingResultDialogEventId, setPendingResultDialogEventId] =
         useState<number>();
     const [perfectBurst, setPerfectBurst] = useState<PerfectBurst>();
+    const [selfFaultToken, setSelfFaultToken] = useState<string>();
     const previousEventIdRef = useRef<number | undefined>(undefined);
     const hasInitializedStageRef = useRef(false);
     const previousStageIndexRef = useRef<number | undefined>(undefined);
@@ -340,6 +342,7 @@ export function MultiplayerGameScreen({
             setActiveAttackId(undefined);
             setHpImpacts({});
             setPerfectBurst(undefined);
+            setSelfFaultToken(undefined);
             perfectSolveEndTimeRef.current.clear();
             return;
         }
@@ -406,6 +409,10 @@ export function MultiplayerGameScreen({
                     ? 'self'
                     : 'enemy';
             const targetSide = side === 'self' ? 'enemy' : 'self';
+
+            if (side === 'self') {
+                triggerSelfFault();
+            }
 
             resolveHpLoss(side, lastEvent.sourceHp, lastEvent.damage);
 
@@ -959,6 +966,18 @@ export function MultiplayerGameScreen({
         }, damagePopLifetimeMs);
     }
 
+    function triggerSelfFault() {
+        const token = globalThis.crypto.randomUUID();
+
+        setSelfFaultToken(token);
+
+        scheduleTimeout(() => {
+            setSelfFaultToken((currentToken) =>
+                currentToken === token ? undefined : currentToken
+            );
+        }, selfFaultDurationMs);
+    }
+
     function startAttackEffect(
         sourceSide: 'enemy' | 'self',
         targetSide: 'enemy' | 'self',
@@ -1230,7 +1249,9 @@ export function MultiplayerGameScreen({
                             ref={selfBlobRef}
                         >
                             <NumberBlobDisplay
+                                faultKey={selfFaultToken}
                                 isComboRunning={isMultiplayerComboRunning}
+                                isFaultActive={selfFaultToken !== undefined}
                                 isStageRevealActive={isBlobRevealActive}
                                 mode='multiplayer'
                                 size='self'
