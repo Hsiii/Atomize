@@ -157,8 +157,8 @@
 
 .slot-p2-empty {
     position: relative;
-    background: var(--color-surface-accent);
-    color: var(--color-primary-strong);
+    background: var(--color-primary-strong);
+    color: var(--color-text-inverse);
     border-color: transparent;
 }
 
@@ -166,7 +166,7 @@
     content: '';
     position: absolute;
     inset: -2px;
-    border: 2px dashed var(--color-primary-strong);
+    border: 2px dashed var(--color-border-contrast);
     border-radius: inherit;
 }
 
@@ -189,7 +189,7 @@
 }
 
 .slot-p2-filled {
-    background: var(--color-primary);
+    background: var(--color-primary-strong);
     color: var(--color-text-inverse);
     cursor: default;
 }
@@ -280,8 +280,8 @@
 .menu-start-btn.app-action-button {
     width: min(100%, 16rem);
     min-height: 3.5rem;
-    background: var(--color-primary-strong);
-    border-color: var(--color-primary-strong);
+    background: var(--color-primary);
+    border-color: var(--color-primary);
     color: var(--color-text-inverse);
 }
 
