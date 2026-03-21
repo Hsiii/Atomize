@@ -16,6 +16,7 @@ import {
 const cpuPlayerId = 'local-cpu';
 const multiplayerComboStepDelayMs = 220;
 const cpuMistakeChance = 0.14;
+const cpuBlobRevealTotalMs = 3000;
 
 type UseLocalCpuGameOptions = {
     playerName: string;
@@ -58,6 +59,10 @@ export function useLocalCpuGame({
     const latestSnapshotRef = useRef<RoomSnapshot | undefined>(undefined);
     const latestPlayerIdRef = useRef<string | undefined>(undefined);
     const cpuTurnTimeoutRef = useRef<number | undefined>(undefined);
+    const cpuRevealTimeoutRef = useRef<number | undefined>(undefined);
+    const previousCpuStageIndexRef = useRef<number | undefined>(undefined);
+    const isCpuBlobRevealActiveRef = useRef(false);
+    const [isCpuBlobRevealActive, setIsCpuBlobRevealActive] = useState(false);
 
     const currentMultiplayerPlayer = multiplayerSnapshot?.players.find(
         (player) => player.id === playerId
@@ -86,12 +91,52 @@ export function useLocalCpuGame({
         latestPlayerIdRef.current = playerId;
     }, [playerId]);
 
+    useEffect(() => {
+        isCpuBlobRevealActiveRef.current = isCpuBlobRevealActive;
+    }, [isCpuBlobRevealActive]);
+
     useEffect(
         () => () => {
             clearCpuTurnTimeout();
+            clearCpuRevealTimeout();
         },
         []
     );
+
+    useEffect(() => {
+        const cpuStageIndex = cpuPlayer?.stageIndex;
+
+        if (
+            screen !== 'multi-game' ||
+            !isLocalCpuGameActive ||
+            cpuStageIndex === undefined
+        ) {
+            previousCpuStageIndexRef.current = undefined;
+            clearCpuRevealTimeout();
+            setIsCpuBlobRevealActive(false);
+            return undefined;
+        }
+
+        if (previousCpuStageIndexRef.current === cpuStageIndex) {
+            return undefined;
+        }
+
+        previousCpuStageIndexRef.current = cpuStageIndex;
+        clearCpuRevealTimeout();
+        setIsCpuBlobRevealActive(true);
+        cpuRevealTimeoutRef.current = globalThis.setTimeout(
+            () => {
+                cpuRevealTimeoutRef.current = undefined;
+                setIsCpuBlobRevealActive(false);
+            },
+            cpuBlobRevealTotalMs,
+            undefined
+        );
+
+        return () => {
+            clearCpuRevealTimeout();
+        };
+    }, [cpuPlayer?.stageIndex, isLocalCpuGameActive, screen]);
 
     useEffect(() => {
         clearCpuTurnTimeout();
@@ -99,7 +144,8 @@ export function useLocalCpuGame({
         if (
             screen !== 'multi-game' ||
             !isLocalCpuGameActive ||
-            isMultiplayerComboRunning
+            isMultiplayerComboRunning ||
+            isCpuBlobRevealActive
         ) {
             return undefined;
         }
@@ -136,6 +182,7 @@ export function useLocalCpuGame({
             clearCpuTurnTimeout();
         };
     }, [
+        isCpuBlobRevealActive,
         isLocalCpuGameActive,
         isMultiplayerComboRunning,
         multiplayerSnapshot?.lastEvent?.id,
@@ -288,6 +335,13 @@ export function useLocalCpuGame({
         }
     }
 
+    function clearCpuRevealTimeout() {
+        if (cpuRevealTimeoutRef.current !== undefined) {
+            globalThis.clearTimeout(cpuRevealTimeoutRef.current);
+            cpuRevealTimeoutRef.current = undefined;
+        }
+    }
+
     async function processMultiplayerQueue(
         queuedPrimes: readonly Prime[],
         index = 0,
@@ -382,6 +436,7 @@ export function useLocalCpuGame({
         if (
             !snapshot ||
             snapshot.status !== 'playing' ||
+            isCpuBlobRevealActiveRef.current ||
             !currentCpuPlayer ||
             !localPlayer ||
             currentCpuPlayer.hp === 0 ||
