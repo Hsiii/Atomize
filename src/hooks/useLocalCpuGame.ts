@@ -2,13 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 
 import type { Screen } from '../app-state';
 import { uiText } from '../app-state';
-import { applyPrimeSelection, computeBattleFactorDamage } from '../core';
+import { applyPrimeSelection } from '../core';
 import type { Prime, RoomPlayer, RoomSnapshot } from '../core';
-import {
-    BLOB_REVEAL_TOTAL_MS,
-    MULTIPLAYER_COMBO_STEP_DELAY_MS,
-} from '../core/timing';
-import { getDisplayPlayerName, playablePrimes, wait } from '../lib/app-helpers';
+import { BLOB_REVEAL_TOTAL_MS } from '../core/timing';
+import { getDisplayPlayerName, playablePrimes } from '../lib/app-helpers';
+import { processComboQueue } from '../lib/combo-queue';
 import {
     addPlayerToRoom,
     applyBattlePenalty,
@@ -344,86 +342,73 @@ export function useLocalCpuGame({
         }
     }
 
-    async function processMultiplayerQueue(
-        queuedPrimes: readonly Prime[],
-        index = 0,
-        shouldBatchComboDamage?: boolean,
-        perfectSolveEligible?: boolean
-    ) {
-        if (index >= queuedPrimes.length) {
-            return;
-        }
+    async function processMultiplayerQueue(queuedPrimes: readonly Prime[]) {
+        await processComboQueue(queuedPrimes, {
+            getPlayer() {
+                const snapshot = latestSnapshotRef.current;
+                const localPlayerId = latestPlayerIdRef.current;
+                return snapshot?.players.find(
+                    (player) => player.id === localPlayerId
+                );
+            },
+            clearQueue() {
+                setMultiplayerPrimeQueue([]);
+            },
+            advanceQueue() {
+                setMultiplayerPrimeQueue((currentQueue: readonly Prime[]) =>
+                    currentQueue.slice(1)
+                );
+            },
+            onWrongPrime(player) {
+                const snapshot = latestSnapshotRef.current;
+                const localPlayerId = latestPlayerIdRef.current;
 
-        const snapshot = latestSnapshotRef.current;
-        const localPlayerId = latestPlayerIdRef.current;
-        const localPlayer = snapshot?.players.find(
-            (player) => player.id === localPlayerId
-        );
+                if (!snapshot || !localPlayerId) {
+                    return;
+                }
 
-        if (!snapshot || !localPlayerId || !localPlayer) {
-            return;
-        }
+                updateSnapshot(
+                    applyBattlePenalty(
+                        snapshot,
+                        localPlayerId,
+                        player.stage,
+                        player.pendingFactorDamage
+                    )
+                );
+            },
+            onRedundantPrimes(_player, clearedStage, releasedDamage) {
+                const snapshot = latestSnapshotRef.current;
+                const localPlayerId = latestPlayerIdRef.current;
 
-        const prime = queuedPrimes[index];
-        const batchComboDamage =
-            shouldBatchComboDamage ?? queuedPrimes.length > 1;
-        const comboPerfectSolveEligible =
-            perfectSolveEligible ??
-            localPlayer.stage.remainingValue === localPlayer.stage.targetValue;
-        const outcome = applyPrimeSelection(localPlayer.stage, prime);
+                if (!snapshot || !localPlayerId) {
+                    return;
+                }
 
-        if (outcome.kind === 'wrong') {
-            setMultiplayerPrimeQueue([]);
-            updateSnapshot(
-                applyBattlePenalty(
-                    snapshot,
-                    localPlayerId,
-                    localPlayer.stage,
-                    localPlayer.pendingFactorDamage
-                )
-            );
-            return;
-        }
+                updateSnapshot(
+                    applyBattlePenalty(
+                        snapshot,
+                        localPlayerId,
+                        clearedStage,
+                        releasedDamage
+                    )
+                );
+            },
+            onCorrectPrime(prime, suppressAttack, perfectSolveEligible) {
+                const snapshot = latestSnapshotRef.current;
+                const localPlayerId = latestPlayerIdRef.current;
 
-        if (outcome.cleared && index < queuedPrimes.length - 1) {
-            setMultiplayerPrimeQueue([]);
-            updateSnapshot(
-                applyBattlePenalty(
-                    snapshot,
-                    localPlayerId,
-                    outcome.stage,
-                    localPlayer.pendingFactorDamage +
-                        computeBattleFactorDamage(prime)
-                )
-            );
-            return;
-        }
+                if (!snapshot || !localPlayerId) {
+                    return;
+                }
 
-        setMultiplayerPrimeQueue((currentQueue: readonly Prime[]) =>
-            currentQueue.slice(1)
-        );
-
-        const isFinalQueuedPrime = index >= queuedPrimes.length - 1;
-
-        updateSnapshot(
-            applyBattlePrimeSelection(snapshot, localPlayerId, prime, {
-                suppressAttack:
-                    batchComboDamage && !outcome.cleared && !isFinalQueuedPrime,
-                perfectSolveEligible: comboPerfectSolveEligible,
-            })
-        );
-
-        if (isFinalQueuedPrime) {
-            return;
-        }
-
-        await wait(MULTIPLAYER_COMBO_STEP_DELAY_MS);
-        await processMultiplayerQueue(
-            queuedPrimes,
-            index + 1,
-            batchComboDamage,
-            comboPerfectSolveEligible
-        );
+                updateSnapshot(
+                    applyBattlePrimeSelection(snapshot, localPlayerId, prime, {
+                        suppressAttack,
+                        perfectSolveEligible,
+                    })
+                );
+            },
+        });
     }
 
     function performCpuTurn() {

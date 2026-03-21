@@ -4,17 +4,15 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 
 import { uiText } from '../app-state';
 import type { MultiplayerState, OnlineLobbyUser, Screen } from '../app-state';
-import { applyPrimeSelection, computeBattleFactorDamage } from '../core';
 import type { Prime, RoomSnapshot } from '../core';
-import { MULTIPLAYER_COMBO_STEP_DELAY_MS } from '../core/timing';
 import {
     createRoomId,
     detachPromise,
     getDisplayPlayerName,
     isPendingGuestJoin,
     playablePrimes,
-    wait,
 } from '../lib/app-helpers';
+import { processComboQueue } from '../lib/combo-queue';
 import type {
     LobbyInvitation,
     MultiplayerSendResult,
@@ -1166,97 +1164,61 @@ export function useMultiplayerGame({
     }
 
     async function processMultiplayerQueue(
-        queuedPrimes: readonly Prime[],
-        index = 0,
-        shouldBatchComboDamage?: boolean,
-        perfectSolveEligible?: boolean
+        queuedPrimes: readonly Prime[]
     ): Promise<undefined> {
-        if (index >= queuedPrimes.length) {
-            return undefined;
-        }
+        await processComboQueue(queuedPrimes, {
+            getPlayer() {
+                const currentState = latestMultiplayerRef.current;
+                const gameplaySnapshot = getEffectiveMultiplayerSnapshot(
+                    currentState.snapshot,
+                    screenRef.current
+                );
 
-        const prime = queuedPrimes[index];
-        const currentState = latestMultiplayerRef.current;
-        const gameplaySnapshot = getEffectiveMultiplayerSnapshot(
-            currentState.snapshot,
-            screenRef.current
-        );
+                if (
+                    !gameplaySnapshot ||
+                    gameplaySnapshot.status !== 'playing'
+                ) {
+                    return undefined;
+                }
 
-        if (!gameplaySnapshot || gameplaySnapshot.status !== 'playing') {
-            return undefined;
-        }
+                return gameplaySnapshot.players.find(
+                    (player) => player.id === currentState.playerId
+                );
+            },
+            clearQueue() {
+                setMultiplayerPrimeQueue([]);
+            },
+            advanceQueue() {
+                setMultiplayerPrimeQueue((currentQueue: readonly Prime[]) =>
+                    currentQueue.slice(1)
+                );
+            },
+            async onWrongPrime(player) {
+                await sendMultiplayerPenalty(
+                    undefined,
+                    player.stage,
+                    player.pendingFactorDamage
+                );
+            },
+            async onRedundantPrimes(_player, clearedStage, releasedDamage) {
+                await sendMultiplayerPenalty(
+                    undefined,
+                    clearedStage,
+                    releasedDamage
+                );
+            },
+            async onCorrectPrime(prime, suppressAttack, perfectSolveEligible) {
+                const sendResult = await sendMultiplayerPrime(
+                    prime,
+                    suppressAttack,
+                    perfectSolveEligible
+                );
 
-        const currentPlayer = gameplaySnapshot.players.find(
-            (player) => player.id === currentState.playerId
-        );
-
-        if (!currentPlayer) {
-            return undefined;
-        }
-
-        const batchComboDamage =
-            shouldBatchComboDamage ?? queuedPrimes.length > 1;
-        const comboPerfectSolveEligible =
-            perfectSolveEligible ??
-            currentPlayer.stage.remainingValue ===
-                currentPlayer.stage.targetValue;
-
-        const outcome = applyPrimeSelection(currentPlayer.stage, prime);
-
-        if (outcome.kind === 'wrong') {
-            setMultiplayerPrimeQueue([]);
-            await sendMultiplayerPenalty(
-                undefined,
-                currentPlayer.stage,
-                currentPlayer.pendingFactorDamage
-            );
-            return undefined;
-        }
-
-        const hasRedundantBufferedPrimes =
-            outcome.cleared && index < queuedPrimes.length - 1;
-
-        if (hasRedundantBufferedPrimes) {
-            setMultiplayerPrimeQueue([]);
-            const releasedDamage =
-                currentPlayer.pendingFactorDamage +
-                computeBattleFactorDamage(prime);
-            await sendMultiplayerPenalty(
-                undefined,
-                outcome.stage,
-                releasedDamage
-            );
-            return undefined;
-        }
-
-        setMultiplayerPrimeQueue((currentQueue: readonly Prime[]) =>
-            currentQueue.slice(1)
-        );
-
-        const isFinalQueuedPrime = index >= queuedPrimes.length - 1;
-
-        const sendResult = await sendMultiplayerPrime(
-            prime,
-            batchComboDamage && !outcome.cleared && !isFinalQueuedPrime,
-            comboPerfectSolveEligible
-        );
-
-        if (!sendResult.didBroadcast) {
-            setMultiplayerPrimeQueue([]);
-            return undefined;
-        }
-
-        if (isFinalQueuedPrime) {
-            return undefined;
-        }
-
-        await wait(MULTIPLAYER_COMBO_STEP_DELAY_MS);
-        await processMultiplayerQueue(
-            queuedPrimes,
-            index + 1,
-            batchComboDamage,
-            comboPerfectSolveEligible
-        );
+                if (!sendResult.didBroadcast) {
+                    return { shouldAbort: true };
+                }
+            },
+        });
 
         return undefined;
     }
