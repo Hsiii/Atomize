@@ -3,6 +3,7 @@ import type { JSX } from 'react';
 
 import { uiText } from '../../app-state';
 import type { Prime, SoloState } from '../../core';
+import { usePrimeKeyboardControls } from '../../hooks/usePrimeKeyboardControls';
 
 import './GamePlayScreen.css';
 
@@ -48,6 +49,34 @@ export function SingleGameScreen({
         Array<{ id: number; delta: number }>
     >([]);
     const previousScoreRef = useRef(soloState.score);
+    const keyboard = usePrimeKeyboardControls({
+        canSubmit: !isInputDisabled && visibleQueue.length > 0,
+        isComboRunning: isSoloComboRunning,
+        isInputDisabled,
+        onBackspaceQueue: () => {
+            if (visibleQueueRef.current.length === 0) {
+                return;
+            }
+
+            setLocalQueue(visibleQueueRef.current.slice(0, -1));
+        },
+        onPrimeTap: (prime) => {
+            if (visibleQueueRef.current.length >= COMBO_QUEUE_MAX_ITEMS) {
+                return;
+            }
+
+            setLocalQueue([...visibleQueueRef.current, prime]);
+        },
+        onSubmit: () => {
+            if (visibleQueueRef.current.length === 0) {
+                return;
+            }
+
+            onSubmit(visibleQueueRef.current);
+        },
+        playablePrimes,
+        queueLength: visibleQueue.length,
+    });
 
     useLayoutEffect(() => {
         visibleQueueRef.current = soloPrimeQueue;
@@ -94,33 +123,6 @@ export function SingleGameScreen({
         setVisibleQueue(normalizedQueue);
     }
 
-    function handlePrimeTap(prime: Prime) {
-        if (
-            isInputDisabled ||
-            visibleQueueRef.current.length >= COMBO_QUEUE_MAX_ITEMS
-        ) {
-            return;
-        }
-
-        setLocalQueue([...visibleQueueRef.current, prime]);
-    }
-
-    function handleBackspace() {
-        if (visibleQueueRef.current.length === 0 || isSoloComboRunning) {
-            return;
-        }
-
-        setLocalQueue(visibleQueueRef.current.slice(0, -1));
-    }
-
-    function handleSubmit() {
-        if (isInputDisabled || visibleQueueRef.current.length === 0) {
-            return;
-        }
-
-        onSubmit(visibleQueueRef.current);
-    }
-
     return (
         <main className='app-shell fullscreen-shell'>
             <section className='screen game-screen single-game-screen'>
@@ -157,13 +159,14 @@ export function SingleGameScreen({
 
                     <GameControls
                         backspaceDisabled={
-                            visibleQueue.length === 0 ||
                             isSoloComboRunning ||
-                            isTimeUp
+                            isTimeUp ||
+                            (visibleQueue.length === 0 &&
+                                keyboard.bufferedPrimeInput === '')
                         }
-                        onBackspace={handleBackspace}
-                        onPrimeTap={handlePrimeTap}
-                        onSubmit={handleSubmit}
+                        onBackspace={keyboard.handleBackspace}
+                        onPrimeTap={keyboard.handlePrimeTap}
+                        onSubmit={keyboard.handleSubmit}
                         primes={playablePrimes}
                         submitDisabled={
                             isTimeUp ||

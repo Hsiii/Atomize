@@ -1,15 +1,15 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, JSX } from 'react';
 
 import { uiText } from '../../app-state';
 import type { Prime, RoomPlayer, RoomSnapshot } from '../../core';
-import { KEYBOARD_DIGIT_BUFFER_WINDOW_MS } from '../../core/timing';
 import { useBattleAnimations } from '../../hooks/useBattleAnimations';
 import type {
     AttackEffectState,
     DamagePop,
     SideHpImpacts,
 } from '../../hooks/useBattleAnimations';
+import { usePrimeKeyboardControls } from '../../hooks/usePrimeKeyboardControls';
 
 import './GamePlayScreen.css';
 import './MultiplayerGameScreen.css';
@@ -52,16 +52,12 @@ export function MultiplayerGameScreen({
         snapshot: multiplayerSnapshot,
     });
 
-    const [bufferedPrimeInput, setBufferedPrimeInput] = useState('');
     const [visibleQueue, setVisibleQueue] = useState<Prime[]>(
         multiplayerPrimeQueue
     );
     const visibleQueueRef = useRef(visibleQueue);
-    const digitBufferRef = useRef('');
-    const digitBufferTimerRef = useRef<number | undefined>(undefined);
     const canSubmitSolvedStage =
-        currentMultiplayerPlayer?.stage.remainingValue === 1 &&
-        bufferedPrimeInput === '';
+        currentMultiplayerPlayer?.stage.remainingValue === 1;
     const currentPlayerWon =
         isMatchFinished &&
         Boolean(currentMultiplayerPlayer && currentMultiplayerPlayer.hp > 0);
@@ -70,33 +66,11 @@ export function MultiplayerGameScreen({
         setVisibleQueue(multiplayerPrimeQueue);
     }, [multiplayerPrimeQueue]);
 
-    useEffect(() => {
-        if (!isInputDisabled) {
-            return;
-        }
-
-        clearDigitBuffer();
-    }, [isInputDisabled]);
-
-    useEffect(() => clearDigitBuffer, []);
-
     function setLocalQueue(nextQueue: readonly Prime[]) {
         const normalizedQueue = [...nextQueue];
 
         visibleQueueRef.current = normalizedQueue;
         setVisibleQueue(normalizedQueue);
-    }
-
-    function clearDigitBuffer() {
-        const timerId = digitBufferTimerRef.current;
-
-        if (timerId !== undefined) {
-            globalThis.clearTimeout(timerId);
-            digitBufferTimerRef.current = undefined;
-        }
-
-        digitBufferRef.current = '';
-        setBufferedPrimeInput('');
     }
 
     function queuePrime(prime: Prime) {
@@ -108,123 +82,6 @@ export function MultiplayerGameScreen({
         }
 
         setLocalQueue([...visibleQueueRef.current, prime]);
-    }
-
-    function scheduleBufferedPrimeCommit(nextBuffer: string) {
-        digitBufferRef.current = nextBuffer;
-        setBufferedPrimeInput(nextBuffer);
-
-        const timerId = digitBufferTimerRef.current;
-
-        if (timerId !== undefined) {
-            globalThis.clearTimeout(timerId);
-        }
-
-        digitBufferTimerRef.current = globalThis.setTimeout(
-            () => {
-                const bufferedPrime = playablePrimes.find(
-                    (prime) => String(prime) === digitBufferRef.current
-                );
-
-                clearDigitBuffer();
-
-                if (bufferedPrime !== undefined) {
-                    queuePrime(bufferedPrime);
-                }
-            },
-            KEYBOARD_DIGIT_BUFFER_WINDOW_MS,
-            undefined
-        );
-    }
-
-    function handleDigitKey(digit: string) {
-        if (isInputDisabled) {
-            return;
-        }
-
-        const nextBuffer = `${digitBufferRef.current}${digit}`;
-        const matchingPrimes = playablePrimes.filter((prime) =>
-            String(prime).startsWith(nextBuffer)
-        );
-
-        if (matchingPrimes.length === 0) {
-            clearDigitBuffer();
-
-            const restartedMatches = playablePrimes.filter((prime) =>
-                String(prime).startsWith(digit)
-            );
-
-            if (restartedMatches.length === 0) {
-                return;
-            }
-
-            const restartedPrime = restartedMatches.find(
-                (prime) => String(prime) === digit
-            );
-            const hasLongerRestartMatch = restartedMatches.some(
-                (prime) => String(prime).length > digit.length
-            );
-
-            if (restartedPrime !== undefined && !hasLongerRestartMatch) {
-                queuePrime(restartedPrime);
-                return;
-            }
-
-            scheduleBufferedPrimeCommit(digit);
-            return;
-        }
-
-        const exactPrime = matchingPrimes.find(
-            (prime) => String(prime) === nextBuffer
-        );
-        const hasLongerMatch = matchingPrimes.some(
-            (prime) => String(prime).length > nextBuffer.length
-        );
-
-        if (exactPrime !== undefined && !hasLongerMatch) {
-            clearDigitBuffer();
-            queuePrime(exactPrime);
-            return;
-        }
-
-        scheduleBufferedPrimeCommit(nextBuffer);
-    }
-
-    function handlePrimeTap(prime: Prime) {
-        queuePrime(prime);
-    }
-
-    function handleBackspace() {
-        if (isMultiplayerComboRunning) {
-            return;
-        }
-
-        if (digitBufferRef.current !== '') {
-            const nextBuffer = digitBufferRef.current.slice(0, -1);
-
-            if (nextBuffer === '') {
-                clearDigitBuffer();
-                return;
-            }
-
-            const hasMatchingPrime = playablePrimes.some((prime) =>
-                String(prime).startsWith(nextBuffer)
-            );
-
-            if (!hasMatchingPrime) {
-                clearDigitBuffer();
-                return;
-            }
-
-            scheduleBufferedPrimeCommit(nextBuffer);
-            return;
-        }
-
-        if (visibleQueueRef.current.length === 0) {
-            return;
-        }
-
-        setLocalQueue(visibleQueueRef.current.slice(0, -1));
     }
 
     async function submitVisibleQueue() {
@@ -245,75 +102,24 @@ export function MultiplayerGameScreen({
     function handleSubmitClick() {
         submitVisibleQueue().catch(() => undefined);
     }
-
-    useEffect(() => {
-        function handleWindowKeyDown(event: KeyboardEvent) {
-            const { target } = event;
-
-            if (
-                target instanceof HTMLElement &&
-                (target.isContentEditable ||
-                    target.tagName === 'INPUT' ||
-                    target.tagName === 'SELECT' ||
-                    target.tagName === 'TEXTAREA')
-            ) {
-                return;
-            }
-
-            if (event.altKey || event.ctrlKey || event.metaKey) {
-                return;
-            }
-
-            if (event.key === 'Backspace') {
-                if (
-                    isMultiplayerComboRunning ||
-                    (digitBufferRef.current === '' &&
-                        visibleQueueRef.current.length === 0)
-                ) {
-                    return;
-                }
-
-                event.preventDefault();
-                clearDigitBuffer();
-                handleBackspace();
-                return;
-            }
-
-            if (event.key === 'Enter') {
-                if (
-                    isInputDisabled ||
-                    (visibleQueueRef.current.length === 0 &&
-                        !canSubmitSolvedStage)
-                ) {
-                    return;
-                }
-
-                event.preventDefault();
-                clearDigitBuffer();
-                submitVisibleQueue().catch(() => undefined);
-                return;
-            }
-
-            if (!/^\d$/.test(event.key) || event.repeat) {
-                return;
-            }
-
-            event.preventDefault();
-            handleDigitKey(event.key);
-        }
-
-        globalThis.addEventListener('keydown', handleWindowKeyDown);
-
-        return () => {
-            globalThis.removeEventListener('keydown', handleWindowKeyDown);
-        };
-    }, [
-        handleBackspace,
-        handleDigitKey,
+    const keyboard = usePrimeKeyboardControls({
+        canSubmit:
+            !isInputDisabled &&
+            (visibleQueue.length > 0 || canSubmitSolvedStage),
+        isComboRunning: isMultiplayerComboRunning,
         isInputDisabled,
-        isMultiplayerComboRunning,
-        submitVisibleQueue,
-    ]);
+        onBackspaceQueue: () => {
+            if (visibleQueueRef.current.length === 0) {
+                return;
+            }
+
+            setLocalQueue(visibleQueueRef.current.slice(0, -1));
+        },
+        onPrimeTap: queuePrime,
+        onSubmit: handleSubmitClick,
+        playablePrimes,
+        queueLength: visibleQueue.length,
+    });
 
     return (
         <main className='app-shell fullscreen-shell'>
@@ -403,12 +209,12 @@ export function MultiplayerGameScreen({
                         backspaceDisabled={
                             isMultiplayerComboRunning ||
                             (visibleQueue.length === 0 &&
-                                bufferedPrimeInput === '')
+                                keyboard.bufferedPrimeInput === '')
                         }
                         keypadClassName='multiplayer-keypad'
-                        onBackspace={handleBackspace}
-                        onPrimeTap={handlePrimeTap}
-                        onSubmit={handleSubmitClick}
+                        onBackspace={keyboard.handleBackspace}
+                        onPrimeTap={keyboard.handlePrimeTap}
+                        onSubmit={keyboard.handleSubmit}
                         primes={playablePrimes}
                         submitDisabled={
                             isInputDisabled ||
