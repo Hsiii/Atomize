@@ -45,16 +45,21 @@ export function GameStatusHeader({
 
     return (
         <header className={headerClasses}>
-            {onBack ? (
-                <button
-                    aria-label={uiText.back}
-                    className='top-bar-back-button'
-                    onClick={handleBackClick}
-                    type='button'
-                >
-                    <ArrowLeft aria-hidden='true' className='control-icon' />
-                </button>
-            ) : undefined}
+            <div className='single-top-bar-side single-top-bar-side-start'>
+                {onBack ? (
+                    <button
+                        aria-label={uiText.back}
+                        className='top-bar-back-button'
+                        onClick={handleBackClick}
+                        type='button'
+                    >
+                        <ArrowLeft
+                            aria-hidden='true'
+                            className='control-icon'
+                        />
+                    </button>
+                ) : undefined}
+            </div>
 
             <div
                 aria-label={`${uiText.timer}: ${formatCountdown(timeLeft)}`}
@@ -75,12 +80,16 @@ export function GameStatusHeader({
                 </div>
             </div>
 
-            <div
-                aria-label={`${uiText.score}: ${score} ${uiText.scoreUnit}`}
-                className={scoreClasses}
-            >
-                <strong>{score}</strong>
-                <span className='single-score-unit'>{uiText.scoreUnit}</span>
+            <div className='single-top-bar-side single-top-bar-side-end'>
+                <div
+                    aria-label={`${uiText.score}: ${score} ${uiText.scoreUnit}`}
+                    className={scoreClasses}
+                >
+                    <strong>{score}</strong>
+                    <span className='single-score-unit'>
+                        {uiText.scoreUnit}
+                    </span>
+                </div>
             </div>
         </header>
     );
