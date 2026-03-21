@@ -157,6 +157,12 @@ export function MultiplayerGameScreen({
             (multiplayerSnapshot.lastEvent.type === 'finish' &&
                 multiplayerSnapshot.lastEvent.cause === 'attack'))
     );
+    /**
+     * Self-hit events arrive in snapshot state before the fault animation token is set by the
+     * effect below. During that gap, the self blob is still using the current stage index and can
+     * incorrectly re-enter the stage-reveal branch. If that happens on a wrong prime, the blob
+     * hides and later fades back in with the same number because the stage never actually changed.
+     */
     const hasPendingSelfFaultEvent = Boolean(
         multiplayerSnapshot?.lastEvent &&
         multiplayerSnapshot.lastEvent.id !== previousEventIdRef.current &&
@@ -183,6 +189,12 @@ export function MultiplayerGameScreen({
 
     useEffect(() => clearDigitBuffer, []);
 
+    /**
+     * The self reveal window is keyed off stage index only. Wrong-prime penalties do not advance
+     * the stage, so any existing reveal timer must be treated as stale once a self-hit starts.
+     * Otherwise the reveal state can outlive the short fault state and hide the unchanged blob a
+     * second time.
+     */
     useLayoutEffect(() => {
         if (currentStageIndex === undefined) {
             previousStageIndexRef.current = undefined;
@@ -978,6 +990,11 @@ export function MultiplayerGameScreen({
         }, damagePopLifetimeMs);
     }
 
+    /**
+     * A wrong-prime self-hit is a visual fault on the current stage, not a stage transition. We
+     * explicitly cancel the self reveal flag here because its lifetime is longer than the fault
+     * token; if reveal is allowed to resume, the blob disappears and reappears with the same value.
+     */
     function triggerSelfFault() {
         const token = globalThis.crypto.randomUUID();
 

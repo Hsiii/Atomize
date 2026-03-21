@@ -149,6 +149,12 @@ export function NumberBlobDisplay({
     const faultAnimationFrameRef = useRef<number | undefined>(undefined);
     const localStageRevealTimerRef = useRef<number | undefined>(undefined);
     const containerRef = useRef<HTMLDivElement | null>(null);
+    /**
+     * Multiplayer reveal is controlled by the parent screen, while solo can also trigger a local
+     * reveal when a new blob appears. Keeping these sources merged in one flag makes it easy to
+     * accidentally apply solo-style reveal behavior to multiplayer state transitions, so callers
+     * must suppress parent reveal for non-stage events like wrong-prime self-hits.
+     */
     const effectiveStageRevealActive =
         isStageRevealActive || isLocalStageRevealActive;
 
@@ -340,6 +346,12 @@ export function NumberBlobDisplay({
             previousTargetId !== undefined &&
             resolvedTargetId !== previousTargetId;
 
+        /**
+         * A target refresh means the blob identity changed. For real stage advances we briefly keep
+         * the old value visible, play the split/clear burst, then reveal the new value. If parent
+         * code reuses target refresh for a non-transition state, this branch will hide the blob and
+         * later show the same number again.
+         */
         if (didTargetRefresh && previousValue > 1) {
             clearTimer(clearPrepTimerRef.current);
             clearPrepTimerRef.current = undefined;
