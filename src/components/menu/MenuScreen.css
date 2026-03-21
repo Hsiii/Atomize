@@ -513,7 +513,8 @@
     min-width: 6.5rem;
     max-width: 6.5rem;
     flex: 0 0 6.5rem;
-    padding: 0.3rem 0.7rem;
+    min-height: 2.85rem;
+    padding: 0.45rem 0.7rem;
     border-radius: var(--radius-pill);
     background: var(--color-button-primary-bg);
     color: var(--color-button-primary-text);
@@ -602,6 +603,7 @@
         min-width: 6rem;
         max-width: 6rem;
         flex-basis: 6rem;
+        min-height: 2.95rem;
     }
 
     .menu-slot-column {
