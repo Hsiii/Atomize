@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes, JSX } from 'react';
 import './ActionButton.css';
 
 type ActionButtonProps = {
-    variant: 'primary' | 'secondary';
+    variant: 'primary' | 'secondary' | 'danger';
     shape?: 'default' | 'rounded';
 } & ButtonHTMLAttributes<HTMLButtonElement>;
 
@@ -14,9 +14,17 @@ export function ActionButton({
     type = 'button',
     ...props
 }: ActionButtonProps): JSX.Element {
+    let variantClass = 'secondary-action';
+
+    if (variant === 'primary') {
+        variantClass = 'primary-action';
+    } else if (variant === 'danger') {
+        variantClass = 'danger-action';
+    }
+
     const classes = [
         'app-action-button',
-        variant === 'primary' ? 'primary-action' : 'secondary-action',
+        variantClass,
         shape === 'rounded' ? 'action-button-rounded' : undefined,
         className,
     ]

@@ -123,6 +123,8 @@
     --color-button-accent-text: var(--color-text-inverse);
     --color-button-secondary-bg: var(--color-secondary);
     --color-button-secondary-text: var(--color-text-inverse);
+    --color-button-danger-bg: var(--color-danger);
+    --color-button-danger-text: var(--color-text-inverse);
     --color-button-subtle-bg: var(--color-surface-accent);
     --color-button-subtle-text: var(--color-primary-strong);
     --color-button-disabled-bg: var(--color-disabled-bg);

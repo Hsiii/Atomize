@@ -24,8 +24,14 @@
     color: var(--color-button-secondary-text);
 }
 
+.app-action-button.danger-action {
+    background: var(--color-button-danger-bg);
+    color: var(--color-button-danger-text);
+}
+
 .primary-action,
-.secondary-action {
+.secondary-action,
+.danger-action {
     width: 100%;
 }
 

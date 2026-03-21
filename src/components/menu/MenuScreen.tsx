@@ -427,7 +427,7 @@ export function MenuScreen({
                             <div className='dialog-actions invitation-actions'>
                                 <ActionButton
                                     onClick={onDeclineInvitation}
-                                    variant='secondary'
+                                    variant='danger'
                                 >
                                     {uiText.decline}
                                 </ActionButton>
