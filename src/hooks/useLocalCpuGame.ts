@@ -41,6 +41,7 @@ type UseLocalCpuGameResult = {
     toggleReady: () => void;
     handleMultiplayerComboSubmit: (queue: readonly Prime[]) => Promise<void>;
     resetLocalCpuGame: () => void;
+    rematchLocalCpuGame: () => void;
 };
 
 export function useLocalCpuGame({
@@ -289,6 +290,49 @@ export function useLocalCpuGame({
         comboQueue.reset();
     }
 
+    function rematchLocalCpuGame() {
+        const localPlayerId = latestPlayerIdRef.current;
+
+        if (!localPlayerId) {
+            return;
+        }
+
+        clearCpuTurnTimeout();
+        clearCpuRevealTimeout();
+        previousCpuStageIndexRef.current = undefined;
+        setIsCpuBlobRevealActive(false);
+
+        const displayPlayerName = getDisplayPlayerName(playerName);
+        const roomId = `cpu:${crypto.randomUUID()}`;
+        const initialSnapshot = createRoomSnapshot(
+            roomId,
+            localPlayerId,
+            displayPlayerName
+        );
+        const twoPlayerSnapshot = addPlayerToRoom(
+            initialSnapshot,
+            cpuPlayerId,
+            uiText.cpu
+        );
+
+        if (!twoPlayerSnapshot) {
+            return;
+        }
+
+        const playingSnapshot: RoomSnapshot = {
+            ...twoPlayerSnapshot,
+            countdownEndsAt: undefined,
+            status: 'playing',
+            players: twoPlayerSnapshot.players.map((player) => ({
+                ...player,
+                ready: true,
+            })),
+        };
+
+        comboQueue.reset();
+        updateSnapshot(playingSnapshot);
+    }
+
     return {
         playablePrimes,
         multiplayerSnapshot,
@@ -305,6 +349,7 @@ export function useLocalCpuGame({
         toggleReady,
         handleMultiplayerComboSubmit,
         resetLocalCpuGame,
+        rematchLocalCpuGame,
     };
 
     function updateSnapshot(nextSnapshot: RoomSnapshot | undefined) {

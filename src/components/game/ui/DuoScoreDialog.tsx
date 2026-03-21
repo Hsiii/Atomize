@@ -18,6 +18,7 @@ type DuoScoreDialogProps = {
     currentPlayer: DuoPlayerStats;
     opponent: DuoPlayerStats;
     onReturnHome: () => void | Promise<void>;
+    onRematch?: () => void;
     title: string;
 };
 
@@ -25,6 +26,7 @@ export function DuoScoreDialog({
     currentPlayer,
     opponent,
     onReturnHome,
+    onRematch,
     title,
 }: DuoScoreDialogProps): JSX.Element {
     const isVictory = title === uiText.victory;
@@ -55,9 +57,19 @@ export function DuoScoreDialog({
                     <div className='duo-score-player-divider' />
                     <PlayerColumn player={opponent} />
                 </div>
-                <ActionButton onClick={handleReturnHomeClick} variant='primary'>
-                    {uiText.returnHome}
-                </ActionButton>
+                <div className='duo-score-dialog-actions'>
+                    {onRematch ? (
+                        <ActionButton onClick={onRematch} variant='secondary'>
+                            {uiText.rematch}
+                        </ActionButton>
+                    ) : undefined}
+                    <ActionButton
+                        onClick={handleReturnHomeClick}
+                        variant='primary'
+                    >
+                        {uiText.returnHome}
+                    </ActionButton>
+                </div>
             </section>
         </div>
     );

@@ -191,9 +191,18 @@
 /* ── Button ── */
 
 .duo-score-dialog .app-action-button {
+    animation: duo-button-slide 0.3s ease-out 0.55s both;
+}
+
+.duo-score-dialog-actions {
+    display: flex;
+    gap: var(--space-4);
     width: calc(100% - 2 * var(--space-8));
     margin: var(--space-4) var(--space-8) var(--space-8);
-    animation: duo-button-slide 0.3s ease-out 0.55s both;
+}
+
+.duo-score-dialog-actions .app-action-button {
+    flex: 1;
 }
 
 @keyframes duo-button-slide {

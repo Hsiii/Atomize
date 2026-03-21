@@ -28,6 +28,7 @@ type MultiplayerGameScreenProps = {
     isMultiplayerInputDisabled: boolean;
     isMultiplayerComboRunning: boolean;
     onBack: () => void | Promise<void>;
+    onRematch?: () => void;
     onSubmit: (queue: readonly Prime[]) => Promise<void>;
 };
 
@@ -39,6 +40,7 @@ export function MultiplayerGameScreen({
     isMultiplayerInputDisabled,
     isMultiplayerComboRunning,
     onBack,
+    onRematch,
     onSubmit,
 }: MultiplayerGameScreenProps): JSX.Element {
     const isMatchFinished = multiplayerSnapshot?.status === 'finished';
@@ -234,6 +236,7 @@ export function MultiplayerGameScreen({
                             atomized: currentMultiplayerPlayer?.stageIndex ?? 0,
                             isWinner: currentPlayerWon,
                         }}
+                        onRematch={onRematch}
                         onReturnHome={onBack}
                         opponent={{
                             name: opponentPlayer?.name ?? uiText.opponent,
