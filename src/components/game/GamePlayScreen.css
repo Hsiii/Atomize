@@ -55,48 +55,53 @@
 }
 
 .solo-keypad {
-    flex: 0 1 var(--size-keypad-cluster-max);
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-rows: repeat(3, minmax(0, 1fr));
-    width: min(100%, var(--size-keypad-cluster-max));
+    width: 100%;
     aspect-ratio: 1;
+    max-height: var(--size-keypad-cluster-max);
     margin-top: 0;
-    gap: var(--space-keypad-gap-compact);
+    gap: var(--keypad-row-gap);
 }
 
 .keypad-row {
-    display: flex;
-    gap: var(--space-4);
+    --keypad-row-gap: var(--space-keypad-gap-compact);
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--keypad-row-gap);
     align-items: stretch;
+    width: 100%;
+    max-width: calc(
+        (
+                (
+                        (
+                                var(--size-keypad-cluster-max) -
+                                    (2 * var(--keypad-row-gap))
+                            ) /
+                            3
+                    ) *
+                    4
+            ) +
+            (3 * var(--keypad-row-gap))
+    );
 }
 
 .keypad-row > .keypad {
-    flex: 1;
+    grid-column: span 3;
     min-width: 0;
 }
 
 .combo-actions-column {
-    flex: 0 0
-        clamp(
-            var(--size-control-rail-min-mobile),
-            18vw,
-            var(--size-control-rail-min)
-        );
     display: grid;
     grid-template-rows: 1fr 2fr;
-    gap: var(--space-keypad-gap-compact);
-    width: clamp(
-        var(--size-control-rail-min-mobile),
-        18vw,
-        var(--size-control-rail-min)
-    );
+    gap: var(--keypad-row-gap);
+    width: 100%;
     min-width: 0;
 }
 
 .combo-backspace-button,
 .combo-enter-button {
     width: 100%;
-    max-width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
@@ -136,8 +141,12 @@
 }
 
 @media (max-width: 480px) {
+    .keypad-row {
+        --keypad-row-gap: var(--space-keypad-gap-mobile);
+    }
+
     .solo-keypad {
-        gap: var(--space-keypad-gap-mobile);
+        max-height: none;
     }
 
     .prime-key-button {
