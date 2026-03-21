@@ -1380,7 +1380,7 @@ export function MultiplayerGameScreen({
                     )}
                     hp={displayedSelfHp}
                     impacts={hpImpacts.self}
-                    label={uiText.you}
+                    label={currentMultiplayerPlayer?.name ?? uiText.you}
                     maxHp={multiplayerSnapshot?.maxHp ?? 1}
                     outerRef={selfHealthRef}
                     perfectActive={perfectBurst?.side === 'self'}
