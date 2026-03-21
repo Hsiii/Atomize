@@ -66,9 +66,17 @@ export const uiText = {
     keyboardHintTitle: 'Hint',
     keyboardHintLead: 'Use',
     keyboardHintTail: 'to input 23',
+    bestScore: 'Best',
+    newBest: 'New Best!',
+    retry: 'Retry',
+    rematch: 'Rematch',
+    pause: 'Pause',
+    resume: 'Resume',
+    paused: 'Paused',
+    tutorialCpu: 'Tutorial',
 } as const;
 
-export type Screen = 'menu' | 'single' | 'multi-game';
+export type Screen = 'menu' | 'single' | 'multi-game' | 'tutorial';
 
 export type MultiplayerState = {
     playerId: string | undefined;

@@ -3,6 +3,9 @@ import type { MultiplayerState } from '../app-state';
 import { PRIME_POOL } from '../core';
 
 const playerNameStorageKey = 'atomize.playerName';
+const bestScoreStorageKey = 'atomize.bestScore';
+const bestMaxComboStorageKey = 'atomize.bestMaxCombo';
+const tutorialCompleteStorageKey = 'atomize.tutorialComplete';
 
 export const soloDurationSeconds = 60;
 export const playablePrimes = PRIME_POOL.slice(0, 9);
@@ -73,4 +76,51 @@ export function isPendingGuestJoin(multiplayer: MultiplayerState): boolean {
 
 function normalizePlayerName(value: string): string {
     return value.trim().replaceAll(/\s+/g, ' ').slice(0, 8);
+}
+
+export type BestScoreRecord = {
+    score: number;
+    maxCombo: number;
+};
+
+export function loadBestScore(): BestScoreRecord {
+    const score = Number(
+        globalThis.localStorage.getItem(bestScoreStorageKey) ?? '0'
+    );
+    const maxCombo = Number(
+        globalThis.localStorage.getItem(bestMaxComboStorageKey) ?? '0'
+    );
+
+    return {
+        score: Number.isFinite(score) ? score : 0,
+        maxCombo: Number.isFinite(maxCombo) ? maxCombo : 0,
+    };
+}
+
+export function saveBestScore(score: number, maxCombo: number): boolean {
+    const current = loadBestScore();
+    let updated = false;
+
+    if (score > current.score) {
+        globalThis.localStorage.setItem(bestScoreStorageKey, String(score));
+        updated = true;
+    }
+
+    if (maxCombo > current.maxCombo) {
+        globalThis.localStorage.setItem(
+            bestMaxComboStorageKey,
+            String(maxCombo)
+        );
+        updated = true;
+    }
+
+    return updated;
+}
+
+export function isTutorialComplete(): boolean {
+    return globalThis.localStorage.getItem(tutorialCompleteStorageKey) === '1';
+}
+
+export function markTutorialComplete(): void {
+    globalThis.localStorage.setItem(tutorialCompleteStorageKey, '1');
 }

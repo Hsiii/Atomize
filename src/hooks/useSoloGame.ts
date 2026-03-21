@@ -9,9 +9,12 @@ import {
 } from '../core';
 import type { Prime } from '../core';
 import { SOLO_COMBO_STEP_DELAY_MS } from '../core/timing';
+import type { BestScoreRecord } from '../lib/app-helpers';
 import {
     createSoloRunSeed,
+    loadBestScore,
     playablePrimes,
+    saveBestScore,
     soloDurationSeconds,
 } from '../lib/app-helpers';
 
@@ -29,9 +32,14 @@ type UseSoloGameResult = {
     isSoloComboRunning: boolean;
     soloStageAdvanceSolvedStateKey: number;
     soloTimerPenaltyPopKey: number;
+    isPaused: boolean;
+    bestScore: BestScoreRecord;
+    isNewBest: boolean;
     handleSoloComboSubmit: (queue: readonly Prime[]) => void;
     startSingleGame: () => void;
     resetSoloGame: () => void;
+    pause: () => void;
+    resume: () => void;
 };
 
 export function useSoloGame({
@@ -49,13 +57,21 @@ export function useSoloGame({
     const [soloStageAdvanceSolvedStateKey, setSoloStageAdvanceSolvedStateKey] =
         useState(0);
     const [soloTimerPenaltyPopKey, setSoloTimerPenaltyPopKey] = useState(0);
+    const [isPaused, setIsPaused] = useState(false);
+    const [bestScore, setBestScore] = useState<BestScoreRecord>(loadBestScore);
+    const [isNewBest, setIsNewBest] = useState(false);
     const latestSoloStateRef = useRef(soloState);
+    const isPausedRef = useRef(false);
 
     const soloCountdownProgress = (soloTimeLeft / soloDurationSeconds) * 100;
 
     useEffect(() => {
         latestSoloStateRef.current = soloState;
     }, [soloState]);
+
+    useEffect(() => {
+        isPausedRef.current = isPaused;
+    }, [isPaused]);
 
     useEffect(() => {
         if (screen !== 'single') {
@@ -66,9 +82,21 @@ export function useSoloGame({
 
         const timer = globalThis.setInterval(
             () => {
+                if (isPausedRef.current) {
+                    return;
+                }
+
                 setSoloTimeLeft((currentTime) => {
                     if (currentTime <= 1) {
                         globalThis.clearInterval(timer);
+                        const finalState = latestSoloStateRef.current;
+                        const didBeat = saveBestScore(
+                            finalState.score,
+                            finalState.maxCombo
+                        );
+
+                        setBestScore(loadBestScore());
+                        setIsNewBest(didBeat);
                         return 0;
                     }
 
@@ -82,7 +110,7 @@ export function useSoloGame({
         return () => {
             globalThis.clearInterval(timer);
         };
-    }, [screen]);
+    }, [screen, soloSeed]);
 
     useEffect(() => {
         if (screen !== 'single' || !isSoloComboRunning) {
@@ -182,6 +210,9 @@ export function useSoloGame({
         setIsSoloComboRunning(false);
         setSoloStageAdvanceSolvedStateKey(0);
         setSoloTimerPenaltyPopKey(0);
+        setIsPaused(false);
+        setIsNewBest(false);
+        setBestScore(loadBestScore());
         onScreenChange('single');
     }
 
@@ -190,6 +221,16 @@ export function useSoloGame({
         setIsSoloComboRunning(false);
         setSoloStageAdvanceSolvedStateKey(0);
         setSoloTimerPenaltyPopKey(0);
+        setIsPaused(false);
+        setIsNewBest(false);
+    }
+
+    function pause() {
+        setIsPaused(true);
+    }
+
+    function resume() {
+        setIsPaused(false);
     }
 
     return {
@@ -201,8 +242,13 @@ export function useSoloGame({
         isSoloComboRunning,
         soloStageAdvanceSolvedStateKey,
         soloTimerPenaltyPopKey,
+        isPaused,
+        bestScore,
+        isNewBest,
         handleSoloComboSubmit,
         startSingleGame,
         resetSoloGame,
+        pause,
+        resume,
     };
 }
