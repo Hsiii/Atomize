@@ -4,7 +4,7 @@
     justify-content: center;
     padding: var(--space-7);
     border: 1px solid var(--color-border-contrast);
-    border-radius: var(--radius-button);
+    border-radius: var(--radius-pill);
     color: var(--type-action-label-color);
     font-family: var(--type-action-label-family);
     font-size: var(--type-action-label-size);
