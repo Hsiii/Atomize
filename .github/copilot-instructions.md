@@ -33,3 +33,7 @@ When Planning, always ask questions beforehand for the details if the prompt fro
 ## Style
 
 - When design game components, always use flat color and prevent adding gradients and shadows, to keep the style consistent and simple.
+
+## Testing
+
+When testing, always write playwright code to auto solve answers or type in wrong answers to speed up the test.
