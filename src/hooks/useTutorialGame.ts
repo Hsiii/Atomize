@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Screen } from '../app-state';
 import { uiText } from '../app-state';
 import { applyPrimeSelection, generateStage } from '../core';
-import type { Prime, RoomPlayer, RoomSnapshot } from '../core';
+import type { Prime, RoomPlayer, RoomSnapshot, StageState } from '../core';
 import { BLOB_REVEAL_TOTAL_MS } from '../core/timing';
 import { getDisplayPlayerName, playablePrimes } from '../lib/app-helpers';
 import { processComboQueue } from '../lib/combo-queue';
@@ -15,9 +15,23 @@ import {
 import { useComboQueueState } from './useComboQueueState';
 
 const tutorialCpuPlayerId = 'tutorial-cpu';
-const tutorialCpuHp = 30;
-const tutorialCpuMistakeChance = 0.35;
+const tutorialCpuHp = 60;
 const tutorialCpuThinkBaseMs = 1400;
+const tutorialPlayerStageFactors: ReadonlyArray<readonly Prime[] | undefined> =
+    [
+        [2, 3],
+        [2, 3, 5],
+        [2, 7],
+        [3, 7],
+        [2, 2, 5],
+        [11, 13],
+    ];
+const tutorialCpuStageFactors: ReadonlyArray<readonly Prime[] | undefined> = [
+    [2, 5],
+    [3, 3],
+    [2, 2, 3],
+    [5, 5],
+];
 
 type UseTutorialGameOptions = {
     playerName: string;
@@ -36,6 +50,8 @@ type UseTutorialGameResult = {
     handleMultiplayerComboSubmit: (queue: readonly Prime[]) => Promise<void>;
     startTutorialGame: () => void;
     resetTutorialGame: () => void;
+    allowCpuAttack: () => void;
+    notifyTutorialDone: () => void;
 };
 
 export function useTutorialGame({
@@ -54,6 +70,10 @@ export function useTutorialGame({
     const cpuRevealTimeoutRef = useRef<number | undefined>(undefined);
     const previousCpuStageIndexRef = useRef<number | undefined>(undefined);
     const isCpuBlobRevealActiveRef = useRef(false);
+    const hasCpuShownPenaltyRef = useRef(false);
+    const tutorialDoneRef = useRef(false);
+    const cpuAttackAllowedRef = useRef(false);
+    const [cpuAttackGate, setCpuAttackGate] = useState(0);
     const [isCpuBlobRevealActive, setIsCpuBlobRevealActive] = useState(false);
 
     const currentMultiplayerPlayer = multiplayerSnapshot?.players.find(
@@ -171,6 +191,7 @@ export function useTutorialGame({
             clearCpuTurnTimeout();
         };
     }, [
+        cpuAttackGate,
         isCpuBlobRevealActive,
         isTutorialActive,
         comboQueue.isComboRunning,
@@ -201,7 +222,7 @@ export function useTutorialGame({
                     combo: 0,
                     maxCombo: 0,
                     stageIndex: 0,
-                    stage: generateStage(seed, 0),
+                    stage: getTutorialStage(seed, 'player', 0),
                     connected: true,
                     ready: true,
                 },
@@ -213,7 +234,7 @@ export function useTutorialGame({
                     combo: 0,
                     maxCombo: 0,
                     stageIndex: 0,
-                    stage: generateStage(seed, 0),
+                    stage: getTutorialStage(seed, 'cpu', 0),
                     connected: true,
                     ready: true,
                 },
@@ -224,8 +245,11 @@ export function useTutorialGame({
         };
 
         latestPlayerIdRef.current = localPlayerId;
+        hasCpuShownPenaltyRef.current = false;
+        tutorialDoneRef.current = false;
+        cpuAttackAllowedRef.current = false;
         setPlayerId(localPlayerId);
-        updateSnapshot(tutorialSnapshot);
+        updateSnapshot(normalizeTutorialSnapshot(tutorialSnapshot));
         comboQueue.reset();
         onScreenChange('tutorial');
     }
@@ -262,6 +286,9 @@ export function useTutorialGame({
         clearCpuRevealTimeout();
         latestPlayerIdRef.current = undefined;
         latestSnapshotRef.current = undefined;
+        hasCpuShownPenaltyRef.current = false;
+        tutorialDoneRef.current = false;
+        cpuAttackAllowedRef.current = false;
         setPlayerId(undefined);
         setMultiplayerSnapshot(undefined);
         comboQueue.reset();
@@ -278,11 +305,22 @@ export function useTutorialGame({
         handleMultiplayerComboSubmit,
         startTutorialGame,
         resetTutorialGame,
+        allowCpuAttack() {
+            cpuAttackAllowedRef.current = true;
+            setCpuAttackGate((currentValue) => currentValue + 1);
+        },
+        notifyTutorialDone() {
+            tutorialDoneRef.current = true;
+        },
     };
 
     function updateSnapshot(nextSnapshot: RoomSnapshot | undefined) {
-        latestSnapshotRef.current = nextSnapshot;
-        setMultiplayerSnapshot(nextSnapshot);
+        const normalizedSnapshot = nextSnapshot
+            ? normalizeTutorialSnapshot(nextSnapshot)
+            : undefined;
+
+        latestSnapshotRef.current = normalizedSnapshot;
+        setMultiplayerSnapshot(normalizedSnapshot);
     }
 
     function clearCpuTurnTimeout() {
@@ -386,8 +424,31 @@ export function useTutorialGame({
             !currentCpuPlayer ||
             !localPlayer ||
             currentCpuPlayer.hp === 0 ||
-            localPlayer.hp === 0
+            localPlayer.hp === 0 ||
+            localPlayer.stageIndex < 2
         ) {
+            return;
+        }
+
+        if (
+            currentCpuPlayer.stageIndex === 0 &&
+            currentCpuPlayer.stage.remainingValue ===
+                currentCpuPlayer.stage.targetValue &&
+            !cpuAttackAllowedRef.current
+        ) {
+            return;
+        }
+
+        if (
+            currentCpuPlayer.stageIndex === 0 &&
+            currentCpuPlayer.stage.remainingValue !==
+                currentCpuPlayer.stage.targetValue &&
+            !hasCpuShownPenaltyRef.current
+        ) {
+            return;
+        }
+
+        if (currentCpuPlayer.stageIndex >= 1 && !tutorialDoneRef.current) {
             return;
         }
 
@@ -431,14 +492,23 @@ export function useTutorialGame({
     }
 
     function pickCpuPrime(cpuRoomPlayer: RoomPlayer): Prime {
-        const wrongPrimes = playablePrimes.filter(
-            (prime) => !cpuRoomPlayer.stage.remainingFactors.includes(prime)
-        );
-        const shouldMiss =
-            wrongPrimes.length > 0 && Math.random() < tutorialCpuMistakeChance;
+        if (cpuRoomPlayer.stageIndex === 0) {
+            if (cpuRoomPlayer.stage.remainingValue === 10) {
+                return 2;
+            }
 
-        if (shouldMiss) {
-            return wrongPrimes[Math.floor(Math.random() * wrongPrimes.length)];
+            if (cpuRoomPlayer.stage.remainingValue === 5) {
+                if (!hasCpuShownPenaltyRef.current) {
+                    hasCpuShownPenaltyRef.current = true;
+                    return 3;
+                }
+
+                return 5;
+            }
+        }
+
+        if (cpuRoomPlayer.stageIndex === 1) {
+            return 3;
         }
 
         return cpuRoomPlayer.stage.remainingFactors[
@@ -447,6 +517,98 @@ export function useTutorialGame({
             )
         ];
     }
+}
+
+function getTutorialStage(
+    seed: string,
+    side: 'cpu' | 'player',
+    stageIndex: number
+): StageState {
+    const scriptedFactors =
+        side === 'player'
+            ? tutorialPlayerStageFactors[stageIndex]
+            : tutorialCpuStageFactors[stageIndex];
+
+    if (scriptedFactors === undefined) {
+        return generateStage(`${seed}:${side}`, stageIndex);
+    }
+
+    return createStageState(stageIndex, scriptedFactors);
+}
+
+function createStageState(
+    stageIndex: number,
+    factors: readonly Prime[]
+): StageState {
+    const normalizedFactors: Prime[] = [];
+
+    for (const prime of factors) {
+        const insertionIndex = normalizedFactors.findIndex(
+            (sortedPrime) => sortedPrime > prime
+        );
+
+        if (insertionIndex === -1) {
+            normalizedFactors.push(prime);
+            continue;
+        }
+
+        normalizedFactors.splice(insertionIndex, 0, prime);
+    }
+
+    let targetValue = 1;
+
+    for (const prime of normalizedFactors) {
+        targetValue *= prime;
+    }
+
+    return {
+        stageIndex,
+        targetValue,
+        remainingValue: targetValue,
+        factors: normalizedFactors,
+        remainingFactors: [...normalizedFactors],
+    };
+}
+
+function normalizeTutorialSnapshot(snapshot: RoomSnapshot): RoomSnapshot {
+    const normalizedPlayers = snapshot.players.map((player) => {
+        const side = player.id === tutorialCpuPlayerId ? 'cpu' : 'player';
+        const scriptedStage = getTutorialStage(
+            snapshot.seed,
+            side,
+            player.stageIndex
+        );
+
+        if (isSameStageShape(player.stage, scriptedStage)) {
+            return player;
+        }
+
+        return {
+            ...player,
+            stage: scriptedStage,
+        };
+    });
+    const localPlayer = normalizedPlayers.find(
+        (player) => player.id !== tutorialCpuPlayerId
+    );
+
+    return {
+        ...snapshot,
+        players: normalizedPlayers,
+        stageIndex: localPlayer?.stageIndex ?? snapshot.stageIndex,
+        stage: localPlayer?.stage ?? snapshot.stage,
+    };
+}
+
+function isSameStageShape(currentStage: StageState, scriptedStage: StageState) {
+    return (
+        currentStage.stageIndex === scriptedStage.stageIndex &&
+        currentStage.targetValue === scriptedStage.targetValue &&
+        currentStage.factors.length === scriptedStage.factors.length &&
+        currentStage.factors.every(
+            (factor, index) => factor === scriptedStage.factors[index]
+        )
+    );
 }
 
 function getTutorialCpuThinkDelay(cpuPlayer: RoomPlayer): number {

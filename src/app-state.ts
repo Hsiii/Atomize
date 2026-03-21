@@ -76,9 +76,13 @@ export const uiText = {
     tutorialCpu: 'Bot',
     tutorialYou: 'You',
     tutorialTitle: 'Tutorial',
-    tutorialStartLesson: 'Start lesson',
-    tutorialContinue: 'Continue',
-    tutorialGotIt: 'Got it',
+    tutorialStartLesson: 'Start tutorial',
+    tutorialNextBlob: 'Next blob',
+    tutorialUseLastFactor: 'Use the last factor',
+    tutorialTryMistake: 'Try one',
+    tutorialWrapUp: 'Wrap up',
+    tutorialKeepPlaying: 'Keep playing',
+    tutorialDismissHint: 'Hide hint',
     tutorialIntroTitle: 'Factor to survive',
     tutorialIntroBody:
         'Bottom-left is your blob. Divide it down to 1 with prime factors before the enemy drains your HP.',
@@ -91,9 +95,9 @@ export const uiText = {
     tutorialStageOneSubmitTitle: 'Resolve the combo',
     tutorialStageOneSubmitBody:
         'Press Enter to resolve the queued factors in order.',
-    tutorialStageOneResultTitle: 'Clears deal damage',
+    tutorialStageOneResultTitle: 'Blob cleared',
     tutorialStageOneResultBody:
-        'Solving a blob hits the enemy HP bar and starts your combo. Every clean clear keeps the pressure up.',
+        'The blob hit 1 \u2014 fully factored and cleared. Each clear deals damage to the enemy HP bar.',
     tutorialStageTwoPrimeTitle: 'Store some damage',
     tutorialStageTwoPrimeBody:
         'This blob is 30. Start with 2 to begin stacking factor damage.',
@@ -106,21 +110,25 @@ export const uiText = {
     tutorialStageTwoResultTitle: 'Queued factors hit together',
     tutorialStageTwoResultBody:
         'Your queued 2 + 3 released 5 damage when the queue finished. Stored factor damage cashes out on submit.',
-    tutorialStageTwoFinishTitle: 'Protect the combo',
+    tutorialStageTwoFinishTitle: 'Finish the blob',
     tutorialStageTwoFinishBody:
-        'Finish the blob with 5. Consecutive clears grow your combo damage.',
-    tutorialStageTwoFinishSubmitTitle: 'Convert the clear',
+        'The blob still has factor 5 left. Tap 5 to complete the factorization.',
+    tutorialStageTwoFinishSubmitTitle: 'Complete the clear',
     tutorialStageTwoFinishSubmitBody:
-        'Press Enter to turn the clear into a stronger combo hit.',
-    tutorialEnemyTurnTitle: 'Watch the enemy turn',
+        'Press Enter to clear the solved blob and deal damage.',
+    tutorialEnemyTurnTitle: 'Enemy incoming',
     tutorialEnemyTurnBody:
         'The bot attacks with the same rules you do. Watch the HP bars while it moves.',
+    tutorialShowAttack: 'Show attack',
     tutorialEnemyAttackTitle: 'Incoming damage',
     tutorialEnemyAttackBody:
-        'Enemy hits shave your lower HP bar. The fight is a race to zero, so clean factor chains matter.',
-    tutorialPenaltyTitle: 'Misses backfire',
-    tutorialPenaltyBody:
-        'Wrong primes deal 4 self-damage, reset combo, and dump any stored damage. Accuracy matters as much as speed.',
+        'Enemy clears shave your HP bar. The fight is a race to zero, so clean factor chains matter.',
+    tutorialTryWrongPrimeTitle: 'Try a wrong factor',
+    tutorialTryWrongPrimeBody:
+        'Tap 3, then press Enter. It does not divide 14, so you can see the self-hit penalty once.',
+    tutorialWrongPrimeResultTitle: 'Misses backfire',
+    tutorialWrongPrimeResultBody:
+        'Wrong primes deal self-damage, reset your combo, and dump stored damage. Accuracy matters as much as speed.',
     tutorialSummaryTitle: 'Core loop learned',
     tutorialSummaryBody:
         'Queue valid primes, submit them in order, chain clears for combo damage, and avoid misses. Finish the match when you are ready.',

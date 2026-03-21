@@ -1,7 +1,8 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, JSX } from 'react';
 
 import { uiText } from '../../app-state';
+import type { TutorialFocusTarget } from '../../app-state';
 import type { Prime, RoomPlayer, RoomSnapshot } from '../../core';
 import { useBattleAnimations } from '../../hooks/useBattleAnimations';
 import type {
@@ -14,6 +15,7 @@ import { usePrimeKeyboardControls } from '../../hooks/usePrimeKeyboardControls';
 import './GamePlayScreen.css';
 import './MultiplayerGameScreen.css';
 
+import { ActionButton } from './ui/ActionButton';
 import { COMBO_QUEUE_MAX_ITEMS, ComboQueuePanel } from './ui/ComboQueuePanel';
 import { DesktopKeyboardHint } from './ui/DesktopKeyboardHint';
 import { DuoScoreDialog } from './ui/DuoScoreDialog';
@@ -27,9 +29,12 @@ type MultiplayerGameScreenProps = {
     multiplayerPrimeQueue: Prime[];
     isMultiplayerInputDisabled: boolean;
     isMultiplayerComboRunning: boolean;
+    onAllowCpuAttack?: () => void;
     onBack: () => void | Promise<void>;
     onRematch?: () => void;
     onSubmit: (queue: readonly Prime[]) => Promise<void>;
+    onTutorialComplete?: () => void;
+    tutorialMode?: boolean;
 };
 
 export function MultiplayerGameScreen({
@@ -39,12 +44,14 @@ export function MultiplayerGameScreen({
     multiplayerPrimeQueue,
     isMultiplayerInputDisabled,
     isMultiplayerComboRunning,
+    onAllowCpuAttack,
     onBack,
     onRematch,
     onSubmit,
+    onTutorialComplete,
+    tutorialMode = false,
 }: MultiplayerGameScreenProps): JSX.Element {
     const isMatchFinished = multiplayerSnapshot?.status === 'finished';
-    const isInputDisabled = isMultiplayerInputDisabled;
     const opponentPlayer = multiplayerSnapshot?.players.find(
         (player) => player.id !== currentMultiplayerPlayer?.id
     );
@@ -64,6 +71,19 @@ export function MultiplayerGameScreen({
     const currentPlayerWon =
         isMatchFinished &&
         Boolean(currentMultiplayerPlayer && currentMultiplayerPlayer.hp > 0);
+    const tutorial = useBattleTutorial({
+        battleVisualsBusy: battle.isAnimating,
+        currentPlayer: currentMultiplayerPlayer,
+        enabled: tutorialMode,
+        lastEvent: multiplayerSnapshot?.lastEvent,
+        onAllowCpuAttack,
+        onTutorialComplete,
+        opponentPlayer,
+        queue: visibleQueue,
+    });
+    const isInputDisabled =
+        isMultiplayerInputDisabled || tutorial.isInteractionBlocked;
+
     useLayoutEffect(() => {
         visibleQueueRef.current = multiplayerPrimeQueue;
         setVisibleQueue(multiplayerPrimeQueue);
@@ -79,6 +99,7 @@ export function MultiplayerGameScreen({
     function queuePrime(prime: Prime) {
         if (
             isInputDisabled ||
+            tutorial.getPrimeDisabledState?.(prime) === true ||
             visibleQueueRef.current.length >= COMBO_QUEUE_MAX_ITEMS
         ) {
             return;
@@ -90,6 +111,7 @@ export function MultiplayerGameScreen({
     async function submitVisibleQueue() {
         if (
             isInputDisabled ||
+            tutorial.isSubmitLocked ||
             (visibleQueueRef.current.length === 0 && !canSubmitSolvedStage)
         ) {
             return;
@@ -108,10 +130,15 @@ export function MultiplayerGameScreen({
     const keyboard = usePrimeKeyboardControls({
         canSubmit:
             !isInputDisabled &&
+            !tutorial.isSubmitLocked &&
             (visibleQueue.length > 0 || canSubmitSolvedStage),
         isComboRunning: isMultiplayerComboRunning,
         isInputDisabled,
         onBackspaceQueue: () => {
+            if (tutorial.isBackspaceLocked) {
+                return;
+            }
+
             if (visibleQueueRef.current.length === 0) {
                 return;
             }
@@ -127,7 +154,7 @@ export function MultiplayerGameScreen({
     return (
         <main className='app-shell fullscreen-shell'>
             <section className='screen game-screen multiplayer-game-screen'>
-                <DesktopKeyboardHint />
+                {tutorialMode ? undefined : <DesktopKeyboardHint />}
 
                 <BattleHpBar
                     damagePops={battle.damagePops.filter(
@@ -135,17 +162,24 @@ export function MultiplayerGameScreen({
                     )}
                     hp={battle.displayedEnemyHp}
                     impacts={battle.hpImpacts.enemy}
-                    label={opponentPlayer?.name ?? uiText.opponent}
+                    label={
+                        tutorialMode
+                            ? uiText.tutorialCpu
+                            : (opponentPlayer?.name ?? uiText.opponent)
+                    }
                     maxHp={multiplayerSnapshot?.maxHp ?? 1}
                     outerRef={battle.enemyHealthRef}
                     perfectActive={battle.perfectBurst?.side === 'enemy'}
                     side='enemy'
+                    tutorialHighlighted={
+                        tutorial.highlightTarget === 'enemy-hp'
+                    }
                 />
 
                 <section className='multiplayer-board' ref={battle.overlayRef}>
                     <div className='multiplayer-column multiplayer-column-self'>
                         <div
-                            className='multiplayer-blob-anchor'
+                            className={`multiplayer-blob-anchor${tutorial.highlightTarget === 'self-blob' ? ' tutorial-highlight-frame' : ''}`}
                             ref={battle.selfBlobRef}
                         >
                             <NumberBlobDisplay
@@ -200,33 +234,65 @@ export function MultiplayerGameScreen({
                     )}
                     hp={battle.displayedSelfHp}
                     impacts={battle.hpImpacts.self}
-                    label={currentMultiplayerPlayer?.name ?? uiText.you}
+                    label={
+                        tutorialMode
+                            ? uiText.tutorialYou
+                            : (currentMultiplayerPlayer?.name ?? uiText.you)
+                    }
                     maxHp={multiplayerSnapshot?.maxHp ?? 1}
                     outerRef={battle.selfHealthRef}
                     perfectActive={battle.perfectBurst?.side === 'self'}
                     side='self'
+                    tutorialHighlighted={tutorial.highlightTarget === 'self-hp'}
                 />
 
                 <section className='multiplayer-controls-grid'>
-                    <ComboQueuePanel queue={visibleQueue} />
+                    <div
+                        className={
+                            tutorial.highlightTarget === 'queue'
+                                ? 'tutorial-highlight-frame tutorial-highlight-frame-queue'
+                                : undefined
+                        }
+                    >
+                        <ComboQueuePanel queue={visibleQueue} />
+                    </div>
 
                     <GameControls
                         backspaceDisabled={
+                            tutorial.isBackspaceLocked ||
                             isMultiplayerComboRunning ||
                             (visibleQueue.length === 0 &&
                                 keyboard.bufferedPrimeInput === '')
                         }
+                        getPrimeDisabledState={tutorial.getPrimeDisabledState}
+                        highlightedPrime={tutorial.highlightedPrime}
                         keypadClassName='multiplayer-keypad'
                         onBackspace={keyboard.handleBackspace}
                         onPrimeTap={keyboard.handlePrimeTap}
                         onSubmit={keyboard.handleSubmit}
                         primes={playablePrimes}
+                        submitClassName={
+                            tutorial.highlightTarget === 'submit'
+                                ? 'tutorial-highlight-button'
+                                : undefined
+                        }
                         submitDisabled={
                             isInputDisabled ||
+                            tutorial.isSubmitLocked ||
                             (visibleQueue.length === 0 && !canSubmitSolvedStage)
                         }
                     />
                 </section>
+
+                {tutorial.lesson ? (
+                    <TutorialCoachCard
+                        actionLabel={tutorial.lesson.actionLabel}
+                        body={tutorial.lesson.body}
+                        onAction={tutorial.handleAction}
+                        position={tutorial.lesson.position}
+                        title={tutorial.lesson.title}
+                    />
+                ) : undefined}
 
                 {isMatchFinished && battle.isResultDialogVisible ? (
                     <DuoScoreDialog
@@ -263,6 +329,7 @@ type BattleHpBarProps = {
     outerRef: React.RefObject<HTMLDivElement | null>;
     perfectActive: boolean | undefined;
     side: 'enemy' | 'self';
+    tutorialHighlighted?: boolean;
 };
 
 function BattleHpBar({
@@ -274,6 +341,7 @@ function BattleHpBar({
     outerRef,
     perfectActive,
     side,
+    tutorialHighlighted,
 }: BattleHpBarProps): JSX.Element {
     const hpRatio = Math.max(0, Math.min(100, (hp / Math.max(maxHp, 1)) * 100));
     const isDanger = hp > 0 && hpRatio < 25;
@@ -283,6 +351,7 @@ function BattleHpBar({
         impacts?.hit ? 'multiplayer-hp-bar--hit' : '',
         impacts?.regen ? 'multiplayer-hp-bar--regen' : '',
         isDanger ? 'multiplayer-hp-bar--danger' : '',
+        tutorialHighlighted ? 'tutorial-highlight-frame' : '',
     ]
         .filter(Boolean)
         .join(' ');
@@ -334,6 +403,620 @@ function BattleHpBar({
                 </span>
             ))}
         </div>
+    );
+}
+
+type TutorialStep =
+    | 'intro'
+    | 'stage-one-prime'
+    | 'stage-one-queue'
+    | 'stage-one-submit'
+    | 'stage-one-result'
+    | 'stage-two-prime'
+    | 'stage-two-queue'
+    | 'stage-two-submit'
+    | 'stage-two-result'
+    | 'stage-two-finish'
+    | 'stage-two-finish-submit'
+    | 'enemy-turn'
+    | 'enemy-attack'
+    | 'try-wrong-prime'
+    | 'wrong-prime-result'
+    | 'summary'
+    | 'done';
+
+type TutorialLesson = {
+    actionLabel?: string;
+    body: string;
+    isBlocking: boolean;
+    position: 'bottom' | 'top';
+    title: string;
+};
+
+function useBattleTutorial({
+    battleVisualsBusy,
+    currentPlayer,
+    enabled,
+    lastEvent,
+    onAllowCpuAttack,
+    onTutorialComplete,
+    opponentPlayer,
+    queue,
+}: {
+    battleVisualsBusy: boolean;
+    currentPlayer: RoomPlayer | undefined;
+    enabled: boolean;
+    lastEvent: RoomSnapshot['lastEvent'];
+    onAllowCpuAttack: (() => void) | undefined;
+    onTutorialComplete: (() => void) | undefined;
+    opponentPlayer: RoomPlayer | undefined;
+    queue: readonly Prime[];
+}) {
+    const [step, setStep] = useState<TutorialStep>(enabled ? 'intro' : 'done');
+    const [enemyAttackSeen, setEnemyAttackSeen] = useState(false);
+    const [enemyTurnAcknowledged, setEnemyTurnAcknowledged] = useState(false);
+    const [selfPenaltySeen, setSelfPenaltySeen] = useState(false);
+    const trackedEventIdRef = useRef<number | undefined>(undefined);
+
+    useEffect(() => {
+        if (!enabled) {
+            setStep('done');
+            setEnemyAttackSeen(false);
+            setEnemyTurnAcknowledged(false);
+            setSelfPenaltySeen(false);
+            trackedEventIdRef.current = undefined;
+            return;
+        }
+
+        setStep('intro');
+        setEnemyAttackSeen(false);
+        setEnemyTurnAcknowledged(false);
+        setSelfPenaltySeen(false);
+        trackedEventIdRef.current = undefined;
+    }, [enabled]);
+
+    useEffect(() => {
+        if (
+            !enabled ||
+            !lastEvent ||
+            trackedEventIdRef.current === lastEvent.id
+        ) {
+            return;
+        }
+
+        trackedEventIdRef.current = lastEvent.id;
+
+        if (
+            lastEvent.sourcePlayerId === opponentPlayer?.id &&
+            (lastEvent.type === 'attack' || lastEvent.type === 'finish')
+        ) {
+            setEnemyAttackSeen(true);
+        }
+
+        if (
+            lastEvent.sourcePlayerId === currentPlayer?.id &&
+            lastEvent.type === 'self-hit'
+        ) {
+            setSelfPenaltySeen(true);
+        }
+    }, [currentPlayer?.id, enabled, lastEvent, opponentPlayer?.id]);
+
+    useEffect(() => {
+        if (!enabled || !currentPlayer) {
+            return;
+        }
+
+        if (step === 'stage-one-prime' && hasQueue(queue, [2])) {
+            setStep('stage-one-queue');
+            return;
+        }
+
+        if (step === 'stage-one-queue') {
+            if (queue.length === 0) {
+                setStep('stage-one-prime');
+                return;
+            }
+
+            if (hasQueue(queue, [2, 3])) {
+                setStep('stage-one-submit');
+                return;
+            }
+        }
+
+        if (step === 'stage-one-submit') {
+            if (currentPlayer.stageIndex >= 1 && !battleVisualsBusy) {
+                setStep('stage-one-result');
+                return;
+            }
+
+            if (hasQueue(queue, [2])) {
+                setStep('stage-one-queue');
+            }
+        }
+
+        if (step === 'stage-two-prime' && hasQueue(queue, [2])) {
+            setStep('stage-two-queue');
+            return;
+        }
+
+        if (step === 'stage-two-queue') {
+            if (queue.length === 0) {
+                setStep('stage-two-prime');
+                return;
+            }
+
+            if (hasQueue(queue, [2, 3])) {
+                setStep('stage-two-submit');
+                return;
+            }
+        }
+
+        if (step === 'stage-two-submit') {
+            if (
+                currentPlayer.stageIndex >= 1 &&
+                currentPlayer.stage.remainingValue === 5 &&
+                !battleVisualsBusy
+            ) {
+                setStep('stage-two-result');
+                return;
+            }
+
+            if (hasQueue(queue, [2])) {
+                setStep('stage-two-queue');
+            }
+        }
+
+        if (step === 'stage-two-finish' && hasQueue(queue, [5])) {
+            setStep('stage-two-finish-submit');
+            return;
+        }
+
+        if (step === 'stage-two-finish-submit') {
+            if (currentPlayer.stageIndex >= 2 && !battleVisualsBusy) {
+                setStep('enemy-turn');
+                return;
+            }
+
+            if (queue.length === 0) {
+                setStep('stage-two-finish');
+            }
+        }
+
+        if (step === 'enemy-turn' && enemyAttackSeen && !battleVisualsBusy) {
+            setStep('enemy-attack');
+            return;
+        }
+
+        if (
+            step === 'try-wrong-prime' &&
+            selfPenaltySeen &&
+            !battleVisualsBusy
+        ) {
+            setStep('wrong-prime-result');
+        }
+    }, [
+        battleVisualsBusy,
+        currentPlayer,
+        enabled,
+        enemyAttackSeen,
+        selfPenaltySeen,
+        queue,
+        step,
+    ]);
+
+    if (!enabled) {
+        return {
+            getPrimeDisabledState: undefined,
+            handleAction: undefined,
+            highlightedPrime: undefined,
+            highlightTarget: undefined,
+            isBackspaceLocked: false,
+            isInteractionBlocked: false,
+            isSubmitLocked: false,
+            lesson: undefined,
+        };
+    }
+
+    const lesson =
+        step === 'enemy-turn' && enemyTurnAcknowledged
+            ? undefined
+            : getTutorialLesson(step);
+    const highlightTarget = getTutorialHighlightTarget(step, queue);
+    const isInteractionBlocked =
+        lesson?.isBlocking === true ||
+        (step === 'enemy-turn' && enemyTurnAcknowledged);
+    const highlightedPrime = getHighlightedPrime(step, queue);
+    const isSubmitLocked =
+        !isInteractionBlocked &&
+        (step === 'stage-one-prime' ||
+            step === 'stage-one-queue' ||
+            step === 'stage-two-prime' ||
+            step === 'stage-two-queue' ||
+            step === 'stage-two-finish' ||
+            step === 'enemy-turn' ||
+            (step === 'stage-one-submit' && !hasQueue(queue, [2, 3])) ||
+            (step === 'stage-two-submit' && !hasQueue(queue, [2, 3])) ||
+            (step === 'stage-two-finish-submit' && !hasQueue(queue, [5])) ||
+            (step === 'try-wrong-prime' && !hasQueue(queue, [3])));
+
+    const handleAction = () => {
+        if (step === 'intro') {
+            setStep('stage-one-prime');
+            return;
+        }
+
+        if (step === 'stage-one-result') {
+            setStep('stage-two-prime');
+            return;
+        }
+
+        if (step === 'stage-two-result') {
+            setStep('stage-two-finish');
+            return;
+        }
+
+        if (step === 'enemy-turn') {
+            setEnemyTurnAcknowledged(true);
+            onAllowCpuAttack?.();
+            return;
+        }
+
+        if (step === 'enemy-attack') {
+            setStep('try-wrong-prime');
+            return;
+        }
+
+        if (step === 'wrong-prime-result') {
+            setStep('summary');
+            return;
+        }
+
+        if (step === 'summary') {
+            onTutorialComplete?.();
+            setStep('done');
+        }
+    };
+
+    return {
+        getPrimeDisabledState(prime: Prime) {
+            if (isInteractionBlocked) {
+                return true;
+            }
+
+            const allowedPrime = getTutorialAllowedPrime(step, queue);
+
+            if (allowedPrime !== undefined) {
+                return prime !== allowedPrime;
+            }
+
+            return locksTutorialPrimeInput(step, queue);
+        },
+        handleAction,
+        highlightedPrime,
+        highlightTarget,
+        isBackspaceLocked: step !== 'done',
+        isInteractionBlocked,
+        isSubmitLocked,
+        lesson,
+    };
+}
+
+function getTutorialLesson(step: TutorialStep): TutorialLesson | undefined {
+    if (step === 'done') {
+        return undefined;
+    }
+
+    if (step === 'intro') {
+        return {
+            actionLabel: uiText.tutorialStartLesson,
+            body: uiText.tutorialIntroBody,
+            isBlocking: true,
+            position: 'top' as const,
+            title: uiText.tutorialIntroTitle,
+        };
+    }
+
+    if (step === 'stage-one-prime') {
+        return {
+            body: uiText.tutorialStageOnePrimeBody,
+            isBlocking: false,
+            position: 'top' as const,
+            title: uiText.tutorialStageOnePrimeTitle,
+        };
+    }
+
+    if (step === 'stage-one-queue') {
+        return {
+            body: uiText.tutorialStageOneQueueBody,
+            isBlocking: false,
+            position: 'top' as const,
+            title: uiText.tutorialStageOneQueueTitle,
+        };
+    }
+
+    if (step === 'stage-one-submit') {
+        return {
+            body: uiText.tutorialStageOneSubmitBody,
+            isBlocking: false,
+            position: 'top' as const,
+            title: uiText.tutorialStageOneSubmitTitle,
+        };
+    }
+
+    if (step === 'stage-one-result') {
+        return {
+            actionLabel: uiText.tutorialNextBlob,
+            body: uiText.tutorialStageOneResultBody,
+            isBlocking: true,
+            position: 'bottom' as const,
+            title: uiText.tutorialStageOneResultTitle,
+        };
+    }
+
+    if (step === 'stage-two-prime') {
+        return {
+            body: uiText.tutorialStageTwoPrimeBody,
+            isBlocking: false,
+            position: 'top' as const,
+            title: uiText.tutorialStageTwoPrimeTitle,
+        };
+    }
+
+    if (step === 'stage-two-queue') {
+        return {
+            body: uiText.tutorialStageTwoQueueBody,
+            isBlocking: false,
+            position: 'top' as const,
+            title: uiText.tutorialStageTwoQueueTitle,
+        };
+    }
+
+    if (step === 'stage-two-submit') {
+        return {
+            body: uiText.tutorialStageTwoSubmitBody,
+            isBlocking: false,
+            position: 'top' as const,
+            title: uiText.tutorialStageTwoSubmitTitle,
+        };
+    }
+
+    if (step === 'stage-two-result') {
+        return {
+            actionLabel: uiText.tutorialUseLastFactor,
+            body: uiText.tutorialStageTwoResultBody,
+            isBlocking: true,
+            position: 'bottom' as const,
+            title: uiText.tutorialStageTwoResultTitle,
+        };
+    }
+
+    if (step === 'stage-two-finish') {
+        return {
+            body: uiText.tutorialStageTwoFinishBody,
+            isBlocking: false,
+            position: 'top' as const,
+            title: uiText.tutorialStageTwoFinishTitle,
+        };
+    }
+
+    if (step === 'stage-two-finish-submit') {
+        return {
+            body: uiText.tutorialStageTwoFinishSubmitBody,
+            isBlocking: false,
+            position: 'top' as const,
+            title: uiText.tutorialStageTwoFinishSubmitTitle,
+        };
+    }
+
+    if (step === 'enemy-turn') {
+        return {
+            actionLabel: uiText.tutorialShowAttack,
+            body: uiText.tutorialEnemyTurnBody,
+            isBlocking: true,
+            position: 'bottom' as const,
+            title: uiText.tutorialEnemyTurnTitle,
+        };
+    }
+
+    if (step === 'enemy-attack') {
+        return {
+            actionLabel: uiText.tutorialTryMistake,
+            body: uiText.tutorialEnemyAttackBody,
+            isBlocking: true,
+            position: 'top' as const,
+            title: uiText.tutorialEnemyAttackTitle,
+        };
+    }
+
+    if (step === 'try-wrong-prime') {
+        return {
+            body: uiText.tutorialTryWrongPrimeBody,
+            isBlocking: false,
+            position: 'top' as const,
+            title: uiText.tutorialTryWrongPrimeTitle,
+        };
+    }
+
+    if (step === 'wrong-prime-result') {
+        return {
+            actionLabel: uiText.tutorialWrapUp,
+            body: uiText.tutorialWrongPrimeResultBody,
+            isBlocking: true,
+            position: 'bottom' as const,
+            title: uiText.tutorialWrongPrimeResultTitle,
+        };
+    }
+
+    return {
+        actionLabel: uiText.tutorialKeepPlaying,
+        body: uiText.tutorialSummaryBody,
+        isBlocking: true,
+        position: 'bottom' as const,
+        title: uiText.tutorialSummaryTitle,
+    };
+}
+
+function getTutorialHighlightTarget(
+    step: TutorialStep,
+    queue: readonly Prime[]
+): TutorialFocusTarget | undefined {
+    if (step === 'intro') {
+        return 'self-blob';
+    }
+
+    if (step === 'stage-one-result') {
+        return 'enemy-hp';
+    }
+
+    if (
+        step === 'stage-one-prime' ||
+        step === 'stage-two-prime' ||
+        step === 'stage-two-queue' ||
+        step === 'stage-two-finish' ||
+        (step === 'try-wrong-prime' && !hasQueue(queue, [3]))
+    ) {
+        return 'keypad';
+    }
+
+    if (step === 'stage-one-queue') {
+        return 'queue';
+    }
+
+    if (
+        step === 'stage-one-submit' ||
+        step === 'stage-two-submit' ||
+        step === 'stage-two-finish-submit' ||
+        (step === 'try-wrong-prime' && hasQueue(queue, [3]))
+    ) {
+        return 'submit';
+    }
+
+    if (step === 'enemy-turn' || step === 'enemy-attack') {
+        return 'self-hp';
+    }
+
+    if (step === 'wrong-prime-result') {
+        return 'self-hp';
+    }
+
+    return undefined;
+}
+
+function getHighlightedPrime(
+    step: TutorialStep,
+    queue: readonly Prime[]
+): Prime | undefined {
+    if (step === 'stage-one-prime' || step === 'stage-two-prime') {
+        return 2;
+    }
+
+    if (step === 'stage-one-queue' || step === 'stage-two-queue') {
+        return 3;
+    }
+
+    if (step === 'stage-two-finish') {
+        return 5;
+    }
+
+    if (step === 'try-wrong-prime' && queue.length === 0) {
+        return 3;
+    }
+
+    return undefined;
+}
+
+function getTutorialExpectedQueue(
+    step: TutorialStep
+): readonly Prime[] | undefined {
+    if (step === 'stage-one-prime' || step === 'stage-two-prime') {
+        return [2];
+    }
+
+    if (step === 'stage-one-queue' || step === 'stage-two-queue') {
+        return [2, 3];
+    }
+
+    if (step === 'stage-two-finish' || step === 'stage-two-finish-submit') {
+        return [5];
+    }
+
+    if (step === 'try-wrong-prime') {
+        return [3];
+    }
+
+    return undefined;
+}
+
+function hasQueuePrefix(
+    queue: readonly Prime[],
+    expectedQueue: readonly Prime[]
+) {
+    return (
+        queue.length <= expectedQueue.length &&
+        queue.every((prime, index) => prime === expectedQueue[index])
+    );
+}
+
+function getTutorialAllowedPrime(
+    step: TutorialStep,
+    queue: readonly Prime[]
+): Prime | undefined {
+    const expectedQueue = getTutorialExpectedQueue(step);
+
+    if (
+        expectedQueue === undefined ||
+        !hasQueuePrefix(queue, expectedQueue) ||
+        queue.length >= expectedQueue.length
+    ) {
+        return undefined;
+    }
+
+    return expectedQueue[queue.length];
+}
+
+function locksTutorialPrimeInput(step: TutorialStep, queue: readonly Prime[]) {
+    const expectedQueue = getTutorialExpectedQueue(step);
+
+    if (expectedQueue === undefined) {
+        return false;
+    }
+
+    return (
+        !hasQueuePrefix(queue, expectedQueue) ||
+        queue.length >= expectedQueue.length
+    );
+}
+
+function hasQueue(queue: readonly Prime[], expectedQueue: readonly Prime[]) {
+    return (
+        queue.length === expectedQueue.length &&
+        expectedQueue.every((prime, index) => queue[index] === prime)
+    );
+}
+
+function TutorialCoachCard({
+    actionLabel,
+    body,
+    onAction,
+    position,
+    title,
+}: {
+    actionLabel?: string;
+    body: string;
+    onAction: (() => void) | undefined;
+    position: 'bottom' | 'top';
+    title: string;
+}): JSX.Element {
+    return (
+        <section className={`tutorial-hint tutorial-hint--${position}`}>
+            <h2 className='tutorial-hint-title'>{title}</h2>
+            <p className='tutorial-hint-body'>{body}</p>
+            {actionLabel && onAction ? (
+                <ActionButton onClick={onAction} variant='primary'>
+                    {actionLabel}
+                </ActionButton>
+            ) : undefined}
+        </section>
     );
 }
 

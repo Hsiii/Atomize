@@ -8,21 +8,27 @@ import { PrimeKeyButton } from './PrimeKeyButton';
 
 type GameControlsProps = {
     backspaceDisabled: boolean;
+    getPrimeDisabledState?: (prime: Prime) => boolean;
+    highlightedPrime?: Prime | undefined;
     keypadClassName?: string;
     onBackspace: () => void;
     onPrimeTap: (prime: Prime) => void;
     onSubmit: () => void;
     primes: readonly Prime[];
+    submitClassName?: string;
     submitDisabled: boolean;
 };
 
 export function GameControls({
     backspaceDisabled,
+    getPrimeDisabledState,
+    highlightedPrime,
     keypadClassName,
     onBackspace,
     onPrimeTap,
     onSubmit,
     primes,
+    submitClassName,
     submitDisabled,
 }: GameControlsProps): JSX.Element {
     return (
@@ -32,6 +38,8 @@ export function GameControls({
             >
                 {primes.map((prime) => (
                     <PrimeKeyButton
+                        disabled={getPrimeDisabledState?.(prime) === true}
+                        isHighlighted={highlightedPrime === prime}
                         key={prime}
                         onPress={onPrimeTap}
                         prime={prime}
@@ -57,7 +65,7 @@ export function GameControls({
 
                 <ActionButton
                     aria-label={uiText.enterCombo}
-                    className='combo-enter-button'
+                    className={`combo-enter-button${submitClassName ? ` ${submitClassName}` : ''}`}
                     disabled={submitDisabled}
                     onClick={onSubmit}
                     shape='rounded'

@@ -83,9 +83,12 @@ export default function App(): JSX.Element {
                 }
                 multiplayerPrimeQueue={tutorialGame.multiplayerPrimeQueue}
                 multiplayerSnapshot={tutorialGame.multiplayerSnapshot}
+                onAllowCpuAttack={tutorialGame.allowCpuAttack}
                 onBack={handleTutorialReturn}
                 onSubmit={tutorialGame.handleMultiplayerComboSubmit}
+                onTutorialComplete={tutorialGame.notifyTutorialDone}
                 playablePrimes={tutorialGame.playablePrimes}
+                tutorialMode
             />
         );
     }

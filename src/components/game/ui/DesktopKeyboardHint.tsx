@@ -23,7 +23,7 @@ export function DesktopKeyboardHint(): JSX.Element {
                 }}
                 variant='primary'
             >
-                {uiText.tutorialGotIt}
+                {uiText.tutorialDismissHint}
             </ActionButton>
         </section>
     );

@@ -121,6 +121,7 @@ export function useBattleAnimations({
     enemyHealthRef: React.RefObject<HTMLDivElement | null>;
     hasPendingSelfFaultEvent: boolean;
     hpImpacts: { enemy?: SideHpImpacts; self?: SideHpImpacts };
+    isAnimating: boolean;
     isBlobRevealActive: boolean;
     isOpponentRevealActive: boolean;
     isResultDialogVisible: boolean;
@@ -1033,12 +1034,25 @@ export function useBattleAnimations({
         }
     }, [activeAttackId, queuedAttacks]);
 
+    const isAnimating =
+        attackEffect !== undefined ||
+        damagePops.length > 0 ||
+        queuedAttacks.length > 0 ||
+        activeAttackId !== undefined ||
+        hasPendingAttackEvent ||
+        hasPendingSelfFaultEvent ||
+        selfFaultToken !== undefined ||
+        perfectBurst !== undefined ||
+        hpImpacts.self !== undefined ||
+        hpImpacts.enemy !== undefined;
+
     return {
         damagePops,
         attackEffect,
         displayedSelfHp,
         displayedEnemyHp,
         hpImpacts,
+        isAnimating,
         isResultDialogVisible,
         perfectBurst,
         selfFaultToken,
