@@ -460,15 +460,23 @@
 /* === Invite Dialog === */
 
 .dialog-invite {
-    max-height: 70dvh;
+    --invite-row-height: 5.15rem;
+    --invite-visible-rows: 4.5;
+    max-height: min(
+        70dvh,
+        calc((var(--invite-row-height) * var(--invite-visible-rows)) + 5.5rem)
+    );
     display: flex;
     flex-direction: column;
 }
 
 .dialog-invite .dialog-body {
     flex: 1;
+    max-height: calc(var(--invite-row-height) * var(--invite-visible-rows));
     overflow-y: auto;
+    overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable;
     padding-top: var(--space-4);
     padding-bottom: var(--space-4);
 }
@@ -488,6 +496,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    min-height: var(--invite-row-height);
     padding: var(--space-4) 0;
     border-bottom: 1px solid var(--color-border-soft);
 }
@@ -513,8 +522,8 @@
     min-width: 6.5rem;
     max-width: 6.5rem;
     flex: 0 0 6.5rem;
-    min-height: 2.85rem;
-    padding: 0.45rem 0.7rem;
+    min-height: 2.6rem;
+    padding: 0.35rem 0.7rem;
     border-radius: var(--radius-pill);
     background: var(--color-button-primary-bg);
     color: var(--color-button-primary-text);
@@ -595,15 +604,28 @@
         padding: 1.8rem;
         padding-bottom: 5.5rem;
     }
+
+    .dialog-invite {
+        max-height: min(
+            76dvh,
+            calc(
+                (var(--invite-row-height) * var(--invite-visible-rows)) + 5.1rem
+            )
+        );
+    }
 }
 
 @media (max-width: 480px) {
+    .dialog-invite .dialog-body {
+        touch-action: pan-y;
+    }
+
     .invite-btn {
         width: 6rem;
         min-width: 6rem;
         max-width: 6rem;
         flex-basis: 6rem;
-        min-height: 2.95rem;
+        min-height: 2.5rem;
     }
 
     .menu-slot-column {
