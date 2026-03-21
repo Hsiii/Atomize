@@ -402,10 +402,6 @@
     min-height: 4rem;
 }
 
-.multiplayer-controls-grid .combo-bar {
-    min-height: 3.5rem;
-}
-
 @media (max-width: 700px) {
     .multiplayer-board {
         min-height: 16rem;
