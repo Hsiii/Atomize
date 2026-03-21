@@ -1,5 +1,7 @@
 .game-screen {
     gap: var(--space-7);
+    --combo-backspace-icon-size: 1.75rem;
+    --combo-enter-icon-size: 2rem;
 }
 
 .single-game-screen {
@@ -153,8 +155,8 @@
 }
 
 .combo-backspace-button .control-icon {
-    width: clamp(1.45rem, 40cqi, 2rem);
-    height: clamp(1.45rem, 40cqi, 2rem);
+    width: var(--combo-backspace-icon-size);
+    height: var(--combo-backspace-icon-size);
     stroke-width: 2.35;
 }
 
@@ -166,11 +168,30 @@
 }
 
 .combo-enter-button .control-icon {
-    width: clamp(1.7rem, 46cqi, 2.35rem);
-    height: clamp(1.7rem, 46cqi, 2.35rem);
+    width: var(--combo-enter-icon-size);
+    height: var(--combo-enter-icon-size);
+}
+
+@media (min-width: 900px) {
+    .game-screen {
+        --combo-backspace-icon-size: 2rem;
+        --combo-enter-icon-size: 2.35rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .game-screen {
+        --combo-backspace-icon-size: 1.6rem;
+        --combo-enter-icon-size: 1.85rem;
+    }
 }
 
 @media (max-width: 480px) {
+    .game-screen {
+        --combo-backspace-icon-size: 1.45rem;
+        --combo-enter-icon-size: 1.7rem;
+    }
+
     .keypad-row {
         --keypad-row-gap: var(--space-keypad-gap-mobile);
     }

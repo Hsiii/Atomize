@@ -419,16 +419,15 @@
     }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 768px) {
     .number-blob-display-size-enemy,
     .number-blob-display-size-self {
         --number-blob-max-size: calc(17.7rem * var(--number-blob-scale-factor));
     }
 }
 
-@media (min-width: 900px) and (min-aspect-ratio: 4/3) {
+@media (min-width: 900px) {
     .number-blob-display {
-        --number-blob-font-size-base: clamp(3.8rem, 10vw, 6.3rem);
         --number-blob-max-size: 19rem;
     }
 }

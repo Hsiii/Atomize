@@ -33,12 +33,6 @@
     transform: scale(0.985);
 }
 
-@media (min-width: 900px) and (min-aspect-ratio: 4/3) {
-    .prime-key-button {
-        --prime-key-font-size: clamp(1.7rem, 4.8vw, 3.7rem);
-    }
-}
-
 .prime-key-button-label {
     display: flex;
     align-items: center;

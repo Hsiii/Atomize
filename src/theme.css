@@ -1,4 +1,5 @@
 :root {
+    /* Breakpoint reference: desktop-wide >= 900px, tablet <= 768px, mobile <= 480px. */
     --font-family-base: 'Avenir Next', 'Helvetica Neue', sans-serif;
     --font-family-display: var(--font-family-base);
     --font-family-numeric: var(--font-family-base);
@@ -6,7 +7,7 @@
     --line-height-base: 1.4;
 
     --type-display-hero-family: var(--font-family-display);
-    --type-display-hero-size: clamp(2.5rem, 8vw, 5.5rem);
+    --type-display-hero-size: 4.25rem;
     --type-display-hero-weight: 900;
     --type-display-hero-line-height: 0.82;
     --type-display-hero-letter-spacing: 0.015em;
@@ -14,7 +15,7 @@
     --type-display-hero-color: var(--color-text-inverse);
 
     --type-display-game-family: var(--font-family-numeric);
-    --type-display-game-size: clamp(4.4rem, 16vw, 7.8rem);
+    --type-display-game-size: 5.4rem;
     --type-display-game-weight: var(--font-weight-number-emphasis);
     --type-display-game-line-height: 1;
     --type-display-game-standalone-line-height: 0.92;
@@ -22,20 +23,20 @@
     --type-display-game-color: var(--color-text-inverse);
 
     --type-display-input-family: var(--font-family-numeric);
-    --type-display-input-size: clamp(2rem, 10vw, 4.65rem);
+    --type-display-input-size: 3rem;
     --type-display-input-compact-size: 1.4rem;
     --type-display-input-weight: var(--font-weight-number-emphasis);
     --type-display-input-line-height: 1;
     --type-display-input-color: var(--color-keypad-button-text);
 
     --type-display-results-family: var(--font-family-numeric);
-    --type-display-results-size: clamp(2.4rem, 5vw, 3.5rem);
+    --type-display-results-size: 2.9rem;
     --type-display-results-weight: var(--font-weight-number-emphasis);
     --type-display-results-line-height: 1;
     --type-display-results-color: var(--color-primary);
 
     --type-display-burst-family: var(--font-family-numeric);
-    --type-display-burst-size: clamp(1.65rem, 6vw, 3rem);
+    --type-display-burst-size: 2.4rem;
     --type-display-burst-weight: 800;
     --type-display-burst-soft-weight: 700;
     --type-display-burst-line-height: 1;
@@ -45,7 +46,7 @@
     --type-display-burst-color: var(--color-secondary);
 
     --type-title-panel-family: var(--font-family-display);
-    --type-title-panel-size: clamp(1.75rem, 4vw, 2.5rem);
+    --type-title-panel-size: 2.15rem;
     --type-title-panel-weight: 800;
     --type-title-panel-line-height: 1.1;
     --type-title-panel-letter-spacing: 0.06em;
@@ -53,13 +54,13 @@
     --type-title-panel-color: var(--color-text-inverse);
 
     --type-metric-inline-family: var(--font-family-numeric);
-    --type-metric-inline-size: clamp(0.88rem, 2.4vw, 1.45rem);
+    --type-metric-inline-size: 1rem;
     --type-metric-inline-weight: var(--font-weight-number-emphasis);
     --type-metric-inline-line-height: 1;
     --type-metric-inline-color: var(--color-primary);
 
     --type-action-label-family: var(--font-family-base);
-    --type-action-label-size: clamp(1rem, 3vw, 1.2rem);
+    --type-action-label-size: 1.02rem;
     --type-action-label-weight: 700;
     --type-action-label-line-height: 1.1;
     --type-action-label-letter-spacing: 0.01em;
@@ -76,7 +77,7 @@
     --type-action-label-support-line-height: 1.2;
 
     --type-body-meta-family: var(--font-family-base);
-    --type-body-meta-size: clamp(0.68rem, 2vw, 0.95rem);
+    --type-body-meta-size: 0.82rem;
     --type-body-meta-weight: 600;
     --type-body-meta-line-height: 1.35;
     --type-body-meta-letter-spacing: 0.02em;
@@ -201,4 +202,46 @@
     --shadow-toast: 0 18px 34px rgba(16, 27, 46, 0.22);
     --blur-panel: 14px;
     --blur-overlay: 10px;
+}
+
+@media (min-width: 900px) {
+    :root {
+        --type-display-hero-size: 5.5rem;
+        --type-display-game-size: 6.3rem;
+        --type-display-input-size: 3.7rem;
+        --type-display-results-size: 3.5rem;
+        --type-display-burst-size: 3rem;
+        --type-title-panel-size: 2.5rem;
+        --type-metric-inline-size: 1.15rem;
+        --type-action-label-size: 1.1rem;
+        --type-body-meta-size: 0.9rem;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --type-display-hero-size: 3.5rem;
+        --type-display-game-size: 4.9rem;
+        --type-display-input-size: 2.6rem;
+        --type-display-results-size: 2.6rem;
+        --type-display-burst-size: 2.1rem;
+        --type-title-panel-size: 1.95rem;
+        --type-metric-inline-size: 0.95rem;
+        --type-action-label-size: 1rem;
+        --type-body-meta-size: 0.76rem;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --type-display-hero-size: 2.5rem;
+        --type-display-game-size: 4.4rem;
+        --type-display-input-size: 2rem;
+        --type-display-results-size: 2.4rem;
+        --type-display-burst-size: 1.65rem;
+        --type-title-panel-size: 1.75rem;
+        --type-metric-inline-size: 0.88rem;
+        --type-action-label-size: 1rem;
+        --type-body-meta-size: 0.68rem;
+    }
 }

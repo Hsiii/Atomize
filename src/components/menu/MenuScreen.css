@@ -509,10 +509,10 @@
 
 .invite-btn {
     box-sizing: border-box;
-    width: 5.75rem;
-    min-width: 5.75rem;
-    max-width: 5.75rem;
-    flex: 0 0 5.75rem;
+    width: 6.5rem;
+    min-width: 6.5rem;
+    max-width: 6.5rem;
+    flex: 0 0 6.5rem;
     padding: 0.3rem 0.7rem;
     border-radius: var(--radius-pill);
     background: var(--color-button-primary-bg);
@@ -527,6 +527,8 @@
     letter-spacing: var(--type-action-label-caps-letter-spacing);
     transition: opacity 0.12s ease;
     text-align: center;
+    line-height: 1;
+    white-space: nowrap;
 }
 
 .invite-btn:hover {
@@ -595,6 +597,13 @@
 }
 
 @media (max-width: 480px) {
+    .invite-btn {
+        width: 5.75rem;
+        min-width: 5.75rem;
+        max-width: 5.75rem;
+        flex-basis: 5.75rem;
+    }
+
     .menu-slot-column {
         min-width: 4.8rem;
     }
