@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, JSX } from 'react';
-import { CircleArrowUp, Delete } from 'lucide-react';
 
 import { uiText } from '../../app-state';
 import type { Prime, RoomPlayer, RoomSnapshot } from '../../core';
@@ -21,11 +20,10 @@ import {
 import './GamePlayScreen.css';
 import './MultiplayerGameScreen.css';
 
-import { ActionButton } from './ui/ActionButton';
 import { COMBO_QUEUE_MAX_ITEMS, ComboQueuePanel } from './ui/ComboQueuePanel';
 import { DuoScoreDialog } from './ui/DuoScoreDialog';
+import { GameControls } from './ui/GameControls';
 import { NumberBlobDisplay } from './ui/NumberBlobDisplay';
-import { PrimeKeyButton } from './ui/PrimeKeyButton';
 
 type DamagePop = {
     id: string;
@@ -1366,61 +1364,22 @@ export function MultiplayerGameScreen({
                 <section className='multiplayer-controls-grid'>
                     <ComboQueuePanel queue={visibleQueue} />
 
-                    <div className='keypad-row'>
-                        <div className='keypad solo-keypad multiplayer-keypad'>
-                            {playablePrimes.map((prime) => (
-                                <PrimeKeyButton
-                                    key={`room-${prime}`}
-                                    onPress={handlePrimeTap}
-                                    prime={prime}
-                                >
-                                    {prime}
-                                </PrimeKeyButton>
-                            ))}
-                        </div>
-
-                        <div className='combo-actions-column'>
-                            <ActionButton
-                                aria-label={uiText.backspace}
-                                className='combo-backspace-button'
-                                disabled={
-                                    isMultiplayerComboRunning ||
-                                    (visibleQueue.length === 0 &&
-                                        bufferedPrimeInput === '')
-                                }
-                                onClick={handleBackspace}
-                                shape='rounded'
-                                variant='secondary'
-                            >
-                                <span className='control-button-content'>
-                                    <Delete
-                                        aria-hidden='true'
-                                        className='control-icon'
-                                    />
-                                </span>
-                            </ActionButton>
-
-                            <ActionButton
-                                aria-label={uiText.enterCombo}
-                                className='combo-enter-button'
-                                disabled={
-                                    isInputDisabled ||
-                                    (visibleQueue.length === 0 &&
-                                        !canSubmitSolvedStage)
-                                }
-                                onClick={handleSubmitClick}
-                                shape='rounded'
-                                variant='secondary'
-                            >
-                                <span className='control-button-content'>
-                                    <CircleArrowUp
-                                        aria-hidden='true'
-                                        className='control-icon'
-                                    />
-                                </span>
-                            </ActionButton>
-                        </div>
-                    </div>
+                    <GameControls
+                        backspaceDisabled={
+                            isMultiplayerComboRunning ||
+                            (visibleQueue.length === 0 &&
+                                bufferedPrimeInput === '')
+                        }
+                        keypadClassName='multiplayer-keypad'
+                        onBackspace={handleBackspace}
+                        onPrimeTap={handlePrimeTap}
+                        onSubmit={handleSubmitClick}
+                        primes={playablePrimes}
+                        submitDisabled={
+                            isInputDisabled ||
+                            (visibleQueue.length === 0 && !canSubmitSolvedStage)
+                        }
+                    />
                 </section>
 
                 {isMatchFinished && isResultDialogVisible ? (

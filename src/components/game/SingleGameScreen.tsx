@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { JSX } from 'react';
-import { CircleArrowUp, Delete } from 'lucide-react';
 
 import { uiText } from '../../app-state';
 import type { Prime, SoloState } from '../../core';
@@ -8,10 +7,9 @@ import type { Prime, SoloState } from '../../core';
 import './GamePlayScreen.css';
 
 import { GameStatusHeader } from './GameStatusHeader';
-import { ActionButton } from './ui/ActionButton';
 import { COMBO_QUEUE_MAX_ITEMS, ComboQueuePanel } from './ui/ComboQueuePanel';
+import { GameControls } from './ui/GameControls';
 import { NumberBlobDisplay } from './ui/NumberBlobDisplay';
-import { PrimeKeyButton } from './ui/PrimeKeyButton';
 import { ScoreDialog } from './ui/ScoreDialog';
 
 type SingleGameScreenProps = {
@@ -157,61 +155,22 @@ export function SingleGameScreen({
                 <section className='single-controls-grid'>
                     <ComboQueuePanel queue={visibleQueue} />
 
-                    <div className='keypad-row'>
-                        <div className='keypad solo-keypad'>
-                            {playablePrimes.map((prime) => (
-                                <PrimeKeyButton
-                                    key={prime}
-                                    onPress={handlePrimeTap}
-                                    prime={prime}
-                                >
-                                    {prime}
-                                </PrimeKeyButton>
-                            ))}
-                        </div>
-
-                        <div className='combo-actions-column'>
-                            <ActionButton
-                                aria-label={uiText.backspace}
-                                className='combo-backspace-button'
-                                disabled={
-                                    visibleQueue.length === 0 ||
-                                    isSoloComboRunning ||
-                                    isTimeUp
-                                }
-                                onClick={handleBackspace}
-                                shape='rounded'
-                                variant='secondary'
-                            >
-                                <span className='control-button-content'>
-                                    <Delete
-                                        aria-hidden='true'
-                                        className='control-icon'
-                                    />
-                                </span>
-                            </ActionButton>
-
-                            <ActionButton
-                                aria-label={uiText.enterCombo}
-                                className='combo-enter-button'
-                                disabled={
-                                    isTimeUp ||
-                                    visibleQueue.length === 0 ||
-                                    isSoloComboRunning
-                                }
-                                onClick={handleSubmit}
-                                shape='rounded'
-                                variant='secondary'
-                            >
-                                <span className='control-button-content'>
-                                    <CircleArrowUp
-                                        aria-hidden='true'
-                                        className='control-icon'
-                                    />
-                                </span>
-                            </ActionButton>
-                        </div>
-                    </div>
+                    <GameControls
+                        backspaceDisabled={
+                            visibleQueue.length === 0 ||
+                            isSoloComboRunning ||
+                            isTimeUp
+                        }
+                        onBackspace={handleBackspace}
+                        onPrimeTap={handlePrimeTap}
+                        onSubmit={handleSubmit}
+                        primes={playablePrimes}
+                        submitDisabled={
+                            isTimeUp ||
+                            visibleQueue.length === 0 ||
+                            isSoloComboRunning
+                        }
+                    />
                 </section>
 
                 {isTimeUp ? (
