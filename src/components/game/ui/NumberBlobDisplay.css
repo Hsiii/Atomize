@@ -3,6 +3,8 @@
     --number-blob-font-size-base: var(--type-display-game-size);
     --number-blob-stage-color: var(--color-primary);
     --number-blob-reveal-color: var(--color-secondary);
+    --number-blob-stage-reveal-delay: 1000ms;
+    --number-blob-value-fade-delay: 1000ms;
     --number-blob-split-color: var(--color-secondary);
     --number-blob-split-clear-color: color-mix(
         in srgb,
@@ -38,6 +40,8 @@
 .number-blob-display-solo {
     --number-blob-stage-color: var(--color-button-primary-bg);
     --number-blob-reveal-color: var(--color-button-primary-bg);
+    --number-blob-stage-reveal-delay: 0ms;
+    --number-blob-value-fade-delay: 0ms;
     --number-blob-split-color: var(--color-button-primary-bg);
     --number-blob-split-clear-color: var(--color-button-primary-bg);
 }
@@ -231,7 +235,7 @@
     transform: scale(0.12);
     background: var(--number-blob-reveal-color);
     animation: number-blob-stage-reveal 2000ms cubic-bezier(0.2, 0.84, 0.22, 1)
-        1000ms both;
+        var(--number-blob-stage-reveal-delay) both;
 }
 
 .number-main-blob.is-cleared {
@@ -241,7 +245,8 @@
 
 .number-main-blob strong.is-value-hidden {
     opacity: 0;
-    animation: number-blob-value-fade-in 2000ms ease 1000ms forwards;
+    animation: number-blob-value-fade-in 2000ms ease
+        var(--number-blob-value-fade-delay) forwards;
 }
 
 .number-blob-clear-pop {

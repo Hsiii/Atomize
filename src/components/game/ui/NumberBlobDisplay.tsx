@@ -132,8 +132,9 @@ export function NumberBlobDisplay({
     const [availableSize, setAvailableSize] = useState<number>();
     const [isImpactActive, setIsImpactActive] = useState(false);
     const [isFaultAnimationActive, setIsFaultAnimationActive] = useState(false);
-    const [isLocalStageRevealActive, setIsLocalStageRevealActive] =
-        useState(false);
+    const [isLocalStageRevealActive, setIsLocalStageRevealActive] = useState(
+        () => mode === 'solo' && typeof value === 'number'
+    );
     const previousValueRef = useRef<number | undefined>(undefined);
     const previousTargetIdRef = useRef<number | undefined>(undefined);
     const previousFaultKeyRef = useRef<string | undefined>(undefined);
@@ -150,6 +151,24 @@ export function NumberBlobDisplay({
     const containerRef = useRef<HTMLDivElement | null>(null);
     const effectiveStageRevealActive =
         isStageRevealActive || isLocalStageRevealActive;
+
+    function triggerLocalStageReveal() {
+        if (mode !== 'solo') {
+            return;
+        }
+
+        clearTimer(localStageRevealTimerRef.current);
+        localStageRevealTimerRef.current = undefined;
+        setIsLocalStageRevealActive(true);
+        localStageRevealTimerRef.current = globalThis.setTimeout(
+            () => {
+                setIsLocalStageRevealActive(false);
+                localStageRevealTimerRef.current = undefined;
+            },
+            localStageRevealDurationMs,
+            undefined
+        );
+    }
 
     useLayoutEffect(() => {
         const container = containerRef.current;
@@ -210,7 +229,6 @@ export function NumberBlobDisplay({
                 );
             }
         );
-
         resizeObserver.observe(container);
         measureContainer();
 
@@ -310,6 +328,9 @@ export function NumberBlobDisplay({
 
         if (typeof previousValue !== 'number') {
             setDisplayedValue(value);
+            if (typeof value === 'number') {
+                triggerLocalStageReveal();
+            }
             previousValueRef.current = value;
             previousTargetIdRef.current = resolvedTargetId;
             return undefined;
