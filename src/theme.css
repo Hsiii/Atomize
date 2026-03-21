@@ -76,7 +76,7 @@
     --type-action-label-support-line-height: 1.2;
 
     --type-body-meta-family: var(--font-family-base);
-    --type-body-meta-size: clamp(1.02rem, 3vw, 1.425rem);
+    --type-body-meta-size: clamp(0.68rem, 2vw, 0.95rem);
     --type-body-meta-weight: 600;
     --type-body-meta-line-height: 1.35;
     --type-body-meta-letter-spacing: 0.02em;

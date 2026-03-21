@@ -217,13 +217,13 @@
 .slot-name {
     display: inline-block;
     font-family: var(--type-body-meta-family);
-    font-size: var(--type-body-meta-size);
+    font-size: var(--type-action-label-size);
     font-weight: var(--type-body-meta-weight);
     letter-spacing: var(--type-body-meta-letter-spacing);
     line-height: var(--type-body-meta-line-height);
     opacity: 0.85;
     color: inherit;
-    max-width: 9rem;
+    max-width: 6rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -481,7 +481,7 @@
 
 .invite-name {
     font-family: var(--type-body-meta-family);
-    font-size: var(--type-body-meta-size);
+    font-size: var(--type-action-label-size);
     font-weight: var(--type-body-meta-weight);
     color: var(--color-ink);
 }
