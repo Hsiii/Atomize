@@ -31,6 +31,7 @@ import {
     createRealtimeClient,
     getMissingSupabaseEnvVars,
 } from '../lib/supabase';
+import { useComboQueueState } from './useComboQueueState';
 
 const realtimeSendTimeoutMs = 1500;
 const joinRoomLookupTimeoutMs = 5000;
@@ -119,11 +120,7 @@ export function useMultiplayerGame({
     screen,
     onScreenChange,
 }: UseMultiplayerGameOptions): UseMultiplayerGameResult {
-    const [multiplayerPrimeQueue, setMultiplayerPrimeQueue] = useState<Prime[]>(
-        []
-    );
-    const [isMultiplayerComboRunning, setIsMultiplayerComboRunning] =
-        useState(false);
+    const comboQueue = useComboQueueState();
     const [pendingInvitation, setPendingInvitation] = useState<
         LobbyInvitation | undefined
     >(undefined);
@@ -174,7 +171,7 @@ export function useMultiplayerGame({
     const isMultiplayerInputDisabled =
         !effectiveMultiplayerSnapshot ||
         effectiveMultiplayerSnapshot.status !== 'playing' ||
-        isMultiplayerComboRunning;
+        comboQueue.isComboRunning;
 
     useEffect(() => {
         latestMultiplayerRef.current = multiplayer;
@@ -195,8 +192,7 @@ export function useMultiplayerGame({
             return undefined;
         }
 
-        setMultiplayerPrimeQueue([]);
-        setIsMultiplayerComboRunning(false);
+        comboQueue.reset();
     }, [effectiveMultiplayerSnapshot?.status]);
 
     useEffect(() => {
@@ -388,8 +384,7 @@ export function useMultiplayerGame({
     async function resetMultiplayerGame() {
         await closeActiveChannel();
         resetGameplayMessageOrdering();
-        setMultiplayerPrimeQueue([]);
-        setIsMultiplayerComboRunning(false);
+        comboQueue.reset();
         setMultiplayerState({
             playerId: undefined,
             snapshot: undefined,
@@ -616,11 +611,9 @@ export function useMultiplayerGame({
         });
     }
 
-    async function handleMultiplayerComboSubmit(queue: readonly Prime[]) {
-        if (isMultiplayerInputDisabled) {
-            return;
-        }
-
+    async function handleMultiplayerComboSubmit(
+        queue: readonly Prime[]
+    ): Promise<undefined> {
         const currentState = latestMultiplayerRef.current;
         const gameplaySnapshot = getEffectiveMultiplayerSnapshot(
             currentState.snapshot,
@@ -630,39 +623,21 @@ export function useMultiplayerGame({
             (player) => player.id === currentState.playerId
         );
 
-        if (queue.length === 0) {
-            if (currentPlayer?.stage.remainingValue !== 1) {
-                return;
-            }
+        await comboQueue.submitCombo(queue, {
+            isDisabled: isMultiplayerInputDisabled,
+            isSolvedStage: currentPlayer?.stage.remainingValue === 1,
+            onSolvedStageClear: sendSolvedStageClear,
+            processQueue: processMultiplayerQueue,
+        });
 
-            setIsMultiplayerComboRunning(true);
-
-            try {
-                await sendSolvedStageClear();
-            } finally {
-                setIsMultiplayerComboRunning(false);
-            }
-
-            return;
-        }
-
-        setIsMultiplayerComboRunning(true);
-
-        const queuedPrimes = [...queue];
-        setMultiplayerPrimeQueue(queuedPrimes);
-
-        try {
-            await processMultiplayerQueue(queuedPrimes);
-        } finally {
-            setIsMultiplayerComboRunning(false);
-        }
+        return undefined;
     }
 
     return {
         playablePrimes,
         multiplayer,
-        multiplayerPrimeQueue,
-        isMultiplayerComboRunning,
+        multiplayerPrimeQueue: comboQueue.primeQueue,
+        isMultiplayerComboRunning: comboQueue.isComboRunning,
         isMultiplayerInputDisabled,
         currentMultiplayerPlayer,
         opponentName: opponentPlayer?.name,
@@ -1186,10 +1161,10 @@ export function useMultiplayerGame({
                 );
             },
             clearQueue() {
-                setMultiplayerPrimeQueue([]);
+                comboQueue.setPrimeQueue([]);
             },
             advanceQueue() {
-                setMultiplayerPrimeQueue((currentQueue: readonly Prime[]) =>
+                comboQueue.setPrimeQueue((currentQueue: readonly Prime[]) =>
                     currentQueue.slice(1)
                 );
             },

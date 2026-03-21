@@ -14,6 +14,7 @@ import {
     clearSolvedBattleStage,
     createRoomSnapshot,
 } from '../lib/multiplayer-room';
+import { useComboQueueState } from './useComboQueueState';
 
 const cpuPlayerId = 'local-cpu';
 const cpuMistakeChance = 0.14;
@@ -51,11 +52,7 @@ export function useLocalCpuGame({
     const [multiplayerSnapshot, setMultiplayerSnapshot] = useState<
         RoomSnapshot | undefined
     >(undefined);
-    const [multiplayerPrimeQueue, setMultiplayerPrimeQueue] = useState<Prime[]>(
-        []
-    );
-    const [isMultiplayerComboRunning, setIsMultiplayerComboRunning] =
-        useState(false);
+    const comboQueue = useComboQueueState();
     const latestSnapshotRef = useRef<RoomSnapshot | undefined>(undefined);
     const latestPlayerIdRef = useRef<string | undefined>(undefined);
     const cpuTurnTimeoutRef = useRef<number | undefined>(undefined);
@@ -81,7 +78,7 @@ export function useLocalCpuGame({
     const isMultiplayerInputDisabled =
         !multiplayerSnapshot ||
         multiplayerSnapshot.status !== 'playing' ||
-        isMultiplayerComboRunning;
+        comboQueue.isComboRunning;
 
     useEffect(() => {
         latestSnapshotRef.current = multiplayerSnapshot;
@@ -144,7 +141,7 @@ export function useLocalCpuGame({
         if (
             screen !== 'multi-game' ||
             !isLocalCpuGameActive ||
-            isMultiplayerComboRunning ||
+            comboQueue.isComboRunning ||
             isCpuBlobRevealActive
         ) {
             return undefined;
@@ -184,7 +181,7 @@ export function useLocalCpuGame({
     }, [
         isCpuBlobRevealActive,
         isLocalCpuGameActive,
-        isMultiplayerComboRunning,
+        comboQueue.isComboRunning,
         multiplayerSnapshot?.lastEvent?.id,
         multiplayerSnapshot?.status,
         screen,
@@ -223,8 +220,7 @@ export function useLocalCpuGame({
         latestPlayerIdRef.current = localPlayerId;
         setPlayerId(localPlayerId);
         updateSnapshot(waitingSnapshot);
-        setMultiplayerPrimeQueue([]);
-        setIsMultiplayerComboRunning(false);
+        comboQueue.reset();
     }
 
     function toggleReady() {
@@ -257,42 +253,31 @@ export function useLocalCpuGame({
         }
     }
 
-    async function handleMultiplayerComboSubmit(queue: readonly Prime[]) {
+    async function handleMultiplayerComboSubmit(
+        queue: readonly Prime[]
+    ): Promise<undefined> {
         const snapshot = latestSnapshotRef.current;
         const localPlayer = snapshot?.players.find(
             (player) => player.id === latestPlayerIdRef.current
         );
 
-        if (!snapshot || !localPlayer || isMultiplayerInputDisabled) {
-            return;
+        if (!snapshot || !localPlayer) {
+            return undefined;
         }
 
-        if (queue.length === 0) {
-            if (localPlayer.stage.remainingValue !== 1) {
-                return;
-            }
-
-            setIsMultiplayerComboRunning(true);
-
-            try {
+        await comboQueue.submitCombo(queue, {
+            isDisabled: isMultiplayerInputDisabled,
+            isSolvedStage: localPlayer.stage.remainingValue === 1,
+            onSolvedStageClear() {
                 updateSnapshot(
                     clearSolvedBattleStage(snapshot, localPlayer.id)
                 );
-            } finally {
-                setIsMultiplayerComboRunning(false);
-            }
+                return undefined;
+            },
+            processQueue: processMultiplayerQueue,
+        });
 
-            return;
-        }
-
-        setIsMultiplayerComboRunning(true);
-        setMultiplayerPrimeQueue([...queue]);
-
-        try {
-            await processMultiplayerQueue(queue);
-        } finally {
-            setIsMultiplayerComboRunning(false);
-        }
+        return undefined;
     }
 
     function resetLocalCpuGame() {
@@ -301,15 +286,14 @@ export function useLocalCpuGame({
         latestSnapshotRef.current = undefined;
         setPlayerId(undefined);
         setMultiplayerSnapshot(undefined);
-        setMultiplayerPrimeQueue([]);
-        setIsMultiplayerComboRunning(false);
+        comboQueue.reset();
     }
 
     return {
         playablePrimes,
         multiplayerSnapshot,
-        multiplayerPrimeQueue,
-        isMultiplayerComboRunning,
+        multiplayerPrimeQueue: comboQueue.primeQueue,
+        isMultiplayerComboRunning: comboQueue.isComboRunning,
         isMultiplayerInputDisabled,
         currentMultiplayerPlayer,
         isLocalCpuGameActive,
@@ -352,10 +336,10 @@ export function useLocalCpuGame({
                 );
             },
             clearQueue() {
-                setMultiplayerPrimeQueue([]);
+                comboQueue.setPrimeQueue([]);
             },
             advanceQueue() {
-                setMultiplayerPrimeQueue((currentQueue: readonly Prime[]) =>
+                comboQueue.setPrimeQueue((currentQueue: readonly Prime[]) =>
                     currentQueue.slice(1)
                 );
             },
