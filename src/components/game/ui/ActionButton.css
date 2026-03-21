@@ -15,8 +15,8 @@
 }
 
 .app-action-button.primary-action {
-    background: var(--color-button-accent-bg);
-    color: var(--color-button-accent-text);
+    background: var(--color-button-primary-bg);
+    color: var(--color-button-primary-text);
 }
 
 .app-action-button.secondary-action {
