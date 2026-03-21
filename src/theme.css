@@ -130,7 +130,7 @@
     --color-button-disabled-bg: var(--color-disabled-bg);
     --color-button-disabled-text: var(--color-disabled-text);
     --color-game-self: var(--color-primary-strong);
-    --color-game-opponent: #5e8097;
+    --color-game-opponent: var(--color-secondary);
     --color-game-keypad-bg: rgba(16, 27, 46, 0.08);
     --color-game-keypad-text: rgba(16, 27, 46, 0.58);
     --color-game-keypad-active-bg: rgba(16, 27, 46, 0.14);

@@ -136,15 +136,15 @@
     min-width: 0;
 }
 
-.combo-backspace-button.app-action-button {
+.combo-backspace-button.app-action-button.secondary-action {
     aspect-ratio: 1;
     padding: 0;
-    background: var(--color-secondary);
+    background: var(--color-game-self);
 }
 
-.combo-enter-button.app-action-button {
+.combo-enter-button.app-action-button.secondary-action {
     padding: 0;
-    background: var(--color-primary-strong);
+    background: var(--color-game-self);
 }
 
 .combo-backspace-button .control-icon {
