@@ -36,4 +36,5 @@ When Planning, always ask questions beforehand for the details if the prompt fro
 
 ## Testing
 
-When testing, always write playwright code to auto solve answers or type in wrong answers to speed up the test.
+- When testing, always write playwright code to auto solve answers or type in wrong answers to speed up the test.
+- Always assume other agents are using the browser, always spin up your own browser instance when testing.
