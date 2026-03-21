@@ -45,11 +45,49 @@ export function SingleGameScreen({
     const isInputDisabled = isTimeUp || isSoloComboRunning;
     const [visibleQueue, setVisibleQueue] = useState<Prime[]>(soloPrimeQueue);
     const visibleQueueRef = useRef(visibleQueue);
+    const scorePopIdRef = useRef(0);
+    const [scorePops, setScorePops] = useState<
+        Array<{ id: number; delta: number }>
+    >([]);
+    const previousScoreRef = useRef(soloState.score);
 
     useEffect(() => {
         visibleQueueRef.current = soloPrimeQueue;
         setVisibleQueue(soloPrimeQueue);
     }, [soloPrimeQueue]);
+
+    useEffect(() => {
+        const delta = soloState.score - previousScoreRef.current;
+        previousScoreRef.current = soloState.score;
+
+        if (delta <= 0) {
+            return undefined;
+        }
+
+        scorePopIdRef.current++;
+        const id = scorePopIdRef.current;
+        setScorePops(
+            (current: ReadonlyArray<{ id: number; delta: number }>) => [
+                ...current,
+                { id, delta },
+            ]
+        );
+
+        const timer = globalThis.setTimeout(
+            () => {
+                setScorePops(
+                    (current: ReadonlyArray<{ id: number; delta: number }>) =>
+                        current.filter((pop) => pop.id !== id)
+                );
+            },
+            900,
+            undefined
+        );
+
+        return () => {
+            globalThis.clearTimeout(timer);
+        };
+    }, [soloState.score]);
 
     function setLocalQueue(nextQueue: readonly Prime[]) {
         const normalizedQueue = [...nextQueue];
@@ -105,6 +143,15 @@ export function SingleGameScreen({
                         targetId={soloStageAdvanceSolvedStateKey}
                         value={soloState.currentStage.remainingValue}
                     />
+                    {scorePops.map((pop) => (
+                        <span
+                            aria-hidden='true'
+                            className='solo-score-pop'
+                            key={pop.id}
+                        >
+                            +{pop.delta}
+                        </span>
+                    ))}
                 </section>
 
                 <section className='single-controls-grid'>

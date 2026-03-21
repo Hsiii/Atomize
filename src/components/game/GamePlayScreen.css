@@ -8,12 +8,13 @@
 }
 
 .single-value-display {
+    position: relative;
     flex: 1;
     display: grid;
     place-items: center;
     text-align: center;
     min-height: 0;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .single-value-display > .number-blob-display {
@@ -176,5 +177,36 @@
 
     .prime-key-button {
         font-size: var(--type-display-input-compact-size);
+    }
+}
+
+.solo-score-pop {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 5;
+    pointer-events: none;
+    font-family: var(--type-display-burst-family);
+    font-size: var(--type-display-burst-size);
+    font-weight: var(--type-display-burst-soft-weight);
+    color: var(--color-gold);
+    white-space: nowrap;
+    animation: solo-score-pop 900ms ease-out forwards;
+}
+
+@keyframes solo-score-pop {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) translateY(0.3rem) scale(0.88);
+    }
+
+    18% {
+        opacity: 1;
+        transform: translate(-50%, -50%) translateY(-0.3rem) scale(1.06);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) translateY(-2.5rem) scale(1);
     }
 }
