@@ -194,24 +194,6 @@
     animation: button-slide 0.3s ease-out 0.55s both;
 }
 
-/* Victory variant — gold accent */
-.score-dialog--victory {
-    border-color: var(--color-gold);
-}
-
-.score-dialog--victory .score-dialog-header {
-    background: var(--color-gold);
-}
-
-.score-dialog--victory .score-dialog-combo-ring {
-    border-color: var(--color-gold);
-}
-
-.score-dialog--victory .score-dialog-combo-value,
-.score-dialog--victory .score-dialog-stat-value {
-    color: var(--color-gold);
-}
-
 /* Defeat variant — muted */
 .score-dialog--defeat {
     border-color: var(--color-ink-soft);
