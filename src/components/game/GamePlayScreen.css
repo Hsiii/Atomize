@@ -66,6 +66,10 @@
     gap: var(--keypad-row-gap);
 }
 
+.solo-keypad button {
+    min-height: 0;
+}
+
 .keypad-row {
     --keypad-row-gap: var(--space-keypad-gap-compact);
     display: grid;
