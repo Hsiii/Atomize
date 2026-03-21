@@ -484,6 +484,10 @@
     font-size: var(--type-action-label-size);
     font-weight: var(--type-body-meta-weight);
     color: var(--color-ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
 }
 
 .invite-btn {
