@@ -40,7 +40,7 @@ export function createRealtimeClient(): SupabaseClient | undefined {
         },
         realtime: {
             params: {
-                eventsPerSecond: 10,
+                eventsPerSecond: 40,
             },
         },
     });

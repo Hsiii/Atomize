@@ -786,7 +786,7 @@ export function useMultiplayerGame({
         const channel = supabase.channel(`atomize:${roomId}`, {
             config: {
                 broadcast: {
-                    self: true,
+                    self: false,
                 },
             },
         });
@@ -823,17 +823,15 @@ export function useMultiplayerGame({
             })
             .on('broadcast', { event: 'prime_selected' }, ({ payload }) => {
                 const message = payload as RoomBroadcastMessage;
-                detachPromise(handlePrimeSelectedBroadcast(message, playerId));
+                handlePrimeSelectedBroadcast(message, playerId);
             })
             .on('broadcast', { event: 'combo_penalty' }, ({ payload }) => {
                 const message = payload as RoomBroadcastMessage;
-                detachPromise(handleComboPenaltyBroadcast(message, playerId));
+                handleComboPenaltyBroadcast(message, playerId);
             })
             .on('broadcast', { event: 'clear_solved_stage' }, ({ payload }) => {
                 const message = payload as RoomBroadcastMessage;
-                detachPromise(
-                    handleClearSolvedStageBroadcast(message, playerId)
-                );
+                handleClearSolvedStageBroadcast(message, playerId);
             })
             .on('broadcast', { event: 'room_error' }, ({ payload }) => {
                 const message = payload as RoomBroadcastMessage;
@@ -906,26 +904,13 @@ export function useMultiplayerGame({
             return { didBroadcast: false };
         }
 
-        if (currentState.isHost) {
-            const nextSnapshot = applyBattlePrimeSelection(
-                gameplaySnapshot,
-                currentState.playerId,
-                prime,
-                { suppressAttack }
-            );
-            updateSnapshot(nextSnapshot, '');
-            const didBroadcast = await broadcastMessage({
-                type: 'room_state',
-                snapshot: nextSnapshot,
-                sourcePlayerId: currentState.playerId,
-            });
-
-            return {
-                snapshot: nextSnapshot,
-                didBroadcast,
-            };
-        }
-
+        const nextSnapshot = applyBattlePrimeSelection(
+            gameplaySnapshot,
+            currentState.playerId,
+            prime,
+            { suppressAttack }
+        );
+        updateSnapshot(nextSnapshot, '');
         const didBroadcast = await broadcastMessage({
             type: 'prime_selected',
             playerId: currentState.playerId,
@@ -933,7 +918,10 @@ export function useMultiplayerGame({
             suppressAttack,
         });
 
-        return { didBroadcast };
+        return {
+            snapshot: nextSnapshot,
+            didBroadcast,
+        };
     }
 
     async function sendMultiplayerPenalty(
@@ -946,28 +934,16 @@ export function useMultiplayerGame({
             screenRef.current
         );
 
-        if (!currentState.playerId) {
+        if (!currentState.playerId || !gameplaySnapshot) {
             return false;
         }
 
-        if (currentState.isHost) {
-            if (!gameplaySnapshot) {
-                return false;
-            }
-
-            const nextSnapshot = applyBattlePenalty(
-                gameplaySnapshot,
-                currentState.playerId,
-                preservedStage
-            );
-            updateSnapshot(nextSnapshot, '');
-            return await broadcastMessage({
-                type: 'room_state',
-                snapshot: nextSnapshot,
-                sourcePlayerId: currentState.playerId,
-            });
-        }
-
+        const nextSnapshot = applyBattlePenalty(
+            gameplaySnapshot,
+            currentState.playerId,
+            preservedStage
+        );
+        updateSnapshot(nextSnapshot, '');
         return await broadcastMessage({
             type: 'combo_penalty',
             playerId: currentState.playerId,
@@ -986,19 +962,11 @@ export function useMultiplayerGame({
             return false;
         }
 
-        if (currentState.isHost) {
-            const nextSnapshot = clearSolvedBattleStage(
-                gameplaySnapshot,
-                currentState.playerId
-            );
-            updateSnapshot(nextSnapshot, '');
-            return await broadcastMessage({
-                type: 'room_state',
-                snapshot: nextSnapshot,
-                sourcePlayerId: currentState.playerId,
-            });
-        }
-
+        const nextSnapshot = clearSolvedBattleStage(
+            gameplaySnapshot,
+            currentState.playerId
+        );
+        updateSnapshot(nextSnapshot, '');
         return await broadcastMessage({
             type: 'clear_solved_stage',
             playerId: currentState.playerId,
@@ -1075,18 +1043,18 @@ export function useMultiplayerGame({
         return undefined;
     }
 
-    async function handlePrimeSelectedBroadcast(
+    function handlePrimeSelectedBroadcast(
         message: RoomBroadcastMessage,
-        sourcePlayerId: string
-    ): Promise<undefined> {
+        localPlayerId: string
+    ) {
         const currentState = latestMultiplayerRef.current;
 
         if (
             message.type !== 'prime_selected' ||
-            !currentState.isHost ||
-            !currentState.snapshot
+            !currentState.snapshot ||
+            message.playerId === localPlayerId
         ) {
-            return undefined;
+            return;
         }
 
         const nextSnapshot = applyBattlePrimeSelection(
@@ -1097,27 +1065,20 @@ export function useMultiplayerGame({
         );
 
         updateSnapshot(nextSnapshot, '');
-        await broadcastMessage({
-            type: 'room_state',
-            snapshot: nextSnapshot,
-            sourcePlayerId,
-        });
-
-        return undefined;
     }
 
-    async function handleComboPenaltyBroadcast(
+    function handleComboPenaltyBroadcast(
         message: RoomBroadcastMessage,
-        sourcePlayerId: string
-    ): Promise<undefined> {
+        localPlayerId: string
+    ) {
         const currentState = latestMultiplayerRef.current;
 
         if (
             message.type !== 'combo_penalty' ||
-            !currentState.isHost ||
-            !currentState.snapshot
+            !currentState.snapshot ||
+            message.playerId === localPlayerId
         ) {
-            return undefined;
+            return;
         }
 
         const nextSnapshot = applyBattlePenalty(
@@ -1127,27 +1088,20 @@ export function useMultiplayerGame({
         );
 
         updateSnapshot(nextSnapshot, '');
-        await broadcastMessage({
-            type: 'room_state',
-            snapshot: nextSnapshot,
-            sourcePlayerId,
-        });
-
-        return undefined;
     }
 
-    async function handleClearSolvedStageBroadcast(
+    function handleClearSolvedStageBroadcast(
         message: RoomBroadcastMessage,
-        sourcePlayerId: string
-    ): Promise<undefined> {
+        localPlayerId: string
+    ) {
         const currentState = latestMultiplayerRef.current;
 
         if (
             message.type !== 'clear_solved_stage' ||
-            !currentState.isHost ||
-            !currentState.snapshot
+            !currentState.snapshot ||
+            message.playerId === localPlayerId
         ) {
-            return undefined;
+            return;
         }
 
         const nextSnapshot = clearSolvedBattleStage(
@@ -1156,13 +1110,6 @@ export function useMultiplayerGame({
         );
 
         updateSnapshot(nextSnapshot, '');
-        await broadcastMessage({
-            type: 'room_state',
-            snapshot: nextSnapshot,
-            sourcePlayerId,
-        });
-
-        return undefined;
     }
 
     async function processMultiplayerQueue(
