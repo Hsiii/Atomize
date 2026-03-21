@@ -57,6 +57,8 @@
 .solo-keypad {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-rows: repeat(3, minmax(0, 1fr));
+    width: min(100%, var(--size-keypad-cluster-max));
+    max-height: var(--size-keypad-cluster-max);
     margin-top: 0;
     gap: var(--space-keypad-gap-compact);
 }
