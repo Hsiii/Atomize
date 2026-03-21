@@ -4,6 +4,7 @@ import type { JSX } from 'react';
 import { uiText } from '../../app-state';
 import type { Prime, SoloState } from '../../core';
 import { usePrimeKeyboardControls } from '../../hooks/usePrimeKeyboardControls';
+import type { BestScoreRecord } from '../../lib/app-helpers';
 
 import './GamePlayScreen.css';
 
@@ -12,6 +13,7 @@ import { COMBO_QUEUE_MAX_ITEMS, ComboQueuePanel } from './ui/ComboQueuePanel';
 import { DesktopKeyboardHint } from './ui/DesktopKeyboardHint';
 import { GameControls } from './ui/GameControls';
 import { NumberBlobDisplay } from './ui/NumberBlobDisplay';
+import { PauseOverlay } from './ui/PauseOverlay';
 import { ScoreDialog } from './ui/ScoreDialog';
 
 type SingleGameScreenProps = {
@@ -23,7 +25,13 @@ type SingleGameScreenProps = {
     isSoloComboRunning: boolean;
     soloStageAdvanceSolvedStateKey: number;
     soloTimerPenaltyPopKey: number;
+    isPaused: boolean;
+    bestScore: BestScoreRecord;
+    isNewBest: boolean;
     onBack: () => void | Promise<void>;
+    onRetry: () => void;
+    onPause: () => void;
+    onResume: () => void;
     onSubmit: (queue: readonly Prime[]) => void;
     formatCountdown: (totalSeconds: number) => string;
 };
@@ -37,7 +45,13 @@ export function SingleGameScreen({
     isSoloComboRunning,
     soloStageAdvanceSolvedStateKey,
     soloTimerPenaltyPopKey,
+    isPaused,
+    bestScore,
+    isNewBest,
     onBack,
+    onRetry,
+    onPause,
+    onResume,
     onSubmit,
     formatCountdown,
 }: SingleGameScreenProps): JSX.Element {
@@ -132,7 +146,7 @@ export function SingleGameScreen({
                 <GameStatusHeader
                     countdownProgress={soloCountdownProgress}
                     formatCountdown={formatCountdown}
-                    onBack={onBack}
+                    onPause={isTimeUp ? undefined : onPause}
                     penaltyKey={soloTimerPenaltyPopKey}
                     penaltyText={uiText.timerPenalty}
                     score={soloState.score}
@@ -181,11 +195,19 @@ export function SingleGameScreen({
 
                 {isTimeUp ? (
                     <ScoreDialog
+                        atomized={soloState.clearedStages}
+                        bestScore={bestScore.score}
                         comboCount={soloState.maxCombo}
+                        isNewBest={isNewBest}
+                        onRetry={onRetry}
                         onReturnHome={onBack}
                         score={soloState.score}
                         title={uiText.timeUp}
                     />
+                ) : undefined}
+
+                {isPaused ? (
+                    <PauseOverlay onResume={onResume} onReturnHome={onBack} />
                 ) : undefined}
             </section>
         </main>

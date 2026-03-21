@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, JSX } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Pause } from 'lucide-react';
 
 import { uiText } from '../../app-state';
 
@@ -8,6 +8,7 @@ import './GameStatusHeader.css';
 
 type GameStatusHeaderProps = {
     onBack?: () => void | Promise<void>;
+    onPause?: () => void;
     countdownProgress: number;
     timeLeft: number;
     score: number;
@@ -20,6 +21,7 @@ type GameStatusHeaderProps = {
 
 export function GameStatusHeader({
     onBack,
+    onPause,
     countdownProgress,
     timeLeft,
     score,
@@ -75,7 +77,18 @@ export function GameStatusHeader({
     return (
         <header className={headerClasses} style={headerStyle}>
             <div className='single-top-bar-side single-top-bar-side-start'>
-                {onBack ? (
+                {onPause ? (
+                    <button
+                        aria-label={uiText.pause}
+                        className='top-bar-back-button'
+                        onClick={onPause}
+                        ref={backButtonRef}
+                        type='button'
+                    >
+                        <Pause aria-hidden='true' className='control-icon' />
+                    </button>
+                ) : undefined}
+                {!onPause && onBack ? (
                     <button
                         aria-label={uiText.back}
                         className='top-bar-back-button'

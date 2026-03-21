@@ -72,10 +72,6 @@
     animation: dialog-enter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
 }
 
-.score-dialog--split {
-    width: min(100%, 22rem);
-}
-
 .score-dialog-header {
     width: 100%;
     padding: var(--space-7) var(--space-8);
@@ -93,112 +89,96 @@
     color: var(--type-title-panel-color);
 }
 
-.score-dialog-stat {
+/* ── Stat list (vertical, like duo game) ── */
+
+.score-dialog-stat-list {
+    margin: 0;
+    padding: var(--space-7) var(--space-8) var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    width: 100%;
+}
+
+.score-dialog-stat-row {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-4);
-    animation: stat-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s both;
+    gap: 0.1rem;
+    animation: stat-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-.score-dialog-stats {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    width: 100%;
-    padding: var(--space-8) var(--space-8) var(--space-6);
-}
-
-.score-dialog-stats--split {
-    flex-wrap: nowrap;
-    align-items: stretch;
-    gap: 0;
-}
-
-.score-dialog-stats--split > .score-dialog-stat {
-    flex: 1 1 0;
-    min-width: 0;
-    justify-content: center;
-}
-
-.score-dialog-stat--score {
+.score-dialog-stat-row--score {
     animation-delay: 0.3s;
 }
 
-.score-dialog-stat--combo {
-    animation-delay: 0.45s;
+.score-dialog-stat-row--atomized {
+    animation-delay: 0.4s;
 }
 
-.score-dialog-combo-ring {
-    display: grid;
-    place-items: center;
-    width: 7rem;
-    height: 7rem;
-    border: 3px solid var(--color-primary);
-    border-radius: var(--radius-orb);
+.score-dialog-stat-row--combo {
+    animation-delay: 0.5s;
 }
 
-.score-dialog-combo-value {
-    display: block;
+.score-dialog-stat-label {
     margin: 0;
-    font-family: var(--type-display-results-family);
-    font-size: var(--type-display-results-size);
-    font-weight: var(--type-display-results-weight);
-    line-height: var(--type-display-results-line-height);
-    color: var(--type-display-results-color);
-}
-
-.score-dialog-summary {
-    margin: 0;
-    height: calc(2em * var(--type-action-label-support-line-height));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--type-action-label-family);
-    font-size: var(--type-action-label-size);
-    font-weight: var(--type-action-label-weight);
-    line-height: var(--type-action-label-support-line-height);
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
+    line-height: var(--type-body-meta-line-height);
     letter-spacing: var(--type-action-label-hero-letter-spacing);
     text-transform: var(--type-action-label-wide-text-transform);
     color: var(--type-body-meta-color);
 }
 
-.score-dialog-stat-value-block {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: var(--type-display-results-size);
-    line-height: var(--type-display-results-line-height);
-    gap: var(--space-2);
-    height: calc(1em * var(--type-display-results-line-height));
-    width: 100%;
-}
-
 .score-dialog-stat-value {
-    display: flex;
-    align-items: center;
     margin: 0;
     font-family: var(--type-display-results-family);
-    font-size: inherit;
+    font-size: var(--type-display-results-size);
     font-weight: var(--type-display-results-weight);
-    line-height: inherit;
-    color: var(--type-display-results-color);
-    white-space: nowrap;
-}
-
-.score-dialog-stat-unit {
-    font-family: var(--type-action-label-family);
-    font-size: var(--type-action-label-size);
-    font-weight: var(--type-action-label-weight);
-    letter-spacing: var(--type-action-label-wide-letter-spacing);
-    text-transform: var(--type-action-label-wide-text-transform);
-    color: var(--type-body-meta-color);
+    line-height: var(--type-display-results-line-height);
+    color: var(--color-primary);
 }
 
 .score-dialog .app-action-button {
+    animation: button-slide 0.3s ease-out 0.55s both;
+}
+
+.score-dialog-actions {
+    display: flex;
+    gap: var(--space-4);
     width: calc(100% - 2 * var(--space-8));
     margin: 0 var(--space-8) var(--space-8);
-    animation: button-slide 0.3s ease-out 0.55s both;
+}
+
+.score-dialog-actions .app-action-button {
+    flex: 1;
+}
+
+.score-dialog-new-best {
+    display: inline-block;
+    margin-top: var(--space-2);
+    padding: 0.15rem 0.6rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-gold);
+    color: var(--color-text-inverse);
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-action-label-weight);
+    letter-spacing: var(--type-action-label-caps-letter-spacing);
+    text-transform: var(--type-action-label-caps-text-transform);
+    animation: stat-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s both;
+}
+
+.score-dialog-best-label {
+    display: inline-block;
+    margin-top: var(--space-2);
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
+    color: var(--type-body-meta-color);
+    letter-spacing: var(--type-action-label-caps-letter-spacing);
+    text-transform: var(--type-action-label-caps-text-transform);
 }
 
 /* Victory variant — gold celebration */
@@ -206,13 +186,8 @@
     background: var(--color-gold);
 }
 
-.score-dialog--victory .score-dialog-stat-value,
-.score-dialog--victory .score-dialog-combo-value {
+.score-dialog--victory .score-dialog-stat-value {
     color: var(--color-gold);
-}
-
-.score-dialog--victory .score-dialog-combo-ring {
-    border-color: var(--color-gold);
 }
 
 /* Defeat variant — muted, slower entrance */
@@ -226,22 +201,6 @@
     background: var(--color-ink-soft);
 }
 
-.score-dialog--defeat .score-dialog-combo-ring {
-    border-color: var(--color-ink-soft);
-}
-
-.score-dialog--defeat .score-dialog-combo-value,
 .score-dialog--defeat .score-dialog-stat-value {
     color: var(--color-ink-soft);
-}
-
-@media (max-width: 480px) {
-    .score-dialog-stats--split {
-        flex-wrap: wrap;
-        gap: var(--space-6);
-    }
-
-    .score-dialog-stat--combo {
-        border-left: 0;
-    }
 }
