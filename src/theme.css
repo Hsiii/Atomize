@@ -116,11 +116,6 @@
     --color-ready-button-text: rgba(255, 255, 255, 0.74);
     --color-toast-bg: rgba(24, 78, 119, 0.96);
     --color-toast-text: rgba(255, 255, 255, 0.96);
-    --color-menu-player-icon-bg: var(--color-surface-accent);
-    --color-menu-player-icon-ink: var(--color-primary);
-    --color-menu-player-icon-outline: var(--color-primary);
-    --color-menu-primary-button-bg: var(--color-primary);
-    --color-menu-primary-button-text: var(--color-text-inverse);
 
     --space-0: 0;
     --space-1: 0.3rem;

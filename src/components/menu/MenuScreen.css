@@ -151,15 +151,15 @@
 }
 
 .slot-p1 {
-    background: var(--color-menu-player-icon-bg);
-    color: var(--color-menu-player-icon-ink);
+    background: var(--color-surface-accent);
+    color: var(--color-primary);
     border-color: transparent;
 }
 
 .slot-p2-empty {
     position: relative;
-    background: var(--color-menu-player-icon-bg);
-    color: var(--color-menu-player-icon-ink);
+    background: var(--color-surface-accent);
+    color: var(--color-primary);
     border-color: transparent;
 }
 
@@ -167,7 +167,7 @@
     content: '';
     position: absolute;
     inset: -2px;
-    border: 2px dashed var(--color-menu-player-icon-outline);
+    border: 2px dashed var(--color-primary);
     border-radius: inherit;
 }
 
@@ -190,8 +190,8 @@
 }
 
 .slot-p2-filled {
-    background: var(--color-menu-player-icon-bg);
-    color: var(--color-menu-player-icon-ink);
+    background: var(--color-surface-accent);
+    color: var(--color-primary);
     border-color: transparent;
     cursor: default;
 }
@@ -282,9 +282,9 @@
 .menu-start-btn.app-action-button {
     width: min(100%, 16rem);
     min-height: 3.5rem;
-    background: var(--color-menu-primary-button-bg);
-    border-color: var(--color-menu-primary-button-bg);
-    color: var(--color-menu-primary-button-text);
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
 }
 
 .menu-start-btn-ready:not(:disabled) {
