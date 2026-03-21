@@ -38,6 +38,7 @@
     gap: var(--space-3);
     align-items: stretch;
     min-height: 0;
+    touch-action: none;
 }
 
 .keypad {
@@ -47,6 +48,7 @@
     min-width: 0;
     gap: var(--space-4);
     margin-top: var(--space-7);
+    touch-action: none;
 }
 
 .keypad button {
@@ -77,6 +79,7 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--keypad-row-gap);
     align-items: stretch;
+    touch-action: none;
     width: min(
         100%,
         calc(
@@ -122,6 +125,7 @@
     gap: var(--keypad-row-gap);
     width: 100%;
     min-width: 0;
+    touch-action: none;
 }
 
 .combo-backspace-button,

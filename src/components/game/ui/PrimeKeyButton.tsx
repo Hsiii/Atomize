@@ -20,7 +20,6 @@ export function PrimeKeyButton({
             return;
         }
 
-        event.preventDefault();
         onPress(prime);
     }
 
