@@ -282,7 +282,7 @@
     font-size: var(--type-action-label-size);
     font-weight: var(--type-action-label-weight);
     line-height: var(--type-action-label-line-height);
-    animation: timer-penalty-pop 0.7s ease-out forwards;
+    animation: multiplayer-hp-pop 0.7s ease-out forwards;
     text-align: center;
     white-space: nowrap;
     pointer-events: none;
@@ -294,6 +294,22 @@
 
 .multiplayer-hp-pop-regen {
     color: var(--color-gold);
+}
+
+@keyframes multiplayer-hp-pop {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(0.45rem) scale(0.92);
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-0.8rem) scale(1);
+    }
 }
 
 @keyframes multiplayer-perfect-tag {
