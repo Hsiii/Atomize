@@ -157,8 +157,8 @@
 
 .slot-p2-empty {
     position: relative;
-    background: var(--color-primary-strong);
-    color: var(--color-text-inverse);
+    background: var(--color-surface-accent);
+    color: var(--color-primary-strong);
     border-color: transparent;
 }
 
@@ -166,7 +166,7 @@
     content: '';
     position: absolute;
     inset: -2px;
-    border: 2px dashed var(--color-border-contrast);
+    border: 2px dashed var(--color-primary-strong);
     border-radius: inherit;
 }
 
