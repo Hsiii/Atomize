@@ -291,6 +291,10 @@
 
 .multiplayer-hp-bar-self .multiplayer-hp-pop-damage {
     color: var(--color-game-self);
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    backdrop-filter: none;
 }
 
 .multiplayer-hp-bar-enemy .multiplayer-hp-pop-damage {
