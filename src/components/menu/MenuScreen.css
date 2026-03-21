@@ -441,7 +441,7 @@
 .dialog-input {
     width: 100%;
     font-family: var(--type-body-meta-family);
-    font-size: var(--type-body-meta-size);
+    font-size: var(--type-action-label-size);
     font-weight: var(--type-body-meta-weight);
     text-align: center;
 }
