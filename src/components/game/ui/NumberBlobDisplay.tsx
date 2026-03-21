@@ -483,10 +483,18 @@ export function NumberBlobDisplay({
                     }`}
                 >
                     <div
-                        className={`number-main-blob${clearPop ? ' is-cleared' : ''}`}
-                        key={targetId}
+                        className={`number-main-blob${
+                            clearPop ? ' is-cleared' : ''
+                        }${isStageRevealActive ? ' is-stage-reveal' : ''}`}
+                        key={resolvedTargetId}
                     >
-                        <strong>{displayedValue}</strong>
+                        <strong
+                            className={
+                                isStageRevealActive ? ' is-value-hidden' : ''
+                            }
+                        >
+                            {displayedValue}
+                        </strong>
                     </div>
                 </div>
             </div>
