@@ -87,7 +87,7 @@
     width: min(100%, 22rem);
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 2.5rem;
     padding: 0 0.5rem max(env(safe-area-inset-bottom), 2rem);
     margin: auto 0;
 }
