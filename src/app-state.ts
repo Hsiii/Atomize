@@ -141,13 +141,13 @@ export const tutorialLessonText = {
         title: 'Enemy incoming',
     },
     enemyAttack: {
-        actionLabel: 'Try one',
-        body: 'Enemy clears shave your HP bar. The fight is a race to zero, so clean factor chains matter.',
+        actionLabel: 'Try a miss',
+        body: 'Enemy clears shave your HP bar. Next, trigger one wrong factor yourself so you can see the self-hit penalty.',
         title: 'Incoming damage',
     },
     tryWrongPrime: {
-        body: 'Tap 3, then press Enter. It does not divide 14, so you can see the self-hit penalty once.',
-        title: 'Try a wrong factor',
+        body: 'Tap 3, then press Enter. It does not divide 14, so you can see the self-hit and released-damage rules once.',
+        title: 'Miss once on purpose',
     },
     wrongPrimeResult: {
         actionLabel: 'Wrap up',
