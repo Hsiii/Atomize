@@ -13,7 +13,6 @@ export enum TutorialStep {
     Intro = 'Intro',
     StageOnePrime = 'StageOnePrime',
     StageOneQueue = 'StageOneQueue',
-    StageOneSubmit = 'StageOneSubmit',
     StageOneResult = 'StageOneResult',
     StageTwoPrime = 'StageTwoPrime',
     StageTwoQueue = 'StageTwoQueue',
@@ -96,16 +95,6 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             isBlocking: false,
             position: 'top',
             titleKey: 'tutorialStageOneQueueTitle',
-        },
-    },
-    [TutorialStep.StageOneSubmit]: {
-        expectedQueue: fullFactorQueue,
-        getHighlightTarget: () => 'submit',
-        lesson: {
-            bodyKey: 'tutorialStageOneSubmitBody',
-            isBlocking: false,
-            position: 'top',
-            titleKey: 'tutorialStageOneSubmitTitle',
         },
     },
     [TutorialStep.StageOneResult]: {
