@@ -124,14 +124,15 @@ export function MenuScreen({
     }, [playerName]);
 
     useEffect(() => {
-        if (isGuest) {
+        if (isGuest || !showAuthDialog) {
             return;
         }
 
         setAuthLoading(false);
         setEmailLoading(false);
         setShowAuthDialog(false);
-    }, [isGuest]);
+        setShowUserMenuDialog(true);
+    }, [isGuest, showAuthDialog]);
 
     useEffect(
         () => () => {
