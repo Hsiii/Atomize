@@ -4,7 +4,6 @@ import {
     createRootRoute,
     createRoute,
     createRouter,
-    redirect,
     useNavigate,
 } from '@tanstack/react-router';
 
@@ -24,6 +23,8 @@ import {
     isTutorialComplete,
 } from './lib/app-helpers';
 
+// Re-export for use outside router.
+
 // ---------------------------------------------------------------------------
 // Route page components
 // ---------------------------------------------------------------------------
@@ -31,6 +32,7 @@ import {
 function MenuPage(): JSX.Element {
     const { session, isGuest, localCpuGame, multiplayerGame } = useAppContext();
     const navigate = useNavigate();
+    const needsTutorial = !isTutorialComplete();
 
     const toastId = localCpuGame.isInRoom ? 0 : multiplayerGame.lobbyToast.id;
     const toastMessage = localCpuGame.isInRoom
@@ -40,6 +42,7 @@ function MenuPage(): JSX.Element {
     return (
         <MenuScreen
             isGuest={isGuest || !session}
+            needsTutorial={needsTutorial}
             onOpenAccount={() => {
                 detachPromise(navigate({ to: '/account' }));
             }}
@@ -54,6 +57,9 @@ function MenuPage(): JSX.Element {
             }}
             onOpenSolo={() => {
                 detachPromise(navigate({ to: '/solo' }));
+            }}
+            onOpenTutorial={() => {
+                detachPromise(navigate({ to: '/tutorial' }));
             }}
             toastId={toastId}
             toastMessage={toastMessage}
@@ -333,12 +339,6 @@ function LeaderboardPage(): JSX.Element {
 
 const rootRoute = createRootRoute({
     component: RootLayout,
-    beforeLoad: ({ location }) => {
-        if (!isTutorialComplete() && location.pathname !== '/tutorial') {
-            // eslint-disable-next-line @typescript-eslint/only-throw-error
-            throw redirect({ to: '/tutorial' });
-        }
-    },
 });
 
 const menuRoute = createRoute({
@@ -430,3 +430,5 @@ declare module '@tanstack/react-router' {
         router: typeof router;
     }
 }
+
+export { isTutorialComplete } from './lib/app-helpers';

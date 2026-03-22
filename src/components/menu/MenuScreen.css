@@ -126,6 +126,11 @@
     animation-delay: 0s;
 }
 
+.mode-card-tutorial .mode-card-blob {
+    background: var(--color-primary-strong);
+    animation-delay: 0s;
+}
+
 .mode-card-battle .mode-card-blob {
     background: var(--color-secondary);
     animation-delay: -3.3s;
