@@ -43,27 +43,6 @@
     color: var(--color-text-inverse);
 }
 
-/* === Description === */
-
-.opponent-picker-desc {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-6) var(--space-7);
-    flex: 0 0 auto;
-}
-
-.opponent-picker-desc-text {
-    margin: var(--space-0);
-    font-family: var(--type-action-label-family);
-    font-size: 1.5rem;
-    font-weight: var(--type-action-label-weight);
-    color: var(--type-body-meta-color);
-    line-height: 1.3;
-    text-align: center;
-}
-
 /* === Body === */
 
 .opponent-picker-body {
@@ -71,103 +50,20 @@
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
-    padding: 0 1.5rem max(env(safe-area-inset-bottom), 1.5rem);
-    flex: 1;
-    min-height: 0;
+    padding: var(--space-6) 1.5rem max(env(safe-area-inset-bottom), 1.5rem);
 }
 
-/* === AtomBot Card (Horizontal) === */
+/* === Bot Avatar variant === */
 
-.atombot-card {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.65rem 0.85rem;
-    border: 1px solid var(--color-border-soft);
-    border-radius: var(--radius-panel);
-    background: var(--color-surface-strong);
-    cursor: pointer;
-    transition:
-        background 140ms ease,
-        transform 140ms ease;
-}
-
-.atombot-card:hover {
-    background: var(--color-surface-accent);
-    transform: translateY(-1px);
-}
-
-.atombot-card:active {
-    transform: scale(0.98);
-    transition-duration: 60ms;
-}
-
-.atombot-card-icon {
-    width: 2.75rem;
-    height: 2.75rem;
-    flex: 0 0 2.75rem;
-    border-radius: 50%;
+.online-player-avatar-bot {
     background: var(--color-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
-.atombot-icon {
-    width: 1.3rem;
-    height: 1.3rem;
-    stroke-width: 1.8;
+.online-player-bot-icon {
+    width: 1rem;
+    height: 1rem;
+    stroke-width: 2;
     color: var(--color-text-inverse);
-}
-
-.atombot-card-text {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-    min-width: 0;
-}
-
-.atombot-card-name {
-    font-family: var(--type-body-meta-family);
-    font-size: var(--type-body-meta-size);
-    font-weight: var(--type-action-label-weight);
-    color: var(--color-ink);
-    line-height: var(--type-body-meta-line-height);
-    text-align: left;
-}
-
-.atombot-card-hint {
-    font-family: var(--type-body-meta-family);
-    font-size: var(--type-body-meta-size);
-    font-weight: var(--type-body-meta-weight);
-    color: var(--type-body-meta-color);
-    line-height: var(--type-body-meta-line-height);
-    text-align: left;
-}
-
-/* === Or Divider === */
-
-.opponent-picker-divider {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.opponent-picker-divider::before,
-.opponent-picker-divider::after {
-    content: '';
-    flex: 1;
-    border-top: 1px solid var(--color-border-soft);
-}
-
-.opponent-picker-divider-label {
-    font-family: var(--type-body-meta-family);
-    font-size: var(--type-body-meta-size);
-    font-weight: var(--type-body-meta-weight);
-    color: var(--type-body-meta-color);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    line-height: 1;
 }
 
 /* === Online Players Section === */
@@ -176,8 +72,6 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    flex: 1;
-    min-height: 0;
 }
 
 .online-section-title {
@@ -472,12 +366,5 @@
         min-width: 5rem;
         flex-basis: 5rem;
         min-height: 2rem;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .atombot-blob {
-        animation: none;
-        transition: none;
     }
 }

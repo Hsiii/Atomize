@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { JSX } from 'react';
-import { Bot, Check, Users } from 'lucide-react';
+import { Bot, Check, Cpu, Users } from 'lucide-react';
 
 import type { OnlineLobbyUser } from '../../app-state';
 import { uiText } from '../../app-state';
@@ -167,35 +167,35 @@ export function OpponentPickerScreen({
                     </h1>
                 </header>
 
-                <div className='opponent-picker-desc'>
-                    <p className='opponent-picker-desc-text'>
-                        {uiText.chooseOpponent}
-                    </p>
-                </div>
-
                 <div className='opponent-picker-body'>
-                    <button
-                        className='atombot-card'
-                        onClick={handleStartCpuGame}
-                        type='button'
-                    >
-                        <div className='atombot-card-icon'>
-                            <Bot aria-hidden='true' className='atombot-icon' />
-                        </div>
-                        <div className='atombot-card-text'>
-                            <span className='atombot-card-name'>
-                                {uiText.atomBotLabel}
-                            </span>
-                            <span className='atombot-card-hint'>
-                                {uiText.atomBotHint}
-                            </span>
-                        </div>
-                    </button>
-
-                    <div className='opponent-picker-divider'>
-                        <span className='opponent-picker-divider-label'>
-                            {uiText.orDivider}
-                        </span>
+                    <div className='online-section'>
+                        <h2 className='online-section-title'>
+                            <Cpu
+                                aria-hidden='true'
+                                className='online-section-icon'
+                            />
+                            {uiText.cpuTrainingSection}
+                        </h2>
+                        <ul className='online-list'>
+                            <li className='online-row'>
+                                <div className='online-player-avatar online-player-avatar-bot'>
+                                    <Bot
+                                        aria-hidden='true'
+                                        className='online-player-bot-icon'
+                                    />
+                                </div>
+                                <span className='online-name'>
+                                    {uiText.atomBotLabel}
+                                </span>
+                                <button
+                                    className='online-invite-btn'
+                                    onClick={handleStartCpuGame}
+                                    type='button'
+                                >
+                                    {uiText.atomBotPlay}
+                                </button>
+                            </li>
+                        </ul>
                     </div>
 
                     <div className='online-section'>
