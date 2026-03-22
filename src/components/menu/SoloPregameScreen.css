@@ -1,0 +1,159 @@
+/* === Solo Pregame Layout === */
+
+.solo-pregame-shell {
+    background: var(--color-page-bg);
+}
+
+.screen.solo-pregame-screen {
+    padding: 0;
+    justify-content: flex-start;
+    align-items: center;
+    overflow: hidden;
+}
+
+.solo-pregame-header {
+    position: relative;
+    width: 100%;
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: max(
+            var(--space-5),
+            calc(env(safe-area-inset-top) + var(--space-5))
+        )
+        var(--space-7) 1.5rem;
+    background: var(--color-primary);
+}
+
+.solo-pregame-header .floating-back-button {
+    position: absolute;
+    top: auto;
+    left: var(--space-4);
+    color: var(--color-text-inverse);
+}
+
+.solo-pregame-mode-icon {
+    width: 1.6rem;
+    height: 1.6rem;
+    stroke-width: 2;
+    color: var(--color-text-inverse);
+    opacity: 0.7;
+}
+
+.solo-pregame-title {
+    margin: var(--space-0);
+    font-family: var(--type-action-label-family);
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: var(--type-action-label-wide-letter-spacing);
+    text-transform: var(--type-action-label-wide-text-transform);
+    color: var(--color-text-inverse);
+    line-height: 1.1;
+}
+
+/* === Body === */
+
+.solo-pregame-body {
+    width: min(100%, 22rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem 1.5rem max(env(safe-area-inset-bottom), 2.5rem);
+    flex: 1;
+    justify-content: center;
+}
+
+/* === Best Score Card === */
+
+.solo-pregame-best-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 1rem 2rem;
+    border-radius: var(--radius-panel);
+    background: var(--color-surface-accent);
+    border: 1px solid var(--color-border-soft);
+}
+
+.solo-pregame-best-label {
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
+    letter-spacing: var(--type-action-label-wide-letter-spacing);
+    text-transform: var(--type-action-label-wide-text-transform);
+    color: var(--type-body-meta-color);
+    line-height: var(--type-body-meta-line-height);
+}
+
+.solo-pregame-best-value {
+    font-family: var(--type-display-results-family);
+    font-size: var(--type-display-results-size);
+    font-weight: var(--type-display-results-weight);
+    line-height: var(--type-display-results-line-height);
+    color: var(--type-display-results-color);
+}
+
+/* === Goal === */
+
+.solo-pregame-goal {
+    margin: var(--space-0);
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-body-meta-weight);
+    line-height: var(--type-body-meta-relaxed-line-height);
+    color: var(--type-body-meta-color);
+    text-align: center;
+    max-width: 18rem;
+}
+
+/* === Start Button === */
+
+.solo-pregame-start-btn.app-action-button {
+    width: min(100%, 16rem);
+    min-height: 3.5rem;
+}
+
+/* === Countdown === */
+
+.solo-countdown-screen {
+    background: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.countdown-number {
+    font-family: var(--type-display-hero-family);
+    font-size: 8rem;
+    font-weight: var(--type-display-hero-weight);
+    color: var(--color-text-inverse);
+    line-height: 1;
+    animation: countdown-pulse 700ms ease-out;
+}
+
+@keyframes countdown-pulse {
+    0% {
+        opacity: 0;
+        transform: scale(1.6);
+    }
+
+    40% {
+        opacity: 1;
+        transform: scale(0.95);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .countdown-number {
+        animation: none;
+    }
+}

@@ -114,6 +114,18 @@ export const uiText = {
         'Google log in is not enabled in Supabase yet. Turn on the Google provider to use this flow.',
     popupBlocked:
         'Pop-up was blocked by your browser. Please allow pop-ups for this site to log in.',
+    soloTitle: 'Solo',
+    soloSubtitle: 'Beat the clock',
+    soloGoal: 'Factor as many numbers as you can in 60 seconds.',
+    battleTitle: 'Battle',
+    battleSubtitle: 'First to zero wins',
+    opponentPickerTitle: 'Choose Opponent',
+    atomBotLabel: 'AtomBot',
+    atomBotHint: 'Practice against the CPU',
+    onlinePlayersSection: 'Online Players',
+    noPlayersOnline: 'No one else is online right now.',
+    vs: 'VS',
+    go: 'GO',
 } as const;
 
 export const seoText = {

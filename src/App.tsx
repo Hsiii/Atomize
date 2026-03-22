@@ -14,6 +14,8 @@ import {
 } from './components/menu/LeaderboardScreen';
 import type { LeaderboardEntry } from './components/menu/LeaderboardScreen';
 import { MenuScreen } from './components/menu/MenuScreen';
+import { OpponentPickerScreen } from './components/menu/OpponentPickerScreen';
+import { SoloPregameScreen } from './components/menu/SoloPregameScreen';
 import { useLocalCpuGame } from './hooks/useLocalCpuGame';
 import { useMultiplayerGame } from './hooks/useMultiplayerGame';
 import { useSoloGame } from './hooks/useSoloGame';
@@ -271,6 +273,8 @@ export default function App(): JSX.Element {
     );
     const [showAccount, setShowAccount] = useState(false);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
+    const [showSoloPregame, setShowSoloPregame] = useState(false);
+    const [showOpponentPicker, setShowOpponentPicker] = useState(false);
     const [leaderboardData, setLeaderboardData] = useState<
         readonly LeaderboardEntry[] | undefined
     >(undefined);
@@ -556,6 +560,8 @@ export default function App(): JSX.Element {
         localCpuGame.resetLocalCpuGame();
         soloGame.resetSoloGame();
         tutorialGame.resetTutorialGame();
+        setShowSoloPregame(false);
+        setShowOpponentPicker(false);
         setScreen('menu');
     }
 
@@ -664,45 +670,76 @@ export default function App(): JSX.Element {
                   toastMessage: multiplayerGame.lobbyToast.message,
               };
 
+        if (showSoloPregame) {
+            return (
+                <SoloPregameScreen
+                    bestScore={soloGame.bestScore}
+                    onBack={() => {
+                        setShowSoloPregame(false);
+                    }}
+                    onStart={() => {
+                        setShowSoloPregame(false);
+                        soloGame.startSingleGame();
+                    }}
+                />
+            );
+        }
+
+        if (showOpponentPicker) {
+            return (
+                <OpponentPickerScreen
+                    isCpuOpponent={activeMenuGame.isCpuOpponent}
+                    isCurrentPlayerReady={activeMenuGame.isCurrentPlayerReady}
+                    isInRoom={activeMenuGame.isInRoom}
+                    isOpponentReady={activeMenuGame.isOpponentReady}
+                    onBack={() => {
+                        setShowOpponentPicker(false);
+                    }}
+                    onInvitePlayer={(targetPlayerId) => {
+                        detachPromise(
+                            multiplayerGame.handleLobbyInvite(targetPlayerId)
+                        );
+                    }}
+                    onlineUsers={multiplayerGame.onlineUsers}
+                    onPrefetchInviteUsers={multiplayerGame.prefetchOnlineUsers}
+                    onStartCpuGame={() => {
+                        localCpuGame.startLocalCpuGame();
+                    }}
+                    onToggleReady={() => {
+                        detachPromise(
+                            Promise.resolve(activeMenuGame.onToggleReady())
+                        );
+                    }}
+                    opponentName={activeMenuGame.opponentName}
+                    playerName={playerName}
+                />
+            );
+        }
+
         return (
             <MenuScreen
-                isCpuOpponent={activeMenuGame.isCpuOpponent}
-                isCurrentPlayerReady={activeMenuGame.isCurrentPlayerReady}
                 isGuest={isGuest || !session}
-                isInRoom={activeMenuGame.isInRoom}
-                isOpponentReady={activeMenuGame.isOpponentReady}
                 onAcceptInvitation={() => {
                     detachPromise(multiplayerGame.handleAcceptInvitation());
+                    setShowOpponentPicker(true);
                 }}
                 onDeclineInvitation={multiplayerGame.handleDeclineInvitation}
-                onInvitePlayer={(targetPlayerId) => {
-                    detachPromise(
-                        multiplayerGame.handleLobbyInvite(targetPlayerId)
-                    );
-                }}
-                onlineUsers={multiplayerGame.onlineUsers}
                 onOpenAccount={() => {
                     setShowAccount(true);
                 }}
                 onOpenAuth={() => {
                     setAuthMode('login');
                 }}
+                onOpenBattle={() => {
+                    setShowOpponentPicker(true);
+                }}
                 onOpenLeaderboard={() => {
                     setShowLeaderboard(true);
                 }}
-                onPrefetchInviteUsers={multiplayerGame.prefetchOnlineUsers}
-                onStartCpuGame={() => {
-                    localCpuGame.startLocalCpuGame();
+                onOpenSolo={() => {
+                    setShowSoloPregame(true);
                 }}
-                onStartSoloGame={soloGame.startSingleGame}
-                onToggleReady={() => {
-                    detachPromise(
-                        Promise.resolve(activeMenuGame.onToggleReady())
-                    );
-                }}
-                opponentName={activeMenuGame.opponentName}
                 pendingInvitation={activeMenuGame.pendingInvitation}
-                playerName={playerName}
                 toastId={activeMenuGame.toastId}
                 toastMessage={activeMenuGame.toastMessage}
             />

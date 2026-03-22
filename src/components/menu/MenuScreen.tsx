@@ -1,63 +1,39 @@
 import { useEffect, useRef, useState } from 'react';
 import type { JSX } from 'react';
-import { Check, Crown, Plus, User, X } from 'lucide-react';
+import { Crown, Swords, Timer, User } from 'lucide-react';
 
-import type { OnlineLobbyUser } from '../../app-state';
 import { uiText } from '../../app-state';
-import { getGuestDisplayName } from '../../lib/app-helpers';
 import { ActionButton } from '../game/ui/ActionButton';
 
 import './MenuScreen.css';
 
 type MenuScreenProps = {
-    playerName: string;
-    opponentName: string | undefined;
-    isCpuOpponent?: boolean;
-    isInRoom: boolean;
-    isCurrentPlayerReady: boolean;
-    isOpponentReady: boolean;
-    onlineUsers: OnlineLobbyUser[];
+    pendingInvitation: { fromName: string; roomCode: string } | undefined;
     toastMessage: string | undefined;
     toastId: number;
-    onStartSoloGame: () => void;
-    onStartCpuGame: () => void | Promise<void>;
-    onInvitePlayer: (targetPlayerId: string) => void | Promise<void>;
-    onPrefetchInviteUsers: () => void;
-    onToggleReady: () => void | Promise<void>;
-    pendingInvitation: { fromName: string; roomCode: string } | undefined;
     onAcceptInvitation: () => void | Promise<void>;
     onDeclineInvitation: () => void;
     onOpenAuth: () => void;
     onOpenAccount: () => void;
     onOpenLeaderboard: () => void;
+    onOpenSolo: () => void;
+    onOpenBattle: () => void;
     isGuest: boolean;
 };
 
 export function MenuScreen({
-    playerName,
-    opponentName,
-    isCpuOpponent = false,
-    isInRoom,
-    isCurrentPlayerReady,
-    isOpponentReady,
-    onlineUsers,
+    pendingInvitation,
     toastMessage,
     toastId,
-    onStartSoloGame,
-    onStartCpuGame,
-    onInvitePlayer,
-    onPrefetchInviteUsers,
-    onToggleReady,
-    pendingInvitation,
     onAcceptInvitation,
     onDeclineInvitation,
     onOpenAuth,
     onOpenAccount,
     onOpenLeaderboard,
+    onOpenSolo,
+    onOpenBattle,
     isGuest,
 }: MenuScreenProps): JSX.Element {
-    const [showInviteDialog, setShowInviteDialog] = useState(false);
-    const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
     const [visibleToast, setVisibleToast] = useState<string | undefined>(
         undefined
     );
@@ -83,38 +59,6 @@ export function MenuScreen({
         []
     );
 
-    const hasOpponent = Boolean(opponentName);
-    const isCurrentPlayerGuest = !playerName.trim();
-    const isOpponentGuest = !opponentName?.trim();
-    const displayPlayerName = isCurrentPlayerGuest
-        ? getGuestDisplayName()
-        : playerName;
-    const displayOpponentName = isOpponentGuest
-        ? getGuestDisplayName()
-        : (opponentName ?? '');
-    const initials = playerName.slice(0, 1).toUpperCase();
-    const opponentInitials = (opponentName ?? '').slice(0, 1).toUpperCase();
-    const shouldShowReadyAction = isInRoom && hasOpponent;
-    const shouldShowStartAction = !shouldShowReadyAction;
-    const showCurrentReadyIndicator = hasOpponent && isCurrentPlayerReady;
-    const showOpponentReadyIndicator = hasOpponent && isOpponentReady;
-    const readyButtonClassName = `menu-start-btn${isCurrentPlayerReady ? ' menu-start-btn-ready' : ''}`;
-    const readyButtonLabel = uiText.ready;
-
-    useEffect(() => {
-        if (!hasOpponent) {
-            return;
-        }
-
-        setShowInviteDialog(false);
-    }, [hasOpponent]);
-
-    useEffect(() => {
-        if (!isInRoom) {
-            setInvitedIds(new Set());
-        }
-    }, [isInRoom]);
-
     function showMenuToast(message: string) {
         if (toastTimeoutRef.current !== undefined) {
             globalThis.clearTimeout(toastTimeoutRef.current);
@@ -129,26 +73,6 @@ export function MenuScreen({
             2200,
             undefined
         );
-    }
-
-    function handleInvite(targetPlayerId: string) {
-        detachAction(onInvitePlayer(targetPlayerId));
-        setInvitedIds((prev: ReadonlySet<string>) => {
-            const nextInvitedIds = new Set(prev);
-
-            nextInvitedIds.add(targetPlayerId);
-            return nextInvitedIds;
-        });
-    }
-
-    function handleOpenInviteDialog() {
-        onPrefetchInviteUsers();
-        setShowInviteDialog(true);
-    }
-
-    function handleStartCpuGame() {
-        setShowInviteDialog(false);
-        detachAction(onStartCpuGame());
     }
 
     return (
@@ -193,120 +117,40 @@ export function MenuScreen({
                     </h1>
 
                     <div className='menu-content'>
-                        <div className='menu-slots'>
-                            <div className='menu-slot-column'>
-                                <div className='slot-circle-shell'>
-                                    <button
-                                        className='slot-circle slot-p1'
-                                        onClick={() => {
-                                            if (isGuest) {
-                                                onOpenAuth();
-                                                return;
-                                            }
-
-                                            onOpenAccount();
-                                        }}
-                                        type='button'
-                                    >
-                                        {isCurrentPlayerGuest ? (
-                                            <span className='slot-guest-dot' />
-                                        ) : (
-                                            <span className='slot-initials'>
-                                                {initials}
-                                            </span>
-                                        )}
-                                    </button>
-                                    {showCurrentReadyIndicator ? (
-                                        <span
-                                            aria-hidden='true'
-                                            className='slot-status-indicator'
-                                        >
-                                            <Check className='slot-status-check' />
-                                        </span>
-                                    ) : undefined}
-                                </div>
-                                <span className='slot-name'>
-                                    {displayPlayerName}
+                        <div className='menu-mode-cards'>
+                            <button
+                                className='mode-card mode-card-solo'
+                                onClick={onOpenSolo}
+                                type='button'
+                            >
+                                <Timer
+                                    aria-hidden='true'
+                                    className='mode-card-icon'
+                                />
+                                <span className='mode-card-title'>
+                                    {uiText.soloTitle}
                                 </span>
-                            </div>
-
-                            {hasOpponent ? (
-                                <div className='menu-slot-column'>
-                                    <div className='slot-circle-shell'>
-                                        <div className='slot-circle slot-p2-filled'>
-                                            {isOpponentGuest ? (
-                                                <span className='slot-guest-dot' />
-                                            ) : (
-                                                <span className='slot-initials'>
-                                                    {opponentInitials}
-                                                </span>
-                                            )}
-                                        </div>
-                                        {showOpponentReadyIndicator ? (
-                                            <span
-                                                aria-hidden='true'
-                                                className='slot-status-indicator'
-                                            >
-                                                <Check className='slot-status-check' />
-                                            </span>
-                                        ) : undefined}
-                                    </div>
-                                    <span
-                                        className={`slot-name${isCpuOpponent ? ' slot-name-cpu' : ''}`}
-                                    >
-                                        {displayOpponentName}
-                                    </span>
-                                </div>
-                            ) : (
-                                <div className='menu-slot-column'>
-                                    <div className='slot-circle-shell'>
-                                        <button
-                                            className={`slot-circle slot-p2-empty${isInRoom ? ' slot-p2-empty-waiting' : ''}`}
-                                            onClick={() => {
-                                                handleOpenInviteDialog();
-                                            }}
-                                            onFocus={onPrefetchInviteUsers}
-                                            onPointerDown={
-                                                onPrefetchInviteUsers
-                                            }
-                                            onPointerEnter={
-                                                onPrefetchInviteUsers
-                                            }
-                                            type='button'
-                                        >
-                                            <Plus className='slot-plus-icon' />
-                                        </button>
-                                    </div>
-                                    {isInRoom ? (
-                                        <span className='slot-name'>
-                                            {uiText.waitingShort}
-                                        </span>
-                                    ) : undefined}
-                                </div>
-                            )}
+                                <span className='mode-card-subtitle'>
+                                    {uiText.soloSubtitle}
+                                </span>
+                            </button>
+                            <button
+                                className='mode-card mode-card-battle'
+                                onClick={onOpenBattle}
+                                type='button'
+                            >
+                                <Swords
+                                    aria-hidden='true'
+                                    className='mode-card-icon'
+                                />
+                                <span className='mode-card-title'>
+                                    {uiText.battleTitle}
+                                </span>
+                                <span className='mode-card-subtitle'>
+                                    {uiText.battleSubtitle}
+                                </span>
+                            </button>
                         </div>
-
-                        {shouldShowReadyAction ? (
-                            <ActionButton
-                                aria-pressed={isCurrentPlayerReady}
-                                className={readyButtonClassName}
-                                onClick={() => {
-                                    detachAction(onToggleReady());
-                                }}
-                                variant='primary'
-                            >
-                                {readyButtonLabel}
-                            </ActionButton>
-                        ) : undefined}
-                        {shouldShowStartAction ? (
-                            <ActionButton
-                                className='menu-start-btn'
-                                onClick={onStartSoloGame}
-                                variant='primary'
-                            >
-                                {uiText.start}
-                            </ActionButton>
-                        ) : undefined}
                     </div>
                 </div>
 
@@ -316,101 +160,6 @@ export function MenuScreen({
                     </div>
                 ) : undefined}
 
-                {showInviteDialog ? (
-                    <div
-                        className='dialog-scrim'
-                        onClick={() => {
-                            setShowInviteDialog(false);
-                        }}
-                        role='presentation'
-                    >
-                        <div
-                            className='dialog-panel dialog-invite'
-                            onClick={(event) => {
-                                event.stopPropagation();
-                            }}
-                            role='dialog'
-                        >
-                            <header className='dialog-header'>
-                                <span className='dialog-title'>
-                                    {uiText.inviteTitle}
-                                </span>
-                                <button
-                                    className='dialog-close'
-                                    onClick={() => {
-                                        setShowInviteDialog(false);
-                                    }}
-                                    type='button'
-                                >
-                                    <X size={18} />
-                                </button>
-                            </header>
-                            <div className='dialog-body'>
-                                <ul className='invite-list'>
-                                    <li className='invite-row'>
-                                        <span className='invite-name invite-name-cpu'>
-                                            {uiText.cpu}
-                                        </span>
-                                        <button
-                                            className='invite-btn'
-                                            onClick={handleStartCpuGame}
-                                            type='button'
-                                        >
-                                            {uiText.inviteButton}
-                                        </button>
-                                    </li>
-
-                                    {onlineUsers.map((user) => {
-                                        const isUserInGame =
-                                            user.status === 'in-game';
-                                        const isUserInTeam =
-                                            user.status === 'in-team';
-                                        const isInvited = invitedIds.has(
-                                            user.playerId
-                                        );
-                                        const isDisabled =
-                                            isUserInGame ||
-                                            isUserInTeam ||
-                                            isInvited;
-                                        let inviteButtonLabel: string =
-                                            uiText.inviteButton;
-
-                                        if (isUserInGame) {
-                                            inviteButtonLabel = uiText.inGame;
-                                        } else if (isUserInTeam) {
-                                            inviteButtonLabel = uiText.inTeam;
-                                        } else if (isInvited) {
-                                            inviteButtonLabel = uiText.invited;
-                                        }
-
-                                        return (
-                                            <li
-                                                className='invite-row'
-                                                key={user.playerId}
-                                            >
-                                                <span className='invite-name'>
-                                                    {user.name}
-                                                </span>
-                                                <button
-                                                    className={`invite-btn${isDisabled ? ' invite-btn-disabled' : ''}`}
-                                                    disabled={isDisabled}
-                                                    onClick={() => {
-                                                        handleInvite(
-                                                            user.playerId
-                                                        );
-                                                    }}
-                                                    type='button'
-                                                >
-                                                    {inviteButtonLabel}
-                                                </button>
-                                            </li>
-                                        );
-                                    })}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                ) : undefined}
                 {pendingInvitation ? (
                     <div className='dialog-scrim' role='presentation'>
                         <div

@@ -1,0 +1,370 @@
+/* === Opponent Picker Layout === */
+
+.opponent-picker-shell {
+    background: var(--color-page-bg);
+}
+
+.screen.opponent-picker-screen {
+    padding: 0;
+    justify-content: flex-start;
+    align-items: center;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.opponent-picker-header {
+    position: relative;
+    width: 100%;
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: max(
+            var(--space-5),
+            calc(env(safe-area-inset-top) + var(--space-5))
+        )
+        var(--space-7) 1.5rem;
+    background: var(--color-primary);
+}
+
+.opponent-picker-header .floating-back-button {
+    position: absolute;
+    top: auto;
+    left: var(--space-4);
+    color: var(--color-text-inverse);
+}
+
+.opponent-picker-mode-icon {
+    width: 1.6rem;
+    height: 1.6rem;
+    stroke-width: 2;
+    color: var(--color-text-inverse);
+    opacity: 0.7;
+}
+
+.opponent-picker-title {
+    margin: var(--space-0);
+    font-family: var(--type-action-label-family);
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: var(--type-action-label-wide-letter-spacing);
+    text-transform: var(--type-action-label-wide-text-transform);
+    color: var(--color-text-inverse);
+    line-height: 1.1;
+}
+
+/* === Body === */
+
+.opponent-picker-body {
+    width: min(100%, 22rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem 1.5rem max(env(safe-area-inset-bottom), 2.5rem);
+    flex: 0 0 auto;
+}
+
+/* === AtomBot Card === */
+
+.atombot-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-7);
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-panel);
+    background: var(--color-surface-strong);
+    border: 2px solid var(--color-secondary);
+    cursor: pointer;
+    transition:
+        transform 180ms ease,
+        border-color 180ms ease;
+}
+
+.atombot-card:hover {
+    transform: translateY(-2px);
+}
+
+.atombot-card:active {
+    transform: scale(0.98);
+}
+
+.atombot-card-icon {
+    width: 2rem;
+    height: 2rem;
+    stroke-width: 1.8;
+    color: var(--color-secondary);
+    flex: 0 0 auto;
+}
+
+.atombot-card-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.atombot-card-name {
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-action-label-weight);
+    color: var(--color-ink);
+    line-height: var(--type-action-label-line-height);
+}
+
+.atombot-card-hint {
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
+    color: var(--type-body-meta-color);
+    line-height: var(--type-body-meta-line-height);
+}
+
+/* === Online Players Section === */
+
+.online-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+.online-section-title {
+    margin: var(--space-0);
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
+    letter-spacing: var(--type-action-label-wide-letter-spacing);
+    text-transform: var(--type-action-label-wide-text-transform);
+    color: var(--type-body-meta-color);
+    line-height: var(--type-body-meta-line-height);
+}
+
+.online-empty {
+    margin: var(--space-0);
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-body-meta-weight);
+    color: var(--type-body-meta-color);
+    line-height: var(--type-body-meta-relaxed-line-height);
+    text-align: center;
+    padding: var(--space-7) 0;
+}
+
+.online-list {
+    display: grid;
+    row-gap: 0.9rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.online-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--space-7);
+    height: 3.4rem;
+    padding: 0;
+}
+
+.online-row::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: -0.45rem;
+    left: 0;
+    height: 1px;
+    background: var(--color-border-soft);
+}
+
+.online-row:last-child::after {
+    content: none;
+}
+
+.online-name {
+    font-family: var(--type-metric-inline-family);
+    font-size: var(--type-metric-inline-size);
+    font-weight: var(--type-metric-inline-weight);
+    color: var(--color-ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.online-invite-btn {
+    box-sizing: border-box;
+    width: 6.5rem;
+    min-width: 6.5rem;
+    max-width: 6.5rem;
+    flex: 0 0 6.5rem;
+    min-height: 2.6rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-button-primary-bg);
+    color: var(--color-button-primary-text);
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-action-label-weight);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    letter-spacing: var(--type-action-label-letter-spacing);
+    transition: opacity 0.12s ease;
+    text-align: center;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.online-invite-btn:hover {
+    opacity: 0.9;
+}
+
+.online-invite-btn:active {
+    opacity: 1;
+}
+
+.online-invite-btn-disabled {
+    background: var(--color-button-disabled-bg);
+    color: var(--color-button-disabled-text);
+    cursor: not-allowed;
+}
+
+.online-invite-btn-disabled:hover,
+.online-invite-btn-disabled:active {
+    opacity: 1;
+}
+
+/* === VS Screen === */
+
+.screen.vs-screen {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    background: var(--color-primary);
+}
+
+.vs-screen .floating-back-button {
+    color: var(--color-text-inverse);
+}
+
+.vs-layout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.vs-player-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 5.5rem;
+}
+
+.vs-avatar {
+    width: 5rem;
+    height: 5rem;
+    border-radius: var(--radius-pill);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--color-border-inverse-soft);
+}
+
+.vs-avatar-self {
+    background: var(--color-button-accent-bg);
+    color: var(--color-button-accent-text);
+}
+
+.vs-avatar-opponent {
+    background: var(--color-secondary);
+    color: var(--color-text-inverse);
+}
+
+.vs-avatar-initial {
+    font-family: var(--type-action-label-family);
+    font-size: 1.3rem;
+    font-weight: var(--type-action-label-weight);
+    letter-spacing: var(--type-action-label-caps-letter-spacing);
+    line-height: 1;
+}
+
+.vs-avatar-dot {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.vs-avatar-bot-icon {
+    width: 1.8rem;
+    height: 1.8rem;
+    stroke-width: 1.8;
+}
+
+.vs-player-name {
+    font-family: var(--type-metric-inline-family);
+    font-size: var(--type-metric-inline-size);
+    font-weight: var(--type-metric-inline-weight);
+    color: var(--color-text-inverse);
+    opacity: 0.85;
+    max-width: 6rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.vs-divider {
+    font-family: var(--type-display-hero-family);
+    font-size: 2.2rem;
+    font-weight: var(--type-display-hero-weight);
+    letter-spacing: var(--type-display-hero-letter-spacing);
+    color: var(--color-text-inverse);
+    line-height: 1;
+    opacity: 0.5;
+}
+
+.vs-ready-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 50%;
+    background: var(--color-text-inverse);
+}
+
+.vs-ready-check {
+    color: var(--color-primary);
+    stroke-width: 3;
+}
+
+.vs-ready-btn.app-action-button {
+    width: min(100%, 16rem);
+    min-height: 3.5rem;
+    background: var(--color-button-primary-bg);
+    border-color: var(--color-button-primary-bg);
+}
+
+.vs-ready-btn-active.app-action-button {
+    background: var(--color-ready-button-bg);
+    border-color: var(--color-ready-button-bg);
+    color: var(--color-ready-button-text);
+}
+
+@media (max-width: 480px) {
+    .online-invite-btn {
+        width: 6rem;
+        min-width: 6rem;
+        max-width: 6rem;
+        flex-basis: 6rem;
+        min-height: 2.5rem;
+    }
+}
