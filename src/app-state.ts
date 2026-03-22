@@ -79,15 +79,15 @@ export const uiText = {
     rank: 'Rank',
     player: 'Player',
     highestCombo: 'Max Combo',
-    signIn: 'Sign In',
-    continueWithGoogle: 'Continue with Google',
+    signIn: 'Log In',
+    continueWithGoogle: 'Log In with Google',
     logout: 'Log Out',
-    loginError: 'Could not start Google sign-in.',
+    loginError: 'Could not start Google log in.',
     authUnavailable: 'Auth not configured in .env',
     googleProviderDisabled:
-        'Google sign-in is not enabled in Supabase yet. Turn on the Google provider to use this flow.',
+        'Google log in is not enabled in Supabase yet. Turn on the Google provider to use this flow.',
     popupBlocked:
-        'Pop-up was blocked by your browser. Please allow pop-ups for this site.',
+        'Pop-up was blocked by your browser. Please allow pop-ups for this site to log in.',
 } as const;
 
 export const keyboardHintText = {
