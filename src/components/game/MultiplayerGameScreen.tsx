@@ -683,7 +683,10 @@ function useBattleTutorial({
     const highlightTarget = getTutorialHighlightTarget(resolvedStep, queue);
     const isInteractionBlocked =
         lesson?.isBlocking === true ||
-        (resolvedStep === TutorialStep.EnemyTurn && enemyTurnAcknowledged);
+        (resolvedStep === TutorialStep.EnemyTurn && enemyTurnAcknowledged) ||
+        (overflowPenaltySeen &&
+            (step === TutorialStep.OverflowQueue ||
+                step === TutorialStep.OverflowSubmit));
     const highlightedPrime = getTutorialHighlightedPrime(resolvedStep, queue);
     const isSubmitLocked =
         !isInteractionBlocked &&
