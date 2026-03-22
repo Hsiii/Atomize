@@ -8,7 +8,11 @@ import { MultiplayerGameScreen } from './components/game/MultiplayerGameScreen';
 import { SingleGameScreen } from './components/game/SingleGameScreen';
 import { AccountScreen } from './components/menu/AccountScreen';
 import { AuthScreen } from './components/menu/AuthScreen';
-import { LeaderboardScreen } from './components/menu/LeaderboardScreen';
+import {
+    fetchLeaderboardData,
+    LeaderboardScreen,
+} from './components/menu/LeaderboardScreen';
+import type { LeaderboardEntry } from './components/menu/LeaderboardScreen';
 import { MenuScreen } from './components/menu/MenuScreen';
 import { useLocalCpuGame } from './hooks/useLocalCpuGame';
 import { useMultiplayerGame } from './hooks/useMultiplayerGame';
@@ -214,6 +218,9 @@ export default function App(): JSX.Element {
     );
     const [showAccount, setShowAccount] = useState(false);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
+    const [leaderboardData, setLeaderboardData] = useState<
+        readonly LeaderboardEntry[] | undefined
+    >(undefined);
     const [sessionLoading, setSessionLoading] = useState(true);
     const [session, setSession] = useState<Session | undefined>(undefined);
     const [isGuest, setIsGuest] = useState(() => isGuestModeEnabled());
@@ -329,6 +336,16 @@ export default function App(): JSX.Element {
     useEffect(() => {
         persistPlayerName(playerName);
     }, [playerName]);
+
+    useEffect(() => {
+        if (screen !== 'menu' || sessionLoading || leaderboardData) {
+            return;
+        }
+
+        detachPromise(
+            fetchLeaderboardData(playerName).then(setLeaderboardData)
+        );
+    }, [screen, sessionLoading, leaderboardData, playerName]);
 
     async function handleEditName(name: string): Promise<string | undefined> {
         const normalizedNextName = normalizePlayerName(name);
@@ -476,6 +493,7 @@ export default function App(): JSX.Element {
                     setShowLeaderboard(false);
                 }}
                 playerName={playerName}
+                prefetchedData={leaderboardData}
             />
         );
     }

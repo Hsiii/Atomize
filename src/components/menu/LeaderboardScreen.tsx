@@ -8,76 +8,87 @@ import { BackButton } from '../ui/BackButton';
 
 import './LeaderboardScreen.css';
 
-type LeaderboardScreenProps = {
-    playerName: string;
-    onBack: () => void;
-};
-
-type LeaderboardEntry = {
+export type LeaderboardEntry = {
     player_name: string;
     max_combo: number;
 };
 
+type LeaderboardScreenProps = {
+    playerName: string;
+    prefetchedData: readonly LeaderboardEntry[] | undefined;
+    onBack: () => void;
+};
+
+export async function fetchLeaderboardData(
+    playerName: string
+): Promise<readonly LeaderboardEntry[]> {
+    const client = supabaseAuthClient;
+    if (!client) {
+        const localBest = loadBestScore();
+        if (localBest.maxCombo > 0) {
+            return [
+                {
+                    player_name: playerName || getGuestDisplayName(),
+                    max_combo: localBest.maxCombo,
+                },
+            ];
+        }
+        return [];
+    }
+
+    try {
+        const response = await client
+            .from('combo_leaderboard')
+            .select('player_name, max_combo')
+            .order('max_combo', { ascending: false })
+            .limit(10);
+
+        const data = response.data as LeaderboardEntry[] | null;
+        if (!response.error && (data?.length ?? 0) > 0) {
+            return data ?? [];
+        }
+    } catch {
+        // Fall through to local fallback.
+    }
+
+    const localBest = loadBestScore();
+    if (localBest.maxCombo > 0) {
+        return [
+            {
+                player_name: playerName || getGuestDisplayName(),
+                max_combo: localBest.maxCombo,
+            },
+        ];
+    }
+    return [];
+}
+
 export function LeaderboardScreen({
     playerName,
+    prefetchedData,
     onBack,
 }: LeaderboardScreenProps): JSX.Element {
-    const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>(
-        []
-    );
-    const [loading, setLoading] = useState(true);
+    const [leaderboardData, setLeaderboardData] = useState<
+        readonly LeaderboardEntry[]
+    >(prefetchedData ?? []);
+    const [loading, setLoading] = useState(!prefetchedData);
     const requestRef = useRef<Promise<void> | undefined>(undefined);
 
     useEffect(() => {
-        if (requestRef.current) {
+        if (prefetchedData || requestRef.current) {
             return;
         }
 
-        const fallbackToLocal = () => {
-            const localBest = loadBestScore();
-            if (localBest.maxCombo > 0) {
-                setLeaderboardData([
-                    {
-                        player_name: playerName || uiText.guest,
-                        max_combo: localBest.maxCombo,
-                    },
-                ]);
-            }
-            setLoading(false);
-        };
-
-        const client = supabaseAuthClient;
-        if (!client) {
-            fallbackToLocal();
-            return;
-        }
-
-        const request = (async () => {
-            try {
-                const response = await client
-                    .from('combo_leaderboard')
-                    .select('player_name, max_combo')
-                    .order('max_combo', { ascending: false })
-                    .limit(10);
-
-                const data = response.data as LeaderboardEntry[] | null;
-
-                if (!response.error && (data?.length ?? 0) > 0) {
-                    setLeaderboardData(data ?? []);
-                    setLoading(false);
-                    return;
-                }
-
-                fallbackToLocal();
-            } catch {
-                fallbackToLocal();
-            } finally {
+        const request = fetchLeaderboardData(playerName).then(
+            (data: readonly LeaderboardEntry[]) => {
+                setLeaderboardData(data);
+                setLoading(false);
                 requestRef.current = undefined;
             }
-        })();
+        );
 
         requestRef.current = request;
-    }, [playerName]);
+    }, [playerName, prefetchedData]);
 
     return (
         <main className='app-shell fullscreen-shell leaderboard-page-shell'>
