@@ -163,10 +163,13 @@ export function OpponentPickerScreen({
                             aria-hidden='true'
                             className='opponent-picker-mode-icon'
                         />
-                        <h1 className='opponent-picker-title'>
-                            {uiText.battleTitle}
-                        </h1>
                     </div>
+                    <h1 className='opponent-picker-title'>
+                        {uiText.battleTitle}
+                    </h1>
+                    <p className='opponent-picker-subtitle'>
+                        {uiText.chooseOpponent}
+                    </p>
                 </header>
 
                 <div className='opponent-picker-body'>
@@ -175,19 +178,24 @@ export function OpponentPickerScreen({
                         onClick={handleStartCpuGame}
                         type='button'
                     >
-                        <div className='atombot-blob'>
-                            <Bot
-                                aria-hidden='true'
-                                className='atombot-blob-icon'
-                            />
+                        <div className='atombot-card-icon'>
+                            <Bot aria-hidden='true' className='atombot-icon' />
                         </div>
-                        <span className='atombot-card-name'>
-                            {uiText.atomBotLabel}
-                        </span>
-                        <span className='atombot-card-hint'>
-                            {uiText.atomBotHint}
-                        </span>
+                        <div className='atombot-card-text'>
+                            <span className='atombot-card-name'>
+                                {uiText.atomBotLabel}
+                            </span>
+                            <span className='atombot-card-hint'>
+                                {uiText.atomBotHint}
+                            </span>
+                        </div>
                     </button>
+
+                    <div className='opponent-picker-divider'>
+                        <span className='opponent-picker-divider-label'>
+                            {uiText.orDivider}
+                        </span>
+                    </div>
 
                     <div className='online-section'>
                         <h2 className='online-section-title'>

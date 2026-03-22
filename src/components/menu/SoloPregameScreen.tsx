@@ -49,10 +49,9 @@ export function SoloPregameScreen({
                             aria-hidden='true'
                             className='solo-pregame-mode-icon'
                         />
-                        <h1 className='solo-pregame-title'>
-                            {uiText.soloTitle}
-                        </h1>
                     </div>
+                    <h1 className='solo-pregame-title'>{uiText.soloTitle}</h1>
+                    <p className='solo-pregame-subtitle'>{uiText.soloGoal}</p>
                 </header>
 
                 <div className='solo-pregame-body'>

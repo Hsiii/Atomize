@@ -26,6 +26,7 @@
             calc(env(safe-area-inset-top) + var(--space-5))
         )
         var(--space-7) 0;
+    gap: 0.35rem;
 }
 
 .opponent-picker-header .floating-back-button {
@@ -37,35 +38,40 @@
 }
 
 .opponent-picker-header-blob {
-    width: 5.5rem;
-    height: 5.5rem;
+    width: 3.5rem;
+    height: 3.5rem;
     border-radius: 50%;
     background: var(--color-secondary);
     border: 2px solid var(--color-border-inverse-soft);
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.15rem;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.15rem;
 }
 
 .opponent-picker-mode-icon {
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 1.1rem;
+    height: 1.1rem;
     stroke-width: 2.2;
     color: var(--color-text-inverse);
 }
 
 .opponent-picker-title {
     margin: var(--space-0);
-    font-family: var(--type-action-label-family);
-    font-size: 0.9rem;
-    font-weight: 800;
-    letter-spacing: var(--type-action-label-caps-letter-spacing);
-    text-transform: var(--type-action-label-caps-text-transform);
-    color: var(--color-text-inverse);
-    line-height: 1.1;
+    font-family: var(--type-display-hero-family);
+    font-size: 1.5rem;
+    font-weight: var(--type-display-hero-weight);
+    color: var(--color-ink);
+    line-height: 1.15;
+}
+
+.opponent-picker-subtitle {
+    margin: var(--space-0);
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
+    color: var(--type-body-meta-color);
+    line-height: var(--type-body-meta-line-height);
 }
 
 /* === Body === */
@@ -74,76 +80,61 @@
     width: min(100%, 22rem);
     display: flex;
     flex-direction: column;
-    gap: 2rem;
-    padding: 1rem 1.5rem max(env(safe-area-inset-bottom), 2.5rem);
-    flex: 0 0 auto;
+    gap: 1.25rem;
+    padding: 1rem 1.5rem max(env(safe-area-inset-bottom), 1.5rem);
+    flex: 1;
+    min-height: 0;
 }
 
-/* === AtomBot Card (Blob Style) === */
+/* === AtomBot Card (Horizontal) === */
 
 .atombot-card {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0;
-    border: 0;
-    background: none;
+    gap: 0.75rem;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid var(--color-border-soft);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface-strong);
     cursor: pointer;
+    transition:
+        background 140ms ease,
+        transform 140ms ease;
 }
 
-.atombot-blob {
-    width: 4.5rem;
-    height: 4.5rem;
+.atombot-card:hover {
+    background: var(--color-surface-accent);
+    transform: translateY(-1px);
+}
+
+.atombot-card:active {
+    transform: scale(0.98);
+    transition-duration: 60ms;
+}
+
+.atombot-card-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    flex: 0 0 2.75rem;
     border-radius: 50%;
     background: var(--color-secondary);
-    border: 2px solid var(--color-border-inverse-soft);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 180ms ease;
-    animation: atombot-blob-idle 6.6s ease-in-out infinite;
 }
 
-.atombot-blob::after {
-    content: '';
-    position: absolute;
-    left: calc(50% - 1.2rem);
-    width: 2.4rem;
-    bottom: -0.3rem;
-    height: 0.6rem;
-    border-radius: 50%;
-    background: var(--color-blob-shadow);
-    filter: blur(6px);
-    pointer-events: none;
-    z-index: -1;
-}
-
-.atombot-card:hover .atombot-blob {
-    transform: translateY(-3px) scale(1.05);
-}
-
-.atombot-card:active .atombot-blob {
-    transform: scale(0.93);
-    transition-duration: 80ms;
-}
-
-@keyframes atombot-blob-idle {
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-3px);
-    }
-}
-
-.atombot-blob-icon {
-    width: 1.6rem;
-    height: 1.6rem;
+.atombot-icon {
+    width: 1.3rem;
+    height: 1.3rem;
     stroke-width: 1.8;
     color: var(--color-text-inverse);
+}
+
+.atombot-card-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
 }
 
 .atombot-card-name {
@@ -152,6 +143,7 @@
     font-weight: 800;
     color: var(--color-ink);
     line-height: var(--type-action-label-line-height);
+    text-align: left;
 }
 
 .atombot-card-hint {
@@ -160,6 +152,32 @@
     font-weight: var(--type-body-meta-weight);
     color: var(--type-body-meta-color);
     line-height: var(--type-body-meta-line-height);
+    text-align: left;
+}
+
+/* === Or Divider === */
+
+.opponent-picker-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.opponent-picker-divider::before,
+.opponent-picker-divider::after {
+    content: '';
+    flex: 1;
+    border-top: 1px solid var(--color-border-soft);
+}
+
+.opponent-picker-divider-label {
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
+    color: var(--type-body-meta-color);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    line-height: 1;
 }
 
 /* === Online Players Section === */
@@ -168,6 +186,8 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    flex: 1;
+    min-height: 0;
 }
 
 .online-section-title {
@@ -182,6 +202,7 @@
     text-transform: var(--type-action-label-wide-text-transform);
     color: var(--type-body-meta-color);
     line-height: var(--type-body-meta-line-height);
+    flex: 0 0 auto;
 }
 
 .online-section-icon {
@@ -195,10 +216,14 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 0.25rem;
     padding: 1.25rem 1rem;
     border-radius: var(--radius-panel);
+    border: 1px dashed var(--color-border-soft);
     background: var(--color-surface-accent);
+    flex: 1;
+    min-height: 4rem;
 }
 
 .online-empty {
