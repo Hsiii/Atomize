@@ -95,6 +95,22 @@ export async function startGooglePopupSignIn(): Promise<string | undefined> {
         return uiText.loginError;
     }
 
+    const isStandalone =
+        globalThis.matchMedia('(display-mode: standalone)').matches ||
+        (navigator as unknown as { standalone?: boolean }).standalone === true;
+
+    if (isStandalone) {
+        const { error: authError } =
+            await supabaseAuthClient.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: globalThis.location.origin,
+                },
+            });
+
+        return authError ? uiText.loginError : undefined;
+    }
+
     const { data, error: authError } =
         await supabaseAuthClient.auth.signInWithOAuth({
             provider: 'google',
