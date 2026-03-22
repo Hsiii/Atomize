@@ -57,6 +57,7 @@ export function MenuScreen({
 }: MenuScreenProps): JSX.Element {
     const [showInviteDialog, setShowInviteDialog] = useState(false);
     const [showProfileDialog, setShowProfileDialog] = useState(false);
+    const [showUserMenuDialog, setShowUserMenuDialog] = useState(false);
     const [showAuthDialog, setShowAuthDialog] = useState(false);
     const [showLeaderboardDialog, setShowLeaderboardDialog] = useState(false);
     const [leaderboardData, setLeaderboardData] = useState<
@@ -135,6 +136,14 @@ export function MenuScreen({
     function handleOpenProfileDialog() {
         setEditingName(playerName);
         setShowProfileDialog(true);
+    }
+
+    function handleOpenUserMenuDialog() {
+        setShowUserMenuDialog(true);
+    }
+
+    function handleCloseUserMenuDialog() {
+        setShowUserMenuDialog(false);
     }
 
     function handleOpenAuthDialog() {
@@ -256,9 +265,9 @@ export function MenuScreen({
                                     return;
                                 }
 
-                                handleOpenProfileDialog();
+                                handleOpenUserMenuDialog();
                             }}
-                            title={isGuest ? uiText.signIn : uiText.editName}
+                            title={isGuest ? uiText.signIn : uiText.settings}
                             type='button'
                         >
                             <User size={24} />
@@ -439,19 +448,54 @@ export function MenuScreen({
                                 />
                             </div>
                             <div className='dialog-actions'>
-                                {isGuest ? undefined : (
-                                    <ActionButton
-                                        onClick={onLogout}
-                                        variant='secondary'
-                                    >
-                                        {uiText.logout}
-                                    </ActionButton>
-                                )}
                                 <ActionButton
                                     onClick={handleProfileSave}
                                     variant='primary'
                                 >
                                     {uiText.saveName}
+                                </ActionButton>
+                            </div>
+                        </div>
+                    </div>
+                ) : undefined}
+
+                {showUserMenuDialog ? (
+                    <div
+                        className='dialog-scrim'
+                        onClick={handleCloseUserMenuDialog}
+                        role='presentation'
+                    >
+                        <div
+                            className='dialog-panel'
+                            onClick={(event) => {
+                                event.stopPropagation();
+                            }}
+                            role='dialog'
+                        >
+                            <header className='dialog-header'>
+                                <span className='dialog-title'>
+                                    {displayPlayerName}
+                                </span>
+                                <button
+                                    className='dialog-close'
+                                    onClick={handleCloseUserMenuDialog}
+                                    type='button'
+                                >
+                                    <X size={18} />
+                                </button>
+                            </header>
+                            <div className='dialog-actions dialog-actions-top'>
+                                <ActionButton
+                                    onClick={onLogout}
+                                    variant='primary'
+                                >
+                                    {uiText.logout}
+                                </ActionButton>
+                                <ActionButton
+                                    onClick={handleCloseUserMenuDialog}
+                                    variant='secondary'
+                                >
+                                    {uiText.close}
                                 </ActionButton>
                             </div>
                         </div>
@@ -483,14 +527,14 @@ export function MenuScreen({
                                     <X size={18} />
                                 </button>
                             </header>
-                            <div className='dialog-body'>
-                                {authError ? (
+                            {authError ? (
+                                <div className='dialog-body'>
                                     <div className='menu-auth-error'>
                                         {authError}
                                     </div>
-                                ) : undefined}
-                            </div>
-                            <div className='dialog-actions'>
+                                </div>
+                            ) : undefined}
+                            <div className='dialog-actions dialog-actions-top'>
                                 <ActionButton
                                     disabled={authLoading}
                                     onClick={() => {
