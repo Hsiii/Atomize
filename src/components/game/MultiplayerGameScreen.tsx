@@ -583,7 +583,7 @@ function useBattleTutorial({
 
         if (step === TutorialStep.StageTwoFinishSubmit) {
             if (currentPlayer.stageIndex >= 2 && !battleVisualsBusy) {
-                setStep(TutorialStep.ComboExplain);
+                setStep(TutorialStep.EnemyTurn);
             }
 
             return;

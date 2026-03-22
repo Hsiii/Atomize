@@ -192,13 +192,8 @@ export const tutorialLessonText = {
     },
     stageOneResult: {
         actionLabel: 'Next compound',
-        body: 'Compound cleared! Each factor you queue deals damage, and clearing finishes the attack.',
+        body: 'Compound cleared. Each factor you queue deals damage, and clearing finishes the attack.',
         title: 'Atomized!',
-    },
-    comboExplain: {
-        actionLabel: 'Next',
-        body: 'Compound 6 was cleared in one combo of 2 factors - that gave bonus combo damage! Compound 30 took two sends, so no bonus.',
-        title: 'Combo bonus',
     },
     stageTwoPrime: {
         body: 'This compound is 30 = 2 x 3 x 5. Start with 2.',
@@ -210,7 +205,7 @@ export const tutorialLessonText = {
     },
     stageTwoResult: {
         actionLabel: 'Finish it',
-        body: 'The blob dropped from 30 to 5 - that is 30 / 2 / 3. Damage dealt, but the compound still stands.',
+        body: 'The blob dropped from 30 to 5. Damage dealt, but the compound still stands.',
         title: 'Partial clear',
     },
     stageTwoFinish: {
@@ -223,8 +218,8 @@ export const tutorialLessonText = {
     },
     perfectSolveExplain: {
         actionLabel: 'Got it',
-        body: 'Clearing in one combo is a perfect clear. Perfect clears also heal your HP - queue all factors at once to recover!',
-        title: 'Perfect clear',
+        body: 'Queue all factors in one send for a perfect clear. Perfect clears heal HP and deal bonus combo damage - the more factors, the bigger the bonus!',
+        title: 'Perfect clear & combo',
     },
     enemyTurn: {
         actionLabel: 'Show attack',
@@ -232,9 +227,9 @@ export const tutorialLessonText = {
         title: 'Enemy turn',
     },
     enemyAttack: {
-        actionLabel: 'Try a miss',
-        body: 'Now try submitting a wrong factor to see the penalty.',
-        title: 'What if you miss?',
+        actionLabel: 'Next',
+        body: 'Enemy clears cost you HP. But there is a way to recover...',
+        title: 'Ouch!',
     },
     tryWrongPrime: {
         body: 'Tap 3 and submit. It does not divide the current compound.',

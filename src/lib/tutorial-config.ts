@@ -15,7 +15,6 @@ export enum TutorialStep {
     StageOneQueue = 'StageOneQueue',
     StageOneSubmit = 'StageOneSubmit',
     StageOneResult = 'StageOneResult',
-    ComboExplain = 'ComboExplain',
     StageTwoPrime = 'StageTwoPrime',
     StageTwoQueue = 'StageTwoQueue',
     StageTwoResult = 'StageTwoResult',
@@ -110,15 +109,6 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
         },
         nextActionStep: TutorialStep.StageTwoPrime,
     },
-    [TutorialStep.ComboExplain]: {
-        getHighlightTarget: () => 'enemy-hp',
-        lesson: {
-            isBlocking: true,
-            lessonId: 'comboExplain',
-            position: 'bottom',
-        },
-        nextActionStep: TutorialStep.PerfectSolveExplain,
-    },
     [TutorialStep.StageTwoPrime]: {
         expectedQueue: fullFactorQueue,
         getHighlightedPrime: () => 2,
@@ -174,7 +164,7 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             lessonId: 'perfectSolveExplain',
             position: 'bottom',
         },
-        nextActionStep: TutorialStep.EnemyTurn,
+        nextActionStep: TutorialStep.TryWrongPrime,
     },
     [TutorialStep.EnemyTurn]: {
         actionEffect: 'allow-cpu-attack',
@@ -192,7 +182,7 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             lessonId: 'enemyAttack',
             position: 'top',
         },
-        nextActionStep: TutorialStep.TryWrongPrime,
+        nextActionStep: TutorialStep.PerfectSolveExplain,
     },
     [TutorialStep.TryWrongPrime]: {
         expectedQueue: wrongPrimeQueue,
