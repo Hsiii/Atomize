@@ -79,6 +79,17 @@ export const uiText = {
     rank: 'Rank',
     player: 'Player',
     highestCombo: 'Max Combo',
+    email: 'Email',
+    password: 'Password',
+    login: 'Login',
+    signUp: 'Sign Up',
+    displayName: 'Display Name',
+    playAsGuest: 'Play as Guest',
+    logout: 'Log Out',
+    loginError: 'Authentication failed.',
+    signUpSuccess: 'Account created! Please check your email to verify.',
+    emailInUse: 'This email is already registered.',
+    authRequired: 'You must log in to play online multiplayer.',
 } as const;
 
 export const keyboardHintText = {
@@ -169,7 +180,7 @@ export const tutorialLessonText = {
 
 export type TutorialLessonId = keyof typeof tutorialLessonText;
 
-export type Screen = 'menu' | 'single' | 'multi-game' | 'tutorial';
+export type Screen = 'login' | 'menu' | 'single' | 'multi-game' | 'tutorial';
 
 export type MultiplayerState = {
     playerId: string | undefined;
