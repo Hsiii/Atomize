@@ -6,6 +6,7 @@ import { uiText } from './app-state';
 import type { Screen } from './app-state';
 import { MultiplayerGameScreen } from './components/game/MultiplayerGameScreen';
 import { SingleGameScreen } from './components/game/SingleGameScreen';
+import { AccountScreen } from './components/menu/AccountScreen';
 import { AuthScreen } from './components/menu/AuthScreen';
 import { MenuScreen } from './components/menu/MenuScreen';
 import { useLocalCpuGame } from './hooks/useLocalCpuGame';
@@ -210,6 +211,7 @@ export default function App(): JSX.Element {
     const [authMode, setAuthMode] = useState<'login' | 'signup' | undefined>(
         undefined
     );
+    const [showAccount, setShowAccount] = useState(false);
     const [sessionLoading, setSessionLoading] = useState(true);
     const [session, setSession] = useState<Session | undefined>(undefined);
     const [isGuest, setIsGuest] = useState(() => isGuestModeEnabled());
@@ -443,6 +445,28 @@ export default function App(): JSX.Element {
         );
     }
 
+    if (showAccount && session) {
+        return (
+            <AccountScreen
+                onBack={() => {
+                    setShowAccount(false);
+                }}
+                onEditName={handleEditName}
+                onLogout={() => {
+                    if (supabaseAuthClient) {
+                        detachPromise(supabaseAuthClient.auth.signOut());
+                    }
+                    setIsGuest(true);
+                    setGuestModeEnabled(true);
+                    setPlayerName('');
+                    persistPlayerName('');
+                    setShowAccount(false);
+                }}
+                playerName={playerName}
+            />
+        );
+    }
+
     if (screen === 'tutorial') {
         return (
             <MultiplayerGameScreen
@@ -501,22 +525,14 @@ export default function App(): JSX.Element {
                     detachPromise(multiplayerGame.handleAcceptInvitation());
                 }}
                 onDeclineInvitation={multiplayerGame.handleDeclineInvitation}
-                onEditName={handleEditName}
                 onInvitePlayer={(targetPlayerId) => {
                     detachPromise(
                         multiplayerGame.handleLobbyInvite(targetPlayerId)
                     );
                 }}
                 onlineUsers={multiplayerGame.onlineUsers}
-                onLogout={() => {
-                    if (supabaseAuthClient) {
-                        detachPromise(supabaseAuthClient.auth.signOut());
-                    }
-                    setIsGuest(true);
-                    setGuestModeEnabled(true);
-                    setPlayerName('');
-                    persistPlayerName('');
-                    setScreen('menu');
+                onOpenAccount={() => {
+                    setShowAccount(true);
                 }}
                 onOpenAuth={() => {
                     setAuthMode('login');
