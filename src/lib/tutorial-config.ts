@@ -1,4 +1,4 @@
-import { uiText } from '../app-state';
+import { tutorialLessonText } from '../app-state';
 import type { Prime } from '../core';
 
 export type TutorialFocusTarget =
@@ -37,14 +37,10 @@ export type TutorialLesson = {
     title: string;
 };
 
-type TutorialTextKey = keyof typeof uiText;
-
 type TutorialLessonConfig = {
-    actionLabelKey?: TutorialTextKey;
-    bodyKey: TutorialTextKey;
     isBlocking: boolean;
+    lessonId: keyof typeof tutorialLessonText;
     position: 'bottom' | 'top';
-    titleKey: TutorialTextKey;
 };
 
 type TutorialActionEffect = 'allow-cpu-attack' | 'complete-tutorial';
@@ -68,11 +64,9 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
     [TutorialStep.Intro]: {
         getHighlightTarget: () => 'self-blob',
         lesson: {
-            actionLabelKey: 'tutorialStartLesson',
-            bodyKey: 'tutorialIntroBody',
             isBlocking: true,
-            position: 'top',
-            titleKey: 'tutorialIntroTitle',
+            lessonId: 'intro',
+            position: 'bottom',
         },
         nextActionStep: TutorialStep.StageOnePrime,
     },
@@ -81,10 +75,9 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
         getHighlightedPrime: () => 2,
         getHighlightTarget: () => 'keypad',
         lesson: {
-            bodyKey: 'tutorialStageOnePrimeBody',
             isBlocking: false,
+            lessonId: 'stageOnePrime',
             position: 'top',
-            titleKey: 'tutorialStageOnePrimeTitle',
         },
     },
     [TutorialStep.StageOneQueue]: {
@@ -92,30 +85,26 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
         getHighlightedPrime: () => 3,
         getHighlightTarget: () => 'queue',
         lesson: {
-            bodyKey: 'tutorialStageOneQueueBody',
             isBlocking: false,
+            lessonId: 'stageOneQueue',
             position: 'top',
-            titleKey: 'tutorialStageOneQueueTitle',
         },
     },
     [TutorialStep.StageOneSubmit]: {
         expectedQueue: fullFactorQueue,
         getHighlightTarget: () => 'submit',
         lesson: {
-            bodyKey: 'tutorialStageOneSubmitBody',
             isBlocking: false,
+            lessonId: 'stageOneSubmit',
             position: 'top',
-            titleKey: 'tutorialStageOneSubmitTitle',
         },
     },
     [TutorialStep.StageOneResult]: {
         getHighlightTarget: () => 'enemy-hp',
         lesson: {
-            actionLabelKey: 'tutorialNextBlob',
-            bodyKey: 'tutorialStageOneResultBody',
             isBlocking: true,
+            lessonId: 'stageOneResult',
             position: 'bottom',
-            titleKey: 'tutorialStageOneResultTitle',
         },
         nextActionStep: TutorialStep.StageTwoPrime,
     },
@@ -124,10 +113,9 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
         getHighlightedPrime: () => 2,
         getHighlightTarget: () => 'keypad',
         lesson: {
-            bodyKey: 'tutorialStageTwoPrimeBody',
             isBlocking: false,
+            lessonId: 'stageTwoPrime',
             position: 'top',
-            titleKey: 'tutorialStageTwoPrimeTitle',
         },
     },
     [TutorialStep.StageTwoQueue]: {
@@ -135,29 +123,25 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
         getHighlightedPrime: () => 3,
         getHighlightTarget: () => 'keypad',
         lesson: {
-            bodyKey: 'tutorialStageTwoQueueBody',
             isBlocking: false,
+            lessonId: 'stageTwoQueue',
             position: 'top',
-            titleKey: 'tutorialStageTwoQueueTitle',
         },
     },
     [TutorialStep.StageTwoSubmit]: {
         expectedQueue: fullFactorQueue,
         getHighlightTarget: () => 'submit',
         lesson: {
-            bodyKey: 'tutorialStageTwoSubmitBody',
             isBlocking: false,
+            lessonId: 'stageTwoSubmit',
             position: 'top',
-            titleKey: 'tutorialStageTwoSubmitTitle',
         },
     },
     [TutorialStep.StageTwoResult]: {
         lesson: {
-            actionLabelKey: 'tutorialUseLastFactor',
-            bodyKey: 'tutorialStageTwoResultBody',
             isBlocking: true,
+            lessonId: 'stageTwoResult',
             position: 'bottom',
-            titleKey: 'tutorialStageTwoResultTitle',
         },
         nextActionStep: TutorialStep.StageTwoFinish,
     },
@@ -166,41 +150,35 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
         getHighlightedPrime: () => 5,
         getHighlightTarget: () => 'keypad',
         lesson: {
-            bodyKey: 'tutorialStageTwoFinishBody',
             isBlocking: false,
+            lessonId: 'stageTwoFinish',
             position: 'top',
-            titleKey: 'tutorialStageTwoFinishTitle',
         },
     },
     [TutorialStep.StageTwoFinishSubmit]: {
         expectedQueue: finishQueue,
         getHighlightTarget: () => 'submit',
         lesson: {
-            bodyKey: 'tutorialStageTwoFinishSubmitBody',
             isBlocking: false,
+            lessonId: 'stageTwoFinishSubmit',
             position: 'top',
-            titleKey: 'tutorialStageTwoFinishSubmitTitle',
         },
     },
     [TutorialStep.EnemyTurn]: {
         actionEffect: 'allow-cpu-attack',
         getHighlightTarget: () => 'self-hp',
         lesson: {
-            actionLabelKey: 'tutorialShowAttack',
-            bodyKey: 'tutorialEnemyTurnBody',
             isBlocking: true,
+            lessonId: 'enemyTurn',
             position: 'bottom',
-            titleKey: 'tutorialEnemyTurnTitle',
         },
     },
     [TutorialStep.EnemyAttack]: {
         getHighlightTarget: () => 'self-hp',
         lesson: {
-            actionLabelKey: 'tutorialTryMistake',
-            bodyKey: 'tutorialEnemyAttackBody',
             isBlocking: true,
+            lessonId: 'enemyAttack',
             position: 'top',
-            titleKey: 'tutorialEnemyAttackTitle',
         },
         nextActionStep: TutorialStep.TryWrongPrime,
     },
@@ -210,31 +188,26 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
         getHighlightTarget: (queue) =>
             queue.length === 0 ? 'keypad' : 'submit',
         lesson: {
-            bodyKey: 'tutorialTryWrongPrimeBody',
             isBlocking: false,
+            lessonId: 'tryWrongPrime',
             position: 'top',
-            titleKey: 'tutorialTryWrongPrimeTitle',
         },
     },
     [TutorialStep.WrongPrimeResult]: {
         getHighlightTarget: () => 'self-hp',
         lesson: {
-            actionLabelKey: 'tutorialWrapUp',
-            bodyKey: 'tutorialWrongPrimeResultBody',
             isBlocking: true,
+            lessonId: 'wrongPrimeResult',
             position: 'bottom',
-            titleKey: 'tutorialWrongPrimeResultTitle',
         },
         nextActionStep: TutorialStep.Summary,
     },
     [TutorialStep.Summary]: {
         actionEffect: 'complete-tutorial',
         lesson: {
-            actionLabelKey: 'tutorialKeepPlaying',
-            bodyKey: 'tutorialSummaryBody',
             isBlocking: true,
+            lessonId: 'summary',
             position: 'bottom',
-            titleKey: 'tutorialSummaryTitle',
         },
     },
     [TutorialStep.Done]: {},
@@ -312,13 +285,14 @@ export function getTutorialLesson(
         return undefined;
     }
 
+    const lessonText = tutorialLessonText[lesson.lessonId];
+
     return {
-        actionLabel: lesson.actionLabelKey
-            ? uiText[lesson.actionLabelKey]
-            : undefined,
-        body: uiText[lesson.bodyKey],
+        actionLabel:
+            'actionLabel' in lessonText ? lessonText.actionLabel : undefined,
+        body: lessonText.body,
         isBlocking: lesson.isBlocking,
         position: lesson.position,
-        title: uiText[lesson.titleKey],
+        title: lessonText.title,
     };
 }

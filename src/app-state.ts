@@ -63,9 +63,6 @@ export const uiText = {
     cpu: 'CPU',
     start: 'Start',
     atomized: 'Atomized',
-    keyboardHintTitle: 'Hint',
-    keyboardHintLead: 'Press digit',
-    keyboardHintTail: 'to input 23',
     bestScore: 'Best',
     newBest: 'New Best!',
     retry: 'Retry',
@@ -76,63 +73,95 @@ export const uiText = {
     tutorialCpu: 'Bot',
     tutorialYou: 'You',
     tutorialTitle: 'Tutorial',
-    tutorialStartLesson: 'Start tutorial',
-    tutorialNextBlob: 'Next blob',
-    tutorialUseLastFactor: 'Use the last factor',
-    tutorialTryMistake: 'Try one',
-    tutorialWrapUp: 'Wrap up',
-    tutorialKeepPlaying: 'Keep playing',
-    tutorialDismissHint: 'Hide hint',
-    tutorialIntroTitle: 'Factor to survive',
-    tutorialIntroBody:
-        'Bottom-left is your blob. Divide it down to 1 with prime factors before the enemy drains your HP.',
-    tutorialStageOnePrimeTitle: 'Pick a valid factor',
-    tutorialStageOnePrimeBody:
-        'Only primes that divide the current number work. Start with 2 because 6 = 2 x 3.',
-    tutorialStageOneQueueTitle: 'Build the queue',
-    tutorialStageOneQueueBody:
-        'Queued primes wait in the combo bar. Add 3 so the queue holds the full factor list.',
-    tutorialStageOneSubmitTitle: 'Resolve the combo',
-    tutorialStageOneSubmitBody:
-        'Press Enter to resolve the queued factors in order.',
-    tutorialStageOneResultTitle: 'Blob cleared',
-    tutorialStageOneResultBody:
-        'The blob hit 1 \u2014 fully factored and cleared. Each clear deals damage to the enemy HP bar.',
-    tutorialStageTwoPrimeTitle: 'Store some damage',
-    tutorialStageTwoPrimeBody:
-        'This blob is 30. Start with 2 to begin stacking factor damage.',
-    tutorialStageTwoQueueTitle: 'Plan ahead',
-    tutorialStageTwoQueueBody:
-        'Add 3. Multi-prime turns let you plan several factors before you fire.',
-    tutorialStageTwoSubmitTitle: 'Cash out the queue',
-    tutorialStageTwoSubmitBody:
-        'Press Enter. This queue will release 5 stored factor damage even though the blob still has one factor left.',
-    tutorialStageTwoResultTitle: 'Queued factors hit together',
-    tutorialStageTwoResultBody:
-        'Your queued 2 + 3 released 5 stored factor damage when the queue finished. That is not combo bonus because the blob did not end yet.',
-    tutorialStageTwoFinishTitle: 'Finish the blob',
-    tutorialStageTwoFinishBody:
-        'The stored 5 damage already went out. The blob still has factor 5 left, so tap 5 to solve it.',
-    tutorialStageTwoFinishSubmitTitle: 'Complete the clear',
-    tutorialStageTwoFinishSubmitBody:
-        'Press Enter to clear the solved blob. Clearing a 1 blob counts as a 1-combo finish.',
-    tutorialEnemyTurnTitle: 'Enemy incoming',
-    tutorialEnemyTurnBody:
-        'The bot attacks with the same rules you do. Watch the HP bars while it moves.',
-    tutorialShowAttack: 'Show attack',
-    tutorialEnemyAttackTitle: 'Incoming damage',
-    tutorialEnemyAttackBody:
-        'Enemy clears shave your HP bar. The fight is a race to zero, so clean factor chains matter.',
-    tutorialTryWrongPrimeTitle: 'Try a wrong factor',
-    tutorialTryWrongPrimeBody:
-        'Tap 3, then press Enter. It does not divide 14, so you can see the self-hit penalty once.',
-    tutorialWrongPrimeResultTitle: 'Misses backfire',
-    tutorialWrongPrimeResultBody:
-        'Wrong primes deal self-damage and dump stored damage. The released partial hit still does not count as combo because it did not end the blob.',
-    tutorialSummaryTitle: 'Core loop learned',
-    tutorialSummaryBody:
-        'Queue valid primes, end blobs with longer finishing queues for bigger combo bonus, and avoid misses. Finish the match when you are ready.',
 } as const;
+
+export const keyboardHintText = {
+    body: 'Press digit 4 to input 23',
+    dismissAction: 'Hide hint',
+    title: 'Hint',
+} as const;
+
+type TutorialLessonTextEntry = {
+    actionLabel?: string;
+    body: string;
+    title: string;
+};
+
+export const tutorialLessonText = {
+    intro: {
+        actionLabel: 'Start tutorial',
+        body: 'Bottom-left is your blob. Divide it down to 1 with prime factors before the enemy drains your HP.',
+        title: 'Factor to survive',
+    },
+    stageOnePrime: {
+        body: 'Only primes that divide the current number work. Start with 2 because 6 = 2 x 3.',
+        title: 'Pick a valid factor',
+    },
+    stageOneQueue: {
+        body: 'Queued primes wait in the combo bar. Add 3 so the queue holds the full factor list.',
+        title: 'Build the queue',
+    },
+    stageOneSubmit: {
+        body: 'Press Enter to resolve the queued factors in order.',
+        title: 'Resolve the combo',
+    },
+    stageOneResult: {
+        actionLabel: 'Next blob',
+        body: 'The blob hit 1 - fully factored and cleared. Each clear deals damage to the enemy HP bar.',
+        title: 'Blob cleared',
+    },
+    stageTwoPrime: {
+        body: 'This blob is 30. Start with 2. Unlike the first 2-prime queue, this one will not finish the blob yet.',
+        title: 'Same queue, new result',
+    },
+    stageTwoQueue: {
+        body: 'Add 3. It is still a 2-prime queue, but 30 will still have a 5 left after it resolves.',
+        title: 'Plan ahead',
+    },
+    stageTwoSubmit: {
+        body: 'Press Enter. This queue sends 5 partial damage now, then you will need one more factor to finish the blob.',
+        title: 'Cash out the queue',
+    },
+    stageTwoResult: {
+        actionLabel: 'Use the last factor',
+        body: 'Your queued 2 + 3 dealt 5 damage, but it was not a combo finish because the blob did not reach 1 yet.',
+        title: 'Queued factors hit together',
+    },
+    stageTwoFinish: {
+        body: 'The stored 5 damage already went out. The blob still has factor 5 left, so tap 5 to solve it.',
+        title: 'Finish the blob',
+    },
+    stageTwoFinishSubmit: {
+        body: 'Press Enter to clear the solved blob. Clearing a 1 blob counts as a 1-combo finish.',
+        title: 'Complete the clear',
+    },
+    enemyTurn: {
+        actionLabel: 'Show attack',
+        body: 'The bot attacks with the same rules you do. Watch the HP bars while it moves.',
+        title: 'Enemy incoming',
+    },
+    enemyAttack: {
+        actionLabel: 'Try one',
+        body: 'Enemy clears shave your HP bar. The fight is a race to zero, so clean factor chains matter.',
+        title: 'Incoming damage',
+    },
+    tryWrongPrime: {
+        body: 'Tap 3, then press Enter. It does not divide 14, so you can see the self-hit penalty once.',
+        title: 'Try a wrong factor',
+    },
+    wrongPrimeResult: {
+        actionLabel: 'Wrap up',
+        body: 'Wrong primes deal self-damage and dump stored damage. The released partial hit still does not count as combo because it did not end the blob.',
+        title: 'Misses backfire',
+    },
+    summary: {
+        actionLabel: 'Keep playing',
+        body: 'Queue valid primes, end blobs with longer finishing queues for bigger combo bonus, and avoid misses. Finish the match when you are ready.',
+        title: 'Core loop learned',
+    },
+} as const satisfies Record<string, TutorialLessonTextEntry>;
+
+export type TutorialLessonId = keyof typeof tutorialLessonText;
 
 export type Screen = 'menu' | 'single' | 'multi-game' | 'tutorial';
 
