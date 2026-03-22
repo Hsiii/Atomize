@@ -122,6 +122,7 @@ export const uiText = {
     atomBotHint: 'Practice against the CPU',
     onlinePlayersSection: 'Online Players',
     noPlayersOnline: 'No one else is online right now.',
+    noPlayersOnlineHint: 'Share Atomize with a friend to battle live.',
     vs: 'VS',
     go: 'GO',
 } as const;

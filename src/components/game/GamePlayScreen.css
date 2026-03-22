@@ -4,6 +4,52 @@
     --combo-enter-icon-size: 2rem;
 }
 
+/* === Game Entry Transition === */
+
+.game-screen .single-value-display,
+.game-screen .multiplayer-board {
+    animation: game-entry-fade 400ms ease-out both;
+}
+
+.game-screen .single-controls-grid,
+.game-screen .multiplayer-controls-grid {
+    animation: game-entry-slide-up 500ms cubic-bezier(0.22, 1, 0.36, 1) 120ms
+        both;
+}
+
+@keyframes game-entry-fade {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes game-entry-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(2rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .game-screen .single-value-display,
+    .game-screen .multiplayer-board,
+    .game-screen .single-controls-grid,
+    .game-screen .multiplayer-controls-grid {
+        animation: none;
+    }
+}
+
 .single-game-screen {
     flex: 1;
     position: relative;

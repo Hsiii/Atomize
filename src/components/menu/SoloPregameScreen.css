@@ -11,6 +11,8 @@
     overflow: hidden;
 }
 
+/* === Header with blob === */
+
 .solo-pregame-header {
     position: relative;
     width: 100%;
@@ -18,37 +20,49 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
     padding: max(
             var(--space-5),
             calc(env(safe-area-inset-top) + var(--space-5))
         )
-        var(--space-7) 1.5rem;
-    background: var(--color-primary);
+        var(--space-7) 0;
 }
 
 .solo-pregame-header .floating-back-button {
     position: absolute;
-    top: auto;
+    top: max(var(--space-4), calc(env(safe-area-inset-top) + var(--space-4)));
     left: var(--space-4);
-    color: var(--color-text-inverse);
+    color: var(--color-ink-soft);
+    z-index: 2;
+}
+
+.solo-pregame-header-blob {
+    width: 5.5rem;
+    height: 5.5rem;
+    border-radius: 50%;
+    background: var(--color-primary-strong);
+    border: 2px solid var(--color-border-inverse-soft);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    margin-bottom: 0.75rem;
 }
 
 .solo-pregame-mode-icon {
-    width: 1.6rem;
-    height: 1.6rem;
-    stroke-width: 2;
+    width: 1.25rem;
+    height: 1.25rem;
+    stroke-width: 2.2;
     color: var(--color-text-inverse);
-    opacity: 0.7;
 }
 
 .solo-pregame-title {
     margin: var(--space-0);
     font-family: var(--type-action-label-family);
-    font-size: 1.5rem;
+    font-size: 0.9rem;
     font-weight: 800;
-    letter-spacing: var(--type-action-label-wide-letter-spacing);
-    text-transform: var(--type-action-label-wide-text-transform);
+    letter-spacing: var(--type-action-label-caps-letter-spacing);
+    text-transform: var(--type-action-label-caps-text-transform);
     color: var(--color-text-inverse);
     line-height: 1.1;
 }
@@ -60,54 +74,138 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
-    padding: 2rem 1.5rem max(env(safe-area-inset-bottom), 2.5rem);
+    gap: 1.25rem;
+    padding: 0.5rem 1rem max(env(safe-area-inset-bottom), 2rem);
     flex: 1;
     justify-content: center;
 }
 
-/* === Best Score Card === */
+/* === Leaderboard Table === */
 
-.solo-pregame-best-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 1rem 2rem;
-    border-radius: var(--radius-panel);
-    background: var(--color-surface-accent);
-    border: 1px solid var(--color-border-soft);
+.solo-pregame-leaderboard {
+    width: 100%;
 }
 
-.solo-pregame-best-label {
-    font-family: var(--type-body-meta-family);
-    font-size: var(--type-body-meta-size);
-    font-weight: var(--type-body-meta-weight);
-    letter-spacing: var(--type-action-label-wide-letter-spacing);
-    text-transform: var(--type-action-label-wide-text-transform);
-    color: var(--type-body-meta-color);
-    line-height: var(--type-body-meta-line-height);
+.solo-lb-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: auto;
 }
 
-.solo-pregame-best-value {
-    font-family: var(--type-display-results-family);
-    font-size: var(--type-display-results-size);
-    font-weight: var(--type-display-results-weight);
-    line-height: var(--type-display-results-line-height);
-    color: var(--type-display-results-color);
-}
-
-/* === Goal === */
-
-.solo-pregame-goal {
-    margin: var(--space-0);
+.solo-lb-table th,
+.solo-lb-table td {
+    padding: 0.5rem 0.6rem;
+    text-align: left;
     font-family: var(--type-body-meta-family);
     font-size: var(--type-action-label-size);
+    border-bottom: 1px solid var(--color-border-soft);
+    white-space: nowrap;
+}
+
+.solo-lb-table th {
     font-weight: var(--type-body-meta-weight);
-    line-height: var(--type-body-meta-relaxed-line-height);
     color: var(--type-body-meta-color);
+    font-size: var(--type-body-meta-size);
+    letter-spacing: var(--type-body-meta-letter-spacing);
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--color-border-soft);
+}
+
+.solo-lb-col-rank {
+    width: 2.5rem;
     text-align: center;
-    max-width: 18rem;
+}
+
+.solo-lb-col-name {
+    min-width: 0;
+}
+
+.solo-lb-col-score {
+    width: 5ch;
+    text-align: right;
+}
+
+.solo-lb-rank {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--type-metric-inline-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-metric-inline-weight);
+    color: var(--color-primary);
+    opacity: 0.6;
+}
+
+.solo-lb-name {
+    display: block;
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-action-label-weight);
+    color: var(--color-ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.solo-lb-score {
+    display: inline-block;
+    font-family: var(--type-metric-inline-family);
+    font-size: var(--type-metric-inline-size);
+    font-weight: var(--type-metric-inline-weight);
+    color: var(--color-primary);
+}
+
+/* First place row */
+
+.solo-lb-row-first .solo-lb-rank,
+.solo-lb-row-first .solo-lb-name,
+.solo-lb-row-first .solo-lb-score {
+    color: var(--color-gold);
+}
+
+.solo-lb-row-first .solo-lb-rank {
+    opacity: 1;
+}
+
+/* Current player row */
+
+.solo-lb-row-me td {
+    background: var(--color-surface-accent);
+}
+
+.solo-lb-row-me .solo-lb-rank {
+    opacity: 1;
+    color: var(--color-primary-strong);
+}
+
+.solo-lb-row-me .solo-lb-name {
+    color: var(--color-primary-strong);
+    font-weight: 800;
+}
+
+.solo-lb-row-me .solo-lb-score {
+    color: var(--color-primary-strong);
+    font-weight: 800;
+}
+
+/* Gap / ellipsis row */
+
+.solo-lb-row-gap td {
+    border-bottom: none;
+    padding: 0.15rem 0;
+}
+
+.solo-lb-ellipsis {
+    text-align: center;
+    color: var(--type-body-meta-color);
+    font-size: 1.1rem;
+    line-height: 1;
+    opacity: 0.5;
+}
+
+.solo-lb-row:last-child td {
+    border-bottom: none;
 }
 
 /* === Start Button === */
@@ -115,45 +213,5 @@
 .solo-pregame-start-btn.app-action-button {
     width: min(100%, 16rem);
     min-height: 3.5rem;
-}
-
-/* === Countdown === */
-
-.solo-countdown-screen {
-    background: var(--color-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.countdown-number {
-    font-family: var(--type-display-hero-family);
-    font-size: 8rem;
-    font-weight: var(--type-display-hero-weight);
-    color: var(--color-text-inverse);
-    line-height: 1;
-    animation: countdown-pulse 700ms ease-out;
-}
-
-@keyframes countdown-pulse {
-    0% {
-        opacity: 0;
-        transform: scale(1.6);
-    }
-
-    40% {
-        opacity: 1;
-        transform: scale(0.95);
-    }
-
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .countdown-number {
-        animation: none;
-    }
+    margin-top: 0.5rem;
 }

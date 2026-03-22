@@ -91,18 +91,20 @@ function TutorialPage(): JSX.Element {
 }
 
 function SoloPregamePage(): JSX.Element {
-    const { soloGame } = useAppContext();
+    const { soloGame, leaderboardData, playerName } = useAppContext();
     const navigate = useNavigate();
 
     return (
         <SoloPregameScreen
             bestScore={soloGame.bestScore}
+            leaderboardData={leaderboardData}
             onBack={() => {
                 detachPromise(navigate({ to: '/' }));
             }}
             onStart={() => {
                 soloGame.startSingleGame();
             }}
+            playerName={playerName}
         />
     );
 }

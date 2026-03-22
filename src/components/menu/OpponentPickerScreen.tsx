@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { JSX } from 'react';
-import { Bot, Check, Swords } from 'lucide-react';
+import { Bot, Check, Swords, Users } from 'lucide-react';
 
 import type { OnlineLobbyUser } from '../../app-state';
 import { uiText } from '../../app-state';
@@ -83,55 +83,59 @@ export function OpponentPickerScreen({
                     <BackButton onBack={onBack} />
                     <div className='vs-layout'>
                         <div className='vs-player-column'>
-                            <div className='vs-avatar vs-avatar-self'>
-                                {playerInitial ? (
-                                    <span className='vs-avatar-initial'>
-                                        {playerInitial}
+                            <div className='vs-avatar-wrap'>
+                                <div className='vs-avatar vs-avatar-self'>
+                                    {playerInitial ? (
+                                        <span className='vs-avatar-initial'>
+                                            {playerInitial}
+                                        </span>
+                                    ) : (
+                                        <span className='vs-avatar-dot' />
+                                    )}
+                                </div>
+                                {isCurrentPlayerReady ? (
+                                    <span className='vs-ready-badge'>
+                                        <Check
+                                            className='vs-ready-check'
+                                            size={12}
+                                        />
                                     </span>
-                                ) : (
-                                    <span className='vs-avatar-dot' />
-                                )}
+                                ) : undefined}
                             </div>
                             <span className='vs-player-name'>
                                 {displayPlayerName}
                             </span>
-                            {isCurrentPlayerReady ? (
-                                <span className='vs-ready-badge'>
-                                    <Check
-                                        className='vs-ready-check'
-                                        size={14}
-                                    />
-                                </span>
-                            ) : undefined}
                         </div>
 
                         <span className='vs-divider'>{uiText.vs}</span>
 
                         <div className='vs-player-column'>
-                            <div className='vs-avatar vs-avatar-opponent'>
-                                {isCpuOpponent ? (
-                                    <Bot className='vs-avatar-bot-icon' />
-                                ) : undefined}
-                                {!isCpuOpponent && opponentInitial ? (
-                                    <span className='vs-avatar-initial'>
-                                        {opponentInitial}
+                            <div className='vs-avatar-wrap'>
+                                <div className='vs-avatar vs-avatar-opponent'>
+                                    {isCpuOpponent ? (
+                                        <Bot className='vs-avatar-bot-icon' />
+                                    ) : undefined}
+                                    {!isCpuOpponent && opponentInitial ? (
+                                        <span className='vs-avatar-initial'>
+                                            {opponentInitial}
+                                        </span>
+                                    ) : undefined}
+                                    {!isCpuOpponent && !opponentInitial ? (
+                                        <span className='vs-avatar-dot' />
+                                    ) : undefined}
+                                </div>
+                                {isOpponentReady ? (
+                                    <span className='vs-ready-badge'>
+                                        <Check
+                                            className='vs-ready-check'
+                                            size={12}
+                                        />
                                     </span>
-                                ) : undefined}
-                                {!isCpuOpponent && !opponentInitial ? (
-                                    <span className='vs-avatar-dot' />
                                 ) : undefined}
                             </div>
                             <span className='vs-player-name'>
                                 {displayOpponentName}
                             </span>
-                            {isOpponentReady ? (
-                                <span className='vs-ready-badge'>
-                                    <Check
-                                        className='vs-ready-check'
-                                        size={14}
-                                    />
-                                </span>
-                            ) : undefined}
                         </div>
                     </div>
                     <ActionButton
@@ -154,13 +158,15 @@ export function OpponentPickerScreen({
             <section className='screen opponent-picker-screen'>
                 <header className='opponent-picker-header'>
                     <BackButton onBack={onBack} />
-                    <Swords
-                        aria-hidden='true'
-                        className='opponent-picker-mode-icon'
-                    />
-                    <h1 className='opponent-picker-title'>
-                        {uiText.battleTitle}
-                    </h1>
+                    <div className='opponent-picker-header-blob'>
+                        <Swords
+                            aria-hidden='true'
+                            className='opponent-picker-mode-icon'
+                        />
+                        <h1 className='opponent-picker-title'>
+                            {uiText.battleTitle}
+                        </h1>
+                    </div>
                 </header>
 
                 <div className='opponent-picker-body'>
@@ -169,26 +175,38 @@ export function OpponentPickerScreen({
                         onClick={handleStartCpuGame}
                         type='button'
                     >
-                        <Bot aria-hidden='true' className='atombot-card-icon' />
-                        <div className='atombot-card-text'>
-                            <span className='atombot-card-name'>
-                                {uiText.atomBotLabel}
-                            </span>
-                            <span className='atombot-card-hint'>
-                                {uiText.atomBotHint}
-                            </span>
+                        <div className='atombot-blob'>
+                            <Bot
+                                aria-hidden='true'
+                                className='atombot-blob-icon'
+                            />
                         </div>
+                        <span className='atombot-card-name'>
+                            {uiText.atomBotLabel}
+                        </span>
+                        <span className='atombot-card-hint'>
+                            {uiText.atomBotHint}
+                        </span>
                     </button>
 
                     <div className='online-section'>
                         <h2 className='online-section-title'>
+                            <Users
+                                aria-hidden='true'
+                                className='online-section-icon'
+                            />
                             {uiText.onlinePlayersSection}
                         </h2>
 
                         {onlineUsers.length === 0 ? (
-                            <p className='online-empty'>
-                                {uiText.noPlayersOnline}
-                            </p>
+                            <div className='online-empty-state'>
+                                <p className='online-empty'>
+                                    {uiText.noPlayersOnline}
+                                </p>
+                                <p className='online-empty-hint'>
+                                    {uiText.noPlayersOnlineHint}
+                                </p>
+                            </div>
                         ) : (
                             <ul className='online-list'>
                                 {onlineUsers.map((user) => {
@@ -219,6 +237,13 @@ export function OpponentPickerScreen({
                                             className='online-row'
                                             key={user.playerId}
                                         >
+                                            <div className='online-player-avatar'>
+                                                <span className='online-player-initial'>
+                                                    {user.name
+                                                        .slice(0, 1)
+                                                        .toUpperCase()}
+                                                </span>
+                                            </div>
                                             <span className='online-name'>
                                                 {user.name}
                                             </span>
