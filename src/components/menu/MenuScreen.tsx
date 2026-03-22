@@ -5,7 +5,11 @@ import { Check, Crown, Plus, User, X } from 'lucide-react';
 import type { OnlineLobbyUser } from '../../app-state';
 import { uiText } from '../../app-state';
 import { loadBestScore } from '../../lib/app-helpers';
-import { startGooglePopupSignIn, supabaseAuthClient } from '../../lib/supabase';
+import {
+    startEmailSignIn,
+    startGooglePopupSignIn,
+    supabaseAuthClient,
+} from '../../lib/supabase';
 import { ActionButton } from '../game/ui/ActionButton';
 
 import './MenuScreen.css';
@@ -69,8 +73,10 @@ export function MenuScreen({
     const [visibleToast, setVisibleToast] = useState<string | undefined>(
         undefined
     );
+    const [authEmail, setAuthEmail] = useState('');
     const [authError, setAuthError] = useState<string | undefined>(undefined);
     const [authLoading, setAuthLoading] = useState(false);
+    const [emailLoading, setEmailLoading] = useState(false);
     const [nameSaving, setNameSaving] = useState(false);
     const toastTimeoutRef = useRef<
         ReturnType<typeof globalThis.setTimeout> | undefined
@@ -200,12 +206,31 @@ export function MenuScreen({
 
     function handleOpenAuthDialog() {
         setAuthError(undefined);
+        setAuthEmail('');
         setShowAuthDialog(true);
     }
 
     function handleCloseAuthDialog() {
         setAuthLoading(false);
+        setEmailLoading(false);
         setShowAuthDialog(false);
+    }
+
+    async function handleEmailLogin() {
+        setAuthError(undefined);
+        setEmailLoading(true);
+
+        const nextError = await startEmailSignIn(authEmail);
+
+        setEmailLoading(false);
+
+        if (nextError) {
+            setAuthError(nextError);
+            return;
+        }
+
+        setShowAuthDialog(false);
+        showMenuToast(uiText.emailMagicLinkSent);
     }
 
     async function handleGoogleLogin() {
@@ -578,16 +603,48 @@ export function MenuScreen({
                                     <X size={18} />
                                 </button>
                             </header>
-                            {authError ? (
-                                <div className='dialog-body'>
+                            <div className='dialog-body auth-dialog-body'>
+                                <div className='auth-email-block'>
+                                    <input
+                                        autoCapitalize='none'
+                                        autoComplete='email'
+                                        className='dialog-input auth-email-input'
+                                        inputMode='email'
+                                        onChange={(event) => {
+                                            setAuthEmail(event.target.value);
+                                        }}
+                                        onKeyDown={(event) => {
+                                            if (event.key === 'Enter') {
+                                                detachAction(
+                                                    handleEmailLogin()
+                                                );
+                                            }
+                                        }}
+                                        placeholder={uiText.emailPlaceholder}
+                                        type='email'
+                                        value={authEmail}
+                                    />
+                                    <ActionButton
+                                        disabled={emailLoading || authLoading}
+                                        onClick={() => {
+                                            detachAction(handleEmailLogin());
+                                        }}
+                                        variant='secondary'
+                                    >
+                                        {emailLoading
+                                            ? uiText.waitingShort
+                                            : uiText.emailMagicLinkAction}
+                                    </ActionButton>
+                                </div>
+                                {authError ? (
                                     <div className='menu-auth-error'>
                                         {authError}
                                     </div>
-                                </div>
-                            ) : undefined}
-                            <div className='dialog-actions dialog-actions-top'>
+                                ) : undefined}
+                            </div>
+                            <div className='dialog-actions auth-dialog-actions'>
                                 <ActionButton
-                                    disabled={authLoading}
+                                    disabled={authLoading || emailLoading}
                                     onClick={() => {
                                         detachAction(handleGoogleLogin());
                                     }}

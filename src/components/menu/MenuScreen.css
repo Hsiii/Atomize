@@ -427,6 +427,28 @@
     padding-top: var(--space-7);
 }
 
+.auth-dialog-body {
+    display: grid;
+    gap: var(--space-5);
+}
+
+.auth-email-block {
+    display: grid;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid var(--color-border-soft);
+    border-radius: var(--radius-input);
+    background: color-mix(in srgb, var(--color-surface-strong) 92%, white 8%);
+}
+
+.auth-email-input {
+    min-height: 3rem;
+}
+
+.auth-dialog-actions {
+    padding-top: 0;
+}
+
 .menu-auth-error {
     color: var(--color-danger);
     font-family: var(--type-body-meta-family);

@@ -115,3 +115,36 @@ export async function startGooglePopupSignIn(): Promise<string | undefined> {
 
     return undefined;
 }
+
+export async function startEmailSignIn(
+    email: string
+): Promise<string | undefined> {
+    if (!supabaseAuthClient) {
+        return uiText.authUnavailable;
+    }
+
+    const supabaseConfig = getSupabaseConfig();
+
+    if (!supabaseConfig) {
+        return uiText.authUnavailable;
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
+        return uiText.emailInvalid;
+    }
+
+    const { error } = await supabaseAuthClient.auth.signInWithOtp({
+        email: normalizedEmail,
+        options: {
+            emailRedirectTo: globalThis.location.origin,
+        },
+    });
+
+    if (error) {
+        return uiText.emailLoginError;
+    }
+
+    return undefined;
+}
