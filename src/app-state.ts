@@ -75,7 +75,7 @@ export const uiText = {
     tutorialCpu: 'AtomBot',
     tutorialYou: 'You',
     tutorialTitle: 'Tutorial',
-    skipTutorial: 'Skip tutorial',
+    skipTutorial: 'Skip',
     leaderboardTitle: 'Leaderboard',
     leaderboardEmpty: 'No records found',
     rank: 'Rank',
@@ -174,9 +174,9 @@ type TutorialLessonTextEntry = {
 
 export const tutorialLessonText = {
     intro: {
-        actionLabel: 'Start tutorial',
+        actionLabel: 'Start',
         body: 'This is your compound. Atomize it to deal damage to the enemy.',
-        title: 'Factor to survive',
+        title: 'Tutorial - Factor to survive',
     },
     stageOnePrime: {
         body: 'Your compound is 6 = 2 x 3. Tap 2 to start queuing factors.',
