@@ -14,6 +14,33 @@ import { ActionButton } from '../game/ui/ActionButton';
 
 import './MenuScreen.css';
 
+function GoogleMark(): JSX.Element {
+    return (
+        <svg
+            aria-hidden='true'
+            className='auth-google-mark'
+            viewBox='0 0 24 24'
+        >
+            <path
+                d='M21.81 12.23c0-.72-.06-1.25-.19-1.8H12.2v3.56h5.53c-.11.88-.72 2.2-2.07 3.09l-.02.12 3 2.28.21.02c1.91-1.73 2.96-4.27 2.96-7.27Z'
+                fill='#4285F4'
+            />
+            <path
+                d='M12.2 21.88c2.71 0 4.98-.87 6.64-2.37l-3.19-2.42c-.85.58-1.99.99-3.45.99-2.65 0-4.89-1.73-5.69-4.12l-.12.01-3.12 2.37-.04.11c1.65 3.2 5.04 5.43 8.97 5.43Z'
+                fill='#34A853'
+            />
+            <path
+                d='M6.51 13.96a5.8 5.8 0 0 1-.33-1.94c0-.67.12-1.31.31-1.94l-.01-.13-3.16-2.41-.1.04A9.78 9.78 0 0 0 2.17 12c0 1.56.37 3.03 1.05 4.42l3.29-2.46Z'
+                fill='#FBBC05'
+            />
+            <path
+                d='M12.2 5.92c1.84 0 3.08.78 3.79 1.43l2.77-2.65C17.17 3.25 14.91 2.12 12.2 2.12c-3.93 0-7.32 2.23-8.97 5.43l3.27 2.49c.82-2.39 3.06-4.12 5.7-4.12Z'
+                fill='#EA4335'
+            />
+        </svg>
+    );
+}
+
 type MenuScreenProps = {
     playerName: string;
     opponentName: string | undefined;
@@ -601,7 +628,10 @@ export function MenuScreen({
                                 </button>
                             </header>
                             <div className='dialog-body auth-dialog-body'>
-                                <div className='auth-email-block'>
+                                <div className='auth-section auth-email-block'>
+                                    <span className='auth-section-title'>
+                                        {uiText.withEmail}
+                                    </span>
                                     <label className='auth-field'>
                                         <Mail
                                             aria-hidden='true'
@@ -663,26 +693,29 @@ export function MenuScreen({
                                         onClick={() => {
                                             detachAction(handleEmailLogin());
                                         }}
-                                        variant='secondary'
+                                        variant='primary'
                                     >
                                         {emailLoading
                                             ? uiText.waitingShort
                                             : uiText.emailPasswordAction}
                                     </ActionButton>
                                 </div>
-                            </div>
-                            <div className='dialog-actions auth-dialog-actions'>
-                                <ActionButton
-                                    disabled={authLoading || emailLoading}
-                                    onClick={() => {
-                                        detachAction(handleGoogleLogin());
-                                    }}
-                                    variant='primary'
-                                >
-                                    {authLoading
-                                        ? uiText.waitingShort
-                                        : uiText.continueWithGoogle}
-                                </ActionButton>
+                                <div className='auth-section auth-google-block'>
+                                    <span className='auth-section-title'>
+                                        {uiText.withGoogle}
+                                    </span>
+                                    <button
+                                        aria-label={uiText.continueWithGoogle}
+                                        className='auth-google-button'
+                                        disabled={authLoading || emailLoading}
+                                        onClick={() => {
+                                            detachAction(handleGoogleLogin());
+                                        }}
+                                        type='button'
+                                    >
+                                        <GoogleMark />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
