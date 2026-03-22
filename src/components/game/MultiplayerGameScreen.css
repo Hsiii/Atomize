@@ -43,7 +43,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-end;
     gap: var(--space-3);
     overflow: visible;
     width: min(100%, 32rem);
@@ -58,12 +57,14 @@
 .multiplayer-column-enemy {
     width: min(35%, 9rem);
     aspect-ratio: 1;
+    margin-top: auto;
 }
 
 .multiplayer-column-self {
     width: min(55%, 15rem);
     aspect-ratio: 1;
     margin-top: -2rem;
+    margin-bottom: auto;
     z-index: 1;
 }
 
