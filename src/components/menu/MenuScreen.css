@@ -443,7 +443,7 @@
 
 .auth-field {
     display: grid;
-    grid-template-columns: 1.25rem minmax(0, 1fr);
+    grid-template-columns: 1.25rem minmax(0, 1fr) 1.25rem;
     align-items: center;
     gap: var(--space-3);
     min-height: 3rem;
@@ -454,17 +454,26 @@
 }
 
 .auth-field-icon {
+    grid-column: 1;
     width: 1rem;
     height: 1rem;
     color: var(--color-border-contrast);
 }
 
 .auth-field-input {
+    grid-column: 2;
     min-height: 3rem;
     padding: 0;
     border: 0;
     background: transparent;
     text-align: center;
+}
+
+.auth-field::after {
+    content: '';
+    grid-column: 3;
+    width: 1rem;
+    height: 1rem;
 }
 
 .auth-field-input::placeholder {
