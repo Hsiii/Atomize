@@ -198,7 +198,7 @@ export function OpponentPickerScreen({
                         </ul>
                     </div>
 
-                    <div className='online-section'>
+                    <div className='online-section online-section-grow'>
                         <h2 className='online-section-title'>
                             <Users
                                 aria-hidden='true'
