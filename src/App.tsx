@@ -587,6 +587,7 @@ export default function App(): JSX.Element {
         localCpuGame.resetLocalCpuGame();
         soloGame.resetSoloGame();
         tutorialGame.resetTutorialGame();
+        setLeaderboardData(undefined);
         detachPromise(navigate({ to: '/' }));
     }
 
