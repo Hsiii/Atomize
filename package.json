@@ -5,12 +5,9 @@
     "packageManager": "bun@1.2.5",
     "scripts": {
         "dev": "vite",
-        "dev:web": "vite",
         "build": "tsc -p tsconfig.json --noEmit && vite build",
         "check": "tsc -p tsconfig.json --noEmit",
-        "lint": "eslint .",
-        "format": "prettier --write .",
-        "prepare": "husky"
+        "lint": "eslint ."
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,mjs,cjs}": [
