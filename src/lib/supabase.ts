@@ -117,7 +117,8 @@ export async function startGooglePopupSignIn(): Promise<string | undefined> {
 }
 
 export async function startEmailSignIn(
-    email: string
+    email: string,
+    password: string
 ): Promise<string | undefined> {
     if (!supabaseAuthClient) {
         return uiText.authUnavailable;
@@ -130,16 +131,19 @@ export async function startEmailSignIn(
     }
 
     const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPassword = password.trim();
 
     if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
         return uiText.emailInvalid;
     }
 
-    const { error } = await supabaseAuthClient.auth.signInWithOtp({
+    if (!normalizedPassword) {
+        return uiText.passwordInvalid;
+    }
+
+    const { error } = await supabaseAuthClient.auth.signInWithPassword({
         email: normalizedEmail,
-        options: {
-            emailRedirectTo: globalThis.location.origin,
-        },
+        password: normalizedPassword,
     });
 
     if (error) {

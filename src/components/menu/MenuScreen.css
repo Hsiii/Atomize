@@ -441,25 +441,38 @@
     background: color-mix(in srgb, var(--color-surface-strong) 92%, white 8%);
 }
 
-.auth-email-input {
+.auth-field {
+    display: grid;
+    grid-template-columns: 1.25rem minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-3);
     min-height: 3rem;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--color-border-soft);
+    border-radius: var(--radius-input);
+    background: var(--color-surface-strong);
+}
+
+.auth-field-icon {
+    width: 1rem;
+    height: 1rem;
+    color: var(--color-border-contrast);
+}
+
+.auth-field-input {
+    min-height: 3rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+}
+
+.auth-field:focus-within {
+    border-color: var(--color-outline-strong);
 }
 
 .auth-dialog-actions {
     padding-top: 0;
-}
-
-.menu-auth-error {
-    color: var(--color-danger);
-    font-family: var(--type-body-meta-family);
-    font-size: var(--type-body-meta-size);
-    font-weight: var(--type-body-meta-weight);
-    line-height: var(--type-body-meta-relaxed-line-height);
-    text-align: center;
-    padding: var(--space-5) var(--space-6);
-    border-radius: var(--radius-input);
-    border: 1px solid var(--color-danger);
-    background: var(--color-surface-strong);
 }
 
 .dialog-input {
