@@ -36,17 +36,20 @@ export function createSoloRunSeed(): string {
 }
 
 export function getInitialPlayerName(): string {
-    const storedName = normalizePlayerName(
+    if (isGuestModeEnabled()) {
+        return '';
+    }
+
+    return normalizePlayerName(
         globalThis.localStorage.getItem(playerNameStorageKey) ?? ''
     );
-
-    return storedName;
 }
 
 export function persistPlayerName(playerName: string): void {
     const normalizedName = normalizePlayerName(playerName);
 
     if (!normalizedName) {
+        globalThis.localStorage.removeItem(playerNameStorageKey);
         return;
     }
 
