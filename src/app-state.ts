@@ -79,6 +79,8 @@ export const uiText = {
     rank: 'Rank',
     player: 'Player',
     highestCombo: 'Max Combo',
+    signIn: 'Sign In',
+    continueWithGoogle: 'Continue with Google',
     email: 'Email',
     password: 'Password',
     login: 'Login',
@@ -86,10 +88,15 @@ export const uiText = {
     displayName: 'Display Name',
     playAsGuest: 'Play as Guest',
     logout: 'Log Out',
-    loginError: 'Authentication failed.',
+    loginError: 'Could not start Google sign-in.',
+    authUnavailable: 'Auth not configured in .env',
+    googleProviderDisabled:
+        'Google sign-in is not enabled in Supabase yet. Turn on the Google provider to use this flow.',
+    popupBlocked:
+        'Pop-up was blocked by your browser. Please allow pop-ups for this site.',
     signUpSuccess: 'Account created! Please check your email to verify.',
     emailInUse: 'This email is already registered.',
-    authRequired: 'You must log in to play online multiplayer.',
+    authRequired: 'Sign in with Google to play online multiplayer.',
 } as const;
 
 export const keyboardHintText = {
