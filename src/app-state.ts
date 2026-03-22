@@ -179,7 +179,7 @@ export const tutorialLessonText = {
         title: 'Factor to survive',
     },
     stageOnePrime: {
-        body: 'Your blob is 6 = 2 × 3. Tap 2 to start queuing factors.',
+        body: 'Your blob is 6 = 2 x 3. Tap 2 to start queuing factors.',
         title: 'Pick a prime factor',
     },
     stageOneQueue: {
@@ -192,11 +192,11 @@ export const tutorialLessonText = {
     },
     stageOneResult: {
         actionLabel: 'Next blob',
-        body: 'The blob reached 1 — cleared! Each clear deals damage to the enemy.',
+        body: 'The blob reached 1 - cleared! Each clear deals damage to the enemy.',
         title: 'Blob cleared',
     },
     stageTwoPrime: {
-        body: 'This blob is 30 = 2 × 3 × 5. Start with 2.',
+        body: 'This blob is 30 = 2 x 3 x 5. Start with 2.',
         title: 'Bigger blob',
     },
     stageTwoQueue: {
