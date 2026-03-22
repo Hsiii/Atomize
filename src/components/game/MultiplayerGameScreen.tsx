@@ -309,6 +309,11 @@ export function MultiplayerGameScreen({
                     <TutorialCoachCard
                         actionLabel={tutorial.lesson.actionLabel}
                         body={tutorial.lesson.body}
+                        className={
+                            tutorial.lesson.position === 'top'
+                                ? 'multiplayer-tutorial-hint-safe-top'
+                                : undefined
+                        }
                         onAction={tutorial.handleAction}
                         position={tutorial.lesson.position}
                         title={tutorial.lesson.title}
@@ -743,6 +748,10 @@ function getTutorialAllowedPrime(
     step: TutorialStep,
     queue: readonly Prime[]
 ): Prime | undefined {
+    if (!isTutorialPrimeEntryStep(step)) {
+        return undefined;
+    }
+
     const expectedQueue = getTutorialExpectedQueue(step);
 
     if (
@@ -757,6 +766,10 @@ function getTutorialAllowedPrime(
 }
 
 function locksTutorialPrimeInput(step: TutorialStep, queue: readonly Prime[]) {
+    if (!isTutorialPrimeEntryStep(step)) {
+        return getTutorialExpectedQueue(step) !== undefined;
+    }
+
     const expectedQueue = getTutorialExpectedQueue(step);
 
     if (expectedQueue === undefined) {
@@ -776,21 +789,42 @@ function hasQueue(queue: readonly Prime[], expectedQueue: readonly Prime[]) {
     );
 }
 
+function isTutorialPrimeEntryStep(step: TutorialStep) {
+    return (
+        step === TutorialStep.StageOnePrime ||
+        step === TutorialStep.StageOneQueue ||
+        step === TutorialStep.StageTwoPrime ||
+        step === TutorialStep.StageTwoQueue ||
+        step === TutorialStep.StageTwoFinish ||
+        step === TutorialStep.TryWrongPrime
+    );
+}
+
 function TutorialCoachCard({
     actionLabel,
     body,
+    className,
     onAction,
     position,
     title,
 }: {
     actionLabel?: string;
     body: string;
+    className?: string;
     onAction: (() => void) | undefined;
     position: 'bottom' | 'top';
     title: string;
 }): JSX.Element {
+    const classNames = [
+        'tutorial-hint',
+        `tutorial-hint--${position}`,
+        className,
+    ]
+        .filter(Boolean)
+        .join(' ');
+
     return (
-        <section className={`tutorial-hint tutorial-hint--${position}`}>
+        <section className={classNames}>
             <h2 className='tutorial-hint-title'>{title}</h2>
             <p className='tutorial-hint-body'>{body}</p>
             {actionLabel && onAction ? (
