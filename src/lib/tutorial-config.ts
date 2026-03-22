@@ -21,6 +21,9 @@ export enum TutorialStep {
     StageTwoFinish = 'StageTwoFinish',
     StageTwoFinishSubmit = 'StageTwoFinishSubmit',
     PerfectSolveExplain = 'PerfectSolveExplain',
+    PerfectSolveQueue = 'PerfectSolveQueue',
+    PerfectSolveSubmit = 'PerfectSolveSubmit',
+    PerfectSolveResult = 'PerfectSolveResult',
     EnemyTurn = 'EnemyTurn',
     EnemyAttack = 'EnemyAttack',
     TryWrongPrime = 'TryWrongPrime',
@@ -63,8 +66,9 @@ type TutorialStepConfig = {
 
 const fullFactorQueue = [2, 3] as const;
 const finishQueue = [5] as const;
-const wrongPrimeQueue = [3] as const;
-const overflowQueue = [2, 7, 3] as const;
+const perfectSolveQueue = [2, 7] as const;
+const wrongPrimeQueue = [2] as const;
+const overflowQueue = [3, 7, 2] as const;
 
 const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
     [TutorialStep.Intro]: {
@@ -163,10 +167,38 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
         },
     },
     [TutorialStep.PerfectSolveExplain]: {
-        getHighlightTarget: () => 'self-hp',
+        getHighlightTarget: () => 'self-blob',
         lesson: {
             isBlocking: true,
             lessonId: 'perfectSolveExplain',
+            position: 'bottom',
+        },
+        nextActionStep: TutorialStep.PerfectSolveQueue,
+    },
+    [TutorialStep.PerfectSolveQueue]: {
+        expectedQueue: perfectSolveQueue,
+        getHighlightedPrime: (queue) => (queue.length === 0 ? 2 : 7),
+        getHighlightTarget: () => 'keypad',
+        lesson: {
+            isBlocking: false,
+            lessonId: 'perfectSolveQueue',
+            position: 'top',
+        },
+    },
+    [TutorialStep.PerfectSolveSubmit]: {
+        expectedQueue: perfectSolveQueue,
+        getHighlightTarget: () => 'submit',
+        lesson: {
+            isBlocking: false,
+            lessonId: 'perfectSolveSubmit',
+            position: 'top',
+        },
+    },
+    [TutorialStep.PerfectSolveResult]: {
+        getHighlightTarget: () => 'self-hp',
+        lesson: {
+            isBlocking: true,
+            lessonId: 'perfectSolveResult',
             position: 'bottom',
         },
         nextActionStep: TutorialStep.TryWrongPrime,
@@ -191,7 +223,7 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
     },
     [TutorialStep.TryWrongPrime]: {
         expectedQueue: wrongPrimeQueue,
-        getHighlightedPrime: (queue) => (queue.length === 0 ? 3 : undefined),
+        getHighlightedPrime: (queue) => (queue.length === 0 ? 2 : undefined),
         getHighlightTarget: (queue) =>
             queue.length === 0 ? 'keypad' : 'submit',
         lesson: {
@@ -222,13 +254,13 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
         expectedQueue: overflowQueue,
         getHighlightedPrime: (queue) => {
             if (queue.length === 0) {
-                return 2;
+                return 3;
             }
             if (queue.length === 1) {
                 return 7;
             }
             if (queue.length === 2) {
-                return 3;
+                return 2;
             }
             return undefined;
         },

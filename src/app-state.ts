@@ -213,13 +213,26 @@ export const tutorialLessonText = {
         title: 'Finish the compound',
     },
     stageTwoFinishSubmit: {
-        body: 'Submit to clear the remaining factor and deal damage.',
+        body: 'Send the last factor to finish this compound.',
         title: 'Finish it off',
     },
     perfectSolveExplain: {
-        actionLabel: 'Got it',
-        body: 'Queue all factors in one send for a perfect clear. Perfect clears heal HP and deal bonus combo damage - the more factors, the bigger the bonus!',
-        title: 'Perfect clear & combo',
+        actionLabel: 'Try it',
+        body: 'Queue ALL factors in one send for a perfect clear. Perfect clears heal HP! Try it on this blob.',
+        title: 'Perfect clear',
+    },
+    perfectSolveQueue: {
+        body: 'This compound is 14 = 2 \u00D7 7. Queue both factors at once.',
+        title: 'Queue all factors',
+    },
+    perfectSolveSubmit: {
+        body: 'Send the perfect combo!',
+        title: 'Send it',
+    },
+    perfectSolveResult: {
+        actionLabel: 'Next',
+        body: 'Your HP went up! Perfect clears heal and deal bonus combo damage \u2014 the more factors, the bigger the bonus.',
+        title: 'Healed!',
     },
     enemyTurn: {
         actionLabel: 'Show attack',
@@ -228,11 +241,11 @@ export const tutorialLessonText = {
     },
     enemyAttack: {
         actionLabel: 'Next',
-        body: 'Enemy clears cost you HP. But there is a way to recover...',
+        body: 'You lost HP! But there is a way to recover...',
         title: 'Ouch!',
     },
     tryWrongPrime: {
-        body: 'Tap 3 and submit. It does not divide the current compound.',
+        body: 'Tap 2 and submit. It does not divide the current compound.',
         title: 'Try a wrong factor',
     },
     wrongPrimeResult: {
@@ -242,11 +255,11 @@ export const tutorialLessonText = {
     },
     overflowExplain: {
         actionLabel: 'Try it',
-        body: 'What if you queue more factors than needed? Let\u2019s find out. Queue 2, 7, and then add an extra 3.',
+        body: 'What if you queue more factors than needed? Let\u2019s find out.',
         title: 'Over-queuing',
     },
     overflowQueue: {
-        body: 'Queue 2, 7, then 3. The blob only needs 2 \u00D7 7, so 3 is extra.',
+        body: 'Queue 3, 7, then 2. The blob only needs 3 \u00D7 7, so 2 is extra.',
         title: 'Queue too many',
     },
     overflowSubmit: {
@@ -255,7 +268,7 @@ export const tutorialLessonText = {
     },
     overflowResult: {
         actionLabel: 'Next',
-        body: 'The blob cleared to 1, but the extra 3 backfired as self-damage. Only queue what you need!',
+        body: 'The blob cleared to 1, but the extra 2 backfired as self-damage. Only queue what you need!',
         title: 'Overflow penalty',
     },
     overflowClear: {

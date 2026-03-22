@@ -609,6 +609,22 @@ function useBattleTutorial({
         }
 
         if (
+            step === TutorialStep.PerfectSolveQueue &&
+            hasQueue(queue, [2, 7])
+        ) {
+            setStep(TutorialStep.PerfectSolveSubmit);
+            return;
+        }
+
+        if (step === TutorialStep.PerfectSolveSubmit) {
+            if (currentPlayer.stageIndex >= 3 && !battleVisualsBusy) {
+                setStep(TutorialStep.PerfectSolveResult);
+            }
+
+            return;
+        }
+
+        if (
             step === TutorialStep.TryWrongPrime &&
             selfPenaltySeen &&
             !battleVisualsBusy
@@ -627,7 +643,7 @@ function useBattleTutorial({
 
         if (
             step === TutorialStep.OverflowClear &&
-            currentPlayer.stageIndex >= 3 &&
+            currentPlayer.stageIndex >= 4 &&
             !battleVisualsBusy
         ) {
             setStep(TutorialStep.Summary);
@@ -682,11 +698,14 @@ function useBattleTutorial({
                 !hasQueue(queue, [2, 3])) ||
             (resolvedStep === TutorialStep.StageTwoFinishSubmit &&
                 !hasQueue(queue, [5])) ||
+            resolvedStep === TutorialStep.PerfectSolveQueue ||
+            (resolvedStep === TutorialStep.PerfectSolveSubmit &&
+                !hasQueue(queue, [2, 7])) ||
             (resolvedStep === TutorialStep.TryWrongPrime &&
-                !hasQueue(queue, [3])) ||
+                !hasQueue(queue, [2])) ||
             resolvedStep === TutorialStep.OverflowQueue ||
             (resolvedStep === TutorialStep.OverflowSubmit &&
-                !hasQueue(queue, [2, 7, 3])));
+                !hasQueue(queue, [3, 7, 2])));
 
     const handleAction = () => {
         const action = getTutorialAction(step);
@@ -773,10 +792,21 @@ function resolveTutorialQueueStep(
     }
 
     if (
+        step === TutorialStep.PerfectSolveQueue ||
+        step === TutorialStep.PerfectSolveSubmit
+    ) {
+        if (hasQueue(queue, [2, 7])) {
+            return TutorialStep.PerfectSolveSubmit;
+        }
+
+        return TutorialStep.PerfectSolveQueue;
+    }
+
+    if (
         step === TutorialStep.OverflowQueue ||
         step === TutorialStep.OverflowSubmit
     ) {
-        if (hasQueue(queue, [2, 7, 3])) {
+        if (hasQueue(queue, [3, 7, 2])) {
             return TutorialStep.OverflowSubmit;
         }
 
@@ -848,6 +878,7 @@ function isTutorialPrimeEntryStep(step: TutorialStep) {
         step === TutorialStep.StageTwoPrime ||
         step === TutorialStep.StageTwoQueue ||
         step === TutorialStep.StageTwoFinish ||
+        step === TutorialStep.PerfectSolveQueue ||
         step === TutorialStep.TryWrongPrime ||
         step === TutorialStep.OverflowQueue
     );
