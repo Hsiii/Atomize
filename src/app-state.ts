@@ -241,9 +241,26 @@ export const tutorialLessonText = {
         title: 'Wrong factors backfire',
     },
     overflowExplain: {
-        actionLabel: 'Got it',
-        body: 'If you send more factors than needed, the compound clears to 1 but the extras count as a self-penalty. Queue only what you need!',
+        actionLabel: 'Try it',
+        body: 'What if you queue more factors than needed? Let\u2019s find out. Queue 2, 7, and then add an extra 3.',
         title: 'Over-queuing',
+    },
+    overflowQueue: {
+        body: 'Queue 2, 7, then 3. The blob only needs 2 \u00D7 7, so 3 is extra.',
+        title: 'Queue too many',
+    },
+    overflowSubmit: {
+        body: 'Now submit and watch what happens.',
+        title: 'Send it',
+    },
+    overflowResult: {
+        actionLabel: 'Next',
+        body: 'The blob cleared to 1, but the extra 3 backfired as self-damage. Only queue what you need!',
+        title: 'Overflow penalty',
+    },
+    overflowClear: {
+        body: 'Hit Enter to break the 1 and move on.',
+        title: 'Clear the 1',
     },
     summary: {
         actionLabel: 'Keep playing',

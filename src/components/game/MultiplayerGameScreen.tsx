@@ -475,6 +475,7 @@ function useBattleTutorial({
     const [enemyAttackSeen, setEnemyAttackSeen] = useState(false);
     const [enemyTurnAcknowledged, setEnemyTurnAcknowledged] = useState(false);
     const [selfPenaltySeen, setSelfPenaltySeen] = useState(false);
+    const [overflowPenaltySeen, setOverflowPenaltySeen] = useState(false);
     const trackedEventIdRef = useRef<number | undefined>(undefined);
 
     useEffect(() => {
@@ -483,6 +484,7 @@ function useBattleTutorial({
             setEnemyAttackSeen(false);
             setEnemyTurnAcknowledged(false);
             setSelfPenaltySeen(false);
+            setOverflowPenaltySeen(false);
             trackedEventIdRef.current = undefined;
             return;
         }
@@ -491,6 +493,7 @@ function useBattleTutorial({
         setEnemyAttackSeen(false);
         setEnemyTurnAcknowledged(false);
         setSelfPenaltySeen(false);
+        setOverflowPenaltySeen(false);
         trackedEventIdRef.current = undefined;
     }, [enabled]);
 
@@ -517,8 +520,15 @@ function useBattleTutorial({
             lastEvent.type === 'self-hit'
         ) {
             setSelfPenaltySeen(true);
+
+            if (
+                step === TutorialStep.OverflowQueue ||
+                step === TutorialStep.OverflowSubmit
+            ) {
+                setOverflowPenaltySeen(true);
+            }
         }
-    }, [currentPlayer?.id, enabled, lastEvent, opponentPlayer?.id]);
+    }, [currentPlayer?.id, enabled, lastEvent, opponentPlayer?.id, step]);
 
     useEffect(() => {
         if (!enabled || !currentPlayer) {
@@ -605,11 +615,29 @@ function useBattleTutorial({
         ) {
             setStep(TutorialStep.WrongPrimeResult);
         }
+
+        if (
+            (step === TutorialStep.OverflowQueue ||
+                step === TutorialStep.OverflowSubmit) &&
+            overflowPenaltySeen &&
+            !battleVisualsBusy
+        ) {
+            setStep(TutorialStep.OverflowResult);
+        }
+
+        if (
+            step === TutorialStep.OverflowClear &&
+            currentPlayer.stageIndex >= 3 &&
+            !battleVisualsBusy
+        ) {
+            setStep(TutorialStep.Summary);
+        }
     }, [
         battleVisualsBusy,
         currentPlayer,
         enabled,
         enemyAttackSeen,
+        overflowPenaltySeen,
         selfPenaltySeen,
         queue,
         step,
@@ -655,7 +683,10 @@ function useBattleTutorial({
             (resolvedStep === TutorialStep.StageTwoFinishSubmit &&
                 !hasQueue(queue, [5])) ||
             (resolvedStep === TutorialStep.TryWrongPrime &&
-                !hasQueue(queue, [3])));
+                !hasQueue(queue, [3])) ||
+            resolvedStep === TutorialStep.OverflowQueue ||
+            (resolvedStep === TutorialStep.OverflowSubmit &&
+                !hasQueue(queue, [2, 7, 3])));
 
     const handleAction = () => {
         const action = getTutorialAction(step);
@@ -741,6 +772,17 @@ function resolveTutorialQueueStep(
         return hasQueue(queue, [5]) ? TutorialStep.StageTwoFinishSubmit : step;
     }
 
+    if (
+        step === TutorialStep.OverflowQueue ||
+        step === TutorialStep.OverflowSubmit
+    ) {
+        if (hasQueue(queue, [2, 7, 3])) {
+            return TutorialStep.OverflowSubmit;
+        }
+
+        return TutorialStep.OverflowQueue;
+    }
+
     return step;
 }
 
@@ -806,7 +848,8 @@ function isTutorialPrimeEntryStep(step: TutorialStep) {
         step === TutorialStep.StageTwoPrime ||
         step === TutorialStep.StageTwoQueue ||
         step === TutorialStep.StageTwoFinish ||
-        step === TutorialStep.TryWrongPrime
+        step === TutorialStep.TryWrongPrime ||
+        step === TutorialStep.OverflowQueue
     );
 }
 

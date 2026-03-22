@@ -26,6 +26,10 @@ export enum TutorialStep {
     TryWrongPrime = 'TryWrongPrime',
     WrongPrimeResult = 'WrongPrimeResult',
     OverflowExplain = 'OverflowExplain',
+    OverflowQueue = 'OverflowQueue',
+    OverflowSubmit = 'OverflowSubmit',
+    OverflowResult = 'OverflowResult',
+    OverflowClear = 'OverflowClear',
     Summary = 'Summary',
     Done = 'Done',
 }
@@ -60,6 +64,7 @@ type TutorialStepConfig = {
 const fullFactorQueue = [2, 3] as const;
 const finishQueue = [5] as const;
 const wrongPrimeQueue = [3] as const;
+const overflowQueue = [2, 7, 3] as const;
 
 const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
     [TutorialStep.Intro]: {
@@ -211,7 +216,55 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             lessonId: 'overflowExplain',
             position: 'bottom',
         },
-        nextActionStep: TutorialStep.Summary,
+        nextActionStep: TutorialStep.OverflowQueue,
+    },
+    [TutorialStep.OverflowQueue]: {
+        expectedQueue: overflowQueue,
+        getHighlightedPrime: (queue) => {
+            if (queue.length === 0) {
+                return 2;
+            }
+            if (queue.length === 1) {
+                return 7;
+            }
+            if (queue.length === 2) {
+                return 3;
+            }
+            return undefined;
+        },
+        getHighlightTarget: () => 'keypad',
+        lesson: {
+            isBlocking: false,
+            lessonId: 'overflowQueue',
+            position: 'top',
+        },
+    },
+    [TutorialStep.OverflowSubmit]: {
+        expectedQueue: overflowQueue,
+        getHighlightTarget: () => 'submit',
+        lesson: {
+            isBlocking: false,
+            lessonId: 'overflowSubmit',
+            position: 'top',
+        },
+    },
+    [TutorialStep.OverflowResult]: {
+        getHighlightTarget: () => 'self-hp',
+        lesson: {
+            isBlocking: true,
+            lessonId: 'overflowResult',
+            position: 'bottom',
+        },
+        nextActionStep: TutorialStep.OverflowClear,
+    },
+    [TutorialStep.OverflowClear]: {
+        expectedQueue: [] as readonly Prime[],
+        getHighlightTarget: () => 'submit',
+        lesson: {
+            isBlocking: false,
+            lessonId: 'overflowClear',
+            position: 'top',
+        },
     },
     [TutorialStep.Summary]: {
         actionEffect: 'complete-tutorial',
