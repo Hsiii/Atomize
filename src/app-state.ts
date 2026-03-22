@@ -73,6 +73,11 @@ export const uiText = {
     tutorialCpu: 'Bot',
     tutorialYou: 'You',
     tutorialTitle: 'Tutorial',
+    leaderboardTitle: 'Leaderboard',
+    leaderboardEmpty: 'No records found',
+    rank: 'Rank',
+    player: 'Player',
+    highestCombo: 'Max Combo',
 } as const;
 
 export const keyboardHintText = {

@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import type { JSX } from 'react';
-import { Check, Plus, X } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
+import { Check, Crown, Plus, X } from 'lucide-react';
 
 import type { OnlineLobbyUser } from '../../app-state';
 import { uiText } from '../../app-state';
+import { loadBestScore } from '../../lib/app-helpers';
+import { getSupabaseConfig } from '../../lib/supabase';
 import { ActionButton } from '../game/ui/ActionButton';
 
 import './MenuScreen.css';
@@ -51,6 +54,11 @@ export function MenuScreen({
 }: MenuScreenProps): JSX.Element {
     const [showInviteDialog, setShowInviteDialog] = useState(false);
     const [showProfileDialog, setShowProfileDialog] = useState(false);
+    const [showLeaderboardDialog, setShowLeaderboardDialog] = useState(false);
+    const [leaderboardData, setLeaderboardData] = useState<
+        Array<{ player_name: string; max_combo: number }>
+    >([]);
+    const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
     const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
     const [editingName, setEditingName] = useState(playerName);
     const [visibleToast, setVisibleToast] = useState<string | undefined>(
@@ -138,10 +146,77 @@ export function MenuScreen({
         detachAction(onStartCpuGame());
     }
 
+    function handleOpenLeaderboardDialog() {
+        setShowLeaderboardDialog(true);
+        if (leaderboardData.length === 0) {
+            setLoadingLeaderboard(true);
+            const config = getSupabaseConfig();
+
+            const fallbackToLocal = () => {
+                const localBest = loadBestScore();
+                if (localBest.maxCombo > 0) {
+                    setLeaderboardData([
+                        {
+                            player_name: playerName || uiText.guest,
+                            max_combo: localBest.maxCombo,
+                        },
+                    ]);
+                }
+                setLoadingLeaderboard(false);
+            };
+
+            if (config) {
+                const fetchLeaderboard = async () => {
+                    try {
+                        // eslint-disable-next-line complete/no-object-any
+                        const supabase = createClient(
+                            config.url,
+                            config.anonKey
+                        );
+                        const response = await supabase
+                            .from('combo_leaderboard')
+                            .select('player_name, max_combo')
+                            .order('max_combo', { ascending: false })
+                            .limit(10);
+
+                        const data = response.data as Array<{
+                            player_name: string;
+                            max_combo: number;
+                        }> | null;
+                        const { error } = response;
+
+                        if (!error && (data?.length ?? 0) > 0) {
+                            setLeaderboardData(data ?? []);
+                            setLoadingLeaderboard(false);
+                        } else {
+                            fallbackToLocal();
+                        }
+                    } catch {
+                        fallbackToLocal();
+                    }
+                };
+
+                detachAction(fetchLeaderboard());
+            } else {
+                fallbackToLocal();
+            }
+        }
+    }
+
     return (
         <main className='app-shell fullscreen-shell'>
             <section className='screen screen-menu'>
                 <div className='menu-layout'>
+                    <div className='menu-top-right-actions'>
+                        <button
+                            className='icon-action-btn'
+                            onClick={handleOpenLeaderboardDialog}
+                            title={uiText.leaderboardTitle}
+                            type='button'
+                        >
+                            <Crown size={24} />
+                        </button>
+                    </div>
                     <div className='menu-title-orb' />
                     <h1 className='hero-title'>
                         <span>{uiText.titleLead}</span>
@@ -460,6 +535,91 @@ export function MenuScreen({
                                 >
                                     {uiText.accept}
                                 </ActionButton>
+                            </div>
+                        </div>
+                    </div>
+                ) : undefined}
+
+                {showLeaderboardDialog ? (
+                    <div
+                        className='dialog-scrim'
+                        onClick={() => {
+                            setShowLeaderboardDialog(false);
+                        }}
+                        role='presentation'
+                    >
+                        <div
+                            className='dialog-panel dialog-invite'
+                            onClick={(event) => {
+                                event.stopPropagation();
+                            }}
+                            role='dialog'
+                        >
+                            <header className='dialog-header'>
+                                <span className='dialog-title'>
+                                    {uiText.leaderboardTitle}
+                                </span>
+                                <button
+                                    className='dialog-close'
+                                    onClick={() => {
+                                        setShowLeaderboardDialog(false);
+                                    }}
+                                    type='button'
+                                >
+                                    <X size={18} />
+                                </button>
+                            </header>
+                            <div className='dialog-body'>
+                                {loadingLeaderboard && (
+                                    <p className='invite-empty'>
+                                        {uiText.waitingShort}
+                                    </p>
+                                )}
+                                {!loadingLeaderboard &&
+                                    leaderboardData.length > 0 && (
+                                        <table className='leaderboard-table'>
+                                            <thead>
+                                                <tr>
+                                                    <th className='col-rank'>
+                                                        {uiText.rank}
+                                                    </th>
+                                                    <th className='col-player'>
+                                                        {uiText.player}
+                                                    </th>
+                                                    <th className='col-combo'>
+                                                        {uiText.highestCombo}
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {leaderboardData.map(
+                                                    (entry, idx) => (
+                                                        <tr key={idx}>
+                                                            <td className='col-rank'>
+                                                                #{idx + 1}
+                                                            </td>
+                                                            <td className='col-player'>
+                                                                {
+                                                                    entry.player_name
+                                                                }
+                                                            </td>
+                                                            <td className='col-combo'>
+                                                                {
+                                                                    entry.max_combo
+                                                                }
+                                                            </td>
+                                                        </tr>
+                                                    )
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    )}
+                                {!loadingLeaderboard &&
+                                    leaderboardData.length === 0 && (
+                                        <p className='invite-empty'>
+                                            {uiText.leaderboardEmpty}
+                                        </p>
+                                    )}
                             </div>
                         </div>
                     </div>

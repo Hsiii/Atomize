@@ -1,3 +1,3 @@
-export * from "./game";
-export * from "./multiplayer";
-export * from "./primes";
+export * from './game';
+export type * from './multiplayer';
+export * from './primes';
