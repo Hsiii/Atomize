@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { JSX } from 'react';
-import { Check, Crown, Plus, User, X } from 'lucide-react';
+import { Check, Crown, Lock, Mail, Plus, User, X } from 'lucide-react';
 
 import type { OnlineLobbyUser } from '../../app-state';
 import { uiText } from '../../app-state';
@@ -74,7 +74,7 @@ export function MenuScreen({
         undefined
     );
     const [authEmail, setAuthEmail] = useState('');
-    const [authError, setAuthError] = useState<string | undefined>(undefined);
+    const [authPassword, setAuthPassword] = useState('');
     const [authLoading, setAuthLoading] = useState(false);
     const [emailLoading, setEmailLoading] = useState(false);
     const [nameSaving, setNameSaving] = useState(false);
@@ -205,8 +205,8 @@ export function MenuScreen({
     }
 
     function handleOpenAuthDialog() {
-        setAuthError(undefined);
         setAuthEmail('');
+        setAuthPassword('');
         setShowAuthDialog(true);
     }
 
@@ -217,30 +217,27 @@ export function MenuScreen({
     }
 
     async function handleEmailLogin() {
-        setAuthError(undefined);
         setEmailLoading(true);
 
-        const nextError = await startEmailSignIn(authEmail);
+        const nextError = await startEmailSignIn(authEmail, authPassword);
 
         setEmailLoading(false);
 
         if (nextError) {
-            setAuthError(nextError);
+            showMenuToast(nextError);
             return;
         }
 
         setShowAuthDialog(false);
-        showMenuToast(uiText.emailMagicLinkSent);
     }
 
     async function handleGoogleLogin() {
-        setAuthError(undefined);
         setAuthLoading(true);
 
         const nextError = await startGooglePopupSignIn();
 
         if (nextError) {
-            setAuthError(nextError);
+            showMenuToast(nextError);
             setAuthLoading(false);
             return;
         }
@@ -605,25 +602,62 @@ export function MenuScreen({
                             </header>
                             <div className='dialog-body auth-dialog-body'>
                                 <div className='auth-email-block'>
-                                    <input
-                                        autoCapitalize='none'
-                                        autoComplete='email'
-                                        className='dialog-input auth-email-input'
-                                        inputMode='email'
-                                        onChange={(event) => {
-                                            setAuthEmail(event.target.value);
-                                        }}
-                                        onKeyDown={(event) => {
-                                            if (event.key === 'Enter') {
-                                                detachAction(
-                                                    handleEmailLogin()
+                                    <label className='auth-field'>
+                                        <Mail
+                                            aria-hidden='true'
+                                            className='auth-field-icon'
+                                        />
+                                        <input
+                                            autoCapitalize='none'
+                                            autoComplete='email'
+                                            className='dialog-input auth-field-input'
+                                            inputMode='email'
+                                            onChange={(event) => {
+                                                setAuthEmail(
+                                                    event.target.value
                                                 );
+                                            }}
+                                            onKeyDown={(event) => {
+                                                if (event.key === 'Enter') {
+                                                    detachAction(
+                                                        handleEmailLogin()
+                                                    );
+                                                }
+                                            }}
+                                            placeholder={
+                                                uiText.emailPlaceholder
                                             }
-                                        }}
-                                        placeholder={uiText.emailPlaceholder}
-                                        type='email'
-                                        value={authEmail}
-                                    />
+                                            type='email'
+                                            value={authEmail}
+                                        />
+                                    </label>
+                                    <label className='auth-field'>
+                                        <Lock
+                                            aria-hidden='true'
+                                            className='auth-field-icon'
+                                        />
+                                        <input
+                                            autoComplete='current-password'
+                                            className='dialog-input auth-field-input'
+                                            onChange={(event) => {
+                                                setAuthPassword(
+                                                    event.target.value
+                                                );
+                                            }}
+                                            onKeyDown={(event) => {
+                                                if (event.key === 'Enter') {
+                                                    detachAction(
+                                                        handleEmailLogin()
+                                                    );
+                                                }
+                                            }}
+                                            placeholder={
+                                                uiText.passwordPlaceholder
+                                            }
+                                            type='password'
+                                            value={authPassword}
+                                        />
+                                    </label>
                                     <ActionButton
                                         disabled={emailLoading || authLoading}
                                         onClick={() => {
@@ -633,14 +667,9 @@ export function MenuScreen({
                                     >
                                         {emailLoading
                                             ? uiText.waitingShort
-                                            : uiText.emailMagicLinkAction}
+                                            : uiText.emailPasswordAction}
                                     </ActionButton>
                                 </div>
-                                {authError ? (
-                                    <div className='menu-auth-error'>
-                                        {authError}
-                                    </div>
-                                ) : undefined}
                             </div>
                             <div className='dialog-actions auth-dialog-actions'>
                                 <ActionButton
