@@ -25,7 +25,7 @@ type MenuScreenProps = {
     onInvitePlayer: (targetPlayerId: string) => void | Promise<void>;
     onPrefetchInviteUsers: () => void;
     onToggleReady: () => void | Promise<void>;
-    onEditName: (name: string) => void;
+    onEditName: (name: string) => Promise<string | undefined>;
     pendingInvitation: { fromName: string; roomCode: string } | undefined;
     onAcceptInvitation: () => void | Promise<void>;
     onDeclineInvitation: () => void;
@@ -71,6 +71,7 @@ export function MenuScreen({
     );
     const [authError, setAuthError] = useState<string | undefined>(undefined);
     const [authLoading, setAuthLoading] = useState(false);
+    const [nameSaving, setNameSaving] = useState(false);
     const toastTimeoutRef = useRef<
         ReturnType<typeof globalThis.setTimeout> | undefined
     >(undefined);
@@ -83,6 +84,10 @@ export function MenuScreen({
         showMenuToast(toastMessage);
         return undefined;
     }, [toastId, toastMessage]);
+
+    useEffect(() => {
+        setEditingName(playerName);
+    }, [playerName]);
 
     useEffect(
         () => () => {
@@ -123,7 +128,7 @@ export function MenuScreen({
         }
     }, [isInRoom]);
 
-    function handleProfileSave() {
+    async function handleProfileSave() {
         const trimmed = editingName.trim();
 
         if (!trimmed) {
@@ -140,7 +145,14 @@ export function MenuScreen({
             return;
         }
 
-        onEditName(trimmed);
+        setNameSaving(true);
+        const nextError = await onEditName(trimmed);
+        setNameSaving(false);
+
+        if (nextError) {
+            showMenuToast(nextError);
+            return;
+        }
 
         setShowProfileDialog(false);
     }
@@ -480,7 +492,7 @@ export function MenuScreen({
                                     }}
                                     onKeyDown={(event) => {
                                         if (event.key === 'Enter') {
-                                            handleProfileSave();
+                                            detachAction(handleProfileSave());
                                         }
                                     }}
                                     placeholder={uiText.namePlaceholder}
@@ -489,10 +501,15 @@ export function MenuScreen({
                             </div>
                             <div className='dialog-actions'>
                                 <ActionButton
-                                    onClick={handleProfileSave}
+                                    disabled={nameSaving}
+                                    onClick={() => {
+                                        detachAction(handleProfileSave());
+                                    }}
                                     variant='primary'
                                 >
-                                    {uiText.saveName}
+                                    {nameSaving
+                                        ? uiText.waitingShort
+                                        : uiText.saveName}
                                 </ActionButton>
                             </div>
                         </div>

@@ -85,6 +85,7 @@ export const uiText = {
     logout: 'Log Out',
     loginError: 'Could not start Google log in.',
     authUnavailable: 'Auth not configured in .env',
+    nameSaveError: 'Could not save name.',
     googleProviderDisabled:
         'Google log in is not enabled in Supabase yet. Turn on the Google provider to use this flow.',
     popupBlocked:
