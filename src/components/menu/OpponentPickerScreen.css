@@ -7,92 +7,74 @@
 .screen.opponent-picker-screen {
     padding: 0;
     justify-content: flex-start;
-    align-items: stretch;
+    align-items: center;
     overflow-y: auto;
     overflow-x: hidden;
 }
 
-/* === Header === */
+/* === Header Band (matches leaderboard / auth pages) === */
 
-.opponent-picker-header {
+.opponent-picker-header-band {
     position: relative;
     width: 100%;
     flex: 0 0 auto;
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: max(
-            var(--space-5),
-            calc(env(safe-area-inset-top) + var(--space-5))
-        )
-        var(--space-7) 0;
-    gap: 0.25rem;
-}
-
-.opponent-picker-header .floating-back-button {
-    position: absolute;
-    top: max(var(--space-4), calc(env(safe-area-inset-top) + var(--space-4)));
-    left: var(--space-4);
-    color: var(--color-ink-soft);
-    z-index: 2;
-}
-
-.opponent-picker-title-row {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding-left: 3rem;
-}
-
-.opponent-picker-header-blob {
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 50%;
-    background: var(--color-secondary);
-    display: flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 auto;
+    padding: max(1.5rem, calc(env(safe-area-inset-top) + 1.5rem)) var(--space-7)
+        1.5rem;
+    background: var(--color-primary);
 }
 
-.opponent-picker-mode-icon {
-    width: 1rem;
-    height: 1rem;
-    stroke-width: 2.2;
+.opponent-picker-header-band .floating-back-button {
+    position: absolute;
+    top: auto;
+    left: var(--space-4);
     color: var(--color-text-inverse);
 }
 
 .opponent-picker-title {
     margin: var(--space-0);
-    font-family: var(--type-display-hero-family);
-    font-size: 1.5rem;
-    font-weight: var(--type-display-hero-weight);
-    color: var(--color-ink);
-    line-height: 1.15;
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-action-label-weight);
+    letter-spacing: var(--type-action-label-caps-letter-spacing);
+    text-transform: var(--type-action-label-caps-text-transform);
+    color: var(--color-text-inverse);
 }
 
-.opponent-picker-subtitle {
+/* === Description === */
+
+.opponent-picker-desc {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-6) var(--space-7);
+    flex: 0 0 auto;
+}
+
+.opponent-picker-desc-text {
     margin: var(--space-0);
-    padding-left: 3rem;
     font-family: var(--type-body-meta-family);
-    font-size: var(--type-body-meta-size);
+    font-size: var(--type-action-label-size);
     font-weight: var(--type-body-meta-weight);
     color: var(--type-body-meta-color);
-    line-height: var(--type-body-meta-line-height);
+    line-height: var(--type-body-meta-relaxed-line-height);
+    text-align: center;
+    max-width: 20rem;
 }
 
 /* === Body === */
 
 .opponent-picker-body {
-    width: 100%;
-    max-width: 22rem;
+    width: min(100%, 22rem);
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
-    padding: 0.75rem 1.5rem max(env(safe-area-inset-bottom), 1.5rem);
+    padding: 0 1.5rem max(env(safe-area-inset-bottom), 1.5rem);
     flex: 1;
     min-height: 0;
-    align-self: center;
 }
 
 /* === AtomBot Card (Horizontal) === */
