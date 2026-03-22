@@ -448,10 +448,7 @@
 }
 
 .auth-email-block {
-    padding: var(--space-4);
-    border: 1px solid var(--color-border-soft);
-    border-radius: var(--radius-input);
-    background: color-mix(in srgb, var(--color-surface-strong) 92%, white 8%);
+    padding: 0;
 }
 
 .auth-google-block {
