@@ -62,6 +62,8 @@
 .multiplayer-column-self {
     width: min(55%, 15rem);
     aspect-ratio: 1;
+    margin-top: -2rem;
+    z-index: 1;
 }
 
 .multiplayer-blob-anchor {
