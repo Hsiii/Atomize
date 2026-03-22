@@ -63,6 +63,7 @@
     line-height: var(--type-body-meta-relaxed-line-height);
     text-align: center;
     max-width: 20rem;
+    text-wrap: pretty;
 }
 
 /* === Body === */
@@ -73,7 +74,7 @@
     flex-direction: column;
     gap: 1.25rem;
     padding: 0 0.5rem max(env(safe-area-inset-bottom), 2rem);
-    flex: 0 0 auto;
+    flex: 1;
 }
 
 /* === Leaderboard Table (mirrors leaderboard page) === */
@@ -182,6 +183,13 @@
 
 .solo-lb-row:last-child td {
     border-bottom: none;
+}
+
+/* === Divider === */
+
+.solo-pregame-divider {
+    flex: 1;
+    border-bottom: 1px solid var(--color-border-soft);
 }
 
 /* === Start Button === */

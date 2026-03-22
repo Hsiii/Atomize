@@ -130,6 +130,8 @@ export function SoloPregameScreen({
                         </tbody>
                     </table>
 
+                    <div className='solo-pregame-divider' />
+
                     <ActionButton
                         className='solo-pregame-start-btn'
                         onClick={onStart}
