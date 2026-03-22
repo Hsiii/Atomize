@@ -122,6 +122,16 @@ export function MenuScreen({
         setEditingName(playerName);
     }, [playerName]);
 
+    useEffect(() => {
+        if (isGuest) {
+            return;
+        }
+
+        setAuthLoading(false);
+        setEmailLoading(false);
+        setShowAuthDialog(false);
+    }, [isGuest]);
+
     useEffect(
         () => () => {
             if (toastTimeoutRef.current !== undefined) {
