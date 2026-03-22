@@ -175,11 +175,11 @@ type TutorialLessonTextEntry = {
 export const tutorialLessonText = {
     intro: {
         actionLabel: 'Start tutorial',
-        body: 'Your blob shows a number. Factor it down to 1 using primes to deal damage to the enemy.',
+        body: 'This is your compound. Atomize it to deal damage to the enemy.',
         title: 'Factor to survive',
     },
     stageOnePrime: {
-        body: 'Your blob is 6 = 2 x 3. Tap 2 to start queuing factors.',
+        body: 'Your compound is 6 = 2 x 3. Tap 2 to start queuing factors.',
         title: 'Pick a prime factor',
     },
     stageOneQueue: {
@@ -191,16 +191,16 @@ export const tutorialLessonText = {
         title: 'Submit the queue',
     },
     stageOneResult: {
-        actionLabel: 'Next blob',
-        body: 'The blob reached 1 - cleared! Each clear deals damage to the enemy.',
-        title: 'Blob cleared',
+        actionLabel: 'Next compound',
+        body: 'The compound reached 1 - cleared! Each clear deals damage to the enemy.',
+        title: 'Compound cleared',
     },
     stageTwoPrime: {
-        body: 'This blob is 30 = 2 x 3 x 5. Start with 2.',
-        title: 'Bigger blob',
+        body: 'This compound is 30 = 2 x 3 x 5. Start with 2.',
+        title: 'Bigger compound',
     },
     stageTwoQueue: {
-        body: 'Add 3. After submitting, the blob will still have factor 5 left.',
+        body: 'Add 3. After submitting, the compound will still have factor 5 left.',
         title: 'Partial factoring',
     },
     stageTwoSubmit: {
@@ -209,12 +209,12 @@ export const tutorialLessonText = {
     },
     stageTwoResult: {
         actionLabel: 'Finish it',
-        body: 'Partial damage dealt, but the blob is not cleared yet.',
-        title: 'Blob still standing',
+        body: 'Partial damage dealt, but the compound is not cleared yet.',
+        title: 'Compound still standing',
     },
     stageTwoFinish: {
-        body: 'The blob has factor 5 left. Tap 5 to solve it.',
-        title: 'Finish the blob',
+        body: 'The compound has factor 5 left. Tap 5 to solve it.',
+        title: 'Finish the compound',
     },
     stageTwoFinishSubmit: {
         body: 'Submit to clear. Clearing deals bonus combo damage on top.',
@@ -222,7 +222,7 @@ export const tutorialLessonText = {
     },
     enemyTurn: {
         actionLabel: 'Show attack',
-        body: 'The enemy factors blobs the same way you do. Watch your HP bar.',
+        body: 'The enemy factors compounds the same way you do. Watch your HP bar.',
         title: 'Enemy turn',
     },
     enemyAttack: {
@@ -231,7 +231,7 @@ export const tutorialLessonText = {
         title: 'You took damage',
     },
     tryWrongPrime: {
-        body: 'Tap 3 and submit. It does not divide the current blob.',
+        body: 'Tap 3 and submit. It does not divide the current compound.',
         title: 'Try a wrong factor',
     },
     wrongPrimeResult: {
@@ -241,7 +241,7 @@ export const tutorialLessonText = {
     },
     summary: {
         actionLabel: 'Keep playing',
-        body: 'Queue primes, clear blobs for combo damage, and avoid wrong factors. Finish the match!',
+        body: 'Queue primes, clear compounds for combo damage, and avoid wrong factors. Finish the match!',
         title: 'You are ready',
     },
 } as const satisfies Record<string, TutorialLessonTextEntry>;
