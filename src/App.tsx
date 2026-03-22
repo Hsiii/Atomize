@@ -84,6 +84,10 @@ export default function App(): JSX.Element {
         detachPromise(
             authClient.auth.getSession().then(({ data }) => {
                 setSession(data.session ?? undefined);
+                if (data.session) {
+                    setIsGuest(false);
+                    setGuestModeEnabled(false);
+                }
                 const name = getAuthDisplayName(
                     data.session?.user.user_metadata as
                         | Record<string, unknown>
@@ -132,6 +136,10 @@ export default function App(): JSX.Element {
         } = supabaseAuthClient.auth.onAuthStateChange(
             (_event, currentSession) => {
                 setSession(currentSession ?? undefined);
+                if (currentSession) {
+                    setIsGuest(false);
+                    setGuestModeEnabled(false);
+                }
                 const name = getAuthDisplayName(
                     currentSession?.user.user_metadata as
                         | Record<string, unknown>
