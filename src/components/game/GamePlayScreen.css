@@ -56,6 +56,11 @@
     line-height: 1.35;
 }
 
+.tutorial-hint-actions {
+    display: grid;
+    gap: var(--space-2);
+}
+
 .tutorial-hint .app-action-button {
     pointer-events: auto;
 }

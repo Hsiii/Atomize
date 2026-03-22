@@ -315,7 +315,21 @@ export function MultiplayerGameScreen({
                                 : undefined
                         }
                         onAction={tutorial.handleAction}
+                        onSecondaryAction={
+                            tutorial.canSkipTutorial
+                                ? () => {
+                                      Promise.resolve(onBack()).catch(
+                                          () => undefined
+                                      );
+                                  }
+                                : undefined
+                        }
                         position={tutorial.lesson.position}
+                        secondaryActionLabel={
+                            tutorial.canSkipTutorial
+                                ? uiText.skipTutorial
+                                : undefined
+                        }
                         title={tutorial.lesson.title}
                     />
                 ) : undefined}
@@ -604,6 +618,7 @@ function useBattleTutorial({
 
     if (!enabled) {
         return {
+            canSkipTutorial: false,
             expectedQueue: undefined,
             getPrimeDisabledState: undefined,
             handleAction: undefined,
@@ -665,6 +680,7 @@ function useBattleTutorial({
     };
 
     return {
+        canSkipTutorial: resolvedStep === TutorialStep.Intro,
         expectedQueue,
         getPrimeDisabledState(prime: Prime) {
             if (isInteractionBlocked) {
@@ -805,14 +821,18 @@ function TutorialCoachCard({
     body,
     className,
     onAction,
+    onSecondaryAction,
     position,
+    secondaryActionLabel,
     title,
 }: {
     actionLabel?: string;
     body: string;
     className?: string;
     onAction: (() => void) | undefined;
+    onSecondaryAction?: (() => void) | undefined;
     position: 'bottom' | 'top';
+    secondaryActionLabel?: string;
     title: string;
 }): JSX.Element {
     const classNames = [
@@ -827,10 +847,23 @@ function TutorialCoachCard({
         <section className={classNames}>
             <h2 className='tutorial-hint-title'>{title}</h2>
             <p className='tutorial-hint-body'>{body}</p>
-            {actionLabel && onAction ? (
-                <ActionButton onClick={onAction} variant='primary'>
-                    {actionLabel}
-                </ActionButton>
+            {(actionLabel && onAction) ||
+            (secondaryActionLabel && onSecondaryAction) ? (
+                <div className='tutorial-hint-actions'>
+                    {actionLabel && onAction ? (
+                        <ActionButton onClick={onAction} variant='primary'>
+                            {actionLabel}
+                        </ActionButton>
+                    ) : undefined}
+                    {secondaryActionLabel && onSecondaryAction ? (
+                        <ActionButton
+                            onClick={onSecondaryAction}
+                            variant='secondary'
+                        >
+                            {secondaryActionLabel}
+                        </ActionButton>
+                    ) : undefined}
+                </div>
             ) : undefined}
         </section>
     );

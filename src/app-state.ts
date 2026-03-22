@@ -73,6 +73,7 @@ export const uiText = {
     tutorialCpu: 'Bot',
     tutorialYou: 'You',
     tutorialTitle: 'Tutorial',
+    skipTutorial: 'Skip tutorial',
     leaderboardTitle: 'Leaderboard',
     leaderboardEmpty: 'No records found',
     rank: 'Rank',
