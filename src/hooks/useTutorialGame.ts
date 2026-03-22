@@ -12,26 +12,12 @@ import {
     applyBattlePrimeSelection,
     clearSolvedBattleStage,
 } from '../lib/multiplayer-room';
+import { getTutorialScriptedFactors } from '../lib/tutorial-config';
 import { useComboQueueState } from './useComboQueueState';
 
 const tutorialCpuPlayerId = 'tutorial-cpu';
 const tutorialCpuHp = 60;
 const tutorialCpuThinkBaseMs = 1400;
-const tutorialPlayerStageFactors: ReadonlyArray<readonly Prime[] | undefined> =
-    [
-        [2, 3],
-        [2, 3, 5],
-        [2, 7],
-        [3, 7],
-        [2, 2, 5],
-        [11, 13],
-    ];
-const tutorialCpuStageFactors: ReadonlyArray<readonly Prime[] | undefined> = [
-    [2, 5],
-    [3, 3],
-    [2, 2, 3],
-    [5, 5],
-];
 
 type UseTutorialGameOptions = {
     playerName: string;
@@ -524,10 +510,7 @@ function getTutorialStage(
     side: 'cpu' | 'player',
     stageIndex: number
 ): StageState {
-    const scriptedFactors =
-        side === 'player'
-            ? tutorialPlayerStageFactors[stageIndex]
-            : tutorialCpuStageFactors[stageIndex];
+    const scriptedFactors = getTutorialScriptedFactors(side, stageIndex);
 
     if (scriptedFactors === undefined) {
         return generateStage(`${seed}:${side}`, stageIndex);

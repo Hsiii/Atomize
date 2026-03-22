@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, JSX } from 'react';
 
 import { uiText } from '../../app-state';
-import type { TutorialFocusTarget } from '../../app-state';
 import type { Prime, RoomPlayer, RoomSnapshot } from '../../core';
 import { useBattleAnimations } from '../../hooks/useBattleAnimations';
 import type {
@@ -11,6 +10,14 @@ import type {
     SideHpImpacts,
 } from '../../hooks/useBattleAnimations';
 import { usePrimeKeyboardControls } from '../../hooks/usePrimeKeyboardControls';
+import {
+    getTutorialAction,
+    getTutorialExpectedQueue,
+    getTutorialHighlightedPrime,
+    getTutorialHighlightTarget,
+    getTutorialLesson,
+} from '../../lib/tutorial-config';
+import type { TutorialStep } from '../../lib/tutorial-config';
 
 import './GamePlayScreen.css';
 import './MultiplayerGameScreen.css';
@@ -420,33 +427,6 @@ function BattleHpBar({
     );
 }
 
-type TutorialStep =
-    | 'intro'
-    | 'stage-one-prime'
-    | 'stage-one-queue'
-    | 'stage-one-submit'
-    | 'stage-one-result'
-    | 'stage-two-prime'
-    | 'stage-two-queue'
-    | 'stage-two-submit'
-    | 'stage-two-result'
-    | 'stage-two-finish'
-    | 'stage-two-finish-submit'
-    | 'enemy-turn'
-    | 'enemy-attack'
-    | 'try-wrong-prime'
-    | 'wrong-prime-result'
-    | 'summary'
-    | 'done';
-
-type TutorialLesson = {
-    actionLabel?: string;
-    body: string;
-    isBlocking: boolean;
-    position: 'bottom' | 'top';
-    title: string;
-};
-
 function useBattleTutorial({
     battleVisualsBusy,
     currentPlayer,
@@ -635,7 +615,7 @@ function useBattleTutorial({
     const isInteractionBlocked =
         lesson?.isBlocking === true ||
         (resolvedStep === 'enemy-turn' && enemyTurnAcknowledged);
-    const highlightedPrime = getHighlightedPrime(resolvedStep, queue);
+    const highlightedPrime = getTutorialHighlightedPrime(resolvedStep, queue);
     const isSubmitLocked =
         !isInteractionBlocked &&
         (resolvedStep === 'stage-one-prime' ||
@@ -651,40 +631,22 @@ function useBattleTutorial({
             (resolvedStep === 'try-wrong-prime' && !hasQueue(queue, [3])));
 
     const handleAction = () => {
-        if (step === 'intro') {
-            setStep('stage-one-prime');
-            return;
-        }
+        const action = getTutorialAction(step);
 
-        if (step === 'stage-one-result') {
-            setStep('stage-two-prime');
-            return;
-        }
-
-        if (step === 'stage-two-result') {
-            setStep('stage-two-finish');
-            return;
-        }
-
-        if (step === 'enemy-turn') {
+        if (action.actionEffect === 'allow-cpu-attack') {
             setEnemyTurnAcknowledged(true);
             onAllowCpuAttack?.();
             return;
         }
 
-        if (step === 'enemy-attack') {
-            setStep('try-wrong-prime');
-            return;
-        }
-
-        if (step === 'wrong-prime-result') {
-            setStep('summary');
-            return;
-        }
-
-        if (step === 'summary') {
+        if (action.actionEffect === 'complete-tutorial') {
             onTutorialComplete?.();
             setStep('done');
+            return;
+        }
+
+        if (action.nextActionStep) {
+            setStep(action.nextActionStep);
         }
     };
 
@@ -750,255 +712,6 @@ function resolveTutorialQueueStep(
     }
 
     return step;
-}
-
-function getTutorialLesson(step: TutorialStep): TutorialLesson | undefined {
-    if (step === 'done') {
-        return undefined;
-    }
-
-    if (step === 'intro') {
-        return {
-            actionLabel: uiText.tutorialStartLesson,
-            body: uiText.tutorialIntroBody,
-            isBlocking: true,
-            position: 'top' as const,
-            title: uiText.tutorialIntroTitle,
-        };
-    }
-
-    if (step === 'stage-one-prime') {
-        return {
-            body: uiText.tutorialStageOnePrimeBody,
-            isBlocking: false,
-            position: 'top' as const,
-            title: uiText.tutorialStageOnePrimeTitle,
-        };
-    }
-
-    if (step === 'stage-one-queue') {
-        return {
-            body: uiText.tutorialStageOneQueueBody,
-            isBlocking: false,
-            position: 'top' as const,
-            title: uiText.tutorialStageOneQueueTitle,
-        };
-    }
-
-    if (step === 'stage-one-submit') {
-        return {
-            body: uiText.tutorialStageOneSubmitBody,
-            isBlocking: false,
-            position: 'top' as const,
-            title: uiText.tutorialStageOneSubmitTitle,
-        };
-    }
-
-    if (step === 'stage-one-result') {
-        return {
-            actionLabel: uiText.tutorialNextBlob,
-            body: uiText.tutorialStageOneResultBody,
-            isBlocking: true,
-            position: 'bottom' as const,
-            title: uiText.tutorialStageOneResultTitle,
-        };
-    }
-
-    if (step === 'stage-two-prime') {
-        return {
-            body: uiText.tutorialStageTwoPrimeBody,
-            isBlocking: false,
-            position: 'top' as const,
-            title: uiText.tutorialStageTwoPrimeTitle,
-        };
-    }
-
-    if (step === 'stage-two-queue') {
-        return {
-            body: uiText.tutorialStageTwoQueueBody,
-            isBlocking: false,
-            position: 'top' as const,
-            title: uiText.tutorialStageTwoQueueTitle,
-        };
-    }
-
-    if (step === 'stage-two-submit') {
-        return {
-            body: uiText.tutorialStageTwoSubmitBody,
-            isBlocking: false,
-            position: 'top' as const,
-            title: uiText.tutorialStageTwoSubmitTitle,
-        };
-    }
-
-    if (step === 'stage-two-result') {
-        return {
-            actionLabel: uiText.tutorialUseLastFactor,
-            body: uiText.tutorialStageTwoResultBody,
-            isBlocking: true,
-            position: 'bottom' as const,
-            title: uiText.tutorialStageTwoResultTitle,
-        };
-    }
-
-    if (step === 'stage-two-finish') {
-        return {
-            body: uiText.tutorialStageTwoFinishBody,
-            isBlocking: false,
-            position: 'top' as const,
-            title: uiText.tutorialStageTwoFinishTitle,
-        };
-    }
-
-    if (step === 'stage-two-finish-submit') {
-        return {
-            body: uiText.tutorialStageTwoFinishSubmitBody,
-            isBlocking: false,
-            position: 'top' as const,
-            title: uiText.tutorialStageTwoFinishSubmitTitle,
-        };
-    }
-
-    if (step === 'enemy-turn') {
-        return {
-            actionLabel: uiText.tutorialShowAttack,
-            body: uiText.tutorialEnemyTurnBody,
-            isBlocking: true,
-            position: 'bottom' as const,
-            title: uiText.tutorialEnemyTurnTitle,
-        };
-    }
-
-    if (step === 'enemy-attack') {
-        return {
-            actionLabel: uiText.tutorialTryMistake,
-            body: uiText.tutorialEnemyAttackBody,
-            isBlocking: true,
-            position: 'top' as const,
-            title: uiText.tutorialEnemyAttackTitle,
-        };
-    }
-
-    if (step === 'try-wrong-prime') {
-        return {
-            body: uiText.tutorialTryWrongPrimeBody,
-            isBlocking: false,
-            position: 'top' as const,
-            title: uiText.tutorialTryWrongPrimeTitle,
-        };
-    }
-
-    if (step === 'wrong-prime-result') {
-        return {
-            actionLabel: uiText.tutorialWrapUp,
-            body: uiText.tutorialWrongPrimeResultBody,
-            isBlocking: true,
-            position: 'bottom' as const,
-            title: uiText.tutorialWrongPrimeResultTitle,
-        };
-    }
-
-    return {
-        actionLabel: uiText.tutorialKeepPlaying,
-        body: uiText.tutorialSummaryBody,
-        isBlocking: true,
-        position: 'bottom' as const,
-        title: uiText.tutorialSummaryTitle,
-    };
-}
-
-function getTutorialHighlightTarget(
-    step: TutorialStep,
-    queue: readonly Prime[]
-): TutorialFocusTarget | undefined {
-    if (step === 'intro') {
-        return 'self-blob';
-    }
-
-    if (step === 'stage-one-result') {
-        return 'enemy-hp';
-    }
-
-    if (
-        step === 'stage-one-prime' ||
-        step === 'stage-two-prime' ||
-        step === 'stage-two-queue' ||
-        step === 'stage-two-finish' ||
-        (step === 'try-wrong-prime' && !hasQueue(queue, [3]))
-    ) {
-        return 'keypad';
-    }
-
-    if (step === 'stage-one-queue') {
-        return 'queue';
-    }
-
-    if (
-        step === 'stage-one-submit' ||
-        step === 'stage-two-submit' ||
-        step === 'stage-two-finish-submit' ||
-        (step === 'try-wrong-prime' && hasQueue(queue, [3]))
-    ) {
-        return 'submit';
-    }
-
-    if (step === 'enemy-turn' || step === 'enemy-attack') {
-        return 'self-hp';
-    }
-
-    if (step === 'wrong-prime-result') {
-        return 'self-hp';
-    }
-
-    return undefined;
-}
-
-function getHighlightedPrime(
-    step: TutorialStep,
-    queue: readonly Prime[]
-): Prime | undefined {
-    if (step === 'stage-one-prime' || step === 'stage-two-prime') {
-        return 2;
-    }
-
-    if (step === 'stage-one-queue' || step === 'stage-two-queue') {
-        return 3;
-    }
-
-    if (step === 'stage-two-finish') {
-        return 5;
-    }
-
-    if (step === 'try-wrong-prime' && queue.length === 0) {
-        return 3;
-    }
-
-    return undefined;
-}
-
-function getTutorialExpectedQueue(
-    step: TutorialStep
-): readonly Prime[] | undefined {
-    if (
-        step === 'stage-one-prime' ||
-        step === 'stage-one-queue' ||
-        step === 'stage-one-submit' ||
-        step === 'stage-two-prime' ||
-        step === 'stage-two-queue' ||
-        step === 'stage-two-submit'
-    ) {
-        return [2, 3];
-    }
-
-    if (step === 'stage-two-finish' || step === 'stage-two-finish-submit') {
-        return [5];
-    }
-
-    if (step === 'try-wrong-prime') {
-        return [3];
-    }
-
-    return undefined;
 }
 
 function hasQueuePrefix(

@@ -134,14 +134,6 @@ export const uiText = {
         'Queue valid primes, submit them in order, chain clears for combo damage, and avoid misses. Finish the match when you are ready.',
 } as const;
 
-export type TutorialFocusTarget =
-    | 'self-blob'
-    | 'queue'
-    | 'keypad'
-    | 'submit'
-    | 'enemy-hp'
-    | 'self-hp';
-
 export type Screen = 'menu' | 'single' | 'multi-game' | 'tutorial';
 
 export type MultiplayerState = {
