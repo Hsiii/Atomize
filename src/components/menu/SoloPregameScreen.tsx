@@ -28,10 +28,7 @@ export function SoloPregameScreen({
                 </header>
 
                 <div className='solo-pregame-hero'>
-                    <Timer
-                        className='solo-pregame-hero-icon'
-                        strokeWidth={1.5}
-                    />
+                    <Timer className='solo-pregame-hero-icon' strokeWidth={2} />
                     <p className='solo-pregame-tagline'>{uiText.soloGoal}</p>
                 </div>
 
