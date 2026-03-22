@@ -123,13 +123,15 @@ export function MenuScreen({
                                 onClick={onOpenSolo}
                                 type='button'
                             >
-                                <Timer
-                                    aria-hidden='true'
-                                    className='mode-card-icon'
-                                />
-                                <span className='mode-card-title'>
-                                    {uiText.soloTitle}
-                                </span>
+                                <div className='mode-card-blob'>
+                                    <Timer
+                                        aria-hidden='true'
+                                        className='mode-card-icon'
+                                    />
+                                    <span className='mode-card-title'>
+                                        {uiText.soloTitle}
+                                    </span>
+                                </div>
                                 <span className='mode-card-subtitle'>
                                     {uiText.soloSubtitle}
                                 </span>
@@ -139,13 +141,15 @@ export function MenuScreen({
                                 onClick={onOpenBattle}
                                 type='button'
                             >
-                                <Swords
-                                    aria-hidden='true'
-                                    className='mode-card-icon'
-                                />
-                                <span className='mode-card-title'>
-                                    {uiText.battleTitle}
-                                </span>
+                                <div className='mode-card-blob'>
+                                    <Swords
+                                        aria-hidden='true'
+                                        className='mode-card-icon'
+                                    />
+                                    <span className='mode-card-title'>
+                                        {uiText.battleTitle}
+                                    </span>
+                                </div>
                                 <span className='mode-card-subtitle'>
                                     {uiText.battleSubtitle}
                                 </span>
