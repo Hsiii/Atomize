@@ -25,12 +25,11 @@ type MenuScreenProps = {
     onInvitePlayer: (targetPlayerId: string) => void | Promise<void>;
     onPrefetchInviteUsers: () => void;
     onToggleReady: () => void | Promise<void>;
-    onEditName: (name: string) => Promise<string | undefined>;
     pendingInvitation: { fromName: string; roomCode: string } | undefined;
     onAcceptInvitation: () => void | Promise<void>;
     onDeclineInvitation: () => void;
-    onLogout: () => void;
     onOpenAuth: () => void;
+    onOpenAccount: () => void;
     isGuest: boolean;
 };
 
@@ -49,28 +48,23 @@ export function MenuScreen({
     onInvitePlayer,
     onPrefetchInviteUsers,
     onToggleReady,
-    onEditName,
     pendingInvitation,
     onAcceptInvitation,
     onDeclineInvitation,
-    onLogout,
     onOpenAuth,
+    onOpenAccount,
     isGuest,
 }: MenuScreenProps): JSX.Element {
     const [showInviteDialog, setShowInviteDialog] = useState(false);
-    const [showProfileDialog, setShowProfileDialog] = useState(false);
-    const [showUserMenuDialog, setShowUserMenuDialog] = useState(false);
     const [showLeaderboardDialog, setShowLeaderboardDialog] = useState(false);
     const [leaderboardData, setLeaderboardData] = useState<
         Array<{ player_name: string; max_combo: number }>
     >([]);
     const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
     const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
-    const [editingName, setEditingName] = useState(playerName);
     const [visibleToast, setVisibleToast] = useState<string | undefined>(
         undefined
     );
-    const [nameSaving, setNameSaving] = useState(false);
     const toastTimeoutRef = useRef<
         ReturnType<typeof globalThis.setTimeout> | undefined
     >(undefined);
@@ -84,19 +78,6 @@ export function MenuScreen({
         showMenuToast(toastMessage);
         return undefined;
     }, [toastId, toastMessage]);
-
-    useEffect(() => {
-        setEditingName(playerName);
-    }, [playerName]);
-
-    useEffect(() => {
-        if (!isGuest) {
-            return;
-        }
-
-        setShowUserMenuDialog(false);
-        setShowProfileDialog(false);
-    }, [isGuest]);
 
     useEffect(
         () => () => {
@@ -137,48 +118,6 @@ export function MenuScreen({
         }
     }, [isInRoom]);
 
-    async function handleProfileSave() {
-        const trimmed = editingName.trim();
-
-        if (!trimmed) {
-            setShowProfileDialog(false);
-            return;
-        }
-
-        if (
-            normalizeMenuPlayerName(trimmed) !==
-                normalizeMenuPlayerName(playerName) &&
-            isNameAlreadyUsed(trimmed)
-        ) {
-            showMenuToast(uiText.nameInUse);
-            return;
-        }
-
-        setNameSaving(true);
-        const nextError = await onEditName(trimmed);
-        setNameSaving(false);
-
-        if (nextError) {
-            showMenuToast(nextError);
-            return;
-        }
-
-        setShowProfileDialog(false);
-        showMenuToast(uiText.nameSaved);
-    }
-
-    function isNameAlreadyUsed(nextName: string): boolean {
-        const nextNameKey = normalizeMenuPlayerName(nextName);
-        const usedNames = [
-            opponentName,
-            ...onlineUsers.map((user) => user.name),
-        ];
-
-        return usedNames.some(
-            (usedName) => normalizeMenuPlayerName(usedName) === nextNameKey
-        );
-    }
-
     function showMenuToast(message: string) {
         if (toastTimeoutRef.current !== undefined) {
             globalThis.clearTimeout(toastTimeoutRef.current);
@@ -193,19 +132,6 @@ export function MenuScreen({
             2200,
             undefined
         );
-    }
-
-    function handleOpenProfileDialog() {
-        setEditingName(playerName);
-        setShowProfileDialog(true);
-    }
-
-    function handleOpenUserMenuDialog() {
-        setShowUserMenuDialog(true);
-    }
-
-    function handleCloseUserMenuDialog() {
-        setShowUserMenuDialog(false);
     }
 
     function handleInvite(targetPlayerId: string) {
@@ -323,9 +249,11 @@ export function MenuScreen({
                                     return;
                                 }
 
-                                handleOpenUserMenuDialog();
+                                onOpenAccount();
                             }}
-                            title={isGuest ? uiText.signIn : uiText.settings}
+                            title={
+                                isGuest ? uiText.signIn : uiText.accountTitle
+                            }
                             type='button'
                         >
                             <User size={24} />
@@ -348,7 +276,12 @@ export function MenuScreen({
                                     <button
                                         className='slot-circle slot-p1'
                                         onClick={() => {
-                                            handleOpenProfileDialog();
+                                            if (isGuest) {
+                                                onOpenAuth();
+                                                return;
+                                            }
+
+                                            onOpenAccount();
                                         }}
                                         type='button'
                                     >
@@ -460,105 +393,6 @@ export function MenuScreen({
                     </div>
                 ) : undefined}
 
-                {showProfileDialog ? (
-                    <div
-                        className='dialog-scrim'
-                        onClick={() => {
-                            setShowProfileDialog(false);
-                        }}
-                        role='presentation'
-                    >
-                        <div
-                            className='dialog-panel'
-                            onClick={(event) => {
-                                event.stopPropagation();
-                            }}
-                            role='dialog'
-                        >
-                            <header className='dialog-header'>
-                                <span className='dialog-title'>
-                                    {uiText.editName}
-                                </span>
-                                <button
-                                    className='dialog-close'
-                                    onClick={() => {
-                                        setShowProfileDialog(false);
-                                    }}
-                                    type='button'
-                                >
-                                    <X size={18} />
-                                </button>
-                            </header>
-                            <div className='dialog-body'>
-                                <input
-                                    className='dialog-input'
-                                    maxLength={8}
-                                    onChange={(event) => {
-                                        setEditingName(event.target.value);
-                                    }}
-                                    onKeyDown={(event) => {
-                                        if (event.key === 'Enter') {
-                                            detachAction(handleProfileSave());
-                                        }
-                                    }}
-                                    placeholder={uiText.namePlaceholder}
-                                    value={editingName}
-                                />
-                            </div>
-                            <div className='dialog-actions'>
-                                <ActionButton
-                                    disabled={nameSaving}
-                                    onClick={() => {
-                                        detachAction(handleProfileSave());
-                                    }}
-                                    variant='primary'
-                                >
-                                    {nameSaving
-                                        ? uiText.savingName
-                                        : uiText.saveName}
-                                </ActionButton>
-                            </div>
-                        </div>
-                    </div>
-                ) : undefined}
-
-                {showUserMenuDialog ? (
-                    <div
-                        className='dialog-scrim'
-                        onClick={handleCloseUserMenuDialog}
-                        role='presentation'
-                    >
-                        <div
-                            className='dialog-panel'
-                            onClick={(event) => {
-                                event.stopPropagation();
-                            }}
-                            role='dialog'
-                        >
-                            <header className='dialog-header'>
-                                <span className='dialog-title'>
-                                    {displayPlayerName}
-                                </span>
-                                <button
-                                    className='dialog-close'
-                                    onClick={handleCloseUserMenuDialog}
-                                    type='button'
-                                >
-                                    <X size={18} />
-                                </button>
-                            </header>
-                            <div className='dialog-actions dialog-actions-top'>
-                                <ActionButton
-                                    onClick={onLogout}
-                                    variant='danger'
-                                >
-                                    {uiText.logout}
-                                </ActionButton>
-                            </div>
-                        </div>
-                    </div>
-                ) : undefined}
-
                 {showInviteDialog ? (
                     <div
                         className='dialog-scrim'
@@ -654,7 +488,6 @@ export function MenuScreen({
                         </div>
                     </div>
                 ) : undefined}
-
                 {pendingInvitation ? (
                     <div className='dialog-scrim' role='presentation'>
                         <div
@@ -796,10 +629,6 @@ export function MenuScreen({
             </section>
         </main>
     );
-}
-
-function normalizeMenuPlayerName(value: string | undefined): string {
-    return (value ?? '').trim().replaceAll(/\s+/g, ' ').toLowerCase();
 }
 
 function detachAction(result: void | Promise<void>) {

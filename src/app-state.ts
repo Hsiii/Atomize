@@ -101,6 +101,7 @@ export const uiText = {
     continueWithGoogle: 'Log In with Google',
     continueSignupWithGoogle: 'Sign Up with Google',
     logout: 'Log Out',
+    accountTitle: 'Account',
     loginError: 'Could not start Google log in.',
     emailLoginError: 'Could not log in with email and password.',
     emailSignupError: 'Could not create your account.',

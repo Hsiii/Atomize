@@ -1,0 +1,122 @@
+/* === Account Page Layout === */
+
+.account-page-shell {
+    background: var(--color-page-bg);
+}
+
+.account-page-header-band .floating-back-button {
+    position: absolute;
+    top: auto;
+    left: var(--space-4);
+    color: var(--color-text-inverse);
+}
+
+.screen.account-page-screen {
+    padding: 0;
+    justify-content: flex-start;
+    align-items: center;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.account-page-header-band {
+    position: relative;
+    width: 100%;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: max(
+            var(--space-5),
+            calc(env(safe-area-inset-top) + var(--space-5))
+        )
+        var(--space-7) var(--space-5);
+    background: var(--color-primary);
+}
+
+.account-page-title {
+    margin: var(--space-0);
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-action-label-weight);
+    letter-spacing: var(--type-action-label-caps-letter-spacing);
+    text-transform: var(--type-action-label-caps-text-transform);
+    color: var(--color-text-inverse);
+}
+
+/* === Body === */
+
+.account-page-body {
+    width: min(100%, 22rem);
+    display: grid;
+    gap: var(--space-8);
+    padding: var(--space-8) 1.5rem max(env(safe-area-inset-bottom), 2.5rem);
+    flex: 0 0 auto;
+}
+
+.account-page-section {
+    display: grid;
+    gap: var(--space-4);
+}
+
+.account-page-form {
+    gap: var(--space-5);
+}
+
+.account-page-field-block {
+    display: grid;
+    gap: var(--space-2);
+}
+
+.account-page-input {
+    min-height: 3rem;
+    border: 1px solid var(--color-border-soft);
+    border-radius: var(--radius-input);
+    padding: var(--space-6) var(--space-7);
+    background: var(--color-surface-strong);
+    color: var(--color-ink);
+}
+
+.account-page-input::placeholder {
+    color: var(--color-placeholder);
+}
+
+.account-page-input:focus {
+    outline: none;
+    border-color: var(--color-outline-strong);
+}
+
+.account-page-primary-action {
+    width: 100%;
+    min-height: 3.5rem;
+}
+
+/* === Status Messages === */
+
+.account-page-status {
+    margin: var(--space-0);
+    text-align: center;
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-action-label-weight);
+    line-height: var(--type-body-meta-relaxed-line-height);
+}
+
+.account-page-status-error {
+    color: var(--color-danger);
+}
+
+.account-page-status-success {
+    color: var(--color-primary-strong);
+}
+
+/* === Logout Section === */
+
+.account-page-logout-section {
+    gap: var(--space-5);
+}
+
+.account-page-divider {
+    height: 1px;
+    background: var(--color-track);
+}
