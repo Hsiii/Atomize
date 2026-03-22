@@ -1,12 +1,8 @@
 .multiplayer-game-screen {
-    --multiplayer-enemy-top: 1rem;
-    --multiplayer-enemy-right: 1.25rem;
-    --multiplayer-self-left: 1.25rem;
-    --multiplayer-self-bottom: 1rem;
     --multiplayer-tutorial-top-offset: clamp(4.35rem, 15vw, 5.45rem);
     position: relative;
     flex: 1;
-    gap: var(--space-4);
+    gap: var(--space-3);
     padding-top: max(var(--space-4), env(safe-area-inset-top));
     padding-right: max(var(--space-5), env(safe-area-inset-right));
     padding-bottom: max(var(--space-5), env(safe-area-inset-bottom));
@@ -44,33 +40,28 @@
     position: relative;
     flex: 1;
     min-height: 0;
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
     overflow: visible;
     width: min(100%, 32rem);
     margin-inline: auto;
 }
 
 .multiplayer-column {
-    position: absolute;
-    min-height: 0;
     display: grid;
     place-items: center;
 }
 
 .multiplayer-column-enemy {
-    top: var(--multiplayer-enemy-top);
-    right: var(--multiplayer-enemy-right);
-    width: min(35%, 11rem);
+    width: min(35%, 9rem);
     aspect-ratio: 1;
-    z-index: 1;
 }
 
 .multiplayer-column-self {
-    left: var(--multiplayer-self-left);
-    bottom: var(--multiplayer-self-bottom);
-    width: min(61%, 19rem);
+    width: min(55%, 15rem);
     aspect-ratio: 1;
-    z-index: 2;
 }
 
 .multiplayer-blob-anchor {
@@ -79,16 +70,6 @@
     height: 100%;
     display: grid;
     place-items: center;
-}
-
-.multiplayer-column-enemy .multiplayer-blob-anchor {
-    justify-items: end;
-    align-items: start;
-}
-
-.multiplayer-column-self .multiplayer-blob-anchor {
-    justify-items: start;
-    align-items: end;
 }
 
 .multiplayer-column .number-blob-display {
@@ -129,8 +110,7 @@
     position: relative;
     display: grid;
     gap: var(--space-2);
-    width: min(100%, 28rem);
-    margin-inline: auto;
+    width: 100%;
 }
 
 @keyframes multiplayer-hp-shake {
@@ -502,10 +482,6 @@
 
 @media (min-width: 900px) {
     .multiplayer-game-screen {
-        --multiplayer-enemy-top: 1.1rem;
-        --multiplayer-enemy-right: 1.4rem;
-        --multiplayer-self-left: 1.6rem;
-        --multiplayer-self-bottom: 1.2rem;
         --multiplayer-tutorial-top-offset: 4.85rem;
     }
 }
@@ -515,20 +491,12 @@
         --multiplayer-tutorial-top-offset: clamp(4.1rem, 20vw, 5rem);
     }
 
-    .multiplayer-board {
-        min-height: 16rem;
-    }
-
     .multiplayer-column-self {
-        width: min(67%, 17rem);
-        left: 0.95rem;
-        bottom: 0.55rem;
+        width: min(52%, 13rem);
     }
 
     .multiplayer-column-enemy {
-        width: min(38%, 8.75rem);
-        top: 0.75rem;
-        right: 0.9rem;
+        width: min(32%, 7.5rem);
     }
 
     .multiplayer-column-self .number-blob-display-size-self {
@@ -546,7 +514,7 @@
 
 @media (max-height: 780px) {
     .multiplayer-game-screen {
-        gap: var(--space-3);
+        gap: var(--space-2);
         padding-top: max(var(--space-3), env(safe-area-inset-top));
         padding-right: max(var(--space-4), env(safe-area-inset-right));
         padding-bottom: max(var(--space-4), env(safe-area-inset-bottom));
@@ -554,15 +522,15 @@
     }
 
     .multiplayer-board {
-        min-height: 14rem;
+        gap: var(--space-2);
     }
 
     .multiplayer-column-self {
-        width: min(58%, 14.5rem);
+        width: min(48%, 12rem);
     }
 
     .multiplayer-column-enemy {
-        width: min(32%, 7rem);
+        width: min(28%, 6.5rem);
     }
 
     .multiplayer-keypad button {
@@ -571,19 +539,12 @@
 }
 
 @media (max-width: 480px) {
-    .multiplayer-board {
-        min-height: 13rem;
-    }
-
     .multiplayer-column-self {
-        width: min(63%, 13.6rem);
-        left: 0.45rem;
-        bottom: 0.5rem;
+        width: min(48%, 11rem);
     }
 
     .multiplayer-column-enemy {
-        width: min(34%, 6.75rem);
-        right: 0.45rem;
+        width: min(28%, 6rem);
     }
 
     .multiplayer-column-self .number-blob-display-size-self {

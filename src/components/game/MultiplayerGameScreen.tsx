@@ -177,27 +177,46 @@ export function MultiplayerGameScreen({
             <section className='screen game-screen multiplayer-game-screen'>
                 {tutorialMode ? undefined : <DesktopKeyboardHint />}
 
-                <BattleHpBar
-                    damagePops={battle.damagePops.filter(
-                        (damagePop) => damagePop.side === 'enemy'
-                    )}
-                    hp={battle.displayedEnemyHp}
-                    impacts={battle.hpImpacts.enemy}
-                    label={
-                        tutorialMode
-                            ? uiText.tutorialCpu
-                            : (opponentPlayer?.name ?? uiText.opponent)
-                    }
-                    maxHp={multiplayerSnapshot?.maxHp ?? 1}
-                    outerRef={battle.enemyHealthRef}
-                    perfectActive={battle.perfectBurst?.side === 'enemy'}
-                    side='enemy'
-                    tutorialHighlighted={
-                        tutorial.highlightTarget === 'enemy-hp'
-                    }
-                />
-
                 <section className='multiplayer-board' ref={battle.overlayRef}>
+                    <BattleHpBar
+                        damagePops={battle.damagePops.filter(
+                            (damagePop) => damagePop.side === 'enemy'
+                        )}
+                        hp={battle.displayedEnemyHp}
+                        impacts={battle.hpImpacts.enemy}
+                        label={
+                            tutorialMode
+                                ? uiText.tutorialCpu
+                                : (opponentPlayer?.name ?? uiText.opponent)
+                        }
+                        maxHp={multiplayerSnapshot?.maxHp ?? 1}
+                        outerRef={battle.enemyHealthRef}
+                        perfectActive={battle.perfectBurst?.side === 'enemy'}
+                        side='enemy'
+                        tutorialHighlighted={
+                            tutorial.highlightTarget === 'enemy-hp'
+                        }
+                    />
+
+                    <div className='multiplayer-column multiplayer-column-enemy'>
+                        <div
+                            className='multiplayer-blob-anchor'
+                            ref={battle.enemyBlobRef}
+                        >
+                            <NumberBlobDisplay
+                                concealValues
+                                isComboRunning={false}
+                                isStageRevealActive={
+                                    battle.isOpponentRevealActive
+                                }
+                                mode='multiplayer'
+                                size='enemy'
+                                targetId={opponentPlayer?.stageIndex}
+                                value={opponentPlayer?.stage.targetValue}
+                            />
+                        </div>
+                    </div>
+
                     <div className='multiplayer-column multiplayer-column-self'>
                         <div
                             className={`multiplayer-blob-anchor${tutorial.highlightTarget === 'self-blob' ? ' tutorial-highlight-frame' : ''}`}
@@ -225,47 +244,30 @@ export function MultiplayerGameScreen({
                         </div>
                     </div>
 
-                    <div className='multiplayer-column multiplayer-column-enemy'>
-                        <div
-                            className='multiplayer-blob-anchor'
-                            ref={battle.enemyBlobRef}
-                        >
-                            <NumberBlobDisplay
-                                concealValues
-                                isComboRunning={false}
-                                isStageRevealActive={
-                                    battle.isOpponentRevealActive
-                                }
-                                mode='multiplayer'
-                                size='enemy'
-                                targetId={opponentPlayer?.stageIndex}
-                                value={opponentPlayer?.stage.targetValue}
-                            />
-                        </div>
-                    </div>
+                    <BattleHpBar
+                        damagePops={battle.damagePops.filter(
+                            (damagePop) => damagePop.side === 'self'
+                        )}
+                        hp={battle.displayedSelfHp}
+                        impacts={battle.hpImpacts.self}
+                        label={
+                            tutorialMode
+                                ? uiText.tutorialYou
+                                : (currentMultiplayerPlayer?.name ?? uiText.you)
+                        }
+                        maxHp={multiplayerSnapshot?.maxHp ?? 1}
+                        outerRef={battle.selfHealthRef}
+                        perfectActive={battle.perfectBurst?.side === 'self'}
+                        side='self'
+                        tutorialHighlighted={
+                            tutorial.highlightTarget === 'self-hp'
+                        }
+                    />
 
                     {battle.attackEffect ? (
                         <AttackEffectLayer attackEffect={battle.attackEffect} />
                     ) : undefined}
                 </section>
-
-                <BattleHpBar
-                    damagePops={battle.damagePops.filter(
-                        (damagePop) => damagePop.side === 'self'
-                    )}
-                    hp={battle.displayedSelfHp}
-                    impacts={battle.hpImpacts.self}
-                    label={
-                        tutorialMode
-                            ? uiText.tutorialYou
-                            : (currentMultiplayerPlayer?.name ?? uiText.you)
-                    }
-                    maxHp={multiplayerSnapshot?.maxHp ?? 1}
-                    outerRef={battle.selfHealthRef}
-                    perfectActive={battle.perfectBurst?.side === 'self'}
-                    side='self'
-                    tutorialHighlighted={tutorial.highlightTarget === 'self-hp'}
-                />
 
                 <section className='multiplayer-controls-grid'>
                     <div
