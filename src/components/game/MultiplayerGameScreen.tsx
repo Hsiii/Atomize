@@ -675,8 +675,13 @@ function useBattleTutorial({
     }
 
     const resolvedStep = resolveTutorialQueueStep(step, queue, isComboRunning);
+    const isOverflowWaitingForAnimation =
+        overflowPenaltySeen &&
+        (step === TutorialStep.OverflowQueue ||
+            step === TutorialStep.OverflowSubmit);
     const lesson =
-        resolvedStep === TutorialStep.EnemyTurn && enemyTurnAcknowledged
+        (resolvedStep === TutorialStep.EnemyTurn && enemyTurnAcknowledged) ||
+        isOverflowWaitingForAnimation
             ? undefined
             : getTutorialLesson(resolvedStep);
     const expectedQueue = getTutorialExpectedQueue(resolvedStep);
@@ -684,9 +689,7 @@ function useBattleTutorial({
     const isInteractionBlocked =
         lesson?.isBlocking === true ||
         (resolvedStep === TutorialStep.EnemyTurn && enemyTurnAcknowledged) ||
-        (overflowPenaltySeen &&
-            (step === TutorialStep.OverflowQueue ||
-                step === TutorialStep.OverflowSubmit));
+        isOverflowWaitingForAnimation;
     const highlightedPrime = getTutorialHighlightedPrime(resolvedStep, queue);
     const isSubmitLocked =
         !isInteractionBlocked &&
