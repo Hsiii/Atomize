@@ -129,6 +129,11 @@ export function MenuScreen({
         setShowProfileDialog(false);
     }
 
+    function handleOpenProfileDialog() {
+        setEditingName(playerName);
+        setShowProfileDialog(true);
+    }
+
     function handleInvite(targetPlayerId: string) {
         detachAction(onInvitePlayer(targetPlayerId));
         setInvitedIds((prev: ReadonlySet<string>) => {
@@ -216,8 +221,15 @@ export function MenuScreen({
                         </button>
                         <button
                             className='icon-action-btn'
-                            onClick={onLogout}
-                            title={isGuest ? uiText.login : uiText.logout}
+                            onClick={() => {
+                                if (isGuest) {
+                                    onLogout();
+                                    return;
+                                }
+
+                                handleOpenProfileDialog();
+                            }}
+                            title={isGuest ? uiText.signIn : uiText.editName}
                             type='button'
                         >
                             <User size={24} />
@@ -240,8 +252,7 @@ export function MenuScreen({
                                     <button
                                         className='slot-circle slot-p1'
                                         onClick={() => {
-                                            setEditingName(playerName);
-                                            setShowProfileDialog(true);
+                                            handleOpenProfileDialog();
                                         }}
                                         type='button'
                                     >
@@ -399,6 +410,14 @@ export function MenuScreen({
                                 />
                             </div>
                             <div className='dialog-actions'>
+                                {isGuest ? undefined : (
+                                    <ActionButton
+                                        onClick={onLogout}
+                                        variant='secondary'
+                                    >
+                                        {uiText.logout}
+                                    </ActionButton>
+                                )}
                                 <ActionButton
                                     onClick={handleProfileSave}
                                     variant='primary'
