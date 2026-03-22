@@ -487,7 +487,7 @@ export function MenuScreen({
                             <div className='dialog-actions dialog-actions-top'>
                                 <ActionButton
                                     onClick={onLogout}
-                                    variant='primary'
+                                    variant='danger'
                                 >
                                     {uiText.logout}
                                 </ActionButton>
