@@ -491,12 +491,6 @@ export function MenuScreen({
                                 >
                                     {uiText.logout}
                                 </ActionButton>
-                                <ActionButton
-                                    onClick={handleCloseUserMenuDialog}
-                                    variant='secondary'
-                                >
-                                    {uiText.close}
-                                </ActionButton>
                             </div>
                         </div>
                     </div>
@@ -545,12 +539,6 @@ export function MenuScreen({
                                     {authLoading
                                         ? uiText.waitingShort
                                         : uiText.continueWithGoogle}
-                                </ActionButton>
-                                <ActionButton
-                                    onClick={handleCloseAuthDialog}
-                                    variant='secondary'
-                                >
-                                    {uiText.close}
                                 </ActionButton>
                             </div>
                         </div>
