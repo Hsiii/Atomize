@@ -21,6 +21,7 @@ export enum TutorialStep {
     StageTwoResult = 'StageTwoResult',
     StageTwoFinish = 'StageTwoFinish',
     StageTwoFinishSubmit = 'StageTwoFinishSubmit',
+    PerfectSolveExplain = 'PerfectSolveExplain',
     EnemyTurn = 'EnemyTurn',
     EnemyAttack = 'EnemyAttack',
     TryWrongPrime = 'TryWrongPrime',
@@ -164,6 +165,15 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             lessonId: 'stageTwoFinishSubmit',
             position: 'top',
         },
+    },
+    [TutorialStep.PerfectSolveExplain]: {
+        getHighlightTarget: () => 'self-hp',
+        lesson: {
+            isBlocking: true,
+            lessonId: 'perfectSolveExplain',
+            position: 'bottom',
+        },
+        nextActionStep: TutorialStep.EnemyTurn,
     },
     [TutorialStep.EnemyTurn]: {
         actionEffect: 'allow-cpu-attack',

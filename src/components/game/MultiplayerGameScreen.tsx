@@ -555,19 +555,12 @@ function useBattleTutorial({
             return;
         }
 
-        if (step === TutorialStep.StageTwoQueue) {
-            if (queue.length === 0) {
-                setStep(TutorialStep.StageTwoPrime);
-                return;
-            }
-
-            if (hasQueue(queue, [2, 3])) {
-                setStep(TutorialStep.StageTwoSubmit);
-                return;
-            }
+        if (step === TutorialStep.StageTwoQueue && queue.length === 0) {
+            setStep(TutorialStep.StageTwoPrime);
+            return;
         }
 
-        if (step === TutorialStep.StageTwoSubmit) {
+        if (step === TutorialStep.StageTwoQueue) {
             if (
                 currentPlayer.stageIndex >= 1 &&
                 currentPlayer.stage.remainingValue === 5 &&
@@ -586,7 +579,7 @@ function useBattleTutorial({
 
         if (step === TutorialStep.StageTwoFinishSubmit) {
             if (currentPlayer.stageIndex >= 2 && !battleVisualsBusy) {
-                setStep(TutorialStep.EnemyTurn);
+                setStep(TutorialStep.PerfectSolveExplain);
             }
 
             return;
@@ -649,12 +642,11 @@ function useBattleTutorial({
         (resolvedStep === TutorialStep.StageOnePrime ||
             resolvedStep === TutorialStep.StageOneQueue ||
             resolvedStep === TutorialStep.StageTwoPrime ||
-            resolvedStep === TutorialStep.StageTwoQueue ||
             resolvedStep === TutorialStep.StageTwoFinish ||
+            (resolvedStep === TutorialStep.StageTwoQueue &&
+                !hasQueue(queue, [2, 3])) ||
             resolvedStep === TutorialStep.EnemyTurn ||
             (resolvedStep === TutorialStep.StageOneSubmit &&
-                !hasQueue(queue, [2, 3])) ||
-            (resolvedStep === TutorialStep.StageTwoSubmit &&
                 !hasQueue(queue, [2, 3])) ||
             (resolvedStep === TutorialStep.StageTwoFinishSubmit &&
                 !hasQueue(queue, [5])) ||
@@ -734,11 +726,7 @@ function resolveTutorialQueueStep(
         step === TutorialStep.StageTwoPrime ||
         step === TutorialStep.StageTwoQueue
     ) {
-        if (hasQueue(queue, [2, 3])) {
-            return TutorialStep.StageTwoSubmit;
-        }
-
-        if (hasQueue(queue, [2])) {
+        if (hasQueue(queue, [2, 3]) || hasQueue(queue, [2])) {
             return TutorialStep.StageTwoQueue;
         }
 

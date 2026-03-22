@@ -210,8 +210,8 @@ export const tutorialLessonText = {
     },
     stageTwoResult: {
         actionLabel: 'Finish it',
-        body: 'Partial damage dealt, but the compound is not cleared yet.',
-        title: 'Compound still standing',
+        body: 'The blob dropped from 30 to 5 - that is 30 / 2 / 3. Damage dealt, but the compound still stands.',
+        title: 'Partial clear',
     },
     stageTwoFinish: {
         body: 'The compound has factor 5 left. Tap 5 to solve it.',
@@ -220,6 +220,11 @@ export const tutorialLessonText = {
     stageTwoFinishSubmit: {
         body: 'Submit to clear the remaining factor and deal damage.',
         title: 'Finish it off',
+    },
+    perfectSolveExplain: {
+        actionLabel: 'Got it',
+        body: 'That took two sends. Clear a compound in a single combo instead to get a perfect clear and heal HP!',
+        title: 'Perfect clear',
     },
     enemyTurn: {
         actionLabel: 'Show attack',
@@ -237,7 +242,7 @@ export const tutorialLessonText = {
     },
     wrongPrimeResult: {
         actionLabel: 'Wrap up',
-        body: 'Wrong factors deal damage to yourself. Avoid mistakes to stay alive.',
+        body: 'Wrong factors deal damage to yourself and break combos. Avoid mistakes to stay alive.',
         title: 'Wrong factors backfire',
     },
     summary: {
