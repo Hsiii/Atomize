@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { JSX } from 'react';
 
 import { uiText } from '../../app-state';
-import { getSupabaseConfig, supabaseAuthClient } from '../../lib/supabase';
+import { startGooglePopupSignIn } from '../../lib/supabase';
 import { ActionButton } from '../game/ui/ActionButton';
 
 import './LoginScreen.css';
@@ -18,84 +18,16 @@ export function LoginScreen({ onPlayAsGuest }: LoginScreenProps): JSX.Element {
     async function handleGoogleLogin() {
         setError(undefined);
 
-        if (!supabaseAuthClient) {
-            setError(uiText.authUnavailable);
-            return;
-        }
-
-        const supabaseConfig = getSupabaseConfig();
-
-        if (!supabaseConfig) {
-            setError(uiText.authUnavailable);
-            return;
-        }
-
         setLoading(true);
+        const nextError = await startGooglePopupSignIn();
 
-        try {
-            const settingsResponse = await globalThis.fetch(
-                new URL('/auth/v1/settings', supabaseConfig.url),
-                {
-                    headers: {
-                        apikey: supabaseConfig.anonKey,
-                    },
-                }
-            );
-
-            if (!settingsResponse.ok) {
-                setError(uiText.loginError);
-                setLoading(false);
-                return;
-            }
-
-            const settings = (await settingsResponse.json()) as {
-                external?: Record<string, boolean | undefined>;
-            };
-
-            if (!settings.external?.google) {
-                setError(uiText.googleProviderDisabled);
-                setLoading(false);
-                return;
-            }
-        } catch {
-            setError(uiText.loginError);
+        if (nextError) {
+            setError(nextError);
             setLoading(false);
             return;
         }
 
-        const { data, error: authError } =
-            await supabaseAuthClient.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: globalThis.location.origin,
-                    skipBrowserRedirect: true,
-                },
-            });
-
-        if (authError || !data.url) {
-            setError(uiText.loginError);
-            setLoading(false);
-            return;
-        }
-
-        const popup = globalThis.open(
-            data.url,
-            'google-sign-in',
-            'popup,width=500,height=600'
-        );
-
-        if (!popup) {
-            setError(uiText.popupBlocked);
-            setLoading(false);
-            return;
-        }
-
-        const pollTimer = setInterval(() => {
-            if (popup.closed) {
-                clearInterval(pollTimer);
-                setLoading(false);
-            }
-        }, 500);
+        setLoading(false);
     }
 
     return (

@@ -5,7 +5,7 @@ import { Check, Crown, Plus, User, X } from 'lucide-react';
 import type { OnlineLobbyUser } from '../../app-state';
 import { uiText } from '../../app-state';
 import { loadBestScore } from '../../lib/app-helpers';
-import { supabaseAuthClient } from '../../lib/supabase';
+import { startGooglePopupSignIn, supabaseAuthClient } from '../../lib/supabase';
 import { ActionButton } from '../game/ui/ActionButton';
 
 import './MenuScreen.css';
@@ -57,6 +57,7 @@ export function MenuScreen({
 }: MenuScreenProps): JSX.Element {
     const [showInviteDialog, setShowInviteDialog] = useState(false);
     const [showProfileDialog, setShowProfileDialog] = useState(false);
+    const [showAuthDialog, setShowAuthDialog] = useState(false);
     const [showLeaderboardDialog, setShowLeaderboardDialog] = useState(false);
     const [leaderboardData, setLeaderboardData] = useState<
         Array<{ player_name: string; max_combo: number }>
@@ -67,6 +68,8 @@ export function MenuScreen({
     const [visibleToast, setVisibleToast] = useState<string | undefined>(
         undefined
     );
+    const [authError, setAuthError] = useState<string | undefined>(undefined);
+    const [authLoading, setAuthLoading] = useState(false);
 
     useEffect(() => {
         if (!toastMessage) {
@@ -132,6 +135,32 @@ export function MenuScreen({
     function handleOpenProfileDialog() {
         setEditingName(playerName);
         setShowProfileDialog(true);
+    }
+
+    function handleOpenAuthDialog() {
+        setAuthError(undefined);
+        setShowAuthDialog(true);
+    }
+
+    function handleCloseAuthDialog() {
+        setAuthLoading(false);
+        setShowAuthDialog(false);
+    }
+
+    async function handleGoogleLogin() {
+        setAuthError(undefined);
+        setAuthLoading(true);
+
+        const nextError = await startGooglePopupSignIn();
+
+        if (nextError) {
+            setAuthError(nextError);
+            setAuthLoading(false);
+            return;
+        }
+
+        setAuthLoading(false);
+        setShowAuthDialog(false);
     }
 
     function handleInvite(targetPlayerId: string) {
@@ -223,7 +252,7 @@ export function MenuScreen({
                             className='icon-action-btn'
                             onClick={() => {
                                 if (isGuest) {
-                                    onLogout();
+                                    handleOpenAuthDialog();
                                     return;
                                 }
 
@@ -423,6 +452,61 @@ export function MenuScreen({
                                     variant='primary'
                                 >
                                     {uiText.saveName}
+                                </ActionButton>
+                            </div>
+                        </div>
+                    </div>
+                ) : undefined}
+
+                {showAuthDialog ? (
+                    <div
+                        className='dialog-scrim'
+                        onClick={handleCloseAuthDialog}
+                        role='presentation'
+                    >
+                        <div
+                            className='dialog-panel'
+                            onClick={(event) => {
+                                event.stopPropagation();
+                            }}
+                            role='dialog'
+                        >
+                            <header className='dialog-header'>
+                                <span className='dialog-title'>
+                                    {uiText.signIn}
+                                </span>
+                                <button
+                                    className='dialog-close'
+                                    onClick={handleCloseAuthDialog}
+                                    type='button'
+                                >
+                                    <X size={18} />
+                                </button>
+                            </header>
+                            <div className='dialog-body'>
+                                {authError ? (
+                                    <div className='menu-auth-error'>
+                                        {authError}
+                                    </div>
+                                ) : undefined}
+                            </div>
+                            <div className='dialog-actions'>
+                                <ActionButton
+                                    disabled={authLoading}
+                                    onClick={() => {
+                                        detachAction(handleGoogleLogin());
+                                    }}
+                                    variant='primary'
+                                >
+                                    {authLoading
+                                        ? uiText.waitingShort
+                                        : uiText.continueWithGoogle}
+                                </ActionButton>
+                                <ActionButton
+                                    onClick={handleCloseAuthDialog}
+                                    variant='secondary'
+                                >
+                                    {uiText.close}
                                 </ActionButton>
                             </div>
                         </div>

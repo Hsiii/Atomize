@@ -415,6 +415,19 @@
     padding: 0 var(--space-7) var(--space-7);
 }
 
+.menu-auth-error {
+    color: var(--color-danger);
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
+    line-height: var(--type-body-meta-relaxed-line-height);
+    text-align: center;
+    padding: var(--space-5) var(--space-6);
+    border-radius: var(--radius-input);
+    border: 1px solid var(--color-danger);
+    background: var(--color-surface-strong);
+}
+
 .dialog-input {
     width: 100%;
     font-family: var(--type-body-meta-family);
