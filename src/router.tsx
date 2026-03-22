@@ -32,9 +32,6 @@ function MenuPage(): JSX.Element {
     const { session, isGuest, localCpuGame, multiplayerGame } = useAppContext();
     const navigate = useNavigate();
 
-    const pendingInvitation = localCpuGame.isInRoom
-        ? undefined
-        : multiplayerGame.pendingInvitation;
     const toastId = localCpuGame.isInRoom ? 0 : multiplayerGame.lobbyToast.id;
     const toastMessage = localCpuGame.isInRoom
         ? undefined
@@ -43,11 +40,6 @@ function MenuPage(): JSX.Element {
     return (
         <MenuScreen
             isGuest={isGuest || !session}
-            onAcceptInvitation={() => {
-                detachPromise(multiplayerGame.handleAcceptInvitation());
-                detachPromise(navigate({ to: '/battle' }));
-            }}
-            onDeclineInvitation={multiplayerGame.handleDeclineInvitation}
             onOpenAccount={() => {
                 detachPromise(navigate({ to: '/account' }));
             }}
@@ -63,7 +55,6 @@ function MenuPage(): JSX.Element {
             onOpenSolo={() => {
                 detachPromise(navigate({ to: '/solo' }));
             }}
-            pendingInvitation={pendingInvitation}
             toastId={toastId}
             toastMessage={toastMessage}
         />

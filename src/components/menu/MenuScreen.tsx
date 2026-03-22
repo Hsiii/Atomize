@@ -3,16 +3,12 @@ import type { JSX } from 'react';
 import { Crown, Swords, Timer, User } from 'lucide-react';
 
 import { uiText } from '../../app-state';
-import { ActionButton } from '../game/ui/ActionButton';
 
 import './MenuScreen.css';
 
 type MenuScreenProps = {
-    pendingInvitation: { fromName: string; roomCode: string } | undefined;
     toastMessage: string | undefined;
     toastId: number;
-    onAcceptInvitation: () => void | Promise<void>;
-    onDeclineInvitation: () => void;
     onOpenAuth: () => void;
     onOpenAccount: () => void;
     onOpenLeaderboard: () => void;
@@ -22,11 +18,8 @@ type MenuScreenProps = {
 };
 
 export function MenuScreen({
-    pendingInvitation,
     toastMessage,
     toastId,
-    onAcceptInvitation,
-    onDeclineInvitation,
     onOpenAuth,
     onOpenAccount,
     onOpenLeaderboard,
@@ -157,45 +150,7 @@ export function MenuScreen({
                         <div className='menu-toast'>{visibleToast}</div>
                     </div>
                 ) : undefined}
-
-                {pendingInvitation ? (
-                    <div className='dialog-scrim' role='presentation'>
-                        <div
-                            className='dialog-panel dialog-invitation'
-                            role='alertdialog'
-                        >
-                            <div className='dialog-body invitation-body'>
-                                <p className='invitation-text'>
-                                    <strong>
-                                        {pendingInvitation.fromName}
-                                    </strong>{' '}
-                                    {uiText.inviteReceived}
-                                </p>
-                            </div>
-                            <div className='dialog-actions invitation-actions'>
-                                <ActionButton
-                                    onClick={onDeclineInvitation}
-                                    variant='danger'
-                                >
-                                    {uiText.decline}
-                                </ActionButton>
-                                <ActionButton
-                                    onClick={() => {
-                                        detachAction(onAcceptInvitation());
-                                    }}
-                                    variant='primary'
-                                >
-                                    {uiText.accept}
-                                </ActionButton>
-                            </div>
-                        </div>
-                    </div>
-                ) : undefined}
             </section>
         </main>
     );
-}
-
-function detachAction(result: void | Promise<void>) {
-    Promise.resolve(result).catch(() => undefined);
 }

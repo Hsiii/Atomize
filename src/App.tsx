@@ -6,7 +6,8 @@ import { Outlet, useLocation, useNavigate } from '@tanstack/react-router';
 import { AppProvider } from './app-context';
 import type { AppContextValue } from './app-context';
 import { seoText, uiText } from './app-state';
-import type { Screen } from './app-state';
+import type { PendingInvitation, Screen } from './app-state';
+import { ActionButton } from './components/game/ui/ActionButton';
 import { fetchLeaderboardData } from './components/menu/LeaderboardScreen';
 import type { LeaderboardEntry } from './components/menu/LeaderboardScreen';
 import { useLocalCpuGame } from './hooks/useLocalCpuGame';
@@ -625,9 +626,61 @@ export default function App(): JSX.Element {
         returnToMenu,
     };
 
+    const pendingInvitation =
+        screen !== 'menu' || localCpuGame.isInRoom
+            ? undefined
+            : multiplayerGame.pendingInvitation;
+
+    function handleAcceptInvitation() {
+        detachPromise(multiplayerGame.handleAcceptInvitation());
+        detachPromise(navigate({ to: '/battle' }));
+    }
+
+    function handleDeclineInvitation() {
+        multiplayerGame.handleDeclineInvitation();
+    }
+
     return (
         <AppProvider value={contextValue}>
             <Outlet />
+            {pendingInvitation ? (
+                <InvitationDialog
+                    onAccept={handleAcceptInvitation}
+                    onDecline={handleDeclineInvitation}
+                    pendingInvitation={pendingInvitation}
+                />
+            ) : undefined}
         </AppProvider>
+    );
+}
+
+function InvitationDialog({
+    onAccept,
+    onDecline,
+    pendingInvitation,
+}: {
+    onAccept: () => void;
+    onDecline: () => void;
+    pendingInvitation: PendingInvitation;
+}): JSX.Element {
+    return (
+        <div className='dialog-scrim' role='presentation'>
+            <div className='dialog-panel dialog-invitation' role='alertdialog'>
+                <div className='dialog-body invitation-body'>
+                    <p className='invitation-text'>
+                        <strong>{pendingInvitation.fromName}</strong>{' '}
+                        {uiText.inviteReceived}
+                    </p>
+                </div>
+                <div className='dialog-actions invitation-actions'>
+                    <ActionButton onClick={onDecline} variant='danger'>
+                        {uiText.decline}
+                    </ActionButton>
+                    <ActionButton onClick={onAccept} variant='primary'>
+                        {uiText.accept}
+                    </ActionButton>
+                </div>
+            </div>
+        </div>
     );
 }
