@@ -422,7 +422,12 @@ export function useLocalCpuGame({
                     )
                 );
             },
-            onCorrectPrime(prime, suppressAttack, perfectSolveEligible) {
+            onCorrectPrime(
+                prime,
+                suppressAttack,
+                perfectSolveEligible,
+                resolvingQueueLength
+            ) {
                 const snapshot = latestSnapshotRef.current;
                 const localPlayerId = latestPlayerIdRef.current;
 
@@ -434,6 +439,7 @@ export function useLocalCpuGame({
                     applyBattlePrimeSelection(snapshot, localPlayerId, prime, {
                         suppressAttack,
                         perfectSolveEligible,
+                        resolvingQueueLength,
                     })
                 );
 
@@ -491,6 +497,7 @@ export function useLocalCpuGame({
                 perfectSolveEligible:
                     currentCpuPlayer.stage.remainingValue ===
                     currentCpuPlayer.stage.targetValue,
+                resolvingQueueLength: outcome.cleared ? 1 : undefined,
             })
         );
     }

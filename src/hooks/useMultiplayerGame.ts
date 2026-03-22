@@ -67,6 +67,7 @@ function applyGameplayBroadcastMessage(
                 {
                     suppressAttack: message.suppressAttack,
                     perfectSolveEligible: message.perfectSolveEligible,
+                    resolvingQueueLength: message.resolvingQueueLength,
                 }
             );
         }
@@ -926,7 +927,8 @@ export function useMultiplayerGame({
     async function sendMultiplayerPrime(
         prime: Prime,
         suppressAttack = false,
-        perfectSolveEligible = false
+        perfectSolveEligible = false,
+        resolvingQueueLength?: number
     ): Promise<MultiplayerSendResult> {
         const currentState = latestMultiplayerRef.current;
         const gameplaySnapshot = getEffectiveMultiplayerSnapshot(
@@ -947,7 +949,11 @@ export function useMultiplayerGame({
             gameplaySnapshot,
             currentState.playerId,
             prime,
-            { suppressAttack, perfectSolveEligible }
+            {
+                suppressAttack,
+                perfectSolveEligible,
+                resolvingQueueLength,
+            }
         );
         const actionOrder = getNextGameplayActionOrder();
         updateSnapshot(nextSnapshot, '');
@@ -958,6 +964,7 @@ export function useMultiplayerGame({
             prime,
             suppressAttack,
             perfectSolveEligible,
+            resolvingQueueLength,
         });
 
         return {
@@ -1182,11 +1189,17 @@ export function useMultiplayerGame({
                     releasedDamage
                 );
             },
-            async onCorrectPrime(prime, suppressAttack, perfectSolveEligible) {
+            async onCorrectPrime(
+                prime,
+                suppressAttack,
+                perfectSolveEligible,
+                resolvingQueueLength
+            ) {
                 const sendResult = await sendMultiplayerPrime(
                     prime,
                     suppressAttack,
-                    perfectSolveEligible
+                    perfectSolveEligible,
+                    resolvingQueueLength
                 );
 
                 if (!sendResult.didBroadcast) {

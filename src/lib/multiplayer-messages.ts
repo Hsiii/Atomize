@@ -23,6 +23,7 @@ export type RoomBroadcastMessage =
           prime: Prime;
           suppressAttack?: boolean;
           perfectSolveEligible?: boolean;
+          resolvingQueueLength?: number;
       }
     | {
           type: 'combo_penalty';

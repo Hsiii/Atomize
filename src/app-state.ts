@@ -109,13 +109,13 @@ export const uiText = {
         'Press Enter. This queue will release 5 stored factor damage even though the blob still has one factor left.',
     tutorialStageTwoResultTitle: 'Queued factors hit together',
     tutorialStageTwoResultBody:
-        'Your queued 2 + 3 released 5 stored factor damage when the queue finished. That is not combo bonus. Combo bonus only comes from clearing blobs in a streak.',
+        'Your queued 2 + 3 released 5 stored factor damage when the queue finished. That is not combo bonus because the blob did not end yet.',
     tutorialStageTwoFinishTitle: 'Finish the blob',
     tutorialStageTwoFinishBody:
         'The stored 5 damage already went out. The blob still has factor 5 left, so tap 5 to solve it.',
     tutorialStageTwoFinishSubmitTitle: 'Complete the clear',
     tutorialStageTwoFinishSubmitBody:
-        'Press Enter to clear the solved blob. This clear only deals the normal 1 damage hit, not another combo payout.',
+        'Press Enter to clear the solved blob. Clearing a 1 blob counts as a 1-combo finish.',
     tutorialEnemyTurnTitle: 'Enemy incoming',
     tutorialEnemyTurnBody:
         'The bot attacks with the same rules you do. Watch the HP bars while it moves.',
@@ -128,10 +128,10 @@ export const uiText = {
         'Tap 3, then press Enter. It does not divide 14, so you can see the self-hit penalty once.',
     tutorialWrongPrimeResultTitle: 'Misses backfire',
     tutorialWrongPrimeResultBody:
-        'Wrong primes deal self-damage, reset your combo, and dump stored damage. Accuracy matters as much as speed.',
+        'Wrong primes deal self-damage and dump stored damage. The released partial hit still does not count as combo because it did not end the blob.',
     tutorialSummaryTitle: 'Core loop learned',
     tutorialSummaryBody:
-        'Queue valid primes, submit them in order, chain clears for combo damage, and avoid misses. Finish the match when you are ready.',
+        'Queue valid primes, end blobs with longer finishing queues for bigger combo bonus, and avoid misses. Finish the match when you are ready.',
 } as const;
 
 export type Screen = 'menu' | 'single' | 'multi-game' | 'tutorial';

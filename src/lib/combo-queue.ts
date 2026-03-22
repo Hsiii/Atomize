@@ -21,7 +21,8 @@ export type ComboQueueCallbacks = {
     onCorrectPrime: (
         prime: Prime,
         suppressAttack: boolean,
-        perfectSolveEligible: boolean
+        perfectSolveEligible: boolean,
+        resolvingQueueLength?: number
     ) =>
         | Promise<{ shouldAbort?: boolean } | undefined>
         | { shouldAbort?: boolean }
@@ -77,7 +78,8 @@ export async function processComboQueue(
     const result = await callbacks.onCorrectPrime(
         prime,
         batchComboDamage && !outcome.cleared && !isFinalQueuedPrime,
-        comboPerfectSolveEligible
+        comboPerfectSolveEligible,
+        outcome.cleared ? queuedPrimes.length : undefined
     );
 
     if (result?.shouldAbort) {

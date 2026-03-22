@@ -111,6 +111,7 @@ export function applyBattlePrimeSelection(
     options?: {
         suppressAttack?: boolean;
         perfectSolveEligible?: boolean;
+        resolvingQueueLength?: number;
     }
 ): RoomSnapshot {
     if (snapshot.status !== 'playing') {
@@ -135,8 +136,8 @@ export function applyBattlePrimeSelection(
     }
 
     const combo = selection.cleared
-        ? actingPlayer.combo + 1
-        : actingPlayer.combo;
+        ? Math.max(1, options?.resolvingQueueLength ?? 1)
+        : 0;
     const stageIndex = selection.cleared
         ? actingPlayer.stageIndex + 1
         : actingPlayer.stageIndex;
@@ -320,7 +321,7 @@ export function applyBattlePenalty(
                 damage: releasedDamage,
                 regen: 0,
                 perfectSolve: false,
-                combo: actingPlayer.combo,
+                combo: 0,
                 cause: 'attack',
                 sourceStageIndex: actingPlayer.stageIndex,
                 nextStageIndex: actingPlayer.stageIndex,
@@ -398,6 +399,7 @@ export function clearSolvedBattleStage(
     }
 
     const clearDamage = 1;
+    const combo = 1;
     const stageIndex = actingPlayer.stageIndex + 1;
     const nextStage = generateStage(snapshot.seed, stageIndex);
     const nextPlayers = snapshot.players.map((player) => {
@@ -405,6 +407,8 @@ export function clearSolvedBattleStage(
             return {
                 ...player,
                 pendingFactorDamage: 0,
+                combo,
+                maxCombo: Math.max(player.maxCombo, combo),
                 stageIndex,
                 stage: nextStage,
             };
@@ -438,7 +442,7 @@ export function clearSolvedBattleStage(
                   damage: clearDamage,
                   regen: 0,
                   perfectSolve: false,
-                  combo: actingPlayer.combo,
+                  combo,
                   cause: 'attack',
                   sourceStageIndex: actingPlayer.stageIndex,
                   nextStageIndex: stageIndex,
@@ -453,7 +457,7 @@ export function clearSolvedBattleStage(
                   damage: clearDamage,
                   regen: 0,
                   perfectSolve: false,
-                  combo: actingPlayer.combo,
+                  combo,
                   sourceStageIndex: actingPlayer.stageIndex,
                   nextStageIndex: stageIndex,
                   sourceHp: nextActingPlayer.hp,

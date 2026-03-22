@@ -374,7 +374,12 @@ export function useTutorialGame({
                     )
                 );
             },
-            onCorrectPrime(prime, suppressAttack, perfectSolveEligible) {
+            onCorrectPrime(
+                prime,
+                suppressAttack,
+                perfectSolveEligible,
+                resolvingQueueLength
+            ) {
                 const snapshot = latestSnapshotRef.current;
                 const localPlayerId = latestPlayerIdRef.current;
 
@@ -386,6 +391,7 @@ export function useTutorialGame({
                     applyBattlePrimeSelection(snapshot, localPlayerId, prime, {
                         suppressAttack,
                         perfectSolveEligible,
+                        resolvingQueueLength,
                     })
                 );
 
@@ -472,6 +478,7 @@ export function useTutorialGame({
                     perfectSolveEligible:
                         currentCpuPlayer.stage.remainingValue ===
                         currentCpuPlayer.stage.targetValue,
+                    resolvingQueueLength: outcome.cleared ? 1 : undefined,
                 }
             )
         );
