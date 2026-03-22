@@ -25,12 +25,9 @@ export function SoloPregameScreen({
                 <header className='solo-pregame-header-band'>
                     <BackButton onBack={onBack} />
                     <h1 className='solo-pregame-title'>{uiText.soloTitle}</h1>
-                </header>
-
-                <div className='solo-pregame-hero'>
                     <Timer className='solo-pregame-hero-icon' strokeWidth={2} />
                     <p className='solo-pregame-tagline'>{uiText.soloGoal}</p>
-                </div>
+                </header>
 
                 <div className='solo-pregame-body'>
                     <div className='solo-pregame-pb'>
