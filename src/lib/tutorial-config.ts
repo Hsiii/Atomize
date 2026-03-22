@@ -15,9 +15,9 @@ export enum TutorialStep {
     StageOneQueue = 'StageOneQueue',
     StageOneSubmit = 'StageOneSubmit',
     StageOneResult = 'StageOneResult',
+    ComboExplain = 'ComboExplain',
     StageTwoPrime = 'StageTwoPrime',
     StageTwoQueue = 'StageTwoQueue',
-    StageTwoSubmit = 'StageTwoSubmit',
     StageTwoResult = 'StageTwoResult',
     StageTwoFinish = 'StageTwoFinish',
     StageTwoFinishSubmit = 'StageTwoFinishSubmit',
@@ -106,6 +106,15 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             lessonId: 'stageOneResult',
             position: 'bottom',
         },
+        nextActionStep: TutorialStep.ComboExplain,
+    },
+    [TutorialStep.ComboExplain]: {
+        getHighlightTarget: () => 'enemy-hp',
+        lesson: {
+            isBlocking: true,
+            lessonId: 'comboExplain',
+            position: 'bottom',
+        },
         nextActionStep: TutorialStep.StageTwoPrime,
     },
     [TutorialStep.StageTwoPrime]: {
@@ -120,20 +129,12 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
     },
     [TutorialStep.StageTwoQueue]: {
         expectedQueue: fullFactorQueue,
-        getHighlightedPrime: () => 3,
-        getHighlightTarget: () => 'keypad',
+        getHighlightedPrime: (queue) => (queue.length < 2 ? 3 : undefined),
+        getHighlightTarget: (queue) =>
+            queue.length >= fullFactorQueue.length ? 'submit' : 'keypad',
         lesson: {
             isBlocking: false,
             lessonId: 'stageTwoQueue',
-            position: 'top',
-        },
-    },
-    [TutorialStep.StageTwoSubmit]: {
-        expectedQueue: fullFactorQueue,
-        getHighlightTarget: () => 'submit',
-        lesson: {
-            isBlocking: false,
-            lessonId: 'stageTwoSubmit',
             position: 'top',
         },
     },

@@ -175,7 +175,7 @@ type TutorialLessonTextEntry = {
 export const tutorialLessonText = {
     intro: {
         actionLabel: 'Start',
-        body: 'This is your compound. Atomize it to deal damage to the enemy.',
+        body: 'This is your compound. Factor and atomize it to deal damage to the enemy.',
         title: 'Tutorial - Factor to survive',
     },
     stageOnePrime: {
@@ -187,25 +187,26 @@ export const tutorialLessonText = {
         title: 'Queue the next factor',
     },
     stageOneSubmit: {
-        body: 'Hit Enter to send your queued factors.',
-        title: 'Submit the queue',
+        body: 'Hit send to attack with your queued factors.',
+        title: 'Send the queue',
     },
     stageOneResult: {
+        actionLabel: 'Got it',
+        body: 'Compound cleared! Each factor you queue deals damage, and clearing finishes the attack.',
+        title: 'Atomized!',
+    },
+    comboExplain: {
         actionLabel: 'Next compound',
-        body: 'The compound reached 1 - cleared! Each clear deals damage to the enemy.',
-        title: 'Compound cleared',
+        body: 'You queued 2 factors at once - that gave bonus combo damage! Queue more factors to deal more.',
+        title: 'Combo bonus',
     },
     stageTwoPrime: {
         body: 'This compound is 30 = 2 x 3 x 5. Start with 2.',
         title: 'Bigger compound',
     },
     stageTwoQueue: {
-        body: 'Add 3. After submitting, the compound will still have factor 5 left.',
+        body: 'Add 3 and send. Sometimes you want to factor partially to clear things out.',
         title: 'Partial factoring',
-    },
-    stageTwoSubmit: {
-        body: 'Submit to deal partial damage. You will need one more factor to finish.',
-        title: 'Send partial combo',
     },
     stageTwoResult: {
         actionLabel: 'Finish it',
@@ -217,18 +218,18 @@ export const tutorialLessonText = {
         title: 'Finish the compound',
     },
     stageTwoFinishSubmit: {
-        body: 'Submit to clear. Clearing deals bonus combo damage on top.',
-        title: 'Clear for combo bonus',
+        body: 'Submit to clear the remaining factor and deal damage.',
+        title: 'Finish it off',
     },
     enemyTurn: {
         actionLabel: 'Show attack',
-        body: 'The enemy factors compounds the same way you do. Watch your HP bar.',
+        body: 'Enemy clears cost you HP. Watch your HP bar.',
         title: 'Enemy turn',
     },
     enemyAttack: {
         actionLabel: 'Try a miss',
-        body: 'Enemy clears cost you HP. Now try submitting a wrong factor to see the penalty.',
-        title: 'You took damage',
+        body: 'Now try submitting a wrong factor to see the penalty.',
+        title: 'What if you miss?',
     },
     tryWrongPrime: {
         body: 'Tap 3 and submit. It does not divide the current compound.',
