@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import type { JSX } from 'react';
-import { createClient } from '@supabase/supabase-js';
-import { Check, Crown, Plus, X } from 'lucide-react';
+import { Check, Crown, Plus, User, X } from 'lucide-react';
 
 import type { OnlineLobbyUser } from '../../app-state';
 import { uiText } from '../../app-state';
 import { loadBestScore } from '../../lib/app-helpers';
-import { getSupabaseConfig } from '../../lib/supabase';
+import { supabaseAuthClient } from '../../lib/supabase';
 import { ActionButton } from '../game/ui/ActionButton';
 
 import './MenuScreen.css';
@@ -30,6 +29,8 @@ type MenuScreenProps = {
     pendingInvitation: { fromName: string; roomCode: string } | undefined;
     onAcceptInvitation: () => void | Promise<void>;
     onDeclineInvitation: () => void;
+    onLogout: () => void;
+    isGuest: boolean;
 };
 
 export function MenuScreen({
@@ -51,6 +52,8 @@ export function MenuScreen({
     pendingInvitation,
     onAcceptInvitation,
     onDeclineInvitation,
+    onLogout,
+    isGuest,
 }: MenuScreenProps): JSX.Element {
     const [showInviteDialog, setShowInviteDialog] = useState(false);
     const [showProfileDialog, setShowProfileDialog] = useState(false);
@@ -150,7 +153,6 @@ export function MenuScreen({
         setShowLeaderboardDialog(true);
         if (leaderboardData.length === 0) {
             setLoadingLeaderboard(true);
-            const config = getSupabaseConfig();
 
             const fallbackToLocal = () => {
                 const localBest = loadBestScore();
@@ -165,15 +167,11 @@ export function MenuScreen({
                 setLoadingLeaderboard(false);
             };
 
-            if (config) {
+            const client = supabaseAuthClient;
+            if (client) {
                 const fetchLeaderboard = async () => {
                     try {
-                        // eslint-disable-next-line complete/no-object-any
-                        const supabase = createClient(
-                            config.url,
-                            config.anonKey
-                        );
-                        const response = await supabase
+                        const response = await client
                             .from('combo_leaderboard')
                             .select('player_name, max_combo')
                             .order('max_combo', { ascending: false })
@@ -215,6 +213,14 @@ export function MenuScreen({
                             type='button'
                         >
                             <Crown size={24} />
+                        </button>
+                        <button
+                            className='icon-action-btn'
+                            onClick={onLogout}
+                            title={isGuest ? uiText.login : uiText.logout}
+                            type='button'
+                        >
+                            <User size={24} />
                         </button>
                     </div>
                     <div className='menu-title-orb' />
