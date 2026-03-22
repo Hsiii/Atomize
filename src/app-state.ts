@@ -54,6 +54,7 @@ export const uiText = {
     noOnlinePlayers: 'No other players online.',
     inviteTitle: 'Online Players',
     editName: 'Edit Name',
+    nameInUse: 'Name already in use.',
     accept: 'Accept',
     decline: 'Decline',
     inGame: 'In Game',
