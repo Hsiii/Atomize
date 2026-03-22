@@ -209,6 +209,7 @@ export function MenuScreen({
         }
 
         setShowProfileDialog(false);
+        showMenuToast(uiText.nameSaved);
     }
 
     function isNameAlreadyUsed(nextName: string): boolean {
@@ -600,7 +601,7 @@ export function MenuScreen({
                                     variant='primary'
                                 >
                                     {nameSaving
-                                        ? uiText.waitingShort
+                                        ? uiText.savingName
                                         : uiText.saveName}
                                 </ActionButton>
                             </div>
