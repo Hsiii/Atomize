@@ -464,7 +464,11 @@
     padding: 0;
     border: 0;
     background: transparent;
-    text-align: left;
+    text-align: center;
+}
+
+.auth-field-input::placeholder {
+    text-align: center;
 }
 
 .auth-field:focus-within {
