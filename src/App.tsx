@@ -92,6 +92,116 @@ function getAuthDisplayName(
     return undefined;
 }
 
+function buildUniqueLeaderboardName(
+    preferredName: string,
+    takenNames: ReadonlySet<string>
+): string {
+    const trimmedName = preferredName
+        .trim()
+        .replaceAll(/\s+/g, ' ')
+        .slice(0, 8);
+
+    if (!takenNames.has(normalizePlayerName(trimmedName))) {
+        return trimmedName;
+    }
+
+    for (let suffix = 2; suffix < 100; suffix++) {
+        const suffixText = String(suffix);
+        const candidateName = `${trimmedName.slice(0, Math.max(1, 8 - suffixText.length))}${suffixText}`;
+
+        if (!takenNames.has(normalizePlayerName(candidateName))) {
+            return candidateName;
+        }
+    }
+
+    return `${trimmedName.slice(0, 6)}99`;
+}
+
+async function syncAuthenticatedLeaderboardProfile({
+    authClient,
+    currentSession,
+    fallbackName,
+    onPlayerName,
+}: {
+    authClient: SupabaseClient<Database>;
+    currentSession: Session;
+    fallbackName: string | undefined;
+    onPlayerName: (name: string) => void;
+}) {
+    const userId = currentSession.user.id;
+    const fallbackMaxCombo = loadBestScore().maxCombo;
+    const existingRecordResponse = await authClient
+        .from('combo_leaderboard')
+        .select('player_name, max_combo')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+    if (existingRecordResponse.error) {
+        return;
+    }
+
+    const existingRecord = existingRecordResponse.data as {
+        player_name: string;
+        max_combo: number;
+    } | null;
+    const nextMaxCombo = Math.max(
+        existingRecord?.max_combo ?? 0,
+        fallbackMaxCombo
+    );
+
+    if (nextMaxCombo > 0) {
+        saveBestScore(0, nextMaxCombo);
+    }
+
+    let nextPlayerName = existingRecord?.player_name.trim() ?? fallbackName;
+
+    if (!nextPlayerName) {
+        return;
+    }
+
+    if (!existingRecord?.player_name) {
+        const availabilityResponse = await authClient
+            .from('combo_leaderboard')
+            .select('user_id, player_name');
+
+        if (availabilityResponse.error) {
+            return;
+        }
+
+        const takenNames = new Set(
+            availabilityResponse.data
+                .filter((entry) => entry.user_id !== userId)
+                .map((entry) => normalizePlayerName(entry.player_name))
+        );
+
+        nextPlayerName = buildUniqueLeaderboardName(nextPlayerName, takenNames);
+    }
+
+    const upsertResponse = await authClient.from('combo_leaderboard').upsert(
+        {
+            user_id: userId,
+            player_name: nextPlayerName,
+            max_combo: nextMaxCombo,
+        },
+        { onConflict: 'user_id' }
+    );
+
+    if (upsertResponse.error) {
+        return;
+    }
+
+    onPlayerName(nextPlayerName);
+    persistPlayerName(nextPlayerName);
+
+    if (currentSession.user.user_metadata.display_name !== nextPlayerName) {
+        detachPromise(
+            authClient.auth
+                .updateUser({ data: { display_name: nextPlayerName } })
+                .then(() => undefined)
+        );
+    }
+}
+
 export default function App(): JSX.Element {
     const [screen, setScreen] = useState<Screen>(() =>
         isTutorialComplete() ? 'menu' : 'tutorial'
@@ -108,51 +218,23 @@ export default function App(): JSX.Element {
 
         const authClient: SupabaseClient<Database> = supabaseAuthClient;
         detachPromise(
-            authClient.auth.getSession().then(({ data }) => {
+            authClient.auth.getSession().then(async ({ data }) => {
                 setSession(data.session ?? undefined);
                 if (data.session) {
                     setIsGuest(false);
                     setGuestModeEnabled(false);
                     finishGoogleAuthPopup();
-                }
-                const name = getAuthDisplayName(
-                    data.session?.user.user_metadata as
-                        | Record<string, unknown>
-                        | undefined,
-                    data.session?.user.email
-                );
-
-                if (name) {
-                    setPlayerName(name);
-                    persistPlayerName(name);
-                    if (!data.session?.user.user_metadata.display_name) {
-                        detachPromise(
-                            authClient.auth
-                                .updateUser({
-                                    data: { display_name: name },
-                                })
-                                .then(() => undefined)
-                        );
-                    }
-                }
-                const userId = data.session?.user.id;
-                if (userId) {
-                    detachPromise(
-                        Promise.resolve(
-                            authClient
-                                .from('combo_leaderboard')
-                                .select('max_combo')
-                                .eq('user_id', userId)
-                                .maybeSingle()
-                        ).then((response) => {
-                            const scoreData = response.data as {
-                                max_combo: number;
-                            } | null;
-                            if (scoreData?.max_combo) {
-                                saveBestScore(0, scoreData.max_combo);
-                            }
-                        })
-                    );
+                    await syncAuthenticatedLeaderboardProfile({
+                        authClient,
+                        currentSession: data.session,
+                        fallbackName: getAuthDisplayName(
+                            data.session.user.user_metadata as
+                                | Record<string, unknown>
+                                | undefined,
+                            data.session.user.email
+                        ),
+                        onPlayerName: setPlayerName,
+                    });
                 }
                 setSessionLoading(false);
             })
@@ -167,26 +249,19 @@ export default function App(): JSX.Element {
                     setIsGuest(false);
                     setGuestModeEnabled(false);
                     finishGoogleAuthPopup();
-                }
-                const name = getAuthDisplayName(
-                    currentSession?.user.user_metadata as
-                        | Record<string, unknown>
-                        | undefined,
-                    currentSession?.user.email
-                );
-
-                if (name) {
-                    setPlayerName(name);
-                    persistPlayerName(name);
-                    if (!currentSession?.user.user_metadata.display_name) {
-                        detachPromise(
-                            authClient.auth
-                                .updateUser({
-                                    data: { display_name: name },
-                                })
-                                .then(() => undefined)
-                        );
-                    }
+                    detachPromise(
+                        syncAuthenticatedLeaderboardProfile({
+                            authClient,
+                            currentSession,
+                            fallbackName: getAuthDisplayName(
+                                currentSession.user.user_metadata as
+                                    | Record<string, unknown>
+                                    | undefined,
+                                currentSession.user.email
+                            ),
+                            onPlayerName: setPlayerName,
+                        })
+                    );
                 }
             }
         );
