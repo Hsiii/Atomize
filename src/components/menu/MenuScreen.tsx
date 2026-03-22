@@ -4,8 +4,6 @@ import { Check, Crown, Plus, User, X } from 'lucide-react';
 
 import type { OnlineLobbyUser } from '../../app-state';
 import { uiText } from '../../app-state';
-import { loadBestScore } from '../../lib/app-helpers';
-import { supabaseAuthClient } from '../../lib/supabase';
 import { ActionButton } from '../game/ui/ActionButton';
 
 import './MenuScreen.css';
@@ -30,6 +28,7 @@ type MenuScreenProps = {
     onDeclineInvitation: () => void;
     onOpenAuth: () => void;
     onOpenAccount: () => void;
+    onOpenLeaderboard: () => void;
     isGuest: boolean;
 };
 
@@ -53,14 +52,10 @@ export function MenuScreen({
     onDeclineInvitation,
     onOpenAuth,
     onOpenAccount,
+    onOpenLeaderboard,
     isGuest,
 }: MenuScreenProps): JSX.Element {
     const [showInviteDialog, setShowInviteDialog] = useState(false);
-    const [showLeaderboardDialog, setShowLeaderboardDialog] = useState(false);
-    const [leaderboardData, setLeaderboardData] = useState<
-        Array<{ player_name: string; max_combo: number }>
-    >([]);
-    const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
     const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
     const [visibleToast, setVisibleToast] = useState<string | undefined>(
         undefined
@@ -68,7 +63,6 @@ export function MenuScreen({
     const toastTimeoutRef = useRef<
         ReturnType<typeof globalThis.setTimeout> | undefined
     >(undefined);
-    const leaderboardRequestRef = useRef<Promise<void> | undefined>(undefined);
 
     useEffect(() => {
         if (!toastMessage) {
@@ -154,80 +148,6 @@ export function MenuScreen({
         detachAction(onStartCpuGame());
     }
 
-    async function loadLeaderboard() {
-        if (leaderboardRequestRef.current) {
-            await leaderboardRequestRef.current;
-            return;
-        }
-
-        setLoadingLeaderboard(true);
-
-        const fallbackToLocal = () => {
-            const localBest = loadBestScore();
-            if (localBest.maxCombo > 0) {
-                setLeaderboardData([
-                    {
-                        player_name: playerName || uiText.guest,
-                        max_combo: localBest.maxCombo,
-                    },
-                ]);
-            }
-            setLoadingLeaderboard(false);
-        };
-
-        const client = supabaseAuthClient;
-        if (!client) {
-            fallbackToLocal();
-            return;
-        }
-
-        const request = (async () => {
-            try {
-                const response = await client
-                    .from('combo_leaderboard')
-                    .select('player_name, max_combo')
-                    .order('max_combo', { ascending: false })
-                    .limit(10);
-
-                const data = response.data as Array<{
-                    player_name: string;
-                    max_combo: number;
-                }> | null;
-                const { error } = response;
-
-                if (!error && (data?.length ?? 0) > 0) {
-                    setLeaderboardData(data ?? []);
-                    setLoadingLeaderboard(false);
-                    return;
-                }
-
-                fallbackToLocal();
-            } catch {
-                fallbackToLocal();
-            } finally {
-                leaderboardRequestRef.current = undefined;
-            }
-        })();
-
-        leaderboardRequestRef.current = request;
-        await request;
-    }
-
-    useEffect(() => {
-        if (showLeaderboardDialog || leaderboardData.length > 0) {
-            return;
-        }
-
-        detachAction(loadLeaderboard());
-    }, [leaderboardData.length, showLeaderboardDialog]);
-
-    function handleOpenLeaderboardDialog() {
-        setShowLeaderboardDialog(true);
-        if (leaderboardData.length === 0 && !leaderboardRequestRef.current) {
-            detachAction(loadLeaderboard());
-        }
-    }
-
     return (
         <main className='app-shell fullscreen-shell'>
             <section className='screen screen-menu'>
@@ -235,7 +155,7 @@ export function MenuScreen({
                     <div className='menu-top-right-actions'>
                         <button
                             className='icon-action-btn'
-                            onClick={handleOpenLeaderboardDialog}
+                            onClick={onOpenLeaderboard}
                             title={uiText.leaderboardTitle}
                             type='button'
                         >
@@ -517,111 +437,6 @@ export function MenuScreen({
                                 >
                                     {uiText.accept}
                                 </ActionButton>
-                            </div>
-                        </div>
-                    </div>
-                ) : undefined}
-
-                {showLeaderboardDialog ? (
-                    <div
-                        className='dialog-scrim'
-                        onClick={() => {
-                            setShowLeaderboardDialog(false);
-                        }}
-                        role='presentation'
-                    >
-                        <div
-                            className='dialog-panel dialog-invite dialog-leaderboard'
-                            onClick={(event) => {
-                                event.stopPropagation();
-                            }}
-                            role='dialog'
-                        >
-                            <header className='dialog-header'>
-                                <span className='dialog-title'>
-                                    {uiText.leaderboardTitle}
-                                </span>
-                                <button
-                                    className='dialog-close'
-                                    onClick={() => {
-                                        setShowLeaderboardDialog(false);
-                                    }}
-                                    type='button'
-                                >
-                                    <X size={18} />
-                                </button>
-                            </header>
-                            <div className='dialog-body'>
-                                {loadingLeaderboard && (
-                                    <p className='invite-empty'>
-                                        {uiText.waitingShort}
-                                    </p>
-                                )}
-                                {!loadingLeaderboard &&
-                                    leaderboardData.length > 0 && (
-                                        <table className='leaderboard-table'>
-                                            <thead>
-                                                <tr>
-                                                    <th className='col-rank'>
-                                                        {uiText.rank}
-                                                    </th>
-                                                    <th className='col-player'>
-                                                        {uiText.player}
-                                                    </th>
-                                                    <th className='col-combo'>
-                                                        {uiText.highestCombo}
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {leaderboardData.map(
-                                                    (entry, idx) => {
-                                                        const rowClassName =
-                                                            idx === 0
-                                                                ? 'leaderboard-row leaderboard-row-first'
-                                                                : 'leaderboard-row';
-
-                                                        return (
-                                                            <tr
-                                                                className={
-                                                                    rowClassName
-                                                                }
-                                                                key={`${entry.player_name}-${entry.max_combo}-${idx}`}
-                                                            >
-                                                                <td className='col-rank'>
-                                                                    <span className='leaderboard-rank-badge'>
-                                                                        #
-                                                                        {idx +
-                                                                            1}
-                                                                    </span>
-                                                                </td>
-                                                                <td className='col-player'>
-                                                                    <span className='leaderboard-player-name'>
-                                                                        {
-                                                                            entry.player_name
-                                                                        }
-                                                                    </span>
-                                                                </td>
-                                                                <td className='col-combo'>
-                                                                    <span className='leaderboard-combo-value'>
-                                                                        {
-                                                                            entry.max_combo
-                                                                        }
-                                                                    </span>
-                                                                </td>
-                                                            </tr>
-                                                        );
-                                                    }
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    )}
-                                {!loadingLeaderboard &&
-                                    leaderboardData.length === 0 && (
-                                        <p className='invite-empty'>
-                                            {uiText.leaderboardEmpty}
-                                        </p>
-                                    )}
                             </div>
                         </div>
                     </div>

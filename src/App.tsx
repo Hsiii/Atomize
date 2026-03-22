@@ -8,6 +8,7 @@ import { MultiplayerGameScreen } from './components/game/MultiplayerGameScreen';
 import { SingleGameScreen } from './components/game/SingleGameScreen';
 import { AccountScreen } from './components/menu/AccountScreen';
 import { AuthScreen } from './components/menu/AuthScreen';
+import { LeaderboardScreen } from './components/menu/LeaderboardScreen';
 import { MenuScreen } from './components/menu/MenuScreen';
 import { useLocalCpuGame } from './hooks/useLocalCpuGame';
 import { useMultiplayerGame } from './hooks/useMultiplayerGame';
@@ -212,6 +213,7 @@ export default function App(): JSX.Element {
         undefined
     );
     const [showAccount, setShowAccount] = useState(false);
+    const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [sessionLoading, setSessionLoading] = useState(true);
     const [session, setSession] = useState<Session | undefined>(undefined);
     const [isGuest, setIsGuest] = useState(() => isGuestModeEnabled());
@@ -467,6 +469,17 @@ export default function App(): JSX.Element {
         );
     }
 
+    if (showLeaderboard) {
+        return (
+            <LeaderboardScreen
+                onBack={() => {
+                    setShowLeaderboard(false);
+                }}
+                playerName={playerName}
+            />
+        );
+    }
+
     if (screen === 'tutorial') {
         return (
             <MultiplayerGameScreen
@@ -536,6 +549,9 @@ export default function App(): JSX.Element {
                 }}
                 onOpenAuth={() => {
                     setAuthMode('login');
+                }}
+                onOpenLeaderboard={() => {
+                    setShowLeaderboard(true);
                 }}
                 onPrefetchInviteUsers={multiplayerGame.prefetchOnlineUsers}
                 onStartCpuGame={() => {
