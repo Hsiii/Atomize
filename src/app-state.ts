@@ -115,7 +115,8 @@ export const uiText = {
     popupBlocked:
         'Pop-up was blocked by your browser. Please allow pop-ups for this site to log in.',
     soloTitle: 'Solo',
-    soloGoal: 'Factor as many numbers as you can in 60 seconds.',
+    soloGoal: 'Beat the clock.',
+    soloLeaderboard: 'Leaderboard',
     battleTitle: 'Battle',
     chooseOpponent: 'Choose your opponent',
     opponentPickerTitle: 'Choose Opponent',

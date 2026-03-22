@@ -56,14 +56,12 @@
 
 .solo-pregame-desc-text {
     margin: var(--space-0);
-    font-family: var(--type-body-meta-family);
-    font-size: var(--type-action-label-size);
-    font-weight: var(--type-body-meta-weight);
+    font-family: var(--type-action-label-family);
+    font-size: 1.5rem;
+    font-weight: var(--type-action-label-weight);
     color: var(--type-body-meta-color);
-    line-height: var(--type-body-meta-relaxed-line-height);
+    line-height: 1.3;
     text-align: center;
-    max-width: 20rem;
-    text-wrap: pretty;
 }
 
 /* === Body === */
@@ -75,6 +73,18 @@
     gap: 1.25rem;
     padding: 0 0.5rem max(env(safe-area-inset-bottom), 2rem);
     flex: 1;
+}
+
+/* === Leaderboard Section Label === */
+
+.solo-pregame-lb-label {
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-action-label-weight);
+    color: var(--type-body-meta-color);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 -0.5rem;
 }
 
 /* === Leaderboard Table (mirrors leaderboard page) === */

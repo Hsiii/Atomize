@@ -51,6 +51,9 @@ export function SoloPregameScreen({
                 </div>
 
                 <div className='solo-pregame-body'>
+                    <h2 className='solo-pregame-lb-label'>
+                        {uiText.soloLeaderboard}
+                    </h2>
                     <table className='solo-pregame-lb-table'>
                         <thead>
                             <tr>
