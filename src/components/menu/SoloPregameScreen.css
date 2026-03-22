@@ -85,54 +85,41 @@
 .solo-pregame-pb {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: var(--space-3);
+    width: 100%;
 }
 
 .solo-pregame-pb-title {
-    margin: var(--space-0);
-    font-family: var(--type-action-label-family);
-    font-size: var(--type-action-label-size);
-    font-weight: var(--type-action-label-weight);
-    color: var(--type-body-meta-color);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-
-.solo-pregame-pb-row {
-    display: flex;
-    align-items: center;
-    background: var(--color-surface-accent);
-    border-radius: var(--radius-panel);
-    padding: var(--space-5) 0;
-}
-
-.solo-pregame-pb-stat {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.15rem;
-}
-
-.solo-pregame-pb-divider {
-    width: 1px;
-    align-self: stretch;
-    background: var(--color-border-soft);
-}
-
-.solo-pregame-pb-value {
-    font-family: var(--type-metric-inline-family);
-    font-size: 1.75rem;
-    font-weight: var(--type-metric-inline-weight);
-    color: var(--color-primary);
-    line-height: 1.1;
-}
-
-.solo-pregame-pb-label {
     font-family: var(--type-body-meta-family);
     font-size: var(--type-body-meta-size);
     font-weight: var(--type-body-meta-weight);
     color: var(--type-body-meta-color);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    text-align: center;
+}
+
+.solo-pregame-pb-stat {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-6);
+    background: var(--color-surface-accent);
+    border-radius: var(--radius-panel);
+}
+
+.solo-pregame-pb-value {
+    font-family: var(--type-metric-inline-family);
+    font-size: var(--type-metric-inline-size);
+    font-weight: var(--type-metric-inline-weight);
+    color: var(--color-primary);
+}
+
+.solo-pregame-pb-label {
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-action-label-weight);
+    color: var(--color-ink);
 }
 
 /* === Spacer === */

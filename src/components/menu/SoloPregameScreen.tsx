@@ -37,27 +37,24 @@ export function SoloPregameScreen({
 
                 <div className='solo-pregame-body'>
                     <div className='solo-pregame-pb'>
-                        <h2 className='solo-pregame-pb-title'>
+                        <span className='solo-pregame-pb-title'>
                             {uiText.soloPB}
-                        </h2>
-                        <div className='solo-pregame-pb-row'>
-                            <div className='solo-pregame-pb-stat'>
-                                <span className='solo-pregame-pb-value'>
-                                    {bestScore.score}
-                                </span>
-                                <span className='solo-pregame-pb-label'>
-                                    {uiText.score}
-                                </span>
-                            </div>
-                            <div className='solo-pregame-pb-divider' />
-                            <div className='solo-pregame-pb-stat'>
-                                <span className='solo-pregame-pb-value'>
-                                    {bestScore.maxCombo}
-                                </span>
-                                <span className='solo-pregame-pb-label'>
-                                    {uiText.maxCombo}
-                                </span>
-                            </div>
+                        </span>
+                        <div className='solo-pregame-pb-stat'>
+                            <span className='solo-pregame-pb-label'>
+                                {uiText.score}
+                            </span>
+                            <span className='solo-pregame-pb-value'>
+                                {bestScore.score}
+                            </span>
+                        </div>
+                        <div className='solo-pregame-pb-stat'>
+                            <span className='solo-pregame-pb-label'>
+                                {uiText.maxCombo}
+                            </span>
+                            <span className='solo-pregame-pb-value'>
+                                {bestScore.maxCombo}
+                            </span>
                         </div>
                     </div>
 
