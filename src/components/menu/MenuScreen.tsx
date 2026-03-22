@@ -713,7 +713,9 @@ export function MenuScreen({
                                         }}
                                         type='button'
                                     >
-                                        <GoogleMark />
+                                        <span className='auth-google-button-content'>
+                                            <GoogleMark />
+                                        </span>
                                     </button>
                                 </div>
                             </div>
