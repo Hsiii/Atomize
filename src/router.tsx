@@ -171,6 +171,10 @@ function BattlePickerPage(): JSX.Element {
                     multiplayerGame.handleLobbyInvite(targetPlayerId)
                 );
             }}
+            onLeaveVs={() => {
+                localCpuGame.resetLocalCpuGame();
+                detachPromise(multiplayerGame.resetMultiplayerGame());
+            }}
             onlineUsers={multiplayerGame.onlineUsers}
             onPrefetchInviteUsers={multiplayerGame.prefetchOnlineUsers}
             onStartCpuGame={() => {

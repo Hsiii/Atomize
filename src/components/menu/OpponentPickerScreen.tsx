@@ -23,6 +23,7 @@ type OpponentPickerScreenProps = {
     onPrefetchInviteUsers: () => void;
     onToggleReady: () => void | Promise<void>;
     onBack: () => void;
+    onLeaveVs: () => void;
 };
 
 export function OpponentPickerScreen({
@@ -38,6 +39,7 @@ export function OpponentPickerScreen({
     onPrefetchInviteUsers,
     onToggleReady,
     onBack,
+    onLeaveVs,
 }: OpponentPickerScreenProps): JSX.Element {
     const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
     const hasOpponent = Boolean(opponentName);
@@ -80,35 +82,8 @@ export function OpponentPickerScreen({
         return (
             <main className='app-shell fullscreen-shell opponent-picker-shell'>
                 <section className='screen vs-screen'>
-                    <BackButton onBack={onBack} />
+                    <BackButton onBack={onLeaveVs} />
                     <div className='vs-layout'>
-                        <div className='vs-player-column'>
-                            <div className='vs-avatar-wrap'>
-                                <div className='vs-avatar vs-avatar-self'>
-                                    {playerInitial ? (
-                                        <span className='vs-avatar-initial'>
-                                            {playerInitial}
-                                        </span>
-                                    ) : (
-                                        <span className='vs-avatar-dot' />
-                                    )}
-                                </div>
-                                {isCurrentPlayerReady ? (
-                                    <span className='vs-ready-badge'>
-                                        <Check
-                                            className='vs-ready-check'
-                                            size={12}
-                                        />
-                                    </span>
-                                ) : undefined}
-                            </div>
-                            <span className='vs-player-name'>
-                                {displayPlayerName}
-                            </span>
-                        </div>
-
-                        <span className='vs-divider'>{uiText.vs}</span>
-
                         <div className='vs-player-column'>
                             <div className='vs-avatar-wrap'>
                                 <div className='vs-avatar vs-avatar-opponent'>
@@ -137,17 +112,46 @@ export function OpponentPickerScreen({
                                 {displayOpponentName}
                             </span>
                         </div>
+
+                        <span className='vs-divider'>{uiText.vs}</span>
+
+                        <div className='vs-player-column'>
+                            <div className='vs-avatar-wrap'>
+                                <div className='vs-avatar vs-avatar-self'>
+                                    {playerInitial ? (
+                                        <span className='vs-avatar-initial'>
+                                            {playerInitial}
+                                        </span>
+                                    ) : (
+                                        <span className='vs-avatar-dot' />
+                                    )}
+                                </div>
+                                {isCurrentPlayerReady ? (
+                                    <span className='vs-ready-badge'>
+                                        <Check
+                                            className='vs-ready-check'
+                                            size={12}
+                                        />
+                                    </span>
+                                ) : undefined}
+                            </div>
+                            <span className='vs-player-name'>
+                                {displayPlayerName}
+                            </span>
+                        </div>
                     </div>
-                    <ActionButton
-                        aria-pressed={isCurrentPlayerReady}
-                        className={readyButtonClassName}
-                        onClick={() => {
-                            detachAction(onToggleReady());
-                        }}
-                        variant='primary'
-                    >
-                        {uiText.ready}
-                    </ActionButton>
+                    <div className='vs-bottom'>
+                        <ActionButton
+                            aria-pressed={isCurrentPlayerReady}
+                            className={readyButtonClassName}
+                            onClick={() => {
+                                detachAction(onToggleReady());
+                            }}
+                            variant='primary'
+                        >
+                            {uiText.ready}
+                        </ActionButton>
+                    </div>
                 </section>
             </main>
         );
