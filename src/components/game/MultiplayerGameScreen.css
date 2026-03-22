@@ -18,10 +18,10 @@
         max(var(--space-4), env(safe-area-inset-top)) +
             var(--multiplayer-tutorial-top-offset)
     );
+    border-radius: var(--radius-panel);
 }
 
 .tutorial-highlight-frame {
-    border-radius: var(--radius-panel);
     outline: 2px solid rgba(22, 138, 173, 0.38);
     outline-offset: 0.2rem;
 }
