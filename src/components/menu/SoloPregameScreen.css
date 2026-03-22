@@ -91,6 +91,43 @@
 
 .solo-pregame-leaderboard {
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+    min-height: 0;
+}
+
+.solo-lb-section-title {
+    margin: var(--space-0);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
+    letter-spacing: var(--type-action-label-wide-letter-spacing);
+    text-transform: var(--type-action-label-wide-text-transform);
+    color: var(--type-body-meta-color);
+    line-height: var(--type-body-meta-line-height);
+    flex: 0 0 auto;
+}
+
+.solo-lb-section-icon {
+    width: 0.95rem;
+    height: 0.95rem;
+    stroke-width: 2.2;
+    opacity: 0.6;
+}
+
+.solo-lb-panel {
+    border: 1px solid var(--color-border-soft);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface-strong);
+    padding: 0.25rem 0.35rem;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
 }
 
 .solo-lb-table {

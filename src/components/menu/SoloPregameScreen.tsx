@@ -1,5 +1,5 @@
 import type { JSX } from 'react';
-import { Timer } from 'lucide-react';
+import { Timer, Trophy } from 'lucide-react';
 
 import { uiText } from '../../app-state';
 import type { BestScoreRecord } from '../../lib/app-helpers';
@@ -56,88 +56,97 @@ export function SoloPregameScreen({
 
                 <div className='solo-pregame-body'>
                     <div className='solo-pregame-leaderboard'>
-                        <table className='solo-lb-table'>
-                            <thead>
-                                <tr>
-                                    <th className='solo-lb-col-rank' />
-                                    <th className='solo-lb-col-name'>
-                                        {uiText.player}
-                                    </th>
-                                    <th className='solo-lb-col-score'>
-                                        {uiText.score}
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {topEntries.map((entry, idx) => {
-                                    const isFirst = idx === 0;
-                                    const isMe =
-                                        entry.player_name === displayName &&
-                                        entry.high_score === playerScore;
-                                    const rowClass = [
-                                        'solo-lb-row',
-                                        isFirst ? 'solo-lb-row-first' : '',
-                                        isMe ? 'solo-lb-row-me' : '',
-                                    ]
-                                        .filter(Boolean)
-                                        .join(' ');
+                        <h2 className='solo-lb-section-title'>
+                            <Trophy
+                                aria-hidden='true'
+                                className='solo-lb-section-icon'
+                            />
+                            {uiText.leaderboardTitle}
+                        </h2>
+                        <div className='solo-lb-panel'>
+                            <table className='solo-lb-table'>
+                                <thead>
+                                    <tr>
+                                        <th className='solo-lb-col-rank' />
+                                        <th className='solo-lb-col-name'>
+                                            {uiText.player}
+                                        </th>
+                                        <th className='solo-lb-col-score'>
+                                            {uiText.score}
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {topEntries.map((entry, idx) => {
+                                        const isFirst = idx === 0;
+                                        const isMe =
+                                            entry.player_name === displayName &&
+                                            entry.high_score === playerScore;
+                                        const rowClass = [
+                                            'solo-lb-row',
+                                            isFirst ? 'solo-lb-row-first' : '',
+                                            isMe ? 'solo-lb-row-me' : '',
+                                        ]
+                                            .filter(Boolean)
+                                            .join(' ');
 
-                                    return (
-                                        <tr
-                                            className={rowClass}
-                                            key={`${entry.player_name}-${idx}`}
-                                        >
-                                            <td className='solo-lb-col-rank'>
-                                                <span className='solo-lb-rank'>
-                                                    {idx + 1}
-                                                </span>
-                                            </td>
-                                            <td className='solo-lb-col-name'>
-                                                <span className='solo-lb-name'>
-                                                    {entry.player_name}
-                                                </span>
-                                            </td>
-                                            <td className='solo-lb-col-score'>
-                                                <span className='solo-lb-score'>
-                                                    {entry.high_score}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                                {isPlayerInTop ? undefined : (
-                                    <>
-                                        {topEntries.length > 0 ? (
-                                            <tr className='solo-lb-row solo-lb-row-gap'>
-                                                <td
-                                                    className='solo-lb-ellipsis'
-                                                    colSpan={3}
-                                                >
-                                                    &#8942;
+                                        return (
+                                            <tr
+                                                className={rowClass}
+                                                key={`${entry.player_name}-${idx}`}
+                                            >
+                                                <td className='solo-lb-col-rank'>
+                                                    <span className='solo-lb-rank'>
+                                                        {idx + 1}
+                                                    </span>
+                                                </td>
+                                                <td className='solo-lb-col-name'>
+                                                    <span className='solo-lb-name'>
+                                                        {entry.player_name}
+                                                    </span>
+                                                </td>
+                                                <td className='solo-lb-col-score'>
+                                                    <span className='solo-lb-score'>
+                                                        {entry.high_score}
+                                                    </span>
                                                 </td>
                                             </tr>
-                                        ) : undefined}
-                                        <tr className='solo-lb-row solo-lb-row-me'>
-                                            <td className='solo-lb-col-rank'>
-                                                <span className='solo-lb-rank'>
-                                                    &#8212;
-                                                </span>
-                                            </td>
-                                            <td className='solo-lb-col-name'>
-                                                <span className='solo-lb-name'>
-                                                    {displayName}
-                                                </span>
-                                            </td>
-                                            <td className='solo-lb-col-score'>
-                                                <span className='solo-lb-score'>
-                                                    {playerScore}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    </>
-                                )}
-                            </tbody>
-                        </table>
+                                        );
+                                    })}
+                                    {isPlayerInTop ? undefined : (
+                                        <>
+                                            {topEntries.length > 0 ? (
+                                                <tr className='solo-lb-row solo-lb-row-gap'>
+                                                    <td
+                                                        className='solo-lb-ellipsis'
+                                                        colSpan={3}
+                                                    >
+                                                        &#8942;
+                                                    </td>
+                                                </tr>
+                                            ) : undefined}
+                                            <tr className='solo-lb-row solo-lb-row-me'>
+                                                <td className='solo-lb-col-rank'>
+                                                    <span className='solo-lb-rank'>
+                                                        &#8212;
+                                                    </span>
+                                                </td>
+                                                <td className='solo-lb-col-name'>
+                                                    <span className='solo-lb-name'>
+                                                        {displayName}
+                                                    </span>
+                                                </td>
+                                                <td className='solo-lb-col-score'>
+                                                    <span className='solo-lb-score'>
+                                                        {playerScore}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                     <ActionButton
