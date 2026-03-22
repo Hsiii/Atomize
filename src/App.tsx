@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { JSX } from 'react';
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
 
+import { uiText } from './app-state';
 import type { Screen } from './app-state';
 import { MultiplayerGameScreen } from './components/game/MultiplayerGameScreen';
 import { SingleGameScreen } from './components/game/SingleGameScreen';
@@ -16,6 +17,7 @@ import {
     getInitialPlayerName,
     isGuestModeEnabled,
     isTutorialComplete,
+    loadBestScore,
     markTutorialComplete,
     persistPlayerName,
     saveBestScore,
@@ -23,6 +25,16 @@ import {
 } from './lib/app-helpers';
 import type { Database } from './lib/database.types';
 import { supabaseAuthClient } from './lib/supabase';
+
+function normalizePlayerName(value: string): string {
+    return value.trim().replaceAll(/\s+/g, ' ').toLowerCase();
+}
+
+function isUniqueViolation(
+    error: { code?: string } | null | undefined
+): boolean {
+    return error?.code === '23505';
+}
 
 function getAuthDisplayName(
     userMetadata: Record<string, unknown> | undefined,
@@ -197,27 +209,72 @@ export default function App(): JSX.Element {
         persistPlayerName(playerName);
     }, [playerName]);
 
-    function handleEditName(name: string) {
-        setPlayerName(name);
+    async function handleEditName(name: string): Promise<string | undefined> {
         if (!supabaseAuthClient || !session) {
-            return;
+            setPlayerName(name);
+            return undefined;
         }
+
         const userId = session.user.id;
-        // Update display name in account metadata.
+        const normalizedNextName = normalizePlayerName(name);
+        const availabilityResponse = await supabaseAuthClient
+            .from('combo_leaderboard')
+            .select('user_id, player_name')
+            .neq('user_id', userId);
+
+        if (availabilityResponse.error) {
+            return uiText.nameSaveError;
+        }
+
+        const nameIsTaken = availabilityResponse.data.some(
+            (entry) =>
+                normalizePlayerName(entry.player_name) === normalizedNextName
+        );
+
+        if (nameIsTaken) {
+            return uiText.nameInUse;
+        }
+
+        const currentRecordResponse = await supabaseAuthClient
+            .from('combo_leaderboard')
+            .select('max_combo')
+            .eq('user_id', userId)
+            .maybeSingle();
+
+        if (currentRecordResponse.error) {
+            return uiText.nameSaveError;
+        }
+
+        const nextMaxCombo =
+            currentRecordResponse.data?.max_combo ?? loadBestScore().maxCombo;
+        const upsertResponse = await supabaseAuthClient
+            .from('combo_leaderboard')
+            .upsert(
+                {
+                    user_id: userId,
+                    player_name: name,
+                    max_combo: nextMaxCombo,
+                },
+                { onConflict: 'user_id' }
+            );
+
+        if (isUniqueViolation(upsertResponse.error)) {
+            return uiText.nameInUse;
+        }
+
+        if (upsertResponse.error) {
+            return uiText.nameSaveError;
+        }
+
+        setPlayerName(name);
+        persistPlayerName(name);
         detachPromise(
             supabaseAuthClient.auth
                 .updateUser({ data: { display_name: name } })
                 .then(() => undefined)
         );
-        // Sync updated name to this account's leaderboard row.
-        detachPromise(
-            Promise.resolve(
-                supabaseAuthClient
-                    .from('combo_leaderboard')
-                    .update({ player_name: name })
-                    .eq('user_id', userId)
-            )
-        );
+
+        return undefined;
     }
 
     async function returnToMenu() {
