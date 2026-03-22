@@ -108,6 +108,7 @@ export function MenuScreen({
     const toastTimeoutRef = useRef<
         ReturnType<typeof globalThis.setTimeout> | undefined
     >(undefined);
+    const leaderboardRequestRef = useRef<Promise<void> | undefined>(undefined);
 
     useEffect(() => {
         if (!toastMessage) {
@@ -303,55 +304,77 @@ export function MenuScreen({
         detachAction(onStartCpuGame());
     }
 
+    async function loadLeaderboard() {
+        if (leaderboardRequestRef.current) {
+            await leaderboardRequestRef.current;
+            return;
+        }
+
+        setLoadingLeaderboard(true);
+
+        const fallbackToLocal = () => {
+            const localBest = loadBestScore();
+            if (localBest.maxCombo > 0) {
+                setLeaderboardData([
+                    {
+                        player_name: playerName || uiText.guest,
+                        max_combo: localBest.maxCombo,
+                    },
+                ]);
+            }
+            setLoadingLeaderboard(false);
+        };
+
+        const client = supabaseAuthClient;
+        if (!client) {
+            fallbackToLocal();
+            return;
+        }
+
+        const request = (async () => {
+            try {
+                const response = await client
+                    .from('combo_leaderboard')
+                    .select('player_name, max_combo')
+                    .order('max_combo', { ascending: false })
+                    .limit(10);
+
+                const data = response.data as Array<{
+                    player_name: string;
+                    max_combo: number;
+                }> | null;
+                const { error } = response;
+
+                if (!error && (data?.length ?? 0) > 0) {
+                    setLeaderboardData(data ?? []);
+                    setLoadingLeaderboard(false);
+                    return;
+                }
+
+                fallbackToLocal();
+            } catch {
+                fallbackToLocal();
+            } finally {
+                leaderboardRequestRef.current = undefined;
+            }
+        })();
+
+        leaderboardRequestRef.current = request;
+        await request;
+    }
+
+    useEffect(() => {
+        if (showLeaderboardDialog || leaderboardData.length > 0) {
+            return;
+        }
+
+        detachAction(loadLeaderboard());
+    }, [leaderboardData.length, showLeaderboardDialog]);
+
     function handleOpenLeaderboardDialog() {
         setShowLeaderboardDialog(true);
-        if (leaderboardData.length === 0) {
-            setLoadingLeaderboard(true);
-
-            const fallbackToLocal = () => {
-                const localBest = loadBestScore();
-                if (localBest.maxCombo > 0) {
-                    setLeaderboardData([
-                        {
-                            player_name: playerName || uiText.guest,
-                            max_combo: localBest.maxCombo,
-                        },
-                    ]);
-                }
-                setLoadingLeaderboard(false);
-            };
-
-            const client = supabaseAuthClient;
-            if (client) {
-                const fetchLeaderboard = async () => {
-                    try {
-                        const response = await client
-                            .from('combo_leaderboard')
-                            .select('player_name, max_combo')
-                            .order('max_combo', { ascending: false })
-                            .limit(10);
-
-                        const data = response.data as Array<{
-                            player_name: string;
-                            max_combo: number;
-                        }> | null;
-                        const { error } = response;
-
-                        if (!error && (data?.length ?? 0) > 0) {
-                            setLeaderboardData(data ?? []);
-                            setLoadingLeaderboard(false);
-                        } else {
-                            fallbackToLocal();
-                        }
-                    } catch {
-                        fallbackToLocal();
-                    }
-                };
-
-                detachAction(fetchLeaderboard());
-            } else {
-                fallbackToLocal();
-            }
+        if (leaderboardData.length === 0 && !leaderboardRequestRef.current) {
+            detachAction(loadLeaderboard());
         }
     }
 
