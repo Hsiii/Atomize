@@ -65,19 +65,16 @@ function normalizePlayerNameKey(value: string | undefined): string {
 }
 
 function isGuestDisplayName(value: string | undefined): boolean {
-    return (
-        normalizePlayerNameKey(value) === normalizePlayerNameKey(uiText.guest)
-    );
+    const key = normalizePlayerNameKey(value);
+    const guestKey = normalizePlayerNameKey(uiText.guest);
+    return key === guestKey || /^guest\d+$/.test(key.replaceAll(' ', ''));
 }
 
 function getNextGuestDisplayName(existingNames: readonly string[]): string {
     let nextGuestIndex = 1;
 
     for (;;) {
-        const candidateName =
-            nextGuestIndex === 1
-                ? uiText.guest
-                : `${uiText.guest} ${nextGuestIndex}`;
+        const candidateName = `${uiText.guest}${nextGuestIndex}`;
 
         if (
             !existingNames.some(
@@ -105,7 +102,7 @@ function resolveGuestLobbyNames(
     const numberedGuestNames = new Map(
         guestUsers.map((user, index) => [
             user.playerId,
-            `${uiText.guest} ${index + 1}`,
+            `${uiText.guest}${index + 1}`,
         ])
     );
 

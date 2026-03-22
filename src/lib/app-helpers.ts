@@ -8,6 +8,8 @@ const bestMaxComboStorageKey = 'atomize.bestMaxCombo';
 const tutorialCompleteStorageKey = 'atomize.tutorialComplete';
 const guestModeStorageKey = 'atomize.isGuestMode';
 
+const guestSessionNumber = Math.floor(Math.random() * 999) + 1;
+
 export const soloDurationSeconds = 60;
 export const playablePrimes = PRIME_POOL.slice(0, 9);
 
@@ -51,8 +53,12 @@ export function persistPlayerName(playerName: string): void {
     globalThis.localStorage.setItem(playerNameStorageKey, normalizedName);
 }
 
+export function getGuestDisplayName(): string {
+    return `${uiText.guest}${guestSessionNumber}`;
+}
+
 export function getDisplayPlayerName(value: string | undefined): string {
-    return normalizePlayerName(value ?? '') || uiText.guest;
+    return normalizePlayerName(value ?? '') || getGuestDisplayName();
 }
 
 export function createRoomId(): string {

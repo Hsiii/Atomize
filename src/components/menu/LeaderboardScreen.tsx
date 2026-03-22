@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { JSX } from 'react';
 
 import { uiText } from '../../app-state';
-import { loadBestScore } from '../../lib/app-helpers';
+import { getGuestDisplayName, loadBestScore } from '../../lib/app-helpers';
 import { supabaseAuthClient } from '../../lib/supabase';
 import { BackButton } from '../ui/BackButton';
 
