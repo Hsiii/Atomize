@@ -80,7 +80,7 @@ export const uiText = {
     leaderboardEmpty: 'No records found',
     rank: 'Rank',
     player: 'Player',
-    highestCombo: 'Max Combo',
+    highScore: 'High Score',
     signIn: 'Log In',
     signUp: 'Sign Up',
     withEmail: 'With Email',

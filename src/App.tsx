@@ -136,10 +136,10 @@ async function syncAuthenticatedLeaderboardProfile({
     onPlayerName: (name: string) => void;
 }) {
     const userId = currentSession.user.id;
-    const fallbackMaxCombo = loadBestScore().maxCombo;
+    const fallbackHighScore = loadBestScore().score;
     const existingRecordResponse = await authClient
         .from('combo_leaderboard')
-        .select('player_name, max_combo')
+        .select('player_name, high_score')
         .eq('user_id', userId)
         .maybeSingle();
 
@@ -149,15 +149,15 @@ async function syncAuthenticatedLeaderboardProfile({
 
     const existingRecord = existingRecordResponse.data as {
         player_name: string;
-        max_combo: number;
+        high_score: number;
     } | null;
-    const nextMaxCombo = Math.max(
-        existingRecord?.max_combo ?? 0,
-        fallbackMaxCombo
+    const nextHighScore = Math.max(
+        existingRecord?.high_score ?? 0,
+        fallbackHighScore
     );
 
-    if (nextMaxCombo > 0) {
-        saveBestScore(0, nextMaxCombo);
+    if (nextHighScore > 0) {
+        saveBestScore(nextHighScore, 0);
     }
 
     let nextPlayerName = existingRecord?.player_name.trim() ?? fallbackName;
@@ -188,7 +188,7 @@ async function syncAuthenticatedLeaderboardProfile({
         {
             user_id: userId,
             player_name: nextPlayerName,
-            max_combo: nextMaxCombo,
+            high_score: nextHighScore,
         },
         { onConflict: 'user_id' }
     );
@@ -292,7 +292,7 @@ export default function App(): JSX.Element {
     const soloGame = useSoloGame({
         screen,
         onScreenChange: setScreen,
-        onNewBest: (_score, maxCombo) => {
+        onNewBest: (score) => {
             const userId = session?.user.id;
             if (!supabaseAuthClient || !userId || !playerName) {
                 return;
@@ -303,7 +303,7 @@ export default function App(): JSX.Element {
                         {
                             user_id: userId,
                             player_name: playerName,
-                            max_combo: maxCombo,
+                            high_score: score,
                         },
                         { onConflict: 'user_id' }
                     )
@@ -392,7 +392,7 @@ export default function App(): JSX.Element {
 
         const currentRecordResponse = await supabaseAuthClient
             .from('combo_leaderboard')
-            .select('max_combo')
+            .select('high_score')
             .eq('user_id', userId)
             .maybeSingle();
 
@@ -400,15 +400,15 @@ export default function App(): JSX.Element {
             return uiText.nameSaveError;
         }
 
-        const nextMaxCombo =
-            currentRecordResponse.data?.max_combo ?? loadBestScore().maxCombo;
+        const nextHighScore =
+            currentRecordResponse.data?.high_score ?? loadBestScore().score;
         const upsertResponse = await supabaseAuthClient
             .from('combo_leaderboard')
             .upsert(
                 {
                     user_id: userId,
                     player_name: name,
-                    max_combo: nextMaxCombo,
+                    high_score: nextHighScore,
                 },
                 { onConflict: 'user_id' }
             );

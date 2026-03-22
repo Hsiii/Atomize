@@ -10,7 +10,7 @@ import './LeaderboardScreen.css';
 
 export type LeaderboardEntry = {
     player_name: string;
-    max_combo: number;
+    high_score: number;
 };
 
 type LeaderboardScreenProps = {
@@ -25,11 +25,11 @@ export async function fetchLeaderboardData(
     const client = supabaseAuthClient;
     if (!client) {
         const localBest = loadBestScore();
-        if (localBest.maxCombo > 0) {
+        if (localBest.score > 0) {
             return [
                 {
                     player_name: playerName || getGuestDisplayName(),
-                    max_combo: localBest.maxCombo,
+                    high_score: localBest.score,
                 },
             ];
         }
@@ -39,8 +39,9 @@ export async function fetchLeaderboardData(
     try {
         const response = await client
             .from('combo_leaderboard')
-            .select('player_name, max_combo')
-            .order('max_combo', { ascending: false })
+            .select('player_name, high_score')
+            .gt('high_score', 0)
+            .order('high_score', { ascending: false })
             .limit(10);
 
         const data = response.data as LeaderboardEntry[] | null;
@@ -52,11 +53,11 @@ export async function fetchLeaderboardData(
     }
 
     const localBest = loadBestScore();
-    if (localBest.maxCombo > 0) {
+    if (localBest.score > 0) {
         return [
             {
                 player_name: playerName || getGuestDisplayName(),
-                max_combo: localBest.maxCombo,
+                high_score: localBest.score,
             },
         ];
     }
@@ -115,7 +116,7 @@ export function LeaderboardScreen({
                                         {uiText.player}
                                     </th>
                                     <th className='col-combo'>
-                                        {uiText.highestCombo}
+                                        {uiText.highScore}
                                     </th>
                                 </tr>
                             </thead>
@@ -129,7 +130,7 @@ export function LeaderboardScreen({
                                     return (
                                         <tr
                                             className={rowClassName}
-                                            key={`${entry.player_name}-${entry.max_combo}-${idx}`}
+                                            key={`${entry.player_name}-${entry.high_score}-${idx}`}
                                         >
                                             <td className='col-rank'>
                                                 <span className='leaderboard-rank-badge'>
@@ -143,7 +144,7 @@ export function LeaderboardScreen({
                                             </td>
                                             <td className='col-combo'>
                                                 <span className='leaderboard-combo-value'>
-                                                    {entry.max_combo}
+                                                    {entry.high_score}
                                                 </span>
                                             </td>
                                         </tr>

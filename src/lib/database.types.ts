@@ -11,18 +11,21 @@ export interface Database {
         Tables: {
             combo_leaderboard: {
                 Row: {
+                    high_score: number;
                     max_combo: number;
                     player_name: string;
                     updated_at: string | null;
                     user_id: string;
                 };
                 Insert: {
+                    high_score?: number;
                     max_combo?: number;
                     player_name: string;
                     updated_at?: string | null;
                     user_id: string;
                 };
                 Update: {
+                    high_score?: number;
                     max_combo?: number;
                     player_name?: string;
                     updated_at?: string | null;
