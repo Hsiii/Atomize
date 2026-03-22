@@ -205,15 +205,8 @@
 .online-empty-state {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     gap: 0.25rem;
-    padding: 1.25rem 1rem;
-    border-radius: var(--radius-panel);
-    border: 1px dashed var(--color-border-soft);
-    background: var(--color-surface-accent);
-    flex: 1;
-    min-height: 4rem;
+    padding: 0.65rem 0;
 }
 
 .online-empty {
@@ -223,7 +216,6 @@
     font-weight: var(--type-action-label-weight);
     color: var(--type-body-meta-color);
     line-height: var(--type-body-meta-relaxed-line-height);
-    text-align: center;
 }
 
 .online-empty-hint {
@@ -233,14 +225,12 @@
     font-weight: var(--type-body-meta-weight);
     color: var(--type-body-meta-color);
     line-height: var(--type-body-meta-relaxed-line-height);
-    text-align: center;
     opacity: 0.7;
 }
 
 .online-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -250,10 +240,11 @@
     display: flex;
     align-items: center;
     gap: 0.65rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: var(--radius-button);
-    background: var(--color-surface-strong);
-    border: 1px solid var(--color-border-soft);
+    padding: 0.65rem 0;
+}
+
+.online-row + .online-row {
+    border-top: 1px solid var(--color-border-soft);
 }
 
 .online-player-avatar {
