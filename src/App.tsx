@@ -5,7 +5,6 @@ import type { Session, SupabaseClient } from '@supabase/supabase-js';
 import type { Screen } from './app-state';
 import { MultiplayerGameScreen } from './components/game/MultiplayerGameScreen';
 import { SingleGameScreen } from './components/game/SingleGameScreen';
-import { LoginScreen } from './components/menu/LoginScreen';
 import { MenuScreen } from './components/menu/MenuScreen';
 import { useLocalCpuGame } from './hooks/useLocalCpuGame';
 import { useMultiplayerGame } from './hooks/useMultiplayerGame';
@@ -239,32 +238,6 @@ export default function App(): JSX.Element {
         return <main className='app-shell fullscreen-shell' />;
     }
 
-    if (!isGuest && !session && screen !== 'login') {
-        return (
-            <LoginScreen
-                onPlayAsGuest={() => {
-                    setIsGuest(true);
-                    setGuestModeEnabled(true);
-                    setPlayerName('');
-                    persistPlayerName('');
-                    setScreen(isTutorialComplete() ? 'menu' : 'tutorial');
-                }}
-            />
-        );
-    }
-
-    if (screen === 'login') {
-        return (
-            <LoginScreen
-                onPlayAsGuest={() => {
-                    setIsGuest(true);
-                    setGuestModeEnabled(true);
-                    setScreen(isTutorialComplete() ? 'menu' : 'tutorial');
-                }}
-            />
-        );
-    }
-
     if (screen === 'tutorial') {
         return (
             <MultiplayerGameScreen
@@ -316,7 +289,7 @@ export default function App(): JSX.Element {
             <MenuScreen
                 isCpuOpponent={activeMenuGame.isCpuOpponent}
                 isCurrentPlayerReady={activeMenuGame.isCurrentPlayerReady}
-                isGuest={isGuest}
+                isGuest={isGuest || !session}
                 isInRoom={activeMenuGame.isInRoom}
                 isOpponentReady={activeMenuGame.isOpponentReady}
                 onAcceptInvitation={() => {
@@ -334,10 +307,11 @@ export default function App(): JSX.Element {
                     if (supabaseAuthClient) {
                         detachPromise(supabaseAuthClient.auth.signOut());
                     }
-                    setIsGuest(false);
-                    setGuestModeEnabled(false);
+                    setIsGuest(true);
+                    setGuestModeEnabled(true);
                     setPlayerName('');
                     persistPlayerName('');
+                    setScreen('menu');
                 }}
                 onPrefetchInviteUsers={multiplayerGame.prefetchOnlineUsers}
                 onStartCpuGame={() => {

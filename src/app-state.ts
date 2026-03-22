@@ -187,7 +187,7 @@ export const tutorialLessonText = {
 
 export type TutorialLessonId = keyof typeof tutorialLessonText;
 
-export type Screen = 'login' | 'menu' | 'single' | 'multi-game' | 'tutorial';
+export type Screen = 'menu' | 'single' | 'multi-game' | 'tutorial';
 
 export type MultiplayerState = {
     playerId: string | undefined;
