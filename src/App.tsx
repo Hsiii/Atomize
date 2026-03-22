@@ -1,31 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { JSX } from 'react';
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
+import { Outlet, useLocation, useNavigate } from '@tanstack/react-router';
 
+import { AppProvider } from './app-context';
+import type { AppContextValue } from './app-context';
 import { seoText, uiText } from './app-state';
 import type { Screen } from './app-state';
-import { MultiplayerGameScreen } from './components/game/MultiplayerGameScreen';
-import { SingleGameScreen } from './components/game/SingleGameScreen';
-import { AccountScreen } from './components/menu/AccountScreen';
-import { AuthScreen } from './components/menu/AuthScreen';
-import {
-    fetchLeaderboardData,
-    LeaderboardScreen,
-} from './components/menu/LeaderboardScreen';
+import { fetchLeaderboardData } from './components/menu/LeaderboardScreen';
 import type { LeaderboardEntry } from './components/menu/LeaderboardScreen';
-import { MenuScreen } from './components/menu/MenuScreen';
-import { OpponentPickerScreen } from './components/menu/OpponentPickerScreen';
-import { SoloPregameScreen } from './components/menu/SoloPregameScreen';
 import { useLocalCpuGame } from './hooks/useLocalCpuGame';
 import { useMultiplayerGame } from './hooks/useMultiplayerGame';
 import { useSoloGame } from './hooks/useSoloGame';
 import { useTutorialGame } from './hooks/useTutorialGame';
 import {
     detachPromise,
-    formatCountdown,
     getInitialPlayerName,
     isGuestModeEnabled,
-    isTutorialComplete,
     loadBestScore,
     markTutorialComplete,
     persistPlayerName,
@@ -264,17 +255,41 @@ async function syncAuthenticatedLeaderboardProfile({
     }
 }
 
+const SCREEN_TO_PATH = {
+    'tutorial': '/tutorial',
+    'single': '/solo/play',
+    'multi-game': '/battle/play',
+    'menu': '/',
+} as const;
+
+function deriveScreen(pathname: string): Screen {
+    if (pathname === '/tutorial') {
+        return 'tutorial';
+    }
+
+    if (pathname === '/solo/play') {
+        return 'single';
+    }
+
+    if (pathname === '/battle/play') {
+        return 'multi-game';
+    }
+
+    return 'menu';
+}
+
 export default function App(): JSX.Element {
-    const [screen, setScreen] = useState<Screen>(() =>
-        isTutorialComplete() ? 'menu' : 'tutorial'
-    );
-    const [authMode, setAuthMode] = useState<'login' | 'signup' | undefined>(
-        undefined
-    );
-    const [showAccount, setShowAccount] = useState(false);
-    const [showLeaderboard, setShowLeaderboard] = useState(false);
-    const [showSoloPregame, setShowSoloPregame] = useState(false);
-    const [showOpponentPicker, setShowOpponentPicker] = useState(false);
+    const location = useLocation();
+    const navigate = useNavigate();
+    const screen = deriveScreen(location.pathname);
+
+    const navigateRef = useRef(navigate);
+    navigateRef.current = navigate;
+
+    const onScreenChange = useCallback((nextScreen: Screen) => {
+        detachPromise(navigateRef.current({ to: SCREEN_TO_PATH[nextScreen] }));
+    }, []);
+
     const [leaderboardData, setLeaderboardData] = useState<
         readonly LeaderboardEntry[] | undefined
     >(undefined);
@@ -295,7 +310,6 @@ export default function App(): JSX.Element {
                 if (data.session) {
                     setIsGuest(false);
                     setGuestModeEnabled(false);
-                    setAuthMode(undefined);
                     finishGoogleAuthPopup();
                     await syncAuthenticatedLeaderboardProfile({
                         authClient,
@@ -321,7 +335,6 @@ export default function App(): JSX.Element {
                 if (currentSession) {
                     setIsGuest(false);
                     setGuestModeEnabled(false);
-                    setAuthMode(undefined);
                     finishGoogleAuthPopup();
                     detachPromise(
                         syncAuthenticatedLeaderboardProfile({
@@ -348,7 +361,7 @@ export default function App(): JSX.Element {
     const [playerName, setPlayerName] = useState(() => getInitialPlayerName());
     const soloGame = useSoloGame({
         screen,
-        onScreenChange: setScreen,
+        onScreenChange,
         onNewBest: (score) => {
             const userId = session?.user.id;
             if (!supabaseAuthClient || !userId || !playerName) {
@@ -371,17 +384,17 @@ export default function App(): JSX.Element {
     const multiplayerGame = useMultiplayerGame({
         playerName,
         screen,
-        onScreenChange: setScreen,
+        onScreenChange,
     });
     const localCpuGame = useLocalCpuGame({
         playerName,
         screen,
-        onScreenChange: setScreen,
+        onScreenChange,
     });
     const tutorialGame = useTutorialGame({
         playerName,
         screen,
-        onScreenChange: setScreen,
+        onScreenChange,
     });
 
     useEffect(() => {
@@ -410,65 +423,80 @@ export default function App(): JSX.Element {
             title: seoText.defaultTitle,
         };
 
-        if (authMode && !session) {
-            seoContent = {
-                description:
-                    authMode === 'signup'
-                        ? seoText.signupDescription
-                        : seoText.loginDescription,
-                title:
-                    authMode === 'signup'
-                        ? seoText.signupTitle
-                        : seoText.loginTitle,
-            };
-        } else if (showAccount && session) {
-            seoContent = {
-                description: seoText.accountDescription,
-                title: seoText.accountTitle,
-            };
-        } else if (showLeaderboard) {
-            seoContent = {
-                description: seoText.leaderboardDescription,
-                title: seoText.leaderboardTitle,
-            };
-        } else {
-            switch (screen) {
-                case 'tutorial': {
-                    seoContent = {
-                        description: seoText.tutorialDescription,
-                        title: seoText.tutorialTitle,
-                    };
-                    break;
-                }
+        switch (location.pathname) {
+            case '/': {
+                seoContent = {
+                    description: seoText.menuDescription,
+                    title: seoText.menuTitle,
+                };
+                break;
+            }
 
-                case 'single': {
-                    seoContent = {
-                        description: seoText.singleDescription,
-                        title: seoText.singleTitle,
-                    };
-                    break;
-                }
+            case '/tutorial': {
+                seoContent = {
+                    description: seoText.tutorialDescription,
+                    title: seoText.tutorialTitle,
+                };
+                break;
+            }
 
-                case 'multi-game': {
-                    seoContent = {
-                        description: seoText.multiplayerDescription,
-                        title: seoText.multiplayerTitle,
-                    };
-                    break;
-                }
+            case '/solo':
+            case '/solo/play': {
+                seoContent = {
+                    description: seoText.singleDescription,
+                    title: seoText.singleTitle,
+                };
+                break;
+            }
 
-                case 'menu': {
-                    seoContent = {
-                        description: seoText.menuDescription,
-                        title: seoText.menuTitle,
-                    };
-                    break;
-                }
+            case '/battle':
+            case '/battle/play': {
+                seoContent = {
+                    description: seoText.multiplayerDescription,
+                    title: seoText.multiplayerTitle,
+                };
+                break;
+            }
+
+            case '/login': {
+                seoContent = {
+                    description: seoText.loginDescription,
+                    title: seoText.loginTitle,
+                };
+                break;
+            }
+
+            case '/signup': {
+                seoContent = {
+                    description: seoText.signupDescription,
+                    title: seoText.signupTitle,
+                };
+                break;
+            }
+
+            case '/account': {
+                seoContent = {
+                    description: seoText.accountDescription,
+                    title: seoText.accountTitle,
+                };
+                break;
+            }
+
+            case '/leaderboard': {
+                seoContent = {
+                    description: seoText.leaderboardDescription,
+                    title: seoText.leaderboardTitle,
+                };
+                break;
+            }
+
+            default: {
+                break;
             }
         }
 
         applySeoContent(seoContent);
-    }, [authMode, screen, session, showAccount, showLeaderboard]);
+    }, [location.pathname]);
 
     async function handleEditName(name: string): Promise<string | undefined> {
         const normalizedNextName = normalizePlayerName(name);
@@ -560,259 +588,48 @@ export default function App(): JSX.Element {
         localCpuGame.resetLocalCpuGame();
         soloGame.resetSoloGame();
         tutorialGame.resetTutorialGame();
-        setShowSoloPregame(false);
-        setShowOpponentPicker(false);
-        setScreen('menu');
+        detachPromise(navigate({ to: '/' }));
     }
 
     function handleTutorialReturn() {
         markTutorialComplete();
         tutorialGame.resetTutorialGame();
-        setScreen('menu');
+        detachPromise(navigate({ to: '/' }));
+    }
+
+    function handleLogout() {
+        if (supabaseAuthClient) {
+            detachPromise(supabaseAuthClient.auth.signOut());
+        }
+
+        setIsGuest(true);
+        setGuestModeEnabled(true);
+        setPlayerName('');
+        persistPlayerName('');
     }
 
     if (sessionLoading) {
         return <main className='app-shell fullscreen-shell' />;
     }
 
-    if (authMode && !session) {
-        return (
-            <AuthScreen
-                initialMode={authMode}
-                onAuthSuccess={() => {
-                    setAuthMode(undefined);
-                }}
-                onBack={() => {
-                    setAuthMode(undefined);
-                }}
-            />
-        );
-    }
-
-    if (showAccount && session) {
-        return (
-            <AccountScreen
-                onBack={() => {
-                    setShowAccount(false);
-                }}
-                onEditName={handleEditName}
-                onLogout={() => {
-                    if (supabaseAuthClient) {
-                        detachPromise(supabaseAuthClient.auth.signOut());
-                    }
-                    setIsGuest(true);
-                    setGuestModeEnabled(true);
-                    setPlayerName('');
-                    persistPlayerName('');
-                    setShowAccount(false);
-                }}
-                playerName={playerName}
-            />
-        );
-    }
-
-    if (showLeaderboard) {
-        return (
-            <LeaderboardScreen
-                onBack={() => {
-                    setShowLeaderboard(false);
-                }}
-                playerName={playerName}
-                prefetchedData={leaderboardData}
-            />
-        );
-    }
-
-    if (screen === 'tutorial') {
-        return (
-            <MultiplayerGameScreen
-                currentMultiplayerPlayer={tutorialGame.currentMultiplayerPlayer}
-                isMultiplayerComboRunning={
-                    tutorialGame.isMultiplayerComboRunning
-                }
-                isMultiplayerInputDisabled={
-                    tutorialGame.isMultiplayerInputDisabled
-                }
-                multiplayerPrimeQueue={tutorialGame.multiplayerPrimeQueue}
-                multiplayerSnapshot={tutorialGame.multiplayerSnapshot}
-                onAllowCpuAttack={tutorialGame.allowCpuAttack}
-                onBack={handleTutorialReturn}
-                onSubmit={tutorialGame.handleMultiplayerComboSubmit}
-                onTutorialComplete={tutorialGame.notifyTutorialDone}
-                playablePrimes={tutorialGame.playablePrimes}
-                tutorialMode
-            />
-        );
-    }
-
-    if (screen === 'menu') {
-        const activeMenuGame = localCpuGame.isInRoom
-            ? {
-                  isCurrentPlayerReady: localCpuGame.isCurrentPlayerReady,
-                  isCpuOpponent: true,
-                  isInRoom: localCpuGame.isInRoom,
-                  isOpponentReady: localCpuGame.isOpponentReady,
-                  onToggleReady: localCpuGame.toggleReady,
-                  opponentName: localCpuGame.opponentName,
-                  pendingInvitation: undefined,
-                  toastId: 0,
-                  toastMessage: undefined,
-              }
-            : {
-                  isCurrentPlayerReady: multiplayerGame.isCurrentPlayerReady,
-                  isCpuOpponent: false,
-                  isInRoom: multiplayerGame.isInRoom,
-                  isOpponentReady: multiplayerGame.isOpponentReady,
-                  onToggleReady: multiplayerGame.toggleReady,
-                  opponentName: multiplayerGame.opponentName,
-                  pendingInvitation: multiplayerGame.pendingInvitation,
-                  toastId: multiplayerGame.lobbyToast.id,
-                  toastMessage: multiplayerGame.lobbyToast.message,
-              };
-
-        if (showSoloPregame) {
-            return (
-                <SoloPregameScreen
-                    bestScore={soloGame.bestScore}
-                    onBack={() => {
-                        setShowSoloPregame(false);
-                    }}
-                    onStart={() => {
-                        setShowSoloPregame(false);
-                        soloGame.startSingleGame();
-                    }}
-                />
-            );
-        }
-
-        if (showOpponentPicker) {
-            return (
-                <OpponentPickerScreen
-                    isCpuOpponent={activeMenuGame.isCpuOpponent}
-                    isCurrentPlayerReady={activeMenuGame.isCurrentPlayerReady}
-                    isInRoom={activeMenuGame.isInRoom}
-                    isOpponentReady={activeMenuGame.isOpponentReady}
-                    onBack={() => {
-                        setShowOpponentPicker(false);
-                    }}
-                    onInvitePlayer={(targetPlayerId) => {
-                        detachPromise(
-                            multiplayerGame.handleLobbyInvite(targetPlayerId)
-                        );
-                    }}
-                    onlineUsers={multiplayerGame.onlineUsers}
-                    onPrefetchInviteUsers={multiplayerGame.prefetchOnlineUsers}
-                    onStartCpuGame={() => {
-                        localCpuGame.startLocalCpuGame();
-                    }}
-                    onToggleReady={() => {
-                        detachPromise(
-                            Promise.resolve(activeMenuGame.onToggleReady())
-                        );
-                    }}
-                    opponentName={activeMenuGame.opponentName}
-                    playerName={playerName}
-                />
-            );
-        }
-
-        return (
-            <MenuScreen
-                isGuest={isGuest || !session}
-                onAcceptInvitation={() => {
-                    detachPromise(multiplayerGame.handleAcceptInvitation());
-                    setShowOpponentPicker(true);
-                }}
-                onDeclineInvitation={multiplayerGame.handleDeclineInvitation}
-                onOpenAccount={() => {
-                    setShowAccount(true);
-                }}
-                onOpenAuth={() => {
-                    setAuthMode('login');
-                }}
-                onOpenBattle={() => {
-                    setShowOpponentPicker(true);
-                }}
-                onOpenLeaderboard={() => {
-                    setShowLeaderboard(true);
-                }}
-                onOpenSolo={() => {
-                    setShowSoloPregame(true);
-                }}
-                pendingInvitation={activeMenuGame.pendingInvitation}
-                toastId={activeMenuGame.toastId}
-                toastMessage={activeMenuGame.toastMessage}
-            />
-        );
-    }
-
-    if (screen === 'single') {
-        return (
-            <SingleGameScreen
-                bestScore={soloGame.bestScore}
-                formatCountdown={formatCountdown}
-                isNewBest={soloGame.isNewBest}
-                isPaused={soloGame.isPaused}
-                isSoloComboRunning={soloGame.isSoloComboRunning}
-                onBack={returnToMenu}
-                onPause={soloGame.pause}
-                onResume={soloGame.resume}
-                onRetry={soloGame.startSingleGame}
-                onSubmit={soloGame.handleSoloComboSubmit}
-                playablePrimes={soloGame.playablePrimes}
-                soloCountdownProgress={soloGame.soloCountdownProgress}
-                soloPrimeQueue={soloGame.soloPrimeQueue}
-                soloStageAdvanceSolvedStateKey={
-                    soloGame.soloStageAdvanceSolvedStateKey
-                }
-                soloState={soloGame.soloState}
-                soloTimeLeft={soloGame.soloTimeLeft}
-                soloTimerPenaltyPopKey={soloGame.soloTimerPenaltyPopKey}
-            />
-        );
-    }
-
-    const activeBattleGame = localCpuGame.isLocalCpuGameActive
-        ? {
-              currentMultiplayerPlayer: localCpuGame.currentMultiplayerPlayer,
-              isMultiplayerComboRunning: localCpuGame.isMultiplayerComboRunning,
-              isMultiplayerInputDisabled:
-                  localCpuGame.isMultiplayerInputDisabled,
-              multiplayerPrimeQueue: localCpuGame.multiplayerPrimeQueue,
-              multiplayerSnapshot: localCpuGame.multiplayerSnapshot,
-              onSubmit: localCpuGame.handleMultiplayerComboSubmit,
-              playablePrimes: localCpuGame.playablePrimes,
-              onRematch: localCpuGame.rematchLocalCpuGame,
-          }
-        : {
-              currentMultiplayerPlayer:
-                  multiplayerGame.currentMultiplayerPlayer,
-              isMultiplayerComboRunning:
-                  multiplayerGame.isMultiplayerComboRunning,
-              isMultiplayerInputDisabled:
-                  multiplayerGame.isMultiplayerInputDisabled,
-              multiplayerPrimeQueue: multiplayerGame.multiplayerPrimeQueue,
-              multiplayerSnapshot: multiplayerGame.multiplayer.snapshot,
-              onSubmit: multiplayerGame.handleMultiplayerComboSubmit,
-              playablePrimes: multiplayerGame.playablePrimes,
-              onRematch: undefined,
-          };
+    const contextValue: AppContextValue = {
+        session,
+        isGuest,
+        playerName,
+        soloGame,
+        multiplayerGame,
+        localCpuGame,
+        tutorialGame,
+        leaderboardData,
+        handleEditName,
+        handleLogout,
+        handleTutorialReturn,
+        returnToMenu,
+    };
 
     return (
-        <MultiplayerGameScreen
-            currentMultiplayerPlayer={activeBattleGame.currentMultiplayerPlayer}
-            isMultiplayerComboRunning={
-                activeBattleGame.isMultiplayerComboRunning
-            }
-            isMultiplayerInputDisabled={
-                activeBattleGame.isMultiplayerInputDisabled
-            }
-            multiplayerPrimeQueue={activeBattleGame.multiplayerPrimeQueue}
-            multiplayerSnapshot={activeBattleGame.multiplayerSnapshot}
-            onBack={returnToMenu}
-            onRematch={activeBattleGame.onRematch}
-            onSubmit={activeBattleGame.onSubmit}
-            playablePrimes={activeBattleGame.playablePrimes}
-        />
+        <AppProvider value={contextValue}>
+            <Outlet />
+        </AppProvider>
     );
 }

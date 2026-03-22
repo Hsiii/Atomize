@@ -1,8 +1,9 @@
 import React from 'react';
+import { RouterProvider } from '@tanstack/react-router';
 import ReactDOM from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
 
-import App from './App';
+import { router } from './router';
 
 import './base.css';
 import './theme.css';
@@ -17,6 +18,6 @@ if (!rootElement) {
 
 ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
-        <App />
+        <RouterProvider router={router} />
     </React.StrictMode>
 );
