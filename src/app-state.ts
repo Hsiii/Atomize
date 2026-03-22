@@ -191,13 +191,13 @@ export const tutorialLessonText = {
         title: 'Send the queue',
     },
     stageOneResult: {
-        actionLabel: 'Got it',
+        actionLabel: 'Next compound',
         body: 'Compound cleared! Each factor you queue deals damage, and clearing finishes the attack.',
         title: 'Atomized!',
     },
     comboExplain: {
-        actionLabel: 'Next compound',
-        body: 'You queued 2 factors at once - that gave bonus combo damage! Queue more factors to deal more.',
+        actionLabel: 'Next',
+        body: 'Compound 6 was cleared in one combo of 2 factors - that gave bonus combo damage! Compound 30 took two sends, so no bonus.',
         title: 'Combo bonus',
     },
     stageTwoPrime: {
@@ -223,7 +223,7 @@ export const tutorialLessonText = {
     },
     perfectSolveExplain: {
         actionLabel: 'Got it',
-        body: 'That took two sends. Clear a compound in a single combo instead to get a perfect clear and heal HP!',
+        body: 'Clearing in one combo is a perfect clear. Perfect clears also heal your HP - queue all factors at once to recover!',
         title: 'Perfect clear',
     },
     enemyTurn: {
@@ -241,9 +241,14 @@ export const tutorialLessonText = {
         title: 'Try a wrong factor',
     },
     wrongPrimeResult: {
-        actionLabel: 'Wrap up',
+        actionLabel: 'Next',
         body: 'Wrong factors deal damage to yourself and break combos. Avoid mistakes to stay alive.',
         title: 'Wrong factors backfire',
+    },
+    overflowExplain: {
+        actionLabel: 'Got it',
+        body: 'If you send more factors than needed, the compound clears to 1 but the extras count as a self-penalty. Queue only what you need!',
+        title: 'Over-queuing',
     },
     summary: {
         actionLabel: 'Keep playing',

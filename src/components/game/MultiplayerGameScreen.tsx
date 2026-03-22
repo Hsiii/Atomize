@@ -568,8 +568,7 @@ function useBattleTutorial({
         if (step === TutorialStep.StageTwoQueue) {
             if (
                 currentPlayer.stageIndex >= 1 &&
-                currentPlayer.stage.remainingValue === 5 &&
-                !battleVisualsBusy
+                currentPlayer.stage.remainingValue === 5
             ) {
                 setStep(TutorialStep.StageTwoResult);
             }
@@ -584,7 +583,7 @@ function useBattleTutorial({
 
         if (step === TutorialStep.StageTwoFinishSubmit) {
             if (currentPlayer.stageIndex >= 2 && !battleVisualsBusy) {
-                setStep(TutorialStep.PerfectSolveExplain);
+                setStep(TutorialStep.ComboExplain);
             }
 
             return;

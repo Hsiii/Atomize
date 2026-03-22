@@ -26,6 +26,7 @@ export enum TutorialStep {
     EnemyAttack = 'EnemyAttack',
     TryWrongPrime = 'TryWrongPrime',
     WrongPrimeResult = 'WrongPrimeResult',
+    OverflowExplain = 'OverflowExplain',
     Summary = 'Summary',
     Done = 'Done',
 }
@@ -107,7 +108,7 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             lessonId: 'stageOneResult',
             position: 'bottom',
         },
-        nextActionStep: TutorialStep.ComboExplain,
+        nextActionStep: TutorialStep.StageTwoPrime,
     },
     [TutorialStep.ComboExplain]: {
         getHighlightTarget: () => 'enemy-hp',
@@ -116,7 +117,7 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             lessonId: 'comboExplain',
             position: 'bottom',
         },
-        nextActionStep: TutorialStep.StageTwoPrime,
+        nextActionStep: TutorialStep.PerfectSolveExplain,
     },
     [TutorialStep.StageTwoPrime]: {
         expectedQueue: fullFactorQueue,
@@ -209,6 +210,15 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
         lesson: {
             isBlocking: true,
             lessonId: 'wrongPrimeResult',
+            position: 'bottom',
+        },
+        nextActionStep: TutorialStep.OverflowExplain,
+    },
+    [TutorialStep.OverflowExplain]: {
+        getHighlightTarget: () => 'self-blob',
+        lesson: {
+            isBlocking: true,
+            lessonId: 'overflowExplain',
             position: 'bottom',
         },
         nextActionStep: TutorialStep.Summary,
