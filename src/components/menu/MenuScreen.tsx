@@ -419,7 +419,7 @@ export function MenuScreen({
                         role='presentation'
                     >
                         <div
-                            className='dialog-panel dialog-invite dialog-leaderboard'
+                            className='dialog-panel dialog-invite'
                             onClick={(event) => {
                                 event.stopPropagation();
                             }}
@@ -555,7 +555,7 @@ export function MenuScreen({
                         role='presentation'
                     >
                         <div
-                            className='dialog-panel dialog-invite'
+                            className='dialog-panel dialog-invite dialog-leaderboard'
                             onClick={(event) => {
                                 event.stopPropagation();
                             }}
