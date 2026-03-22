@@ -726,11 +726,6 @@
     border-bottom: 0;
 }
 
-.leaderboard-row-first td {
-    background: var(--color-gold-soft);
-    border-bottom-color: rgba(212, 160, 23, 0.2);
-}
-
 .leaderboard-row-first .leaderboard-rank-badge,
 .leaderboard-row-first .leaderboard-combo-value {
     color: var(--color-gold);
