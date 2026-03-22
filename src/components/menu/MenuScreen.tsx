@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { JSX } from 'react';
 import { Check, Crown, Plus, User, X } from 'lucide-react';
 
@@ -71,27 +71,27 @@ export function MenuScreen({
     );
     const [authError, setAuthError] = useState<string | undefined>(undefined);
     const [authLoading, setAuthLoading] = useState(false);
+    const toastTimeoutRef = useRef<
+        ReturnType<typeof globalThis.setTimeout> | undefined
+    >(undefined);
 
     useEffect(() => {
         if (!toastMessage) {
-            setVisibleToast(undefined);
             return undefined;
         }
 
-        setVisibleToast(toastMessage);
-
-        const timer = globalThis.setTimeout(
-            (nextValue: undefined) => {
-                setVisibleToast(nextValue);
-            },
-            2200,
-            undefined
-        );
-
-        return () => {
-            globalThis.clearTimeout(timer);
-        };
+        showMenuToast(toastMessage);
+        return undefined;
     }, [toastId, toastMessage]);
+
+    useEffect(
+        () => () => {
+            if (toastTimeoutRef.current !== undefined) {
+                globalThis.clearTimeout(toastTimeoutRef.current);
+            }
+        },
+        []
+    );
 
     const hasOpponent = Boolean(opponentName);
     const isCurrentPlayerGuest = !playerName.trim();
@@ -126,11 +126,51 @@ export function MenuScreen({
     function handleProfileSave() {
         const trimmed = editingName.trim();
 
-        if (trimmed) {
-            onEditName(trimmed);
+        if (!trimmed) {
+            setShowProfileDialog(false);
+            return;
         }
 
+        if (
+            normalizeMenuPlayerName(trimmed) !==
+                normalizeMenuPlayerName(playerName) &&
+            isNameAlreadyUsed(trimmed)
+        ) {
+            showMenuToast(uiText.nameInUse);
+            return;
+        }
+
+        onEditName(trimmed);
+
         setShowProfileDialog(false);
+    }
+
+    function isNameAlreadyUsed(nextName: string): boolean {
+        const nextNameKey = normalizeMenuPlayerName(nextName);
+        const usedNames = [
+            opponentName,
+            ...onlineUsers.map((user) => user.name),
+        ];
+
+        return usedNames.some(
+            (usedName) => normalizeMenuPlayerName(usedName) === nextNameKey
+        );
+    }
+
+    function showMenuToast(message: string) {
+        if (toastTimeoutRef.current !== undefined) {
+            globalThis.clearTimeout(toastTimeoutRef.current);
+        }
+
+        setVisibleToast(message);
+        toastTimeoutRef.current = globalThis.setTimeout(
+            (nextValue: undefined) => {
+                setVisibleToast(nextValue);
+                toastTimeoutRef.current = undefined;
+            },
+            2200,
+            undefined
+        );
     }
 
     function handleOpenProfileDialog() {
@@ -788,6 +828,10 @@ export function MenuScreen({
             </section>
         </main>
     );
+}
+
+function normalizeMenuPlayerName(value: string | undefined): string {
+    return (value ?? '').trim().replaceAll(/\s+/g, ' ').toLowerCase();
 }
 
 function detachAction(result: void | Promise<void>) {

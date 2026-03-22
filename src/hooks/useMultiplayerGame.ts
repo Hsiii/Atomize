@@ -54,6 +54,88 @@ type OrderedGameplayMessageState = {
     pendingMessages: Map<number, GameplayBroadcastMessage>;
 };
 
+type LobbyPresenceUser = {
+    playerId: string;
+    name: string;
+    status: 'lobby' | 'in-game' | 'in-team';
+};
+
+function normalizePlayerNameKey(value: string | undefined): string {
+    return (value ?? '').trim().replaceAll(/\s+/g, ' ').toLowerCase();
+}
+
+function isGuestDisplayName(value: string | undefined): boolean {
+    return (
+        normalizePlayerNameKey(value) === normalizePlayerNameKey(uiText.guest)
+    );
+}
+
+function getNextGuestDisplayName(existingNames: readonly string[]): string {
+    let nextGuestIndex = 1;
+
+    for (;;) {
+        const candidateName =
+            nextGuestIndex === 1
+                ? uiText.guest
+                : `${uiText.guest} ${nextGuestIndex}`;
+
+        if (
+            !existingNames.some(
+                (existingName) =>
+                    normalizePlayerNameKey(existingName) ===
+                    normalizePlayerNameKey(candidateName)
+            )
+        ) {
+            return candidateName;
+        }
+
+        nextGuestIndex++;
+    }
+}
+
+function resolveGuestLobbyNames(
+    users: readonly LobbyPresenceUser[]
+): readonly LobbyPresenceUser[] {
+    const guestUsers = users.filter((user) => isGuestDisplayName(user.name));
+
+    if (guestUsers.length <= 1) {
+        return users;
+    }
+
+    const numberedGuestNames = new Map(
+        guestUsers.map((user, index) => [
+            user.playerId,
+            `${uiText.guest} ${index + 1}`,
+        ])
+    );
+
+    return users.map((user) => {
+        const numberedGuestName = numberedGuestNames.get(user.playerId);
+
+        if (numberedGuestName === undefined) {
+            return user;
+        }
+
+        return {
+            ...user,
+            name: numberedGuestName,
+        };
+    });
+}
+
+function resolveJoiningPlayerName(
+    snapshot: RoomSnapshot,
+    requestedPlayerName: string
+): string {
+    if (!isGuestDisplayName(requestedPlayerName)) {
+        return requestedPlayerName;
+    }
+
+    return getNextGuestDisplayName(
+        snapshot.players.map((player) => player.name)
+    );
+}
+
 function applyGameplayBroadcastMessage(
     snapshot: RoomSnapshot,
     message: GameplayBroadcastMessage
@@ -331,26 +413,11 @@ export function useMultiplayerGame({
                 return;
             }
 
-            const state = currentLobbyChannel.presenceState<{
-                playerId: string;
-                name: string;
-                status: 'lobby' | 'in-game' | 'in-team';
-            }>();
-            const users: OnlineLobbyUser[] = [];
+            const users = getResolvedLobbyPresenceUsers(currentLobbyChannel);
 
-            for (const presences of Object.values(state)) {
-                for (const entry of presences) {
-                    if (entry.playerId !== currentPlayerId) {
-                        users.push({
-                            playerId: entry.playerId,
-                            name: getDisplayPlayerName(entry.name),
-                            status: entry.status,
-                        });
-                    }
-                }
-            }
-
-            setOnlineUsers(users);
+            setOnlineUsers(
+                users.filter((user) => user.playerId !== currentPlayerId)
+            );
         }
     }, [multiplayerPlayerName]);
 
@@ -402,28 +469,13 @@ export function useMultiplayerGame({
         if (!lobbyChannel) {
             return;
         }
-
-        const state = lobbyChannel.presenceState<{
-            playerId: string;
-            name: string;
-            status: 'lobby' | 'in-game' | 'in-team';
-        }>();
         const currentPlayerId = lobbyPlayerIdRef.current;
-        const users: OnlineLobbyUser[] = [];
 
-        for (const presences of Object.values(state)) {
-            for (const entry of presences) {
-                if (entry.playerId !== currentPlayerId) {
-                    users.push({
-                        playerId: entry.playerId,
-                        name: getDisplayPlayerName(entry.name),
-                        status: entry.status,
-                    });
-                }
-            }
-        }
-
-        setOnlineUsers(users);
+        setOnlineUsers(
+            getResolvedLobbyPresenceUsers(lobbyChannel).filter(
+                (user) => user.playerId !== currentPlayerId
+            )
+        );
     }
 
     async function handleLobbyInvite(targetPlayerId: string) {
@@ -464,7 +516,7 @@ export function useMultiplayerGame({
                         payload: {
                             type: 'room_invite',
                             roomCode: roomId,
-                            fromName: multiplayerPlayerName,
+                            fromName: getCurrentLobbyDisplayName(),
                             fromPlayerId: lobbyPlayerIdRef.current,
                             targetPlayerId,
                         },
@@ -726,7 +778,7 @@ export function useMultiplayerGame({
             payload: {
                 type: 'room_invite',
                 roomCode: currentState.roomId,
-                fromName: multiplayerPlayerName,
+                fromName: getCurrentLobbyDisplayName(),
                 fromPlayerId: currentPlayerId,
                 targetPlayerId,
             },
@@ -1059,8 +1111,24 @@ export function useMultiplayerGame({
         const nextSnapshot = addPlayerToRoom(
             currentState.snapshot,
             message.playerId,
-            message.playerName
+            resolveJoiningPlayerName(currentState.snapshot, message.playerName)
         );
+
+        if (
+            !isGuestDisplayName(message.playerName) &&
+            currentState.snapshot.players.some(
+                (player) =>
+                    normalizePlayerNameKey(player.name) ===
+                    normalizePlayerNameKey(message.playerName)
+            )
+        ) {
+            await broadcastMessage({
+                type: 'room_error',
+                targetPlayerId: message.playerId,
+                message: uiText.nameInUse,
+            });
+            return undefined;
+        }
 
         if (!nextSnapshot) {
             await broadcastMessage({
@@ -1079,6 +1147,43 @@ export function useMultiplayerGame({
         });
 
         return undefined;
+    }
+
+    function getResolvedLobbyPresenceUsers(
+        lobbyChannel: RealtimeChannel
+    ): readonly LobbyPresenceUser[] {
+        const state = lobbyChannel.presenceState<{
+            playerId: string;
+            name: string;
+            status: 'lobby' | 'in-game' | 'in-team';
+        }>();
+        const users: LobbyPresenceUser[] = [];
+
+        for (const presences of Object.values(state)) {
+            for (const entry of presences) {
+                users.push({
+                    playerId: entry.playerId,
+                    name: getDisplayPlayerName(entry.name),
+                    status: entry.status,
+                });
+            }
+        }
+
+        return resolveGuestLobbyNames(users);
+    }
+
+    function getCurrentLobbyDisplayName(): string {
+        const lobbyChannel = lobbyChannelRef.current;
+
+        if (!lobbyChannel) {
+            return multiplayerPlayerName;
+        }
+
+        const currentLobbyUser = getResolvedLobbyPresenceUsers(
+            lobbyChannel
+        ).find((user) => user.playerId === lobbyPlayerIdRef.current);
+
+        return currentLobbyUser?.name ?? multiplayerPlayerName;
     }
 
     async function handlePlayerReadyBroadcast(
