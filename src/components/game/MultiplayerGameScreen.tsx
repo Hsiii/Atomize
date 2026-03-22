@@ -555,7 +555,12 @@ function useBattleTutorial({
             return;
         }
 
-        if (step === TutorialStep.StageTwoQueue && queue.length === 0) {
+        if (
+            step === TutorialStep.StageTwoQueue &&
+            queue.length === 0 &&
+            currentPlayer.stage.remainingValue ===
+                currentPlayer.stage.targetValue
+        ) {
             setStep(TutorialStep.StageTwoPrime);
             return;
         }
