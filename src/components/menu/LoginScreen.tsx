@@ -183,16 +183,15 @@ export function LoginScreen({
                                         ? uiText.waitingShort
                                         : submitLabel}
                                 </ActionButton>
-                                <button
-                                    className='invite-btn'
+                                <ActionButton
                                     onClick={() => {
                                         setError(undefined);
                                         setMode(undefined);
                                     }}
-                                    type='button'
+                                    variant='secondary'
                                 >
                                     {uiText.back}
-                                </button>
+                                </ActionButton>
                             </form>
                         )}
                     </div>
