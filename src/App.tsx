@@ -210,30 +210,47 @@ export default function App(): JSX.Element {
     }, [playerName]);
 
     async function handleEditName(name: string): Promise<string | undefined> {
+        const normalizedNextName = normalizePlayerName(name);
+        const normalizedCurrentName = normalizePlayerName(playerName);
+
+        if (
+            supabaseAuthClient &&
+            normalizedNextName !== normalizedCurrentName
+        ) {
+            let availabilityQuery = supabaseAuthClient
+                .from('combo_leaderboard')
+                .select('user_id, player_name');
+
+            if (session) {
+                availabilityQuery = availabilityQuery.neq(
+                    'user_id',
+                    session.user.id
+                );
+            }
+
+            const availabilityResponse = await availabilityQuery;
+
+            if (availabilityResponse.error) {
+                return uiText.nameSaveError;
+            }
+
+            const nameIsTaken = availabilityResponse.data.some(
+                (entry) =>
+                    normalizePlayerName(entry.player_name) ===
+                    normalizedNextName
+            );
+
+            if (nameIsTaken) {
+                return uiText.nameInUse;
+            }
+        }
+
         if (!supabaseAuthClient || !session) {
             setPlayerName(name);
             return undefined;
         }
 
         const userId = session.user.id;
-        const normalizedNextName = normalizePlayerName(name);
-        const availabilityResponse = await supabaseAuthClient
-            .from('combo_leaderboard')
-            .select('user_id, player_name')
-            .neq('user_id', userId);
-
-        if (availabilityResponse.error) {
-            return uiText.nameSaveError;
-        }
-
-        const nameIsTaken = availabilityResponse.data.some(
-            (entry) =>
-                normalizePlayerName(entry.player_name) === normalizedNextName
-        );
-
-        if (nameIsTaken) {
-            return uiText.nameInUse;
-        }
 
         const currentRecordResponse = await supabaseAuthClient
             .from('combo_leaderboard')
