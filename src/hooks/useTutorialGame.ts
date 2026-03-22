@@ -16,7 +16,7 @@ import { getTutorialScriptedFactors } from '../lib/tutorial-config';
 import { useComboQueueState } from './useComboQueueState';
 
 const tutorialCpuPlayerId = 'tutorial-cpu';
-const tutorialCpuHp = 60;
+const tutorialCpuHp = 68;
 const tutorialCpuThinkBaseMs = 1400;
 
 type UseTutorialGameOptions = {
