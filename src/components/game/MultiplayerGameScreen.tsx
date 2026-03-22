@@ -578,7 +578,7 @@ function useBattleTutorial({
         if (step === TutorialStep.StageTwoQueue) {
             if (
                 currentPlayer.stageIndex >= 1 &&
-                currentPlayer.stage.remainingValue === 5
+                currentPlayer.stage.remainingValue === 13
             ) {
                 setStep(TutorialStep.StageTwoResult);
             }
@@ -586,7 +586,7 @@ function useBattleTutorial({
             return;
         }
 
-        if (step === TutorialStep.StageTwoFinish && hasQueue(queue, [5])) {
+        if (step === TutorialStep.StageTwoFinish && hasQueue(queue, [13])) {
             setStep(TutorialStep.StageTwoFinishSubmit);
             return;
         }
@@ -703,7 +703,7 @@ function useBattleTutorial({
             (resolvedStep === TutorialStep.StageOneSubmit &&
                 !hasQueue(queue, [2, 3])) ||
             (resolvedStep === TutorialStep.StageTwoFinishSubmit &&
-                !hasQueue(queue, [5])) ||
+                !hasQueue(queue, [13])) ||
             resolvedStep === TutorialStep.PerfectSolveQueue ||
             (resolvedStep === TutorialStep.PerfectSolveSubmit &&
                 !hasQueue(queue, [2, 7])) ||

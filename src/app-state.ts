@@ -196,20 +196,20 @@ export const tutorialLessonText = {
         title: 'Atomized!',
     },
     stageTwoPrime: {
-        body: 'This compound is 30 = 2 x 3 x 5. Start with 2.',
-        title: 'Bigger compound',
+        body: 'This compound is 78. You can spot 2 and 3 as factors - start with 2.',
+        title: 'Trickier compound',
     },
     stageTwoQueue: {
-        body: 'Add 3 and send. Sometimes you want to factor partially to clear things out.',
+        body: "Add 3 and send. Not sure what's left after 6? Fire off what you know.",
         title: 'Partial factoring',
     },
     stageTwoResult: {
         actionLabel: 'Finish it',
-        body: 'The blob dropped from 30 to 5. Damage dealt, but the compound still stands.',
+        body: 'The blob dropped from 78 to 13. Damage dealt while you figure out the rest.',
         title: 'Partial clear',
     },
     stageTwoFinish: {
-        body: 'The compound has factor 5 left. Tap 5 to solve it.',
+        body: '13 is prime - tap 13 to finish it off.',
         title: 'Finish the compound',
     },
     stageTwoFinishSubmit: {

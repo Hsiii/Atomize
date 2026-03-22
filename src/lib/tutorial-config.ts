@@ -65,7 +65,7 @@ type TutorialStepConfig = {
 };
 
 const fullFactorQueue = [2, 3] as const;
-const finishQueue = [5] as const;
+const finishQueue = [13] as const;
 const perfectSolveQueue = [2, 7] as const;
 const wrongPrimeQueue = [2] as const;
 const overflowQueue = [3, 7, 2] as const;
@@ -149,7 +149,7 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
     },
     [TutorialStep.StageTwoFinish]: {
         expectedQueue: finishQueue,
-        getHighlightedPrime: () => 5,
+        getHighlightedPrime: () => 13,
         getHighlightTarget: () => 'keypad',
         lesson: {
             isBlocking: false,
@@ -217,7 +217,7 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
         lesson: {
             isBlocking: true,
             lessonId: 'enemyAttack',
-            position: 'top',
+            position: 'bottom',
         },
         nextActionStep: TutorialStep.PerfectSolveExplain,
     },
@@ -318,7 +318,7 @@ export const tutorialStageFactors = {
     ],
     player: [
         [2, 3],
-        [2, 3, 5],
+        [2, 3, 13],
         [2, 7],
         [3, 7],
         [2, 2, 5],
