@@ -26,6 +26,32 @@ import {
 import type { Database } from './lib/database.types';
 import { supabaseAuthClient } from './lib/supabase';
 
+const GOOGLE_AUTH_POPUP_NAME = 'google-sign-in';
+
+function isGoogleAuthPopupWindow(): boolean {
+    return Boolean(
+        window.opener &&
+        window.opener !== globalThis &&
+        window.name === GOOGLE_AUTH_POPUP_NAME
+    );
+}
+
+function finishGoogleAuthPopup() {
+    if (!isGoogleAuthPopupWindow()) {
+        return;
+    }
+
+    globalThis.requestAnimationFrame(() => {
+        try {
+            window.opener?.focus();
+        } catch {
+            return;
+        }
+
+        window.close();
+    });
+}
+
 function normalizePlayerName(value: string): string {
     return value.trim().replaceAll(/\s+/g, ' ').toLowerCase();
 }
@@ -87,6 +113,7 @@ export default function App(): JSX.Element {
                 if (data.session) {
                     setIsGuest(false);
                     setGuestModeEnabled(false);
+                    finishGoogleAuthPopup();
                 }
                 const name = getAuthDisplayName(
                     data.session?.user.user_metadata as
@@ -139,6 +166,7 @@ export default function App(): JSX.Element {
                 if (currentSession) {
                     setIsGuest(false);
                     setGuestModeEnabled(false);
+                    finishGoogleAuthPopup();
                 }
                 const name = getAuthDisplayName(
                     currentSession?.user.user_metadata as
