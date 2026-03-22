@@ -16,8 +16,8 @@ import {
     getTutorialHighlightedPrime,
     getTutorialHighlightTarget,
     getTutorialLesson,
+    TutorialStep,
 } from '../../lib/tutorial-config';
-import type { TutorialStep } from '../../lib/tutorial-config';
 
 import './GamePlayScreen.css';
 import './MultiplayerGameScreen.css';
@@ -448,7 +448,9 @@ function useBattleTutorial({
     opponentPlayer: RoomPlayer | undefined;
     queue: readonly Prime[];
 }) {
-    const [step, setStep] = useState<TutorialStep>(enabled ? 'intro' : 'done');
+    const [step, setStep] = useState<TutorialStep>(
+        enabled ? TutorialStep.Intro : TutorialStep.Done
+    );
     const [enemyAttackSeen, setEnemyAttackSeen] = useState(false);
     const [enemyTurnAcknowledged, setEnemyTurnAcknowledged] = useState(false);
     const [selfPenaltySeen, setSelfPenaltySeen] = useState(false);
@@ -456,7 +458,7 @@ function useBattleTutorial({
 
     useEffect(() => {
         if (!enabled) {
-            setStep('done');
+            setStep(TutorialStep.Done);
             setEnemyAttackSeen(false);
             setEnemyTurnAcknowledged(false);
             setSelfPenaltySeen(false);
@@ -464,7 +466,7 @@ function useBattleTutorial({
             return;
         }
 
-        setStep('intro');
+        setStep(TutorialStep.Intro);
         setEnemyAttackSeen(false);
         setEnemyTurnAcknowledged(false);
         setSelfPenaltySeen(false);
@@ -502,84 +504,88 @@ function useBattleTutorial({
             return;
         }
 
-        if (step === 'stage-one-prime' && hasQueue(queue, [2])) {
-            setStep('stage-one-queue');
+        if (step === TutorialStep.StageOnePrime && hasQueue(queue, [2])) {
+            setStep(TutorialStep.StageOneQueue);
             return;
         }
 
-        if (step === 'stage-one-queue') {
+        if (step === TutorialStep.StageOneQueue) {
             if (queue.length === 0) {
-                setStep('stage-one-prime');
+                setStep(TutorialStep.StageOnePrime);
                 return;
             }
 
             if (hasQueue(queue, [2, 3])) {
-                setStep('stage-one-submit');
+                setStep(TutorialStep.StageOneSubmit);
                 return;
             }
         }
 
-        if (step === 'stage-one-submit') {
+        if (step === TutorialStep.StageOneSubmit) {
             if (currentPlayer.stageIndex >= 1 && !battleVisualsBusy) {
-                setStep('stage-one-result');
+                setStep(TutorialStep.StageOneResult);
             }
 
             return;
         }
 
-        if (step === 'stage-two-prime' && hasQueue(queue, [2])) {
-            setStep('stage-two-queue');
+        if (step === TutorialStep.StageTwoPrime && hasQueue(queue, [2])) {
+            setStep(TutorialStep.StageTwoQueue);
             return;
         }
 
-        if (step === 'stage-two-queue') {
+        if (step === TutorialStep.StageTwoQueue) {
             if (queue.length === 0) {
-                setStep('stage-two-prime');
+                setStep(TutorialStep.StageTwoPrime);
                 return;
             }
 
             if (hasQueue(queue, [2, 3])) {
-                setStep('stage-two-submit');
+                setStep(TutorialStep.StageTwoSubmit);
                 return;
             }
         }
 
-        if (step === 'stage-two-submit') {
+        if (step === TutorialStep.StageTwoSubmit) {
             if (
                 currentPlayer.stageIndex >= 1 &&
                 currentPlayer.stage.remainingValue === 5 &&
                 !battleVisualsBusy
             ) {
-                setStep('stage-two-result');
+                setStep(TutorialStep.StageTwoResult);
             }
 
             return;
         }
 
-        if (step === 'stage-two-finish' && hasQueue(queue, [5])) {
-            setStep('stage-two-finish-submit');
+        if (step === TutorialStep.StageTwoFinish && hasQueue(queue, [5])) {
+            setStep(TutorialStep.StageTwoFinishSubmit);
             return;
         }
 
-        if (step === 'stage-two-finish-submit') {
+        if (step === TutorialStep.StageTwoFinishSubmit) {
             if (currentPlayer.stageIndex >= 2 && !battleVisualsBusy) {
-                setStep('enemy-turn');
+                setStep(TutorialStep.EnemyTurn);
             }
 
-            return;
-        }
-
-        if (step === 'enemy-turn' && enemyAttackSeen && !battleVisualsBusy) {
-            setStep('enemy-attack');
             return;
         }
 
         if (
-            step === 'try-wrong-prime' &&
+            step === TutorialStep.EnemyTurn &&
+            enemyAttackSeen &&
+            !battleVisualsBusy
+        ) {
+            setStep(TutorialStep.EnemyAttack);
+            return;
+        }
+
+        if (
+            step === TutorialStep.TryWrongPrime &&
             selfPenaltySeen &&
             !battleVisualsBusy
         ) {
-            setStep('wrong-prime-result');
+            setStep(TutorialStep.WrongPrimeResult);
         }
     }, [
         battleVisualsBusy,
@@ -607,28 +613,31 @@ function useBattleTutorial({
 
     const resolvedStep = resolveTutorialQueueStep(step, queue, isComboRunning);
     const lesson =
-        resolvedStep === 'enemy-turn' && enemyTurnAcknowledged
+        resolvedStep === TutorialStep.EnemyTurn && enemyTurnAcknowledged
             ? undefined
             : getTutorialLesson(resolvedStep);
     const expectedQueue = getTutorialExpectedQueue(resolvedStep);
     const highlightTarget = getTutorialHighlightTarget(resolvedStep, queue);
     const isInteractionBlocked =
         lesson?.isBlocking === true ||
-        (resolvedStep === 'enemy-turn' && enemyTurnAcknowledged);
+        (resolvedStep === TutorialStep.EnemyTurn && enemyTurnAcknowledged);
     const highlightedPrime = getTutorialHighlightedPrime(resolvedStep, queue);
     const isSubmitLocked =
         !isInteractionBlocked &&
-        (resolvedStep === 'stage-one-prime' ||
-            resolvedStep === 'stage-one-queue' ||
-            resolvedStep === 'stage-two-prime' ||
-            resolvedStep === 'stage-two-queue' ||
-            resolvedStep === 'stage-two-finish' ||
-            resolvedStep === 'enemy-turn' ||
-            (resolvedStep === 'stage-one-submit' && !hasQueue(queue, [2, 3])) ||
-            (resolvedStep === 'stage-two-submit' && !hasQueue(queue, [2, 3])) ||
-            (resolvedStep === 'stage-two-finish-submit' &&
+        (resolvedStep === TutorialStep.StageOnePrime ||
+            resolvedStep === TutorialStep.StageOneQueue ||
+            resolvedStep === TutorialStep.StageTwoPrime ||
+            resolvedStep === TutorialStep.StageTwoQueue ||
+            resolvedStep === TutorialStep.StageTwoFinish ||
+            resolvedStep === TutorialStep.EnemyTurn ||
+            (resolvedStep === TutorialStep.StageOneSubmit &&
+                !hasQueue(queue, [2, 3])) ||
+            (resolvedStep === TutorialStep.StageTwoSubmit &&
+                !hasQueue(queue, [2, 3])) ||
+            (resolvedStep === TutorialStep.StageTwoFinishSubmit &&
                 !hasQueue(queue, [5])) ||
-            (resolvedStep === 'try-wrong-prime' && !hasQueue(queue, [3])));
+            (resolvedStep === TutorialStep.TryWrongPrime &&
+                !hasQueue(queue, [3])));
 
     const handleAction = () => {
         const action = getTutorialAction(step);
@@ -641,7 +650,7 @@ function useBattleTutorial({
 
         if (action.actionEffect === 'complete-tutorial') {
             onTutorialComplete?.();
-            setStep('done');
+            setStep(TutorialStep.Done);
             return;
         }
 
@@ -667,7 +676,7 @@ function useBattleTutorial({
         handleAction,
         highlightedPrime,
         highlightTarget,
-        isBackspaceLocked: step !== 'done',
+        isBackspaceLocked: step !== TutorialStep.Done,
         isInteractionBlocked,
         isSubmitLocked,
         lesson,
@@ -683,32 +692,38 @@ function resolveTutorialQueueStep(
         return step;
     }
 
-    if (step === 'stage-one-prime' || step === 'stage-one-queue') {
+    if (
+        step === TutorialStep.StageOnePrime ||
+        step === TutorialStep.StageOneQueue
+    ) {
         if (hasQueue(queue, [2, 3])) {
-            return 'stage-one-submit';
+            return TutorialStep.StageOneSubmit;
         }
 
         if (hasQueue(queue, [2])) {
-            return 'stage-one-queue';
+            return TutorialStep.StageOneQueue;
         }
 
-        return 'stage-one-prime';
+        return TutorialStep.StageOnePrime;
     }
 
-    if (step === 'stage-two-prime' || step === 'stage-two-queue') {
+    if (
+        step === TutorialStep.StageTwoPrime ||
+        step === TutorialStep.StageTwoQueue
+    ) {
         if (hasQueue(queue, [2, 3])) {
-            return 'stage-two-submit';
+            return TutorialStep.StageTwoSubmit;
         }
 
         if (hasQueue(queue, [2])) {
-            return 'stage-two-queue';
+            return TutorialStep.StageTwoQueue;
         }
 
-        return 'stage-two-prime';
+        return TutorialStep.StageTwoPrime;
     }
 
-    if (step === 'stage-two-finish') {
-        return hasQueue(queue, [5]) ? 'stage-two-finish-submit' : step;
+    if (step === TutorialStep.StageTwoFinish) {
+        return hasQueue(queue, [5]) ? TutorialStep.StageTwoFinishSubmit : step;
     }
 
     return step;

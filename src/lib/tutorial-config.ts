@@ -9,24 +9,25 @@ export type TutorialFocusTarget =
     | 'enemy-hp'
     | 'self-hp';
 
-export type TutorialStep =
-    | 'intro'
-    | 'stage-one-prime'
-    | 'stage-one-queue'
-    | 'stage-one-submit'
-    | 'stage-one-result'
-    | 'stage-two-prime'
-    | 'stage-two-queue'
-    | 'stage-two-submit'
-    | 'stage-two-result'
-    | 'stage-two-finish'
-    | 'stage-two-finish-submit'
-    | 'enemy-turn'
-    | 'enemy-attack'
-    | 'try-wrong-prime'
-    | 'wrong-prime-result'
-    | 'summary'
-    | 'done';
+export enum TutorialStep {
+    Intro = 'Intro',
+    StageOnePrime = 'StageOnePrime',
+    StageOneQueue = 'StageOneQueue',
+    StageOneSubmit = 'StageOneSubmit',
+    StageOneResult = 'StageOneResult',
+    StageTwoPrime = 'StageTwoPrime',
+    StageTwoQueue = 'StageTwoQueue',
+    StageTwoSubmit = 'StageTwoSubmit',
+    StageTwoResult = 'StageTwoResult',
+    StageTwoFinish = 'StageTwoFinish',
+    StageTwoFinishSubmit = 'StageTwoFinishSubmit',
+    EnemyTurn = 'EnemyTurn',
+    EnemyAttack = 'EnemyAttack',
+    TryWrongPrime = 'TryWrongPrime',
+    WrongPrimeResult = 'WrongPrimeResult',
+    Summary = 'Summary',
+    Done = 'Done',
+}
 
 export type TutorialLesson = {
     actionLabel?: string;
@@ -64,7 +65,7 @@ const finishQueue = [5] as const;
 const wrongPrimeQueue = [3] as const;
 
 const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
-    'intro': {
+    [TutorialStep.Intro]: {
         getHighlightTarget: () => 'self-blob',
         lesson: {
             actionLabelKey: 'tutorialStartLesson',
@@ -73,9 +74,9 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             position: 'top',
             titleKey: 'tutorialIntroTitle',
         },
-        nextActionStep: 'stage-one-prime',
+        nextActionStep: TutorialStep.StageOnePrime,
     },
-    'stage-one-prime': {
+    [TutorialStep.StageOnePrime]: {
         expectedQueue: fullFactorQueue,
         getHighlightedPrime: () => 2,
         getHighlightTarget: () => 'keypad',
@@ -86,7 +87,7 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             titleKey: 'tutorialStageOnePrimeTitle',
         },
     },
-    'stage-one-queue': {
+    [TutorialStep.StageOneQueue]: {
         expectedQueue: fullFactorQueue,
         getHighlightedPrime: () => 3,
         getHighlightTarget: () => 'queue',
@@ -97,7 +98,7 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             titleKey: 'tutorialStageOneQueueTitle',
         },
     },
-    'stage-one-submit': {
+    [TutorialStep.StageOneSubmit]: {
         expectedQueue: fullFactorQueue,
         getHighlightTarget: () => 'submit',
         lesson: {
@@ -107,7 +108,7 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             titleKey: 'tutorialStageOneSubmitTitle',
         },
     },
-    'stage-one-result': {
+    [TutorialStep.StageOneResult]: {
         getHighlightTarget: () => 'enemy-hp',
         lesson: {
             actionLabelKey: 'tutorialNextBlob',
@@ -116,9 +117,9 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             position: 'bottom',
             titleKey: 'tutorialStageOneResultTitle',
         },
-        nextActionStep: 'stage-two-prime',
+        nextActionStep: TutorialStep.StageTwoPrime,
     },
-    'stage-two-prime': {
+    [TutorialStep.StageTwoPrime]: {
         expectedQueue: fullFactorQueue,
         getHighlightedPrime: () => 2,
         getHighlightTarget: () => 'keypad',
@@ -129,7 +130,7 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             titleKey: 'tutorialStageTwoPrimeTitle',
         },
     },
-    'stage-two-queue': {
+    [TutorialStep.StageTwoQueue]: {
         expectedQueue: fullFactorQueue,
         getHighlightedPrime: () => 3,
         getHighlightTarget: () => 'keypad',
@@ -140,7 +141,7 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             titleKey: 'tutorialStageTwoQueueTitle',
         },
     },
-    'stage-two-submit': {
+    [TutorialStep.StageTwoSubmit]: {
         expectedQueue: fullFactorQueue,
         getHighlightTarget: () => 'submit',
         lesson: {
@@ -150,7 +151,7 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             titleKey: 'tutorialStageTwoSubmitTitle',
         },
     },
-    'stage-two-result': {
+    [TutorialStep.StageTwoResult]: {
         lesson: {
             actionLabelKey: 'tutorialUseLastFactor',
             bodyKey: 'tutorialStageTwoResultBody',
@@ -158,9 +159,9 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             position: 'bottom',
             titleKey: 'tutorialStageTwoResultTitle',
         },
-        nextActionStep: 'stage-two-finish',
+        nextActionStep: TutorialStep.StageTwoFinish,
     },
-    'stage-two-finish': {
+    [TutorialStep.StageTwoFinish]: {
         expectedQueue: finishQueue,
         getHighlightedPrime: () => 5,
         getHighlightTarget: () => 'keypad',
@@ -171,7 +172,7 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             titleKey: 'tutorialStageTwoFinishTitle',
         },
     },
-    'stage-two-finish-submit': {
+    [TutorialStep.StageTwoFinishSubmit]: {
         expectedQueue: finishQueue,
         getHighlightTarget: () => 'submit',
         lesson: {
@@ -181,7 +182,7 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             titleKey: 'tutorialStageTwoFinishSubmitTitle',
         },
     },
-    'enemy-turn': {
+    [TutorialStep.EnemyTurn]: {
         actionEffect: 'allow-cpu-attack',
         getHighlightTarget: () => 'self-hp',
         lesson: {
@@ -192,7 +193,7 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             titleKey: 'tutorialEnemyTurnTitle',
         },
     },
-    'enemy-attack': {
+    [TutorialStep.EnemyAttack]: {
         getHighlightTarget: () => 'self-hp',
         lesson: {
             actionLabelKey: 'tutorialTryMistake',
@@ -201,9 +202,9 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             position: 'top',
             titleKey: 'tutorialEnemyAttackTitle',
         },
-        nextActionStep: 'try-wrong-prime',
+        nextActionStep: TutorialStep.TryWrongPrime,
     },
-    'try-wrong-prime': {
+    [TutorialStep.TryWrongPrime]: {
         expectedQueue: wrongPrimeQueue,
         getHighlightedPrime: (queue) => (queue.length === 0 ? 3 : undefined),
         getHighlightTarget: (queue) =>
@@ -215,7 +216,7 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             titleKey: 'tutorialTryWrongPrimeTitle',
         },
     },
-    'wrong-prime-result': {
+    [TutorialStep.WrongPrimeResult]: {
         getHighlightTarget: () => 'self-hp',
         lesson: {
             actionLabelKey: 'tutorialWrapUp',
@@ -224,9 +225,9 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             position: 'bottom',
             titleKey: 'tutorialWrongPrimeResultTitle',
         },
-        nextActionStep: 'summary',
+        nextActionStep: TutorialStep.Summary,
     },
-    'summary': {
+    [TutorialStep.Summary]: {
         actionEffect: 'complete-tutorial',
         lesson: {
             actionLabelKey: 'tutorialKeepPlaying',
@@ -236,7 +237,7 @@ const tutorialStepConfig: Record<TutorialStep, TutorialStepConfig> = {
             titleKey: 'tutorialSummaryTitle',
         },
     },
-    'done': {},
+    [TutorialStep.Done]: {},
 };
 
 export const tutorialStageFactors = {
