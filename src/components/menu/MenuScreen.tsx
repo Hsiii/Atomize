@@ -134,6 +134,15 @@ export function MenuScreen({
         setShowUserMenuDialog(true);
     }, [isGuest, showAuthDialog]);
 
+    useEffect(() => {
+        if (!isGuest) {
+            return;
+        }
+
+        setShowUserMenuDialog(false);
+        setShowProfileDialog(false);
+    }, [isGuest]);
+
     useEffect(
         () => () => {
             if (toastTimeoutRef.current !== undefined) {
