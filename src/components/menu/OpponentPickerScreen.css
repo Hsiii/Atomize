@@ -7,12 +7,12 @@
 .screen.opponent-picker-screen {
     padding: 0;
     justify-content: flex-start;
-    align-items: center;
+    align-items: stretch;
     overflow-y: auto;
     overflow-x: hidden;
 }
 
-/* === Header with blob === */
+/* === Header === */
 
 .opponent-picker-header {
     position: relative;
@@ -20,13 +20,13 @@
     flex: 0 0 auto;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     padding: max(
             var(--space-5),
             calc(env(safe-area-inset-top) + var(--space-5))
         )
         var(--space-7) 0;
-    gap: 0.35rem;
+    gap: 0.25rem;
 }
 
 .opponent-picker-header .floating-back-button {
@@ -37,21 +37,27 @@
     z-index: 2;
 }
 
+.opponent-picker-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding-left: 3rem;
+}
+
 .opponent-picker-header-blob {
-    width: 3.5rem;
-    height: 3.5rem;
+    width: 2.25rem;
+    height: 2.25rem;
     border-radius: 50%;
     background: var(--color-secondary);
-    border: 2px solid var(--color-border-inverse-soft);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 0.15rem;
+    flex: 0 0 auto;
 }
 
 .opponent-picker-mode-icon {
-    width: 1.1rem;
-    height: 1.1rem;
+    width: 1rem;
+    height: 1rem;
     stroke-width: 2.2;
     color: var(--color-text-inverse);
 }
@@ -67,6 +73,7 @@
 
 .opponent-picker-subtitle {
     margin: var(--space-0);
+    padding-left: 3rem;
     font-family: var(--type-body-meta-family);
     font-size: var(--type-body-meta-size);
     font-weight: var(--type-body-meta-weight);
@@ -77,13 +84,15 @@
 /* === Body === */
 
 .opponent-picker-body {
-    width: min(100%, 22rem);
+    width: 100%;
+    max-width: 22rem;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
-    padding: 1rem 1.5rem max(env(safe-area-inset-bottom), 1.5rem);
+    padding: 0.75rem 1.5rem max(env(safe-area-inset-bottom), 1.5rem);
     flex: 1;
     min-height: 0;
+    align-self: center;
 }
 
 /* === AtomBot Card (Horizontal) === */
@@ -138,11 +147,11 @@
 }
 
 .atombot-card-name {
-    font-family: var(--type-action-label-family);
-    font-size: var(--type-action-label-size);
-    font-weight: 800;
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-action-label-weight);
     color: var(--color-ink);
-    line-height: var(--type-action-label-line-height);
+    line-height: var(--type-body-meta-line-height);
     text-align: left;
 }
 
@@ -228,10 +237,10 @@
 
 .online-empty {
     margin: var(--space-0);
-    font-family: var(--type-action-label-family);
-    font-size: var(--type-action-label-size);
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
     font-weight: var(--type-action-label-weight);
-    color: var(--color-ink);
+    color: var(--type-body-meta-color);
     line-height: var(--type-body-meta-relaxed-line-height);
     text-align: center;
 }
@@ -244,6 +253,7 @@
     color: var(--type-body-meta-color);
     line-height: var(--type-body-meta-relaxed-line-height);
     text-align: center;
+    opacity: 0.7;
 }
 
 .online-list {
@@ -287,8 +297,8 @@
 .online-name {
     flex: 1;
     min-width: 0;
-    font-family: var(--type-action-label-family);
-    font-size: var(--type-action-label-size);
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
     font-weight: var(--type-action-label-weight);
     color: var(--color-ink);
     overflow: hidden;

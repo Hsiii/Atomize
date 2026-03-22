@@ -7,11 +7,11 @@
 .screen.solo-pregame-screen {
     padding: 0;
     justify-content: flex-start;
-    align-items: center;
+    align-items: stretch;
     overflow: hidden;
 }
 
-/* === Header with blob === */
+/* === Header === */
 
 .solo-pregame-header {
     position: relative;
@@ -19,13 +19,13 @@
     flex: 0 0 auto;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     padding: max(
             var(--space-5),
             calc(env(safe-area-inset-top) + var(--space-5))
         )
         var(--space-7) 0;
-    gap: 0.35rem;
+    gap: 0.25rem;
 }
 
 .solo-pregame-header .floating-back-button {
@@ -36,21 +36,27 @@
     z-index: 2;
 }
 
+.solo-pregame-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding-left: 3rem;
+}
+
 .solo-pregame-header-blob {
-    width: 3.5rem;
-    height: 3.5rem;
+    width: 2.25rem;
+    height: 2.25rem;
     border-radius: 50%;
     background: var(--color-primary-strong);
-    border: 2px solid var(--color-border-inverse-soft);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 0.15rem;
+    flex: 0 0 auto;
 }
 
 .solo-pregame-mode-icon {
-    width: 1.1rem;
-    height: 1.1rem;
+    width: 1rem;
+    height: 1rem;
     stroke-width: 2.2;
     color: var(--color-text-inverse);
 }
@@ -66,68 +72,69 @@
 
 .solo-pregame-subtitle {
     margin: var(--space-0);
+    padding-left: 3rem;
     font-family: var(--type-body-meta-family);
     font-size: var(--type-body-meta-size);
     font-weight: var(--type-body-meta-weight);
     color: var(--type-body-meta-color);
     line-height: var(--type-body-meta-line-height);
-    text-align: center;
 }
 
 /* === Body === */
 
 .solo-pregame-body {
-    width: min(100%, 22rem);
+    width: 100%;
+    max-width: 22rem;
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 1.25rem;
-    padding: 0.5rem 1rem max(env(safe-area-inset-bottom), 2rem);
+    padding: 0.75rem 1.5rem max(env(safe-area-inset-bottom), 1.5rem);
     flex: 1;
-    justify-content: center;
+    min-height: 0;
+    align-self: center;
 }
 
-/* === Leaderboard Table === */
+/* === Leaderboard === */
 
 .solo-pregame-leaderboard {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
     flex: 1;
     min-height: 0;
-}
-
-.solo-lb-section-title {
-    margin: var(--space-0);
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-family: var(--type-body-meta-family);
-    font-size: var(--type-body-meta-size);
-    font-weight: var(--type-body-meta-weight);
-    letter-spacing: var(--type-action-label-wide-letter-spacing);
-    text-transform: var(--type-action-label-wide-text-transform);
-    color: var(--type-body-meta-color);
-    line-height: var(--type-body-meta-line-height);
-    flex: 0 0 auto;
-}
-
-.solo-lb-section-icon {
-    width: 0.95rem;
-    height: 0.95rem;
-    stroke-width: 2.2;
-    opacity: 0.6;
 }
 
 .solo-lb-panel {
     border: 1px solid var(--color-border-soft);
     border-radius: var(--radius-panel);
     background: var(--color-surface-strong);
-    padding: 0.25rem 0.35rem;
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.solo-lb-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--color-border-soft);
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
+    letter-spacing: var(--type-action-label-wide-letter-spacing);
+    text-transform: var(--type-action-label-wide-text-transform);
+    color: var(--type-body-meta-color);
+    flex: 0 0 auto;
+}
+
+.solo-lb-panel-header-icon {
+    width: 0.85rem;
+    height: 0.85rem;
+    stroke-width: 2.2;
+    opacity: 0.55;
 }
 
 .solo-lb-table {
@@ -139,25 +146,23 @@
 
 .solo-lb-table th,
 .solo-lb-table td {
-    padding: 0.5rem 0.6rem;
+    padding: 0.5rem 0.75rem;
     text-align: left;
     font-family: var(--type-body-meta-family);
-    font-size: var(--type-action-label-size);
+    font-size: var(--type-body-meta-size);
     border-bottom: 1px solid var(--color-border-soft);
     white-space: nowrap;
+    color: var(--color-ink);
 }
 
 .solo-lb-table th {
     font-weight: var(--type-body-meta-weight);
     color: var(--type-body-meta-color);
-    font-size: var(--type-body-meta-size);
-    letter-spacing: var(--type-body-meta-letter-spacing);
-    padding-bottom: 0.6rem;
-    border-bottom: 1px solid var(--color-border-soft);
+    padding-bottom: 0.5rem;
 }
 
 .solo-lb-col-rank {
-    width: 2.5rem;
+    width: 2rem;
     text-align: center;
 }
 
@@ -171,20 +176,16 @@
 }
 
 .solo-lb-rank {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--type-metric-inline-family);
+    font-family: var(--type-body-meta-family);
     font-size: var(--type-body-meta-size);
-    font-weight: var(--type-metric-inline-weight);
-    color: var(--color-primary);
-    opacity: 0.6;
+    font-weight: var(--type-body-meta-weight);
+    color: var(--type-body-meta-color);
 }
 
 .solo-lb-name {
     display: block;
-    font-family: var(--type-action-label-family);
-    font-size: var(--type-action-label-size);
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
     font-weight: var(--type-action-label-weight);
     color: var(--color-ink);
     overflow: hidden;
@@ -193,11 +194,10 @@
 }
 
 .solo-lb-score {
-    display: inline-block;
-    font-family: var(--type-metric-inline-family);
-    font-size: var(--type-metric-inline-size);
-    font-weight: var(--type-metric-inline-weight);
-    color: var(--color-primary);
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-action-label-weight);
+    color: var(--color-ink);
 }
 
 /* First place row */
@@ -208,26 +208,14 @@
     color: var(--color-gold);
 }
 
-.solo-lb-row-first .solo-lb-rank {
-    opacity: 1;
-}
-
 /* Current player row */
 
 .solo-lb-row-me td {
     background: var(--color-surface-accent);
 }
 
-.solo-lb-row-me .solo-lb-rank {
-    opacity: 1;
-    color: var(--color-primary-strong);
-}
-
-.solo-lb-row-me .solo-lb-name {
-    color: var(--color-primary-strong);
-    font-weight: 800;
-}
-
+.solo-lb-row-me .solo-lb-rank,
+.solo-lb-row-me .solo-lb-name,
 .solo-lb-row-me .solo-lb-score {
     color: var(--color-primary-strong);
     font-weight: 800;
@@ -255,7 +243,7 @@
 /* === Start Button === */
 
 .solo-pregame-start-btn.app-action-button {
-    width: min(100%, 16rem);
+    width: 100%;
     min-height: 3.5rem;
-    margin-top: 0.5rem;
+    flex: 0 0 auto;
 }

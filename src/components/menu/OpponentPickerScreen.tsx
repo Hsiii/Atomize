@@ -158,15 +158,17 @@ export function OpponentPickerScreen({
             <section className='screen opponent-picker-screen'>
                 <header className='opponent-picker-header'>
                     <BackButton onBack={onBack} />
-                    <div className='opponent-picker-header-blob'>
-                        <Swords
-                            aria-hidden='true'
-                            className='opponent-picker-mode-icon'
-                        />
+                    <div className='opponent-picker-title-row'>
+                        <div className='opponent-picker-header-blob'>
+                            <Swords
+                                aria-hidden='true'
+                                className='opponent-picker-mode-icon'
+                            />
+                        </div>
+                        <h1 className='opponent-picker-title'>
+                            {uiText.battleTitle}
+                        </h1>
                     </div>
-                    <h1 className='opponent-picker-title'>
-                        {uiText.battleTitle}
-                    </h1>
                     <p className='opponent-picker-subtitle'>
                         {uiText.chooseOpponent}
                     </p>

@@ -44,26 +44,30 @@ export function SoloPregameScreen({
             <section className='screen solo-pregame-screen'>
                 <header className='solo-pregame-header'>
                     <BackButton onBack={onBack} />
-                    <div className='solo-pregame-header-blob'>
-                        <Timer
-                            aria-hidden='true'
-                            className='solo-pregame-mode-icon'
-                        />
+                    <div className='solo-pregame-title-row'>
+                        <div className='solo-pregame-header-blob'>
+                            <Timer
+                                aria-hidden='true'
+                                className='solo-pregame-mode-icon'
+                            />
+                        </div>
+                        <h1 className='solo-pregame-title'>
+                            {uiText.soloTitle}
+                        </h1>
                     </div>
-                    <h1 className='solo-pregame-title'>{uiText.soloTitle}</h1>
                     <p className='solo-pregame-subtitle'>{uiText.soloGoal}</p>
                 </header>
 
                 <div className='solo-pregame-body'>
                     <div className='solo-pregame-leaderboard'>
-                        <h2 className='solo-lb-section-title'>
-                            <Trophy
-                                aria-hidden='true'
-                                className='solo-lb-section-icon'
-                            />
-                            {uiText.leaderboardTitle}
-                        </h2>
                         <div className='solo-lb-panel'>
+                            <div className='solo-lb-panel-header'>
+                                <Trophy
+                                    aria-hidden='true'
+                                    className='solo-lb-panel-header-icon'
+                                />
+                                {uiText.leaderboardTitle}
+                            </div>
                             <table className='solo-lb-table'>
                                 <thead>
                                     <tr>
