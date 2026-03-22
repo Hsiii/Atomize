@@ -1,6 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+import type { Database } from './database.types';
+
 export type SupabaseConfig = {
     url: string;
     anonKey: string;
@@ -26,7 +28,12 @@ export function getSupabaseConfig(): SupabaseConfig | undefined {
     return { url, anonKey };
 }
 
-export function createRealtimeClient(): SupabaseClient | undefined {
+export const supabaseAuthClient: SupabaseClient<Database> | undefined = (() => {
+    const config = getSupabaseConfig();
+    return config ? createClient(config.url, config.anonKey) : undefined;
+})();
+
+export function createRealtimeClient(): SupabaseClient<Database> | undefined {
     const config = getSupabaseConfig();
 
     if (!config) {
