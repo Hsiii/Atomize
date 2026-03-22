@@ -106,16 +106,16 @@ export const uiText = {
         'Add 3. Multi-prime turns let you plan several factors before you fire.',
     tutorialStageTwoSubmitTitle: 'Cash out the queue',
     tutorialStageTwoSubmitBody:
-        'Press Enter. This queue will hit for 5 even though the blob still has one factor left.',
+        'Press Enter. This queue will release 5 stored factor damage even though the blob still has one factor left.',
     tutorialStageTwoResultTitle: 'Queued factors hit together',
     tutorialStageTwoResultBody:
-        'Your queued 2 + 3 released 5 damage when the queue finished. Stored factor damage cashes out on submit.',
+        'Your queued 2 + 3 released 5 stored factor damage when the queue finished. That is not combo bonus. Combo bonus only comes from clearing blobs in a streak.',
     tutorialStageTwoFinishTitle: 'Finish the blob',
     tutorialStageTwoFinishBody:
-        'The blob still has factor 5 left. Tap 5 to complete the factorization.',
+        'The stored 5 damage already went out. The blob still has factor 5 left, so tap 5 to solve it.',
     tutorialStageTwoFinishSubmitTitle: 'Complete the clear',
     tutorialStageTwoFinishSubmitBody:
-        'Press Enter to clear the solved blob and deal damage.',
+        'Press Enter to clear the solved blob. This clear only deals the normal 1 damage hit, not another combo payout.',
     tutorialEnemyTurnTitle: 'Enemy incoming',
     tutorialEnemyTurnBody:
         'The bot attacks with the same rules you do. Watch the HP bars while it moves.',
