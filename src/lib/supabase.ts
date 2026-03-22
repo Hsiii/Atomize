@@ -9,6 +9,11 @@ export type SupabaseConfig = {
     anonKey: string;
 };
 
+export type EmailSignUpResult = {
+    error?: string;
+    requiresEmailConfirmation?: boolean;
+};
+
 const SUPABASE_ENV_KEYS = [
     'VITE_SUPABASE_URL',
     'VITE_SUPABASE_ANON_KEY',
@@ -151,4 +156,57 @@ export async function startEmailSignIn(
     }
 
     return undefined;
+}
+
+export async function startEmailSignUp(
+    userName: string,
+    email: string,
+    password: string
+): Promise<EmailSignUpResult> {
+    if (!supabaseAuthClient) {
+        return { error: uiText.authUnavailable };
+    }
+
+    const supabaseConfig = getSupabaseConfig();
+
+    if (!supabaseConfig) {
+        return { error: uiText.authUnavailable };
+    }
+
+    const normalizedUserName = userName
+        .trim()
+        .replaceAll(/\s+/g, ' ')
+        .slice(0, 8);
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPassword = password.trim();
+
+    if (!normalizedUserName) {
+        return { error: uiText.userNameInvalid };
+    }
+
+    if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
+        return { error: uiText.emailInvalid };
+    }
+
+    if (!normalizedPassword) {
+        return { error: uiText.passwordInvalid };
+    }
+
+    const { data, error } = await supabaseAuthClient.auth.signUp({
+        email: normalizedEmail,
+        password: normalizedPassword,
+        options: {
+            data: {
+                display_name: normalizedUserName,
+            },
+        },
+    });
+
+    if (error) {
+        return { error: uiText.emailSignupError };
+    }
+
+    return {
+        requiresEmailConfirmation: !data.session,
+    };
 }

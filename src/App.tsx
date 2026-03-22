@@ -6,6 +6,7 @@ import { uiText } from './app-state';
 import type { Screen } from './app-state';
 import { MultiplayerGameScreen } from './components/game/MultiplayerGameScreen';
 import { SingleGameScreen } from './components/game/SingleGameScreen';
+import { AuthScreen } from './components/menu/AuthScreen';
 import { MenuScreen } from './components/menu/MenuScreen';
 import { useLocalCpuGame } from './hooks/useLocalCpuGame';
 import { useMultiplayerGame } from './hooks/useMultiplayerGame';
@@ -206,6 +207,9 @@ export default function App(): JSX.Element {
     const [screen, setScreen] = useState<Screen>(() =>
         isTutorialComplete() ? 'menu' : 'tutorial'
     );
+    const [authMode, setAuthMode] = useState<'login' | 'signup' | undefined>(
+        undefined
+    );
     const [sessionLoading, setSessionLoading] = useState(true);
     const [session, setSession] = useState<Session | undefined>(undefined);
     const [isGuest, setIsGuest] = useState(() => isGuestModeEnabled());
@@ -223,6 +227,7 @@ export default function App(): JSX.Element {
                 if (data.session) {
                     setIsGuest(false);
                     setGuestModeEnabled(false);
+                    setAuthMode(undefined);
                     finishGoogleAuthPopup();
                     await syncAuthenticatedLeaderboardProfile({
                         authClient,
@@ -248,6 +253,7 @@ export default function App(): JSX.Element {
                 if (currentSession) {
                     setIsGuest(false);
                     setGuestModeEnabled(false);
+                    setAuthMode(undefined);
                     finishGoogleAuthPopup();
                     detachPromise(
                         syncAuthenticatedLeaderboardProfile({
@@ -423,6 +429,20 @@ export default function App(): JSX.Element {
         return <main className='app-shell fullscreen-shell' />;
     }
 
+    if (authMode && !session) {
+        return (
+            <AuthScreen
+                initialMode={authMode}
+                onAuthSuccess={() => {
+                    setAuthMode(undefined);
+                }}
+                onBack={() => {
+                    setAuthMode(undefined);
+                }}
+            />
+        );
+    }
+
     if (screen === 'tutorial') {
         return (
             <MultiplayerGameScreen
@@ -497,6 +517,9 @@ export default function App(): JSX.Element {
                     setPlayerName('');
                     persistPlayerName('');
                     setScreen('menu');
+                }}
+                onOpenAuth={() => {
+                    setAuthMode('login');
                 }}
                 onPrefetchInviteUsers={multiplayerGame.prefetchOnlineUsers}
                 onStartCpuGame={() => {
