@@ -59,40 +59,18 @@ export function createRealtimeClient(): SupabaseClient<Database> | undefined {
     });
 }
 
-export async function startGooglePopupSignIn(): Promise<string | undefined> {
+export const GOOGLE_AUTH_POPUP_NAME = 'google-sign-in';
+
+/**
+ * Must be called synchronously from a click handler so `window.open` is not blocked by mobile
+ * browsers (Android Chrome, iOS Safari). Returns an object whose `result` promise resolves to an
+ * error string or `undefined` on success.
+ */
+export function startGoogleSignIn(): {
+    result: Promise<string | undefined>;
+} {
     if (!supabaseAuthClient) {
-        return uiText.authUnavailable;
-    }
-
-    const supabaseConfig = getSupabaseConfig();
-
-    if (!supabaseConfig) {
-        return uiText.authUnavailable;
-    }
-
-    try {
-        const settingsResponse = await globalThis.fetch(
-            new URL('/auth/v1/settings', supabaseConfig.url),
-            {
-                headers: {
-                    apikey: supabaseConfig.anonKey,
-                },
-            }
-        );
-
-        if (!settingsResponse.ok) {
-            return uiText.loginError;
-        }
-
-        const settings = (await settingsResponse.json()) as {
-            external?: Record<string, boolean | undefined>;
-        };
-
-        if (!settings.external?.google) {
-            return uiText.googleProviderDisabled;
-        }
-    } catch {
-        return uiText.loginError;
+        return { result: Promise.resolve(uiText.authUnavailable) };
     }
 
     const isStandalone =
@@ -100,15 +78,41 @@ export async function startGooglePopupSignIn(): Promise<string | undefined> {
         (navigator as unknown as { standalone?: boolean }).standalone === true;
 
     if (isStandalone) {
-        const { error: authError } =
-            await supabaseAuthClient.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: globalThis.location.origin,
-                },
-            });
+        return { result: startGoogleRedirectSignIn() };
+    }
 
-        return authError ? uiText.loginError : undefined;
+    const popup = globalThis.open(
+        'about:blank',
+        GOOGLE_AUTH_POPUP_NAME,
+        'popup,width=500,height=600'
+    );
+
+    if (!popup) {
+        return { result: Promise.resolve(uiText.popupBlocked) };
+    }
+
+    return { result: navigateGooglePopup(popup) };
+}
+
+async function startGoogleRedirectSignIn(): Promise<string | undefined> {
+    if (!supabaseAuthClient) {
+        return uiText.authUnavailable;
+    }
+
+    const { error: authError } = await supabaseAuthClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            redirectTo: globalThis.location.origin,
+        },
+    });
+
+    return authError ? uiText.loginError : undefined;
+}
+
+async function navigateGooglePopup(popup: Window): Promise<string | undefined> {
+    if (!supabaseAuthClient) {
+        popup.close();
+        return uiText.authUnavailable;
     }
 
     const { data, error: authError } =
@@ -121,19 +125,11 @@ export async function startGooglePopupSignIn(): Promise<string | undefined> {
         });
 
     if (authError || !data.url) {
+        popup.close();
         return uiText.loginError;
     }
 
-    const popup = globalThis.open(
-        data.url,
-        'google-sign-in',
-        'popup,width=500,height=600'
-    );
-
-    if (!popup) {
-        return uiText.popupBlocked;
-    }
-
+    popup.location.assign(data.url);
     return undefined;
 }
 

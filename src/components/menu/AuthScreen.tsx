@@ -5,7 +5,7 @@ import { uiText } from '../../app-state';
 import {
     startEmailSignIn,
     startEmailSignUp,
-    startGooglePopupSignIn,
+    startGoogleSignIn,
 } from '../../lib/supabase';
 import { ActionButton } from '../game/ui/ActionButton';
 import { BackButton } from '../ui/BackButton';
@@ -124,24 +124,26 @@ export function AuthScreen({
         Promise.resolve(submitEmailAuth()).catch(() => undefined);
     }
 
-    async function submitGoogleAuth() {
+    function handleGoogleAuth() {
         setStatus(undefined);
         setGoogleLoading(true);
 
-        const nextError = await startGooglePopupSignIn();
+        const { result } = startGoogleSignIn();
 
-        setGoogleLoading(false);
+        result
+            .then((nextError) => {
+                setGoogleLoading(false);
 
-        if (nextError) {
-            setStatus({ message: nextError, tone: 'error' });
-            return;
-        }
+                if (nextError) {
+                    setStatus({ message: nextError, tone: 'error' });
+                    return;
+                }
 
-        onAuthSuccess();
-    }
-
-    function handleGoogleAuth() {
-        Promise.resolve(submitGoogleAuth()).catch(() => undefined);
+                onAuthSuccess();
+            })
+            .catch(() => {
+                setGoogleLoading(false);
+            });
     }
 
     const isLogin = mode === 'login';

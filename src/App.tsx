@@ -24,9 +24,7 @@ import {
     setGuestModeEnabled,
 } from './lib/app-helpers';
 import type { Database } from './lib/database.types';
-import { supabaseAuthClient } from './lib/supabase';
-
-const GOOGLE_AUTH_POPUP_NAME = 'google-sign-in';
+import { GOOGLE_AUTH_POPUP_NAME, supabaseAuthClient } from './lib/supabase';
 
 type SeoContent = {
     description: string;
