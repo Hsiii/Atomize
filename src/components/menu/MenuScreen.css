@@ -533,8 +533,10 @@
 }
 
 .auth-google-mark {
+    display: block;
     width: 1.8rem;
     height: 1.8rem;
+    transform: translate(-0.06rem, 0.03rem);
 }
 
 .dialog-input {
