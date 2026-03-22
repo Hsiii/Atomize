@@ -5,8 +5,8 @@
     "packageManager": "bun@1.2.5",
     "scripts": {
         "dev": "vite",
-        "build": "tsc -p tsconfig.json --noEmit && vite build",
-        "check": "tsc -p tsconfig.json --noEmit",
+        "prebuild": "tsc -p tsconfig.json --noEmit",
+        "build": "vite build",
         "lint": "eslint ."
     },
     "lint-staged": {
