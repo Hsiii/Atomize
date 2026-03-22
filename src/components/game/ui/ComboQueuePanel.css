@@ -1,7 +1,7 @@
 .combo-panel {
     grid-column: 1 / -1;
     width: 100%;
-    block-size: var(--size-buffer-strip-min-height);
+    min-block-size: 3.1rem;
 }
 
 .combo-bar {
