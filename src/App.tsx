@@ -25,6 +25,36 @@ import {
 import type { Database } from './lib/database.types';
 import { supabaseAuthClient } from './lib/supabase';
 
+function getAuthDisplayName(
+    userMetadata: Record<string, unknown> | undefined,
+    email: string | undefined
+): string | undefined {
+    const candidateValues = [
+        userMetadata?.display_name,
+        userMetadata?.full_name,
+        userMetadata?.name,
+        userMetadata?.preferred_username,
+        email?.split('@')[0],
+    ];
+
+    for (const candidate of candidateValues) {
+        if (typeof candidate !== 'string') {
+            continue;
+        }
+
+        const normalizedName = candidate
+            .trim()
+            .replaceAll(/\s+/g, ' ')
+            .slice(0, 8);
+
+        if (normalizedName) {
+            return normalizedName;
+        }
+    }
+
+    return undefined;
+}
+
 export default function App(): JSX.Element {
     const [screen, setScreen] = useState<Screen>(() =>
         isTutorialComplete() ? 'menu' : 'tutorial'
@@ -43,12 +73,26 @@ export default function App(): JSX.Element {
         detachPromise(
             authClient.auth.getSession().then(({ data }) => {
                 setSession(data.session ?? undefined);
-                if (data.session?.user.user_metadata.display_name) {
-                    const name = data.session.user.user_metadata.display_name;
+                const name = getAuthDisplayName(
+                    data.session?.user.user_metadata as
+                        | Record<string, unknown>
+                        | undefined,
+                    data.session?.user.email
+                );
+
+                if (name) {
                     setPlayerName(name);
                     persistPlayerName(name);
+                    if (!data.session?.user.user_metadata.display_name) {
+                        detachPromise(
+                            authClient.auth
+                                .updateUser({
+                                    data: { display_name: name },
+                                })
+                                .then(() => undefined)
+                        );
+                    }
                 }
-                // Restore best combo from account and merge with local storage.
                 const userId = data.session?.user.id;
                 if (userId) {
                     detachPromise(
@@ -77,10 +121,25 @@ export default function App(): JSX.Element {
         } = supabaseAuthClient.auth.onAuthStateChange(
             (_event, currentSession) => {
                 setSession(currentSession ?? undefined);
-                if (currentSession?.user.user_metadata.display_name) {
-                    const name = currentSession.user.user_metadata.display_name;
+                const name = getAuthDisplayName(
+                    currentSession?.user.user_metadata as
+                        | Record<string, unknown>
+                        | undefined,
+                    currentSession?.user.email
+                );
+
+                if (name) {
                     setPlayerName(name);
                     persistPlayerName(name);
+                    if (!currentSession?.user.user_metadata.display_name) {
+                        detachPromise(
+                            authClient.auth
+                                .updateUser({
+                                    data: { display_name: name },
+                                })
+                                .then(() => undefined)
+                        );
+                    }
                 }
             }
         );
@@ -183,11 +242,6 @@ export default function App(): JSX.Element {
     if (!isGuest && !session && screen !== 'login') {
         return (
             <LoginScreen
-                onLoginSuccess={() => {
-                    setIsGuest(false);
-                    setGuestModeEnabled(false);
-                    setScreen(isTutorialComplete() ? 'menu' : 'tutorial');
-                }}
                 onPlayAsGuest={() => {
                     setIsGuest(true);
                     setGuestModeEnabled(true);
@@ -202,11 +256,6 @@ export default function App(): JSX.Element {
     if (screen === 'login') {
         return (
             <LoginScreen
-                onLoginSuccess={() => {
-                    setIsGuest(false);
-                    setGuestModeEnabled(false);
-                    setScreen(isTutorialComplete() ? 'menu' : 'tutorial');
-                }}
                 onPlayAsGuest={() => {
                     setIsGuest(true);
                     setGuestModeEnabled(true);

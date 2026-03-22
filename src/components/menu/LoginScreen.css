@@ -23,14 +23,6 @@
     animation: login-content-enter 0.3s ease-out;
 }
 
-.login-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    width: 100%;
-    animation: login-content-enter 0.3s ease-out;
-}
-
 .login-divider {
     display: flex;
     align-items: center;
