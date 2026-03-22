@@ -33,6 +33,7 @@
 .secondary-action,
 .danger-action {
     width: 100%;
+    max-width: 22rem;
 }
 
 .action-button-rounded {
