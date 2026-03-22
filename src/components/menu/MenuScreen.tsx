@@ -132,9 +132,6 @@ export function MenuScreen({
                                         {uiText.soloTitle}
                                     </span>
                                 </div>
-                                <span className='mode-card-subtitle'>
-                                    {uiText.soloSubtitle}
-                                </span>
                             </button>
                             <button
                                 className='mode-card mode-card-battle'
@@ -150,9 +147,6 @@ export function MenuScreen({
                                         {uiText.battleTitle}
                                     </span>
                                 </div>
-                                <span className='mode-card-subtitle'>
-                                    {uiText.battleSubtitle}
-                                </span>
                             </button>
                         </div>
                     </div>

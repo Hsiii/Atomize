@@ -115,10 +115,8 @@ export const uiText = {
     popupBlocked:
         'Pop-up was blocked by your browser. Please allow pop-ups for this site to log in.',
     soloTitle: 'Solo',
-    soloSubtitle: 'Beat the clock',
     soloGoal: 'Factor as many numbers as you can in 60 seconds.',
     battleTitle: 'Battle',
-    battleSubtitle: 'First to zero wins',
     opponentPickerTitle: 'Choose Opponent',
     atomBotLabel: 'AtomBot',
     atomBotHint: 'Practice against the CPU',

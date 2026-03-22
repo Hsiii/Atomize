@@ -182,16 +182,6 @@
     line-height: 1.1;
 }
 
-.mode-card-subtitle {
-    font-family: var(--type-body-meta-family);
-    font-size: var(--type-body-meta-size);
-    font-weight: var(--type-body-meta-weight);
-    letter-spacing: var(--type-body-meta-letter-spacing);
-    color: var(--type-body-meta-color);
-    line-height: var(--type-body-meta-line-height);
-    text-align: center;
-}
-
 /* === Toast === */
 
 .menu-toast-layer {
