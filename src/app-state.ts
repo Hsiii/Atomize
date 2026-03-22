@@ -118,6 +118,7 @@ export const uiText = {
     soloGoal: 'Beat the clock.',
     soloPB: 'Personal Best',
     battleTitle: 'Battle',
+    battleGoal: 'Outsmart them.',
     opponentPickerTitle: 'Choose Opponent',
     atomBotLabel: 'AtomBot',
     atomBotPlay: 'Play',

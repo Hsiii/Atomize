@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { JSX } from 'react';
-import { Bot, Check, Cpu, Users } from 'lucide-react';
+import { Bot, Check, Cpu, Swords, Users } from 'lucide-react';
 
 import type { OnlineLobbyUser } from '../../app-state';
 import { uiText } from '../../app-state';
@@ -161,10 +161,19 @@ export function OpponentPickerScreen({
         <main className='app-shell fullscreen-shell opponent-picker-shell'>
             <section className='screen opponent-picker-screen'>
                 <header className='opponent-picker-header-band'>
-                    <BackButton onBack={onBack} />
-                    <h1 className='opponent-picker-title'>
-                        {uiText.battleTitle}
-                    </h1>
+                    <div className='opponent-picker-title-row'>
+                        <BackButton onBack={onBack} />
+                        <h1 className='opponent-picker-title'>
+                            {uiText.battleTitle}
+                        </h1>
+                    </div>
+                    <Swords
+                        className='opponent-picker-hero-icon'
+                        strokeWidth={2}
+                    />
+                    <p className='opponent-picker-tagline'>
+                        {uiText.battleGoal}
+                    </p>
                 </header>
 
                 <div className='opponent-picker-body'>
