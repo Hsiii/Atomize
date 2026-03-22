@@ -650,12 +650,6 @@ export function MenuScreen({
                                         );
                                     })}
                                 </ul>
-
-                                {onlineUsers.length === 0 ? (
-                                    <p className='invite-empty'>
-                                        {uiText.noOnlinePlayers}
-                                    </p>
-                                ) : undefined}
                             </div>
                         </div>
                     </div>
