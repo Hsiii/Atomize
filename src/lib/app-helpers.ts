@@ -6,6 +6,7 @@ const playerNameStorageKey = 'atomize.playerName';
 const bestScoreStorageKey = 'atomize.bestScore';
 const bestMaxComboStorageKey = 'atomize.bestMaxCombo';
 const tutorialCompleteStorageKey = 'atomize.tutorialComplete';
+const guestModeStorageKey = 'atomize.isGuestMode';
 
 export const soloDurationSeconds = 60;
 export const playablePrimes = PRIME_POOL.slice(0, 9);
@@ -123,4 +124,16 @@ export function isTutorialComplete(): boolean {
 
 export function markTutorialComplete(): void {
     globalThis.localStorage.setItem(tutorialCompleteStorageKey, '1');
+}
+
+export function isGuestModeEnabled(): boolean {
+    return globalThis.localStorage.getItem(guestModeStorageKey) === '1';
+}
+
+export function setGuestModeEnabled(enabled: boolean): void {
+    if (enabled) {
+        globalThis.localStorage.setItem(guestModeStorageKey, '1');
+    } else {
+        globalThis.localStorage.removeItem(guestModeStorageKey);
+    }
 }
