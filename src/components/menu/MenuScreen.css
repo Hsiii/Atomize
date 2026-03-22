@@ -412,7 +412,19 @@
 }
 
 .dialog-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
     padding: 0 var(--space-7) var(--space-7);
+}
+
+.dialog-actions > .app-action-button {
+    width: min(100%, 14rem);
+}
+
+.dialog-actions-top {
+    padding-top: var(--space-7);
 }
 
 .menu-auth-error {
