@@ -11,22 +11,22 @@ export interface Database {
         Tables: {
             combo_leaderboard: {
                 Row: {
-                    user_id: string;
-                    player_name: string;
                     max_combo: number;
-                    inserted_at: string;
+                    player_name: string;
+                    updated_at: string | null;
+                    user_id: string;
                 };
                 Insert: {
-                    user_id: string;
+                    max_combo?: number;
                     player_name: string;
-                    max_combo: number;
-                    inserted_at?: string;
+                    updated_at?: string | null;
+                    user_id: string;
                 };
                 Update: {
-                    user_id?: string;
-                    player_name?: string;
                     max_combo?: number;
-                    inserted_at?: string;
+                    player_name?: string;
+                    updated_at?: string | null;
+                    user_id?: string;
                 };
                 Relationships: [];
             };
