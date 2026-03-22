@@ -1,5 +1,5 @@
 import type { JSX } from 'react';
-import { Flame, Timer, Trophy } from 'lucide-react';
+import { Timer } from 'lucide-react';
 
 import { uiText } from '../../app-state';
 import type { BestScoreRecord } from '../../lib/app-helpers';
@@ -40,12 +40,8 @@ export function SoloPregameScreen({
                         <h2 className='solo-pregame-pb-title'>
                             {uiText.soloPB}
                         </h2>
-                        <div className='solo-pregame-pb-stats'>
+                        <div className='solo-pregame-pb-row'>
                             <div className='solo-pregame-pb-stat'>
-                                <Trophy
-                                    className='solo-pregame-pb-icon'
-                                    size={18}
-                                />
                                 <span className='solo-pregame-pb-value'>
                                     {bestScore.score}
                                 </span>
@@ -53,11 +49,8 @@ export function SoloPregameScreen({
                                     {uiText.score}
                                 </span>
                             </div>
+                            <div className='solo-pregame-pb-divider' />
                             <div className='solo-pregame-pb-stat'>
-                                <Flame
-                                    className='solo-pregame-pb-icon'
-                                    size={18}
-                                />
                                 <span className='solo-pregame-pb-value'>
                                     {bestScore.maxCombo}
                                 </span>
