@@ -40,10 +40,17 @@
     z-index: -1;
 }
 
-.solo-pregame-header-band .floating-back-button {
+.solo-pregame-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    position: relative;
+}
+
+.solo-pregame-title-row .floating-back-button {
     position: absolute;
-    top: max(1.5rem, calc(env(safe-area-inset-top) + 1.5rem));
-    left: var(--space-4);
+    left: 0;
     color: var(--color-text-inverse);
 }
 
