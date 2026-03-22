@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+import { uiText } from '../app-state';
 import type { Database } from './database.types';
 
 export type SupabaseConfig = {
@@ -51,4 +52,66 @@ export function createRealtimeClient(): SupabaseClient<Database> | undefined {
             },
         },
     });
+}
+
+export async function startGooglePopupSignIn(): Promise<string | undefined> {
+    if (!supabaseAuthClient) {
+        return uiText.authUnavailable;
+    }
+
+    const supabaseConfig = getSupabaseConfig();
+
+    if (!supabaseConfig) {
+        return uiText.authUnavailable;
+    }
+
+    try {
+        const settingsResponse = await globalThis.fetch(
+            new URL('/auth/v1/settings', supabaseConfig.url),
+            {
+                headers: {
+                    apikey: supabaseConfig.anonKey,
+                },
+            }
+        );
+
+        if (!settingsResponse.ok) {
+            return uiText.loginError;
+        }
+
+        const settings = (await settingsResponse.json()) as {
+            external?: Record<string, boolean | undefined>;
+        };
+
+        if (!settings.external?.google) {
+            return uiText.googleProviderDisabled;
+        }
+    } catch {
+        return uiText.loginError;
+    }
+
+    const { data, error: authError } =
+        await supabaseAuthClient.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: globalThis.location.origin,
+                skipBrowserRedirect: true,
+            },
+        });
+
+    if (authError || !data.url) {
+        return uiText.loginError;
+    }
+
+    const popup = globalThis.open(
+        data.url,
+        'google-sign-in',
+        'popup,width=500,height=600'
+    );
+
+    if (!popup) {
+        return uiText.popupBlocked;
+    }
+
+    return undefined;
 }
