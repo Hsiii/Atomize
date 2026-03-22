@@ -419,7 +419,7 @@ export function MenuScreen({
                         role='presentation'
                     >
                         <div
-                            className='dialog-panel dialog-invite'
+                            className='dialog-panel dialog-invite dialog-leaderboard'
                             onClick={(event) => {
                                 event.stopPropagation();
                             }}
@@ -599,23 +599,43 @@ export function MenuScreen({
                                             </thead>
                                             <tbody>
                                                 {leaderboardData.map(
-                                                    (entry, idx) => (
-                                                        <tr key={idx}>
-                                                            <td className='col-rank'>
-                                                                #{idx + 1}
-                                                            </td>
-                                                            <td className='col-player'>
-                                                                {
-                                                                    entry.player_name
+                                                    (entry, idx) => {
+                                                        const rowClassName =
+                                                            idx === 0
+                                                                ? 'leaderboard-row leaderboard-row-first'
+                                                                : 'leaderboard-row';
+
+                                                        return (
+                                                            <tr
+                                                                className={
+                                                                    rowClassName
                                                                 }
-                                                            </td>
-                                                            <td className='col-combo'>
-                                                                {
-                                                                    entry.max_combo
-                                                                }
-                                                            </td>
-                                                        </tr>
-                                                    )
+                                                                key={`${entry.player_name}-${entry.max_combo}-${idx}`}
+                                                            >
+                                                                <td className='col-rank'>
+                                                                    <span className='leaderboard-rank-badge'>
+                                                                        #
+                                                                        {idx +
+                                                                            1}
+                                                                    </span>
+                                                                </td>
+                                                                <td className='col-player'>
+                                                                    <span className='leaderboard-player-name'>
+                                                                        {
+                                                                            entry.player_name
+                                                                        }
+                                                                    </span>
+                                                                </td>
+                                                                <td className='col-combo'>
+                                                                    <span className='leaderboard-combo-value'>
+                                                                        {
+                                                                            entry.max_combo
+                                                                        }
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    }
                                                 )}
                                             </tbody>
                                         </table>
