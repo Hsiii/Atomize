@@ -3,7 +3,7 @@
     --multiplayer-enemy-right: 1.25rem;
     --multiplayer-self-left: 1.25rem;
     --multiplayer-self-bottom: 1rem;
-    --multiplayer-tutorial-top-offset: clamp(5rem, 17vw, 6.4rem);
+    --multiplayer-tutorial-top-offset: clamp(4.35rem, 15vw, 5.45rem);
     position: relative;
     flex: 1;
     gap: var(--space-4);
@@ -506,13 +506,13 @@
         --multiplayer-enemy-right: 1.4rem;
         --multiplayer-self-left: 1.6rem;
         --multiplayer-self-bottom: 1.2rem;
-        --multiplayer-tutorial-top-offset: 5.6rem;
+        --multiplayer-tutorial-top-offset: 4.85rem;
     }
 }
 
 @media (max-width: 768px) {
     .multiplayer-game-screen {
-        --multiplayer-tutorial-top-offset: clamp(4.8rem, 24vw, 5.9rem);
+        --multiplayer-tutorial-top-offset: clamp(4.1rem, 20vw, 5rem);
     }
 
     .multiplayer-board {
