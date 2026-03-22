@@ -85,8 +85,10 @@
 .solo-pregame-pb {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: var(--space-3);
     width: 100%;
+    flex: 1;
 }
 
 .solo-pregame-pb-title {
@@ -120,12 +122,6 @@
     font-size: var(--type-action-label-size);
     font-weight: var(--type-action-label-weight);
     color: var(--color-ink);
-}
-
-/* === Spacer === */
-
-.solo-pregame-spacer {
-    flex: 1;
 }
 
 /* === Start Button === */

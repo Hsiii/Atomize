@@ -58,8 +58,6 @@ export function SoloPregameScreen({
                         </div>
                     </div>
 
-                    <div className='solo-pregame-spacer' />
-
                     <ActionButton
                         className='solo-pregame-start-btn'
                         onClick={onStart}
