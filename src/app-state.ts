@@ -116,6 +116,36 @@ export const uiText = {
         'Pop-up was blocked by your browser. Please allow pop-ups for this site to log in.',
 } as const;
 
+export const seoText = {
+    defaultDescription:
+        'Atomize is a fast prime factorization battle game for the browser. Train in solo mode, learn with the tutorial, or duel opponents in real time.',
+    defaultTitle: 'Atomize | Prime Factorization Battle Game',
+    leaderboardDescription:
+        'Check the latest Atomize high scores and see who leads the prime factorization leaderboard.',
+    leaderboardTitle: 'Leaderboard | Atomize',
+    accountDescription:
+        'Manage your Atomize account, update your player name, and sign out securely.',
+    accountTitle: 'Account | Atomize',
+    menuDescription:
+        'Play Atomize in solo mode, challenge AtomBot, or jump into live multiplayer prime factorization battles.',
+    menuTitle: 'Play Atomize | Prime Factorization Battle Game',
+    multiplayerDescription:
+        'Face an opponent in a real-time prime factorization duel where faster combos deal more damage.',
+    multiplayerTitle: 'Multiplayer Battle | Atomize',
+    singleDescription:
+        'Practice speed and accuracy in Atomize solo mode by clearing as many prime factorization stages as possible.',
+    singleTitle: 'Solo Mode | Atomize',
+    loginDescription:
+        'Log in to Atomize to keep your player identity and compete on the leaderboard.',
+    loginTitle: 'Log In | Atomize',
+    signupDescription:
+        'Create an Atomize account to claim your name and join the prime factorization leaderboard.',
+    signupTitle: 'Sign Up | Atomize',
+    tutorialDescription:
+        'Learn how Atomize works with a guided tutorial covering factors, combos, damage, and battle flow.',
+    tutorialTitle: 'Tutorial | Atomize',
+} as const;
+
 export const keyboardHintText = {
     body: 'Press digit 4 to input 23',
     dismissAction: 'Hide hint',

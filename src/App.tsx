@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { JSX } from 'react';
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
 
-import { uiText } from './app-state';
+import { seoText, uiText } from './app-state';
 import type { Screen } from './app-state';
 import { MultiplayerGameScreen } from './components/game/MultiplayerGameScreen';
 import { SingleGameScreen } from './components/game/SingleGameScreen';
@@ -34,6 +34,59 @@ import type { Database } from './lib/database.types';
 import { supabaseAuthClient } from './lib/supabase';
 
 const GOOGLE_AUTH_POPUP_NAME = 'google-sign-in';
+
+type SeoContent = {
+    description: string;
+    title: string;
+};
+
+function upsertMetaTag({
+    content,
+    name,
+    property,
+}: {
+    content: string;
+    name?: string;
+    property?: string;
+}) {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    const selector = name
+        ? `meta[name="${name}"]`
+        : `meta[property="${property}"]`;
+    let metaElement = document.head.querySelector<HTMLMetaElement>(selector);
+
+    if (!metaElement) {
+        metaElement = document.createElement('meta');
+
+        if (name) {
+            metaElement.name = name;
+        }
+
+        if (property) {
+            metaElement.setAttribute('property', property);
+        }
+
+        document.head.append(metaElement);
+    }
+
+    metaElement.content = content;
+}
+
+function applySeoContent({ description, title }: SeoContent) {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    document.title = title;
+    upsertMetaTag({ name: 'description', content: description });
+    upsertMetaTag({ property: 'og:title', content: title });
+    upsertMetaTag({ property: 'og:description', content: description });
+    upsertMetaTag({ name: 'twitter:title', content: title });
+    upsertMetaTag({ name: 'twitter:description', content: description });
+}
 
 function isGoogleAuthPopupWindow(): boolean {
     return Boolean(
@@ -346,6 +399,72 @@ export default function App(): JSX.Element {
             fetchLeaderboardData(playerName).then(setLeaderboardData)
         );
     }, [screen, sessionLoading, leaderboardData, playerName]);
+
+    useEffect(() => {
+        let seoContent: SeoContent = {
+            description: seoText.defaultDescription,
+            title: seoText.defaultTitle,
+        };
+
+        if (authMode && !session) {
+            seoContent = {
+                description:
+                    authMode === 'signup'
+                        ? seoText.signupDescription
+                        : seoText.loginDescription,
+                title:
+                    authMode === 'signup'
+                        ? seoText.signupTitle
+                        : seoText.loginTitle,
+            };
+        } else if (showAccount && session) {
+            seoContent = {
+                description: seoText.accountDescription,
+                title: seoText.accountTitle,
+            };
+        } else if (showLeaderboard) {
+            seoContent = {
+                description: seoText.leaderboardDescription,
+                title: seoText.leaderboardTitle,
+            };
+        } else {
+            switch (screen) {
+                case 'tutorial': {
+                    seoContent = {
+                        description: seoText.tutorialDescription,
+                        title: seoText.tutorialTitle,
+                    };
+                    break;
+                }
+
+                case 'single': {
+                    seoContent = {
+                        description: seoText.singleDescription,
+                        title: seoText.singleTitle,
+                    };
+                    break;
+                }
+
+                case 'multi-game': {
+                    seoContent = {
+                        description: seoText.multiplayerDescription,
+                        title: seoText.multiplayerTitle,
+                    };
+                    break;
+                }
+
+                case 'menu': {
+                    seoContent = {
+                        description: seoText.menuDescription,
+                        title: seoText.menuTitle,
+                    };
+                    break;
+                }
+            }
+        }
+
+        applySeoContent(seoContent);
+    }, [authMode, screen, session, showAccount, showLeaderboard]);
 
     async function handleEditName(name: string): Promise<string | undefined> {
         const normalizedNextName = normalizePlayerName(name);
