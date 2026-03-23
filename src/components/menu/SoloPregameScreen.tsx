@@ -22,13 +22,13 @@ export function SoloPregameScreen({
     return (
         <main className='app-shell fullscreen-shell solo-pregame-shell'>
             <section className='screen solo-pregame-screen'>
-                <header className='page-header-band solo-pregame-header-band'>
+                <header className='page-header-band'>
                     <div className='page-title-row'>
                         <BackButton onBack={onBack} />
                         <h1 className='page-title'>{uiText.soloTitle}</h1>
                     </div>
-                    <Timer className='solo-pregame-hero-icon' strokeWidth={2} />
-                    <p className='solo-pregame-tagline'>{uiText.soloGoal}</p>
+                    <Timer className='page-hero-icon' strokeWidth={2} />
+                    <p className='page-tagline'>{uiText.soloGoal}</p>
                 </header>
 
                 <div className='solo-pregame-body'>

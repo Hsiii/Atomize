@@ -12,31 +12,6 @@
     overflow-x: hidden;
 }
 
-/* === Header Band with Hero === */
-
-.solo-pregame-header-band {
-    padding-bottom: 3.5rem;
-}
-
-.solo-pregame-hero-icon {
-    width: 4.5rem;
-    height: 4.5rem;
-    margin-top: 1.5rem;
-    color: var(--color-text-inverse);
-}
-
-.solo-pregame-tagline {
-    margin: var(--space-2) var(--space-0) var(--space-0);
-    font-family: var(--type-body-meta-family);
-    font-size: var(--type-body-meta-size);
-    font-weight: var(--type-body-meta-weight);
-    letter-spacing: var(--type-action-label-wide-letter-spacing);
-    text-transform: var(--type-action-label-wide-text-transform);
-    color: var(--color-text-inverse);
-    opacity: 0.75;
-    text-align: center;
-}
-
 /* === Body === */
 
 .solo-pregame-body {

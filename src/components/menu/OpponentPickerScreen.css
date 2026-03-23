@@ -11,28 +11,6 @@
     overflow: hidden;
 }
 
-/* === Header Band with Hero (matches solo pregame) === */
-
-.opponent-picker-header-band {
-    padding-bottom: 3.5rem;
-}
-
-.opponent-picker-hero-icon {
-    width: 4.5rem;
-    height: 4.5rem;
-    margin-top: 1.5rem;
-    color: var(--color-text-inverse);
-}
-
-.opponent-picker-tagline {
-    margin: var(--space-2) var(--space-0) var(--space-0);
-    font-family: var(--type-action-label-family);
-    font-size: var(--type-metric-prominent-size);
-    font-weight: var(--type-action-label-weight);
-    color: var(--color-text-inverse);
-    text-align: center;
-}
-
 /* === Body === */
 
 .opponent-picker-body {

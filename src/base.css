@@ -140,6 +140,29 @@ input::placeholder {
     color: var(--color-text-inverse);
 }
 
+.page-hero-icon {
+    width: 4.5rem;
+    height: 4.5rem;
+    margin-top: 1.5rem;
+    color: var(--color-text-inverse);
+}
+
+.page-header-band:has(.page-hero-icon) {
+    padding-bottom: 3.5rem;
+}
+
+.page-tagline {
+    margin: var(--space-2) var(--space-0) var(--space-0);
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
+    letter-spacing: var(--type-action-label-wide-letter-spacing);
+    text-transform: var(--type-action-label-wide-text-transform);
+    color: var(--color-text-inverse);
+    opacity: 0.75;
+    text-align: center;
+}
+
 .control-icon {
     width: var(--size-icon);
     height: var(--size-icon);
