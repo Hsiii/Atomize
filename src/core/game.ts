@@ -37,9 +37,14 @@ const MIN_FACTOR_COUNT = 2;
 const MAX_STAGE_VALUE = 1_000_000;
 const MIN_PRIME = PRIME_POOL[0];
 const SOLO_MAX_HP = 500;
-const FEATURED_PRIME: Prime = 23;
-const FEATURED_PRIME_UNLOCK_STAGE = 2;
-const FEATURED_PRIME_STAGE_CHANCE = 0.28;
+const PLAYABLE_STAGE_PRIMES: readonly Prime[] = PRIME_POOL.slice(
+    0,
+    MAX_PLAYABLE_PRIME_COUNT
+);
+const LARGE_REPEAT_PRIMES = [19, 23] as const satisfies readonly Prime[];
+const LARGE_REPEAT_STAGE_CHANCE = 0.38;
+const LARGE_REPEAT_STAGE_START = 1;
+const MAX_LARGE_REPEAT_COUNT = 3;
 
 export function applySoloPenalty(state: SoloState): SoloState {
     return {
@@ -50,33 +55,49 @@ export function applySoloPenalty(state: SoloState): SoloState {
 }
 
 function getAvailableStagePrimes(
-    primeCeiling: number,
     maxPrimeValue: number,
-    factors: readonly Prime[]
+    factors: readonly Prime[],
+    largeRepeatPrime?: Prime,
+    canPlaceMoreLargeRepeats = false
 ): readonly Prime[] {
-    return PRIME_POOL.slice(0, primeCeiling).filter(
-        (prime) =>
-            prime <= maxPrimeValue &&
-            !(prime === FEATURED_PRIME && factors.includes(FEATURED_PRIME))
+    const hasLargeRepeatPrime = factors.some((factor) =>
+        LARGE_REPEAT_PRIMES.includes(factor)
     );
+
+    return PLAYABLE_STAGE_PRIMES.filter((prime) => {
+        if (prime > maxPrimeValue) {
+            return false;
+        }
+
+        if (!LARGE_REPEAT_PRIMES.includes(prime)) {
+            return true;
+        }
+
+        if (prime === largeRepeatPrime) {
+            return canPlaceMoreLargeRepeats || !factors.includes(prime);
+        }
+
+        return !hasLargeRepeatPrime;
+    });
 }
 
 function pickStagePrime(
     availablePrimes: readonly Prime[],
     rng: () => number,
-    factors: readonly Prime[]
+    largeRepeatPrime?: Prime
 ): Prime {
-    const hasFeaturedPrime = factors.includes(FEATURED_PRIME);
     const weightedPrimes: Prime[] = [];
 
     for (const prime of availablePrimes) {
         let weight = 1;
 
-        if (hasFeaturedPrime) {
+        if (largeRepeatPrime !== undefined) {
             if (prime <= 7) {
                 weight = 4;
             } else if (prime <= 13) {
                 weight = 2;
+            } else if (prime === 17) {
+                weight = 1;
             }
         }
 
@@ -88,41 +109,80 @@ function pickStagePrime(
     return weightedPrimes[randomInt(rng, 0, weightedPrimes.length - 1)];
 }
 
+function pickLargeRepeatPrime(rng: () => number): Prime {
+    const weightedLargePrimes: Prime[] = [19, 19, 23];
+
+    return weightedLargePrimes[
+        randomInt(rng, 0, weightedLargePrimes.length - 1)
+    ];
+}
+
+function getDesiredLargeRepeatCount(
+    stageIndex: number,
+    factorCount: number,
+    rng: () => number
+): number {
+    const maxRepeatCount = Math.min(
+        factorCount,
+        1 + Math.floor(stageIndex / 4),
+        MAX_LARGE_REPEAT_COUNT
+    );
+
+    if (maxRepeatCount <= 1) {
+        return 1;
+    }
+
+    return randomInt(rng, 1, maxRepeatCount);
+}
+
 export function generateStage(seed: string, stageIndex: number): StageState {
     const rng = createRng(`${seed}:${stageIndex}`);
     const factorCount = Math.min(
         MAX_FACTOR_COUNT,
         MIN_FACTOR_COUNT + Math.floor(stageIndex / 2) + randomInt(rng, 0, 1)
     );
-    const primeCeiling = Math.min(
-        PRIME_POOL.length,
-        MAX_PLAYABLE_PRIME_COUNT,
-        4 + Math.floor(stageIndex / 2)
-    );
     const factors: Prime[] = [];
-    const shouldFeaturePrime =
-        stageIndex >= FEATURED_PRIME_UNLOCK_STAGE &&
-        rng() < FEATURED_PRIME_STAGE_CHANCE;
+    const shouldUseLargeRepeatPrime =
+        stageIndex >= LARGE_REPEAT_STAGE_START &&
+        rng() < LARGE_REPEAT_STAGE_CHANCE;
+    const largeRepeatPrime = shouldUseLargeRepeatPrime
+        ? pickLargeRepeatPrime(rng)
+        : undefined;
+    const desiredLargeRepeatCount =
+        largeRepeatPrime === undefined
+            ? 0
+            : getDesiredLargeRepeatCount(stageIndex, factorCount, rng);
+    let placedLargeRepeatCount = 0;
     let targetValue = 1;
 
     for (let count = 0; count < factorCount; count++) {
-        if (shouldFeaturePrime && count === 0) {
-            factors.push(FEATURED_PRIME);
-            targetValue *= FEATURED_PRIME;
-            continue;
-        }
-
         const remainingSlots = factorCount - count - 1;
         const reservedValue = MIN_PRIME ** remainingSlots;
         const maxPrimeValue = Math.floor(
             MAX_STAGE_VALUE / (targetValue * reservedValue)
         );
+        const canPlaceMoreLargeRepeats =
+            largeRepeatPrime !== undefined &&
+            placedLargeRepeatCount < desiredLargeRepeatCount;
+
+        if (canPlaceMoreLargeRepeats && largeRepeatPrime <= maxPrimeValue) {
+            factors.push(largeRepeatPrime);
+            targetValue *= largeRepeatPrime;
+            placedLargeRepeatCount++;
+            continue;
+        }
+
         const availablePrimes = getAvailableStagePrimes(
-            primeCeiling,
             maxPrimeValue,
-            factors
+            factors,
+            largeRepeatPrime,
+            canPlaceMoreLargeRepeats
         );
-        const selectedPrime = pickStagePrime(availablePrimes, rng, factors);
+        const selectedPrime = pickStagePrime(
+            availablePrimes,
+            rng,
+            largeRepeatPrime
+        );
 
         factors.push(selectedPrime);
         targetValue *= selectedPrime;
