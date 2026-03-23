@@ -91,6 +91,29 @@ input::placeholder {
     color: var(--type-body-meta-color);
 }
 
+.page-title-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    width: 100%;
+}
+
+.page-title-row .floating-back-button {
+    position: static;
+    justify-self: start;
+    color: var(--color-text-inverse);
+}
+
+.page-title {
+    margin: var(--space-0);
+    font-family: var(--type-action-label-family);
+    font-size: var(--type-action-label-size);
+    font-weight: var(--type-action-label-weight);
+    letter-spacing: var(--type-action-label-caps-letter-spacing);
+    text-transform: var(--type-action-label-caps-text-transform);
+    color: var(--color-text-inverse);
+}
+
 .control-icon {
     width: var(--size-icon);
     height: var(--size-icon);

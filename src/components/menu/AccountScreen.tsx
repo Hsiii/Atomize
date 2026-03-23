@@ -60,10 +60,10 @@ export function AccountScreen({
         <main className='app-shell fullscreen-shell account-page-shell'>
             <section className='screen account-page-screen'>
                 <header className='account-page-header-band'>
-                    <BackButton onBack={onBack} />
-                    <h1 className='account-page-title'>
-                        {uiText.accountTitle}
-                    </h1>
+                    <div className='page-title-row'>
+                        <BackButton onBack={onBack} />
+                        <h1 className='page-title'>{uiText.accountTitle}</h1>
+                    </div>
                 </header>
 
                 <div className='account-page-body'>

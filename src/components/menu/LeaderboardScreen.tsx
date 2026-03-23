@@ -95,10 +95,12 @@ export function LeaderboardScreen({
         <main className='app-shell fullscreen-shell leaderboard-page-shell'>
             <section className='screen leaderboard-page-screen'>
                 <header className='leaderboard-page-header-band'>
-                    <BackButton onBack={onBack} />
-                    <h1 className='leaderboard-page-title'>
-                        {uiText.leaderboardTitle}
-                    </h1>
+                    <div className='page-title-row'>
+                        <BackButton onBack={onBack} />
+                        <h1 className='page-title'>
+                            {uiText.leaderboardTitle}
+                        </h1>
+                    </div>
                 </header>
 
                 <div className='leaderboard-page-body'>

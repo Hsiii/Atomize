@@ -39,29 +39,6 @@
     z-index: -1;
 }
 
-.opponent-picker-title-row {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    width: 100%;
-}
-
-.opponent-picker-title-row .floating-back-button {
-    position: static;
-    justify-self: start;
-    color: var(--color-text-inverse);
-}
-
-.opponent-picker-title {
-    margin: var(--space-0);
-    font-family: var(--type-action-label-family);
-    font-size: var(--type-action-label-size);
-    font-weight: var(--type-action-label-weight);
-    letter-spacing: var(--type-action-label-caps-letter-spacing);
-    text-transform: var(--type-action-label-caps-text-transform);
-    color: var(--color-text-inverse);
-}
-
 .opponent-picker-hero-icon {
     width: 4.5rem;
     height: 4.5rem;

@@ -4,13 +4,6 @@
     background: var(--color-page-bg);
 }
 
-.account-page-header-band .floating-back-button {
-    position: absolute;
-    top: auto;
-    left: var(--space-2);
-    color: var(--color-text-inverse);
-}
-
 .screen.account-page-screen {
     padding: 0;
     justify-content: flex-start;
@@ -20,25 +13,11 @@
 }
 
 .account-page-header-band {
-    position: relative;
     width: 100%;
     flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     padding: max(1.5rem, calc(env(safe-area-inset-top) + 1.5rem)) var(--space-3)
         1.5rem;
     background: var(--color-primary);
-}
-
-.account-page-title {
-    margin: var(--space-0);
-    font-family: var(--type-action-label-family);
-    font-size: var(--type-action-label-size);
-    font-weight: var(--type-action-label-weight);
-    letter-spacing: var(--type-action-label-caps-letter-spacing);
-    text-transform: var(--type-action-label-caps-text-transform);
-    color: var(--color-text-inverse);
 }
 
 /* === Body === */

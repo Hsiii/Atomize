@@ -40,29 +40,6 @@
     z-index: -1;
 }
 
-.solo-pregame-title-row {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    width: 100%;
-}
-
-.solo-pregame-title-row .floating-back-button {
-    position: static;
-    justify-self: start;
-    color: var(--color-text-inverse);
-}
-
-.solo-pregame-title {
-    margin: var(--space-0);
-    font-family: var(--type-action-label-family);
-    font-size: var(--type-action-label-size);
-    font-weight: var(--type-action-label-weight);
-    letter-spacing: var(--type-action-label-caps-letter-spacing);
-    text-transform: var(--type-action-label-caps-text-transform);
-    color: var(--color-text-inverse);
-}
-
 .solo-pregame-hero-icon {
     width: 4.5rem;
     height: 4.5rem;
