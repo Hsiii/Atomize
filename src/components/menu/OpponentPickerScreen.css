@@ -8,8 +8,7 @@
     padding: 0;
     justify-content: flex-start;
     align-items: center;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 /* === Header Band with Hero (matches solo pregame) === */
@@ -88,6 +87,7 @@
     gap: 1.75rem;
     padding: var(--space-3) 1.5rem max(env(safe-area-inset-bottom), 1.5rem);
     flex: 1;
+    min-height: 0;
 }
 
 /* === Bot Avatar variant === */
@@ -114,6 +114,9 @@
 .online-section-grow {
     flex: 1;
     min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .online-section-title {
@@ -177,6 +180,11 @@
 
 .online-list::-webkit-scrollbar {
     display: none;
+}
+
+.online-section-grow > .online-list {
+    flex: 1;
+    min-height: 0;
 }
 
 .online-row {
