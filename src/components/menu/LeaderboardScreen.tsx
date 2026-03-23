@@ -94,7 +94,7 @@ export function LeaderboardScreen({
     return (
         <main className='app-shell fullscreen-shell leaderboard-page-shell'>
             <section className='screen leaderboard-page-screen'>
-                <header className='leaderboard-page-header-band'>
+                <header className='page-header-band'>
                     <div className='page-title-row'>
                         <BackButton onBack={onBack} />
                         <h1 className='page-title'>

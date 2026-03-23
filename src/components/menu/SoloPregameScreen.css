@@ -15,29 +15,7 @@
 /* === Header Band with Hero === */
 
 .solo-pregame-header-band {
-    --_header-curve-size: max(160vw, 100vh);
-    position: relative;
-    width: 100%;
-    flex: 0 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: max(1.5rem, calc(env(safe-area-inset-top) + 1.5rem)) var(--space-3)
-        3.5rem;
-    z-index: 1;
-}
-
-.solo-pregame-header-band::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    bottom: 0;
-    width: var(--_header-curve-size);
-    height: var(--_header-curve-size);
-    border-radius: 50%;
-    background: var(--color-primary);
-    transform: translateX(-50%);
-    z-index: -1;
+    padding-bottom: 3.5rem;
 }
 
 .solo-pregame-hero-icon {

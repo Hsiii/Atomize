@@ -22,7 +22,7 @@ export function SoloPregameScreen({
     return (
         <main className='app-shell fullscreen-shell solo-pregame-shell'>
             <section className='screen solo-pregame-screen'>
-                <header className='solo-pregame-header-band'>
+                <header className='page-header-band solo-pregame-header-band'>
                     <div className='page-title-row'>
                         <BackButton onBack={onBack} />
                         <h1 className='page-title'>{uiText.soloTitle}</h1>

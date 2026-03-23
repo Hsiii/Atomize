@@ -160,7 +160,7 @@ export function OpponentPickerScreen({
     return (
         <main className='app-shell fullscreen-shell opponent-picker-shell'>
             <section className='screen opponent-picker-screen'>
-                <header className='opponent-picker-header-band'>
+                <header className='page-header-band opponent-picker-header-band'>
                     <div className='page-title-row'>
                         <BackButton onBack={onBack} />
                         <h1 className='page-title'>{uiText.battleTitle}</h1>
