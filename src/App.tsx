@@ -14,6 +14,7 @@ import { useLocalCpuGame } from './hooks/useLocalCpuGame';
 import { useMultiplayerGame } from './hooks/useMultiplayerGame';
 import { useSoloGame } from './hooks/useSoloGame';
 import { useTutorialGame } from './hooks/useTutorialGame';
+import { BurstTransition } from './components/ui/BurstTransition';
 import {
     detachPromise,
     getInitialPlayerName,
@@ -289,8 +290,15 @@ export default function App(): JSX.Element {
     const navigateRef = useRef<ReturnType<typeof useNavigate>>(navigate);
     navigateRef.current = navigate;
 
+    const [pendingTransitionScreen, setPendingTransitionScreen] = useState<Screen | undefined>(undefined);
+
     const onScreenChange = useCallback((nextScreen: Screen) => {
-        detachPromise(navigateRef.current({ to: SCREEN_TO_PATH[nextScreen] }));
+        // Intercept transitions strictly requiring the burst effect
+        if (nextScreen === 'multi-game') {
+            setPendingTransitionScreen(nextScreen);
+        } else {
+            detachPromise(navigateRef.current({ to: SCREEN_TO_PATH[nextScreen] }));
+        }
     }, []);
 
     const [leaderboardData, setLeaderboardData] = useState<
@@ -685,6 +693,16 @@ export default function App(): JSX.Element {
     return (
         <AppProvider value={contextValue}>
             <Outlet />
+            {pendingTransitionScreen ? (
+                <BurstTransition 
+                    onComplete={() => {
+                        const targetScreen = pendingTransitionScreen;
+                        // Execute actual navigation after the full burst sequence finishes
+                        detachPromise(navigate({ to: SCREEN_TO_PATH[targetScreen] }));
+                        setPendingTransitionScreen(undefined);
+                    }} 
+                />
+            ) : undefined}
             {pendingInvitation ? (
                 <InvitationDialog
                     onAccept={handleAcceptInvitation}
