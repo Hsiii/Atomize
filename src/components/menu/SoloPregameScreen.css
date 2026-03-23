@@ -118,7 +118,7 @@
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    padding: var(--space-2) var(--space-2);
+    padding: var(--space-2) var(--space-4);
     background: var(--color-surface-accent);
     border-radius: var(--radius-panel);
 }
