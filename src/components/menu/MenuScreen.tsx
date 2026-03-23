@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import type { JSX } from 'react';
 import {
     ChevronUp,
+    CircleUserRound,
     Crown,
     Menu,
     Play,
     Swords,
     Timer,
-    User,
 } from 'lucide-react';
 
 import { uiText } from '../../app-state';
@@ -154,7 +154,7 @@ export function MenuScreen({
                                     }
                                     type='button'
                                 >
-                                    <User size={22} />
+                                    <CircleUserRound size={22} />
                                 </button>
                                 <button
                                     className='hamburger-toggle'
