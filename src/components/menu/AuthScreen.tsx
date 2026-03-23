@@ -156,9 +156,11 @@ export function AuthScreen({
     return (
         <main className='app-shell fullscreen-shell auth-page-shell'>
             <section className='screen auth-page-screen'>
-                <header className='auth-page-header-band'>
-                    <BackButton onBack={onBack} />
-                    <h1 className='auth-page-title'>{title}</h1>
+                <header className='page-header-band'>
+                    <div className='page-title-row'>
+                        <BackButton onBack={onBack} />
+                        <h1 className='page-title'>{title}</h1>
+                    </div>
                 </header>
 
                 <div className='auth-page-body'>
