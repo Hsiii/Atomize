@@ -34,29 +34,25 @@ export function getSupabaseConfig(): SupabaseConfig | undefined {
     return { url, anonKey };
 }
 
-export const supabaseAuthClient: SupabaseClient<Database> | undefined = (() => {
-    const config = getSupabaseConfig();
-    return config ? createClient(config.url, config.anonKey) : undefined;
-})();
-
-export function createRealtimeClient(): SupabaseClient<Database> | undefined {
-    const config = getSupabaseConfig();
-
-    if (!config) {
-        return undefined;
-    }
-
+function createSharedSupabaseClient(
+    config: SupabaseConfig
+): SupabaseClient<Database> {
     return createClient(config.url, config.anonKey, {
-        auth: {
-            persistSession: false,
-            autoRefreshToken: false,
-        },
         realtime: {
             params: {
                 eventsPerSecond: 40,
             },
         },
     });
+}
+
+export const supabaseAuthClient: SupabaseClient<Database> | undefined = (() => {
+    const config = getSupabaseConfig();
+    return config ? createSharedSupabaseClient(config) : undefined;
+})();
+
+export function createRealtimeClient(): SupabaseClient<Database> | undefined {
+    return supabaseAuthClient;
 }
 
 export const GOOGLE_AUTH_POPUP_NAME = 'google-sign-in';

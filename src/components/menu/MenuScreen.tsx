@@ -139,17 +139,6 @@ export function MenuScreen({
                                     className='hamburger-toggle'
                                     onClick={() => {
                                         setMenuOpen(false);
-                                        onOpenLeaderboard();
-                                    }}
-                                    title={uiText.leaderboardTitle}
-                                    type='button'
-                                >
-                                    <Crown size={22} />
-                                </button>
-                                <button
-                                    className='hamburger-toggle'
-                                    onClick={() => {
-                                        setMenuOpen(false);
 
                                         if (isGuest) {
                                             onOpenAuth();
@@ -166,6 +155,17 @@ export function MenuScreen({
                                     type='button'
                                 >
                                     <User size={22} />
+                                </button>
+                                <button
+                                    className='hamburger-toggle'
+                                    onClick={() => {
+                                        setMenuOpen(false);
+                                        onOpenLeaderboard();
+                                    }}
+                                    title={uiText.leaderboardTitle}
+                                    type='button'
+                                >
+                                    <Crown size={22} />
                                 </button>
                             </div>
                         </div>
