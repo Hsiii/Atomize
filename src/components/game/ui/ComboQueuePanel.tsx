@@ -3,9 +3,7 @@ import type { JSX } from 'react';
 import './ComboQueuePanel.css';
 
 const COMBO_QUEUE_BASE_ROW_CAPACITY = 5;
-const COMBO_QUEUE_COMPACT_ROW_CAPACITY = 7;
-
-export const COMBO_QUEUE_MAX_ITEMS = COMBO_QUEUE_COMPACT_ROW_CAPACITY * 2;
+export const COMBO_QUEUE_MAX_ITEMS = 7;
 
 type ComboQueuePanelProps = {
     queue: readonly number[];

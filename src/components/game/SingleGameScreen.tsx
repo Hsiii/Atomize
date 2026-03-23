@@ -59,12 +59,14 @@ export function SingleGameScreen({
     const isInputDisabled = isTimeUp || isSoloComboRunning;
     const [visibleQueue, setVisibleQueue] = useState<Prime[]>(soloPrimeQueue);
     const visibleQueueRef = useRef(visibleQueue);
+    const isQueueFull = visibleQueue.length >= COMBO_QUEUE_MAX_ITEMS;
     const scorePopIdRef = useRef(0);
     const [scorePops, setScorePops] = useState<
         Array<{ id: number; delta: number }>
     >([]);
     const previousScoreRef = useRef(soloState.score);
     const keyboard = usePrimeKeyboardControls({
+        canQueuePrime: !isInputDisabled && !isQueueFull,
         canSubmit: !isInputDisabled && visibleQueue.length > 0,
         isComboRunning: isSoloComboRunning,
         isInputDisabled,
@@ -181,6 +183,7 @@ export function SingleGameScreen({
                             (visibleQueue.length === 0 &&
                                 keyboard.bufferedPrimeInput === '')
                         }
+                        getPrimeDisabledState={() => isQueueFull}
                         onBackspace={keyboard.handleBackspace}
                         onPrimeTap={keyboard.handlePrimeTap}
                         onSubmit={keyboard.handleSubmit}

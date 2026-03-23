@@ -6,12 +6,10 @@
 
 .combo-bar {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
-    align-content: center;
     justify-content: center;
     column-gap: 0.15rem;
-    row-gap: 0.35rem;
     width: 100%;
     block-size: 100%;
     padding: 0.45rem 0;
@@ -26,12 +24,7 @@
 }
 
 .combo-bar.compact-queue {
-    display: grid;
-    grid-template-columns: repeat(7, max-content);
-    justify-content: center;
-    align-content: center;
     column-gap: 0.14rem;
-    row-gap: 0.28rem;
     padding-block: 0.34rem;
 }
 

@@ -73,6 +73,7 @@ export function MultiplayerGameScreen({
         multiplayerPrimeQueue
     );
     const visibleQueueRef = useRef(visibleQueue);
+    const isQueueFull = visibleQueue.length >= COMBO_QUEUE_MAX_ITEMS;
     const canSubmitSolvedStage =
         currentMultiplayerPlayer?.stage.remainingValue === 1;
     const currentPlayerWon =
@@ -149,6 +150,7 @@ export function MultiplayerGameScreen({
         submitVisibleQueue().catch(() => undefined);
     }
     const keyboard = usePrimeKeyboardControls({
+        canQueuePrime: !isInputDisabled && !isQueueFull,
         canSubmit:
             !isInputDisabled &&
             !tutorial.isSubmitLocked &&
@@ -287,7 +289,10 @@ export function MultiplayerGameScreen({
                             (visibleQueue.length === 0 &&
                                 keyboard.bufferedPrimeInput === '')
                         }
-                        getPrimeDisabledState={tutorial.getPrimeDisabledState}
+                        getPrimeDisabledState={(prime) =>
+                            isQueueFull ||
+                            tutorial.getPrimeDisabledState?.(prime) === true
+                        }
                         highlightedPrime={tutorial.highlightedPrime}
                         keypadClassName='multiplayer-keypad'
                         onBackspace={keyboard.handleBackspace}

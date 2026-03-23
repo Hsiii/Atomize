@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Prime } from '../core';
 
 type UsePrimeKeyboardControlsOptions = {
+    canQueuePrime: boolean;
     canSubmit: boolean;
     isComboRunning: boolean;
     isInputDisabled: boolean;
@@ -22,6 +23,7 @@ type UsePrimeKeyboardControlsResult = {
 };
 
 export function usePrimeKeyboardControls({
+    canQueuePrime,
     canSubmit,
     isComboRunning,
     isInputDisabled,
@@ -54,6 +56,11 @@ export function usePrimeKeyboardControls({
     }
 
     function commitBufferedPrimeInput() {
+        if (!canQueuePrime) {
+            clearBufferedPrimeInput();
+            return;
+        }
+
         const bufferedPrime = playablePrimes.find(
             (prime) => String(prime) === bufferedPrimeInputRef.current
         );
@@ -107,7 +114,7 @@ export function usePrimeKeyboardControls({
     }
 
     function handleDigitKey(digit: string) {
-        if (isInputDisabled) {
+        if (isInputDisabled || !canQueuePrime) {
             return;
         }
 
@@ -229,7 +236,7 @@ export function usePrimeKeyboardControls({
         return () => {
             globalThis.removeEventListener('keydown', handleWindowKeyDown);
         };
-    }, [canSubmit, isComboRunning, queueLength]);
+    }, [canQueuePrime, canSubmit, isComboRunning, queueLength]);
 
     return {
         bufferedPrimeInput,
