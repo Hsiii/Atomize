@@ -107,11 +107,13 @@
 }
 
 .auth-page-divider-text {
-    text-transform: var(--type-action-label-wide-text-transform);
-    letter-spacing: var(--type-action-label-wide-letter-spacing);
+    font-family: var(--type-body-meta-family);
     font-size: var(--type-body-meta-size);
     font-weight: var(--type-body-meta-weight);
-    color: var(--color-ink-soft);
+    line-height: var(--type-body-meta-line-height);
+    color: var(--type-body-meta-color);
+    text-transform: var(--type-action-label-wide-text-transform);
+    letter-spacing: var(--type-action-label-wide-letter-spacing);
 }
 
 .auth-page-google-button {
