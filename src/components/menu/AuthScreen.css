@@ -58,6 +58,7 @@
 .auth-page-primary-action {
     width: 100%;
     min-height: 3.5rem;
+    margin-top: var(--space-2);
 }
 
 /* === Social Section === */
