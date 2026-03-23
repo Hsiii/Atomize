@@ -26,7 +26,7 @@
 }
 
 .prime-key-button:disabled {
-    opacity: 0.38;
+    opacity: var(--opacity-disabled);
 }
 
 .prime-key-button--highlighted {

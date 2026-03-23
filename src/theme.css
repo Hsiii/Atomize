@@ -59,6 +59,8 @@
     --type-metric-inline-line-height: 1;
     --type-metric-inline-color: var(--color-primary);
 
+    --type-metric-prominent-size: 1.25rem;
+
     --type-action-label-family: var(--font-family-base);
     --type-action-label-size: 1.02rem;
     --type-action-label-weight: 700;
@@ -116,7 +118,7 @@
     --color-ready-button-bg: rgba(16, 27, 46, 0.62);
     --color-ready-button-text: rgba(255, 255, 255, 0.74);
     --color-toast-bg: rgba(24, 78, 119, 0.96);
-    --color-toast-text: rgba(255, 255, 255, 0.96);
+    --color-toast-text: var(--color-text-inverse);
 
     --color-button-primary-bg: var(--color-primary-strong);
     --color-button-primary-text: var(--color-text-inverse);
@@ -133,7 +135,7 @@
     --color-game-self: var(--color-primary-strong);
     --color-game-opponent: var(--color-secondary);
     --color-game-keypad-bg: rgba(16, 27, 46, 0.08);
-    --color-game-keypad-text: rgba(16, 27, 46, 0.58);
+    --color-game-keypad-text: var(--color-keypad-button-text);
     --color-game-keypad-active-bg: rgba(16, 27, 46, 0.14);
     --color-game-keypad-active-text: rgba(16, 27, 46, 0.68);
 
@@ -197,6 +199,11 @@
     --size-waiting-mark-min-width: 5.5rem;
     --size-waiting-mark-min-height: 1.62rem;
     --size-toast-width: 18rem;
+
+    --opacity-disabled: 0.38;
+    --opacity-muted: 0.5;
+    --opacity-soft: 0.7;
+    --opacity-subtle: 0.85;
 
     --shadow-panel: 0 18px 42px rgba(8, 17, 28, 0.08);
     --shadow-toast: 0 18px 34px rgba(16, 27, 46, 0.22);

@@ -179,7 +179,7 @@
 
 .mode-card-title {
     font-family: var(--type-action-label-family);
-    font-size: 1.05rem;
+    font-size: var(--type-action-label-size);
     font-weight: 800;
     letter-spacing: var(--type-action-label-caps-letter-spacing);
     text-transform: var(--type-action-label-caps-text-transform);
@@ -314,7 +314,7 @@
     border-radius: var(--radius-pill);
     cursor: pointer;
     color: var(--color-text-inverse);
-    opacity: 0.8;
+    opacity: var(--opacity-subtle);
     transition: opacity 0.15s;
 }
 
@@ -387,7 +387,7 @@
     color: var(--color-text-inverse);
     border: none;
     cursor: pointer;
-    opacity: 0.72;
+    opacity: var(--opacity-soft);
     transition:
         transform 0.15s ease,
         opacity 0.15s ease;

@@ -68,16 +68,16 @@
     height: 4.5rem;
     margin-top: 1.5rem;
     color: var(--color-text-inverse);
-    opacity: 0.85;
+    opacity: var(--opacity-subtle);
 }
 
 .opponent-picker-tagline {
     margin: var(--space-5) var(--space-0) var(--space-0);
     font-family: var(--type-action-label-family);
-    font-size: 1.25rem;
+    font-size: var(--type-metric-prominent-size);
     font-weight: var(--type-action-label-weight);
     color: var(--color-text-inverse);
-    opacity: 0.8;
+    opacity: var(--opacity-subtle);
     text-align: center;
 }
 
@@ -124,7 +124,7 @@
     align-items: center;
     gap: 0.45rem;
     font-family: var(--type-body-meta-family);
-    font-size: 0.82rem;
+    font-size: var(--type-body-meta-size);
     font-weight: var(--type-body-meta-weight);
     letter-spacing: var(--type-action-label-wide-letter-spacing);
     text-transform: var(--type-action-label-wide-text-transform);
@@ -137,7 +137,7 @@
     width: 1.05rem;
     height: 1.05rem;
     stroke-width: 2.2;
-    opacity: 0.6;
+    opacity: var(--opacity-soft);
 }
 
 .online-empty-state {
@@ -163,7 +163,7 @@
     font-weight: var(--type-body-meta-weight);
     color: var(--type-body-meta-color);
     line-height: var(--type-body-meta-relaxed-line-height);
-    opacity: 0.7;
+    opacity: var(--opacity-soft);
 }
 
 .online-list {
@@ -205,7 +205,7 @@
 
 .online-player-initial {
     font-family: var(--type-action-label-family);
-    font-size: 0.85rem;
+    font-size: var(--type-body-meta-size);
     font-weight: 800;
     color: var(--color-text-inverse);
     line-height: 1;
@@ -215,7 +215,7 @@
     flex: 1;
     min-width: 0;
     font-family: var(--type-body-meta-family);
-    font-size: 0.95rem;
+    font-size: var(--type-metric-inline-size);
     font-weight: var(--type-action-label-weight);
     color: var(--color-ink);
     overflow: hidden;
@@ -248,7 +248,7 @@
 }
 
 .online-invite-btn:hover {
-    opacity: 0.9;
+    opacity: var(--opacity-subtle);
 }
 
 .online-invite-btn:active {
@@ -326,7 +326,7 @@
 
 .vs-avatar-initial {
     font-family: var(--type-action-label-family);
-    font-size: 1.3rem;
+    font-size: var(--type-metric-prominent-size);
     font-weight: var(--type-action-label-weight);
     letter-spacing: var(--type-action-label-caps-letter-spacing);
     line-height: 1;
@@ -369,7 +369,7 @@
     font-size: var(--type-metric-inline-size);
     font-weight: var(--type-metric-inline-weight);
     color: var(--color-text-inverse);
-    opacity: 0.85;
+    opacity: var(--opacity-subtle);
     max-width: 6rem;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -385,7 +385,7 @@
     text-transform: uppercase;
     color: var(--color-text-inverse);
     line-height: 1;
-    opacity: 0.85;
+    opacity: var(--opacity-subtle);
 }
 
 .vs-bottom {

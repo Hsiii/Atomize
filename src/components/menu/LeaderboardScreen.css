@@ -80,7 +80,7 @@
 .leaderboard-page-table th {
     font-weight: var(--type-action-label-weight);
     color: var(--color-ink);
-    opacity: 0.7;
+    opacity: var(--opacity-soft);
     letter-spacing: var(--type-body-meta-letter-spacing);
 }
 
