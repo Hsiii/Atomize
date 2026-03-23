@@ -25,9 +25,9 @@ import './MultiplayerGameScreen.css';
 import { ActionButton } from './ui/ActionButton';
 import { COMBO_QUEUE_MAX_ITEMS, ComboQueuePanel } from './ui/ComboQueuePanel';
 import { DesktopKeyboardHint } from './ui/DesktopKeyboardHint';
-import { DuoScoreDialog } from './ui/DuoScoreDialog';
 import { GameControls } from './ui/GameControls';
 import { NumberBlobDisplay } from './ui/NumberBlobDisplay';
+import { ScoreDialog } from './ui/ScoreDialog';
 
 type MultiplayerGameScreenProps = {
     playablePrimes: Prime[];
@@ -342,13 +342,14 @@ export function MultiplayerGameScreen({
                 ) : undefined}
 
                 {isMatchFinished && battle.isResultDialogVisible ? (
-                    <DuoScoreDialog
+                    <ScoreDialog
                         currentPlayer={{
                             name: currentMultiplayerPlayer?.name ?? uiText.you,
                             maxCombo: currentMultiplayerPlayer?.maxCombo ?? 0,
                             atomized: currentMultiplayerPlayer?.stageIndex ?? 0,
                             isWinner: currentPlayerWon,
                         }}
+                        mode='battle'
                         onRematch={onRematch}
                         onReturnHome={onBack}
                         opponent={{

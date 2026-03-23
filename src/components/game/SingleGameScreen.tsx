@@ -202,6 +202,7 @@ export function SingleGameScreen({
                         bestScore={bestScore.score}
                         comboCount={soloState.maxCombo}
                         isNewBest={isNewBest}
+                        mode='solo'
                         onRetry={onRetry}
                         onReturnHome={onBack}
                         score={soloState.score}
