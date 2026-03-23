@@ -43,6 +43,7 @@
     padding: var(--space-2) var(--space-3);
     background: var(--color-surface-strong);
     color: var(--color-ink);
+    text-align: center;
 }
 
 .auth-page-input::placeholder {
