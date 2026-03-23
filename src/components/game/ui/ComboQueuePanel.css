@@ -9,7 +9,7 @@
     flex-wrap: nowrap;
     align-items: center;
     justify-content: center;
-    column-gap: 0.15rem;
+    column-gap: 0.12rem;
     width: 100%;
     block-size: 100%;
     padding: 0.45rem 0;
@@ -19,53 +19,32 @@
 .combo-bar-item {
     display: inline-flex;
     align-items: center;
-    gap: 0.15rem;
-    flex: 0 0 auto;
-}
-
-.combo-bar.compact-queue {
-    column-gap: 0.14rem;
-    padding-block: 0.34rem;
-}
-
-.combo-bar.compact-queue .combo-bar-item {
     gap: 0.12rem;
+    flex: 0 0 auto;
 }
 
 .combo-bar-chip {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 2.2rem;
-    height: 2.2rem;
+    width: 1.62rem;
+    height: 1.62rem;
     padding: 0;
     border-radius: var(--radius-pill);
     background: var(--color-game-self);
     color: var(--color-text-inverse);
     font-family: var(--type-display-burst-family);
-    font-size: var(--type-metric-inline-size);
+    font-size: 0.74rem;
     font-weight: 700;
     line-height: 1;
-    font-variant-numeric: tabular-nums;
-}
-
-.combo-bar.compact-queue .combo-bar-chip {
-    min-width: 1.55rem;
-    width: 1.55rem;
-    height: 1.55rem;
-    padding: 0;
-    font-size: 0.7rem;
     letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
 }
 
 .combo-bar-sep {
     color: var(--color-ink-soft);
     font-family: var(--type-display-burst-family);
-    font-size: var(--type-metric-inline-size);
+    font-size: 0.74rem;
     font-weight: 600;
     line-height: 1;
-}
-
-.combo-bar.compact-queue .combo-bar-sep {
-    font-size: 0.7rem;
 }
