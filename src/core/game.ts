@@ -37,6 +37,9 @@ const MIN_FACTOR_COUNT = 2;
 const MAX_STAGE_VALUE = 1_000_000;
 const MIN_PRIME = PRIME_POOL[0];
 const SOLO_MAX_HP = 500;
+const FEATURED_PRIME: Prime = 23;
+const FEATURED_PRIME_UNLOCK_STAGE = 2;
+const FEATURED_PRIME_STAGE_CHANCE = 0.28;
 
 export function applySoloPenalty(state: SoloState): SoloState {
     return {
@@ -44,6 +47,45 @@ export function applySoloPenalty(state: SoloState): SoloState {
         hp: Math.max(0, state.hp - 1),
         combo: 0,
     };
+}
+
+function getAvailableStagePrimes(
+    primeCeiling: number,
+    maxPrimeValue: number,
+    factors: readonly Prime[]
+): readonly Prime[] {
+    return PRIME_POOL.slice(0, primeCeiling).filter(
+        (prime) =>
+            prime <= maxPrimeValue &&
+            !(prime === FEATURED_PRIME && factors.includes(FEATURED_PRIME))
+    );
+}
+
+function pickStagePrime(
+    availablePrimes: readonly Prime[],
+    rng: () => number,
+    factors: readonly Prime[]
+): Prime {
+    const hasFeaturedPrime = factors.includes(FEATURED_PRIME);
+    const weightedPrimes: Prime[] = [];
+
+    for (const prime of availablePrimes) {
+        let weight = 1;
+
+        if (hasFeaturedPrime) {
+            if (prime <= 7) {
+                weight = 4;
+            } else if (prime <= 13) {
+                weight = 2;
+            }
+        }
+
+        for (let count = 0; count < weight; count++) {
+            weightedPrimes.push(prime);
+        }
+    }
+
+    return weightedPrimes[randomInt(rng, 0, weightedPrimes.length - 1)];
 }
 
 export function generateStage(seed: string, stageIndex: number): StageState {
@@ -58,19 +100,29 @@ export function generateStage(seed: string, stageIndex: number): StageState {
         4 + Math.floor(stageIndex / 2)
     );
     const factors: Prime[] = [];
+    const shouldFeaturePrime =
+        stageIndex >= FEATURED_PRIME_UNLOCK_STAGE &&
+        rng() < FEATURED_PRIME_STAGE_CHANCE;
     let targetValue = 1;
 
     for (let count = 0; count < factorCount; count++) {
+        if (shouldFeaturePrime && count === 0) {
+            factors.push(FEATURED_PRIME);
+            targetValue *= FEATURED_PRIME;
+            continue;
+        }
+
         const remainingSlots = factorCount - count - 1;
         const reservedValue = MIN_PRIME ** remainingSlots;
         const maxPrimeValue = Math.floor(
             MAX_STAGE_VALUE / (targetValue * reservedValue)
         );
-        const availablePrimes = PRIME_POOL.slice(0, primeCeiling).filter(
-            (prime) => prime <= maxPrimeValue
+        const availablePrimes = getAvailableStagePrimes(
+            primeCeiling,
+            maxPrimeValue,
+            factors
         );
-        const primeIndex = randomInt(rng, 0, availablePrimes.length - 1);
-        const selectedPrime = availablePrimes[primeIndex];
+        const selectedPrime = pickStagePrime(availablePrimes, rng, factors);
 
         factors.push(selectedPrime);
         targetValue *= selectedPrime;
