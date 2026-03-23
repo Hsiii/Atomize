@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import type { JSX } from 'react';
-import { Crown, Play, Swords, Timer, User } from 'lucide-react';
+import {
+    ChevronUp,
+    Crown,
+    Menu,
+    Play,
+    Swords,
+    Timer,
+    User,
+} from 'lucide-react';
 
 import { uiText } from '../../app-state';
 
@@ -31,6 +39,8 @@ export function MenuScreen({
     isGuest,
     needsTutorial,
 }: MenuScreenProps): JSX.Element {
+    const [menuOpen, setMenuOpen] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
     const [visibleToast, setVisibleToast] = useState<string | undefined>(
         undefined
     );
@@ -56,6 +66,26 @@ export function MenuScreen({
         []
     );
 
+    useEffect(() => {
+        if (!menuOpen) {
+            return undefined;
+        }
+
+        function handleClickOutside(event: MouseEvent) {
+            if (
+                menuRef.current &&
+                !menuRef.current.contains(event.target as Node)
+            ) {
+                setMenuOpen(false);
+            }
+        }
+
+        document.addEventListener('pointerdown', handleClickOutside);
+        return () => {
+            document.removeEventListener('pointerdown', handleClickOutside);
+        };
+    }, [menuOpen]);
+
     function showMenuToast(message: string) {
         if (toastTimeoutRef.current !== undefined) {
             globalThis.clearTimeout(toastTimeoutRef.current);
@@ -77,34 +107,67 @@ export function MenuScreen({
             <section className='screen screen-menu'>
                 <div className='menu-layout'>
                     {!needsTutorial && (
-                        <div className='menu-top-right-actions'>
+                        <div className='hamburger-menu' ref={menuRef}>
                             <button
-                                className='icon-action-btn'
-                                onClick={onOpenLeaderboard}
-                                title={uiText.leaderboardTitle}
-                                type='button'
-                            >
-                                <Crown size={24} />
-                            </button>
-                            <button
-                                className='icon-action-btn'
+                                aria-expanded={menuOpen}
+                                aria-label='Menu'
+                                className='hamburger-toggle'
                                 onClick={() => {
-                                    if (isGuest) {
-                                        onOpenAuth();
-                                        return;
-                                    }
-
-                                    onOpenAccount();
+                                    setMenuOpen((prev) => !prev);
                                 }}
-                                title={
-                                    isGuest
-                                        ? uiText.signIn
-                                        : uiText.accountTitle
-                                }
                                 type='button'
                             >
-                                <User size={24} />
+                                <Menu
+                                    className={`hamburger-icon hamburger-icon-bars${
+                                        menuOpen ? ' hamburger-icon-hidden' : ''
+                                    }`}
+                                    size={22}
+                                />
+                                <ChevronUp
+                                    className={`hamburger-icon hamburger-icon-chevron${
+                                        menuOpen ? '' : ' hamburger-icon-hidden'
+                                    }`}
+                                    size={22}
+                                />
                             </button>
+                            <div
+                                className={`hamburger-dropdown${
+                                    menuOpen ? ' hamburger-dropdown-open' : ''
+                                }`}
+                            >
+                                <button
+                                    className='hamburger-toggle'
+                                    onClick={() => {
+                                        setMenuOpen(false);
+                                        onOpenLeaderboard();
+                                    }}
+                                    title={uiText.leaderboardTitle}
+                                    type='button'
+                                >
+                                    <Crown size={22} />
+                                </button>
+                                <button
+                                    className='hamburger-toggle'
+                                    onClick={() => {
+                                        setMenuOpen(false);
+
+                                        if (isGuest) {
+                                            onOpenAuth();
+                                            return;
+                                        }
+
+                                        onOpenAccount();
+                                    }}
+                                    title={
+                                        isGuest
+                                            ? uiText.signIn
+                                            : uiText.accountTitle
+                                    }
+                                    type='button'
+                                >
+                                    <User size={22} />
+                                </button>
+                            </div>
                         </div>
                     )}
                     <div className='menu-title-orb' />
