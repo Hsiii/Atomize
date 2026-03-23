@@ -35,7 +35,7 @@ type NumberBlobDisplayProps = {
 };
 
 const echoAngles = [-58, -26, 18, 52];
-const clearPopPrepDurationMs = 140;
+const clearPopPrepDurationMs = 0;
 const faultAnimationDurationMs = 620;
 const localStageRevealDurationMs = 3000;
 
