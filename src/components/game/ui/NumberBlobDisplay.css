@@ -34,7 +34,7 @@
     height: 100%;
     min-width: 0;
     min-height: 0;
-    padding: var(--space-4) 0 var(--space-2);
+    padding: var(--space-2) 0 var(--space-2);
 }
 
 .number-blob-display-solo {
@@ -394,7 +394,7 @@
             var(--number-blob-reveal-color) 38%,
             var(--number-blob-stage-color)
         );
-        opacity: 0.98;
+        opacity: 1;
         transform: translateY(-0.05rem) scale(0.96);
     }
 
@@ -469,7 +469,7 @@
     }
 
     72% {
-        opacity: 0.96;
+        opacity: 1;
         transform: translate(-50%, -50%) rotate(var(--echo-angle))
             translateY(
                 calc(

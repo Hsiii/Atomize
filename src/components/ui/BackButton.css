@@ -1,7 +1,7 @@
 .floating-back-button {
     position: fixed;
-    top: max(var(--space-7), env(safe-area-inset-top));
-    left: max(var(--space-7), env(safe-area-inset-left));
+    top: max(var(--space-3), env(safe-area-inset-top));
+    left: max(var(--space-3), env(safe-area-inset-left));
     width: var(--size-control-floating);
     height: var(--size-control-floating);
     display: grid;

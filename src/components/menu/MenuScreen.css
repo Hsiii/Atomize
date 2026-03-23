@@ -294,7 +294,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--space-5) var(--space-7);
+    padding: var(--space-2) var(--space-3);
     background: var(--color-primary);
     color: var(--color-text-inverse);
 }
@@ -323,15 +323,15 @@
 }
 
 .dialog-body {
-    padding: var(--space-7);
+    padding: var(--space-3);
 }
 
 .dialog-actions {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-3);
-    padding: 0 var(--space-7) var(--space-7);
+    gap: var(--space-2);
+    padding: 0 var(--space-3) var(--space-3);
 }
 
 .dialog-actions > .app-action-button {
@@ -339,7 +339,7 @@
 }
 
 .dialog-actions-top {
-    padding-top: var(--space-7);
+    padding-top: var(--space-3);
 }
 
 .dialog-input {

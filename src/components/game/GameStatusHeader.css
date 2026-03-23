@@ -2,17 +2,16 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-4);
+    gap: var(--space-2);
 }
 
 .single-top-bar {
     display: grid;
-    grid-template-columns: var(--single-top-bar-side-width, auto) minmax(
-            0,
-            1fr
-        ) var(--single-top-bar-side-width, auto);
+    grid-template-columns:
+        var(--single-top-bar-side-width, auto) minmax(0, 1fr)
+        var(--single-top-bar-side-width, auto);
     align-items: center;
-    column-gap: var(--space-4);
+    column-gap: var(--space-2);
     padding: 0;
     width: 100%;
 }
@@ -147,7 +146,7 @@
 
 @media (max-width: 480px) {
     .single-top-bar {
-        column-gap: var(--space-3);
+        column-gap: var(--space-2);
     }
 }
 

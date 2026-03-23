@@ -141,30 +141,27 @@
 
     --space-0: 0;
     --space-1: 0.3rem;
-    --space-2: 0.45rem;
-    --space-3: 0.5rem;
-    --space-4: 0.75rem;
-    --space-5: 0.8rem;
-    --space-6: 0.85rem;
-    --space-7: 1rem;
-    --space-8: 1.25rem;
-    --space-9: 1.5rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
 
-    --space-timer-gap: 0.35rem;
-    --space-penalty-offset: 0.35rem;
-    --space-score-pill-y: 0.45rem;
+    --space-timer-gap: var(--space-1);
+    --space-penalty-offset: var(--space-1);
+    --space-score-pill-y: var(--space-2);
     --space-score-pill-x: 0.7rem;
     --space-score-label-gap: 0.2rem;
-    --space-top-bar-y: 0.8rem;
+    --space-top-bar-y: var(--space-3);
     --space-top-bar-x: 0.95rem;
     --space-keypad-gap-compact: 0.4rem;
-    --space-keypad-gap-mobile: 0.35rem;
+    --space-keypad-gap-mobile: var(--space-1);
     --space-ready-badge-top: 0.6rem;
-    --space-ready-badge-y: 0.3rem;
+    --space-ready-badge-y: var(--space-1);
     --space-ready-badge-x: 0.7rem;
-    --space-toast-y: 0.8rem;
-    --space-toast-x: 1rem;
-    --space-buffer-strip-x: 1rem;
+    --space-toast-y: var(--space-3);
+    --space-toast-x: var(--space-4);
+    --space-buffer-strip-x: var(--space-4);
 
     --radius-input: 14px;
     --radius-button: 18px;

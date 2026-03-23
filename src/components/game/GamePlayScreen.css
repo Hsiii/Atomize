@@ -1,5 +1,5 @@
 .game-screen {
-    gap: var(--space-7);
+    gap: var(--space-3);
     --combo-backspace-icon-size: 1.75rem;
     --combo-enter-icon-size: 2rem;
 }
@@ -63,10 +63,10 @@
     right: 0;
     z-index: 10;
     display: grid;
-    gap: var(--space-3);
+    gap: var(--space-2);
     width: min(100%, 28rem);
     margin-inline: auto;
-    padding: var(--space-5) var(--space-6);
+    padding: var(--space-2) var(--space-2);
     border-radius: var(--radius-panel);
     background: var(--color-surface-base);
     pointer-events: none;
@@ -114,7 +114,7 @@
 @media (max-width: 480px) {
     .tutorial-hint {
         width: 100%;
-        padding: var(--space-4) var(--space-5);
+        padding: var(--space-2) var(--space-2);
     }
 }
 
@@ -152,7 +152,7 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
-    gap: var(--space-3);
+    gap: var(--space-2);
     align-items: stretch;
     min-height: 0;
     touch-action: none;
@@ -163,8 +163,8 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
     width: 100%;
     min-width: 0;
-    gap: var(--space-4);
-    margin-top: var(--space-7);
+    gap: var(--space-2);
+    margin-top: var(--space-3);
     touch-action: none;
 }
 
@@ -338,7 +338,7 @@
     .desktop-keyboard-hint {
         display: grid;
         top: 0;
-        right: max(var(--space-5), env(safe-area-inset-right));
+        right: max(var(--space-2), env(safe-area-inset-right));
         left: auto;
         width: min(15rem, calc(100vw - 3rem));
         margin-inline: 0;

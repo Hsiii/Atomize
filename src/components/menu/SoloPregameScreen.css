@@ -22,7 +22,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: max(1.5rem, calc(env(safe-area-inset-top) + 1.5rem)) var(--space-7)
+    padding: max(1.5rem, calc(env(safe-area-inset-top) + 1.5rem)) var(--space-3)
         3.5rem;
     z-index: 1;
 }
@@ -72,7 +72,7 @@
 }
 
 .solo-pregame-tagline {
-    margin: var(--space-5) var(--space-0) var(--space-0);
+    margin: var(--space-2) var(--space-0) var(--space-0);
     font-family: var(--type-action-label-family);
     font-size: var(--type-metric-prominent-size);
     font-weight: var(--type-action-label-weight);
@@ -99,7 +99,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: var(--space-3);
+    gap: var(--space-2);
     width: 100%;
     max-width: 14rem;
     align-self: center;
@@ -120,7 +120,7 @@
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    padding: var(--space-4) var(--space-6);
+    padding: var(--space-2) var(--space-2);
     background: var(--color-surface-accent);
     border-radius: var(--radius-panel);
 }

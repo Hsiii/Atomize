@@ -7,7 +7,7 @@
 .account-page-header-band .floating-back-button {
     position: absolute;
     top: auto;
-    left: var(--space-4);
+    left: var(--space-2);
     color: var(--color-text-inverse);
 }
 
@@ -26,7 +26,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: max(1.5rem, calc(env(safe-area-inset-top) + 1.5rem)) var(--space-7)
+    padding: max(1.5rem, calc(env(safe-area-inset-top) + 1.5rem)) var(--space-3)
         1.5rem;
     background: var(--color-primary);
 }
@@ -46,18 +46,18 @@
 .account-page-body {
     width: min(100%, 22rem);
     display: grid;
-    gap: var(--space-8);
-    padding: var(--space-8) 1.5rem max(env(safe-area-inset-bottom), 2.5rem);
+    gap: var(--space-3);
+    padding: var(--space-3) 1.5rem max(env(safe-area-inset-bottom), 2.5rem);
     flex: 0 0 auto;
 }
 
 .account-page-section {
     display: grid;
-    gap: var(--space-4);
+    gap: var(--space-2);
 }
 
 .account-page-form {
-    gap: var(--space-5);
+    gap: var(--space-2);
 }
 
 .account-page-field-block {
@@ -69,7 +69,7 @@
     min-height: 3rem;
     border: 1px solid var(--color-border-soft);
     border-radius: var(--radius-input);
-    padding: var(--space-6) var(--space-7);
+    padding: var(--space-2) var(--space-3);
     background: var(--color-surface-strong);
     color: var(--color-ink);
 }
@@ -110,7 +110,7 @@
 /* === Logout Section === */
 
 .account-page-logout-section {
-    gap: var(--space-5);
+    gap: var(--space-2);
 }
 
 .account-page-divider {
