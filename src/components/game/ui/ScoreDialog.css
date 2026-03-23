@@ -276,7 +276,6 @@
 
 .score-dialog-player--winner .score-dialog-player-name {
     color: var(--color-gold);
-    border-bottom-color: var(--color-gold-soft);
 }
 
 .score-dialog-crown {
