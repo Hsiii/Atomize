@@ -480,10 +480,6 @@
     gap: var(--space-keypad-gap-mobile);
 }
 
-.multiplayer-keypad button {
-    min-height: 4rem;
-}
-
 @media (min-width: 900px) {
     .multiplayer-game-screen {
         --multiplayer-tutorial-top-offset: 4.85rem;
@@ -510,10 +506,6 @@
     .multiplayer-column-enemy .number-blob-display-size-enemy {
         --number-blob-scale-factor: 0.39;
     }
-
-    .multiplayer-keypad button {
-        min-height: 3.7rem;
-    }
 }
 
 @media (max-height: 780px) {
@@ -535,10 +527,6 @@
 
     .multiplayer-column-enemy {
         width: min(28%, 6.5rem);
-    }
-
-    .multiplayer-keypad button {
-        min-height: 3.35rem;
     }
 }
 

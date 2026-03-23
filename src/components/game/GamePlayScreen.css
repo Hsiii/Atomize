@@ -181,7 +181,6 @@
     grid-template-rows: repeat(3, minmax(0, 1fr));
     width: 100%;
     aspect-ratio: 1;
-    max-height: min(var(--size-keypad-cluster-max), calc(100dvh - 22rem));
     margin-top: 0;
     gap: var(--keypad-row-gap);
 }
@@ -192,42 +191,26 @@
 
 .keypad-row {
     --keypad-row-gap: var(--space-keypad-gap-compact);
+    --keypad-reserve: 22rem;
+    --keypad-avail-h: max(
+        10rem,
+        min(
+            var(--size-keypad-cluster-max),
+            calc(100dvh - var(--keypad-reserve))
+        )
+    );
+    --keypad-row-w: calc(
+        (4 * var(--keypad-avail-h) + var(--keypad-row-gap)) / 3
+    );
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--keypad-row-gap);
     align-items: stretch;
     touch-action: none;
-    width: min(
-        100%,
-        calc(
-            (
-                    (
-                            (
-                                    var(--size-keypad-cluster-max) -
-                                        (2 * var(--keypad-row-gap))
-                                ) /
-                                3
-                        ) *
-                        4
-                ) +
-                (3 * var(--keypad-row-gap))
-        )
-    );
-    max-width: calc(
-        (
-                (
-                        (
-                                var(--size-keypad-cluster-max) -
-                                    (2 * var(--keypad-row-gap))
-                            ) /
-                            3
-                    ) *
-                    4
-            ) +
-            (3 * var(--keypad-row-gap))
-    );
+    width: min(100%, var(--keypad-row-w));
     justify-self: center;
     align-self: center;
+    margin-inline: auto;
 }
 
 .keypad-row > .keypad {
@@ -309,10 +292,6 @@
 
     .keypad-row {
         --keypad-row-gap: var(--space-keypad-gap-mobile);
-    }
-
-    .solo-keypad {
-        max-height: none;
     }
 
     .prime-key-button {
