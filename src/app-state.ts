@@ -84,7 +84,7 @@ export const uiText = {
     highScore: 'High Score',
     signIn: 'Log In',
     signUp: 'Sign Up',
-    authGoal: 'Join the game.',
+    authGoal: 'Keep your place.',
     withEmail: 'With Email',
     userName: 'User Name',
     email: 'Email',
