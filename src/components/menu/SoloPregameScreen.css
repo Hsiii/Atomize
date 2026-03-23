@@ -72,10 +72,13 @@
 
 .solo-pregame-tagline {
     margin: var(--space-2) var(--space-0) var(--space-0);
-    font-family: var(--type-action-label-family);
-    font-size: var(--type-metric-prominent-size);
-    font-weight: var(--type-action-label-weight);
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
+    letter-spacing: var(--type-action-label-wide-letter-spacing);
+    text-transform: var(--type-action-label-wide-text-transform);
     color: var(--color-text-inverse);
+    opacity: 0.75;
     text-align: center;
 }
 
