@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { JSX, SyntheticEvent } from 'react';
+import { CircleUserRound } from 'lucide-react';
 
 import { uiText } from '../../app-state';
 import { ActionButton } from '../game/ui/ActionButton';
@@ -64,6 +65,11 @@ export function AccountScreen({
                         <BackButton onBack={onBack} />
                         <h1 className='page-title'>{uiText.accountTitle}</h1>
                     </div>
+                    <CircleUserRound
+                        className='page-hero-icon'
+                        strokeWidth={2}
+                    />
+                    <p className='page-tagline'>{uiText.accountGoal}</p>
                 </header>
 
                 <div className='account-page-body'>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { JSX, SyntheticEvent } from 'react';
+import { LogIn } from 'lucide-react';
 
 import { uiText } from '../../app-state';
 import {
@@ -161,6 +162,8 @@ export function AuthScreen({
                         <BackButton onBack={onBack} />
                         <h1 className='page-title'>{title}</h1>
                     </div>
+                    <LogIn className='page-hero-icon' strokeWidth={2} />
+                    <p className='page-tagline'>{uiText.authGoal}</p>
                 </header>
 
                 <div className='auth-page-body'>

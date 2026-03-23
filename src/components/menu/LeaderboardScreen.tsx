@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { JSX } from 'react';
+import { Trophy } from 'lucide-react';
 
 import { uiText } from '../../app-state';
 import { getGuestDisplayName, loadBestScore } from '../../lib/app-helpers';
@@ -101,6 +102,8 @@ export function LeaderboardScreen({
                             {uiText.leaderboardTitle}
                         </h1>
                     </div>
+                    <Trophy className='page-hero-icon' strokeWidth={2} />
+                    <p className='page-tagline'>{uiText.leaderboardGoal}</p>
                 </header>
 
                 <div className='leaderboard-page-body'>
