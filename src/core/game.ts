@@ -41,10 +41,13 @@ const PLAYABLE_STAGE_PRIMES: readonly Prime[] = PRIME_POOL.slice(
     0,
     MAX_PLAYABLE_PRIME_COUNT
 );
-const LARGE_REPEAT_PRIMES = [19, 23] as const satisfies readonly Prime[];
 const LARGE_REPEAT_STAGE_CHANCE = 0.38;
 const LARGE_REPEAT_STAGE_START = 1;
 const MAX_LARGE_REPEAT_COUNT = 3;
+
+function isLargeRepeatPrime(prime: Prime): prime is 19 | 23 {
+    return prime === 19 || prime === 23;
+}
 
 export function applySoloPenalty(state: SoloState): SoloState {
     return {
@@ -61,7 +64,7 @@ function getAvailableStagePrimes(
     canPlaceMoreLargeRepeats = false
 ): readonly Prime[] {
     const hasLargeRepeatPrime = factors.some((factor) =>
-        LARGE_REPEAT_PRIMES.includes(factor)
+        isLargeRepeatPrime(factor)
     );
 
     return PLAYABLE_STAGE_PRIMES.filter((prime) => {
@@ -69,7 +72,7 @@ function getAvailableStagePrimes(
             return false;
         }
 
-        if (!LARGE_REPEAT_PRIMES.includes(prime)) {
+        if (!isLargeRepeatPrime(prime)) {
             return true;
         }
 
