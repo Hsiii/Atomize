@@ -75,6 +75,19 @@
     width: 100%;
     min-height: 3.5rem;
     flex: 0 0 auto;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+@media (hover: hover) {
+    .solo-pregame-start-btn.app-action-button:hover {
+        transform: scale(1.02) translateY(-2px);
+        filter: brightness(1.2);
+    }
+}
+
+.solo-pregame-start-btn.app-action-button:active {
+    transform: scale(0.97);
+    filter: brightness(0.9);
 }
 
 @media (max-width: 480px) {

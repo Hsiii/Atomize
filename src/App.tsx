@@ -290,7 +290,7 @@ export default function App(): JSX.Element {
 
     const onScreenChange = useCallback((nextScreen: Screen) => {
         // Intercept transitions strictly requiring the burst effect
-        if (nextScreen === 'multi-game') {
+        if (nextScreen === 'multi-game' || nextScreen === 'single') {
             setPendingTransitionScreen(nextScreen);
         } else {
             detachPromise(navigateRef.current({ to: SCREEN_TO_PATH[nextScreen] }));
@@ -654,10 +654,13 @@ export default function App(): JSX.Element {
             <Outlet />
             {pendingTransitionScreen ? (
                 <BurstTransition 
-                    onComplete={() => {
+                    onNavigate={() => {
                         const targetScreen = pendingTransitionScreen;
-                        // Execute actual navigation after the full burst sequence finishes
+                        // Execute actual navigation while the screen is completely white/wiped
                         detachPromise(navigate({ to: SCREEN_TO_PATH[targetScreen] }));
+                    }}
+                    onComplete={() => {
+                        // Unmount overlay after it has completely faded to 0 opacity
                         setPendingTransitionScreen(undefined);
                     }} 
                 />
