@@ -1,23 +1,11 @@
-import { useState, useEffect, useRef, type JSX } from 'react';
+import { useState } from 'react';
+import type { JSX } from 'react';
 import { Timer } from 'lucide-react';
-
-type Particle = {
-    id: number | string;
-    x: number;
-    y: number;
-    vx: number;
-    vy: number;
-    radius: number;
-    value: string | number;
-    element?: HTMLDivElement | null;
-    isGo?: boolean;
-};
 
 import { uiText } from '../../app-state';
 import type { BestScoreRecord } from '../../lib/app-helpers';
 import { ActionButton } from '../game/ui/ActionButton';
 import { BackButton } from '../ui/BackButton';
-import { BurstTransition } from '../ui/BurstTransition';
 
 import './SoloPregameScreen.css';
 
@@ -32,17 +20,13 @@ export function SoloPregameScreen({
     onBack,
     onStart,
 }: SoloPregameScreenProps): JSX.Element {
-    const [isTransitioning, setIsTransitioning] = useState(false);
     
     const handleStart = () => {
-        if (isTransitioning) return;
-        setIsTransitioning(true);
+        onStart();
     };
 
     return (
         <main className='app-shell fullscreen-shell solo-pregame-shell'>
-            {/* Transition Mount */}
-            {isTransitioning && <BurstTransition onComplete={onStart} />}
             <section className='screen solo-pregame-screen'>
                 <header className='page-header-band'>
                     <div className='page-title-row'>
