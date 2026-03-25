@@ -1,5 +1,6 @@
 import React from 'react';
 import { RouterProvider } from '@tanstack/react-router';
+import { Analytics } from '@vercel/analytics/react';
 import ReactDOM from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
 
@@ -19,5 +20,6 @@ if (!rootElement) {
 ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
         <RouterProvider router={router} />
+        <Analytics />
     </React.StrictMode>
 );
