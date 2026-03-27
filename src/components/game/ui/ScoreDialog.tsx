@@ -137,20 +137,19 @@ export function ScoreDialog(props: ScoreDialogProps): JSX.Element {
                             {uiText.rematch}
                         </ActionButton>
                     ) : undefined}
-                    {props.mode === 'solo' && props.onRetry ? (
-                        <ActionButton
-                            onClick={props.onRetry}
-                            variant='secondary'
-                        >
-                            {uiText.retry}
-                        </ActionButton>
-                    ) : undefined}
                     <ActionButton
                         onClick={handleReturnHomeClick}
-                        variant='primary'
+                        variant={
+                            props.mode === 'solo' ? 'secondary' : 'primary'
+                        }
                     >
                         {uiText.returnHome}
                     </ActionButton>
+                    {props.mode === 'solo' && props.onRetry ? (
+                        <ActionButton onClick={props.onRetry} variant='primary'>
+                            {uiText.retry}
+                        </ActionButton>
+                    ) : undefined}
                 </div>
             </section>
         </div>
