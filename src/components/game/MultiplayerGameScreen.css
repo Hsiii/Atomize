@@ -22,7 +22,7 @@
 }
 
 .tutorial-highlight-frame {
-    outline: 2px solid rgba(22, 138, 173, 0.38);
+    outline: 2px solid var(--color-highlight-outline);
     outline-offset: 0.2rem;
 }
 
@@ -32,7 +32,7 @@
 
 .multiplayer-keypad.tutorial-highlight-frame,
 .tutorial-highlight-button {
-    outline: 2px solid rgba(22, 138, 173, 0.38);
+    outline: 2px solid var(--color-highlight-outline);
     outline-offset: 0.12rem;
 }
 

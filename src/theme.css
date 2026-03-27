@@ -97,6 +97,9 @@
     --color-surface-base: rgba(255, 255, 255, 0.94);
     --color-surface-strong: #ffffff;
     --color-surface-accent: rgba(22, 138, 173, 0.18);
+    --color-highlight-bg: rgba(22, 138, 173, 0.2);
+    --color-highlight-border: rgba(22, 138, 173, 0.3);
+    --color-highlight-outline: rgba(22, 138, 173, 0.38);
     --color-border-soft: rgba(24, 78, 119, 0.2);
     --color-border-contrast: rgba(255, 255, 255, 0.26);
     --color-border-inverse-soft: rgba(255, 255, 255, 0.28);
