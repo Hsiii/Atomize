@@ -19,7 +19,7 @@
     display: flex;
     flex-direction: column;
     gap: 2.5rem;
-    padding: 0 0.5rem max(env(safe-area-inset-bottom), 2rem);
+    padding: 0 var(--space-2) max(env(safe-area-inset-bottom), 2rem);
     margin: auto 0;
 }
 

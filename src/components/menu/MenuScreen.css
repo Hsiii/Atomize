@@ -78,8 +78,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1.5rem;
-    padding: 0 1.5rem;
+    gap: var(--space-6);
+    padding: 0 var(--space-6);
     padding-bottom: max(env(safe-area-inset-bottom), 2.5rem);
 }
 
@@ -89,7 +89,7 @@
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    gap: 1.6rem;
+    gap: var(--space-6);
     width: 100%;
 }
 
@@ -97,7 +97,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.6rem;
+    gap: var(--space-2);
     background: none;
     border: 0;
     cursor: pointer;
@@ -203,7 +203,7 @@
 .menu-toast {
     max-width: var(--size-toast-width);
     padding: var(--space-toast-y) var(--space-toast-x);
-    border-radius: 1rem;
+    border-radius: var(--radius-input);
     background: var(--color-toast-bg);
     color: var(--color-toast-text);
     font-family: var(--type-action-label-family);

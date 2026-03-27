@@ -212,7 +212,11 @@ export function SingleGameScreen({
                 ) : undefined}
 
                 {isPaused ? (
-                    <PauseOverlay onResume={onResume} onReturnHome={onBack} />
+                    <PauseOverlay
+                        onResume={onResume}
+                        onRetry={onRetry}
+                        onReturnHome={onBack}
+                    />
                 ) : undefined}
             </section>
         </main>

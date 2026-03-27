@@ -53,7 +53,7 @@
 }
 
 .online-section-title {
-    margin: var(--space-0);
+    margin: 0;
     display: flex;
     align-items: center;
     gap: 0.45rem;
@@ -82,7 +82,7 @@
 }
 
 .online-empty {
-    margin: var(--space-0);
+    margin: 0;
     font-family: var(--type-body-meta-family);
     font-size: var(--type-body-meta-size);
     font-weight: var(--type-action-label-weight);
@@ -91,7 +91,7 @@
 }
 
 .online-empty-hint {
-    margin: var(--space-0);
+    margin: 0;
     font-family: var(--type-body-meta-family);
     font-size: var(--type-body-meta-size);
     font-weight: var(--type-body-meta-weight);
@@ -225,14 +225,14 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1.5rem;
+    gap: var(--space-6);
 }
 
 .vs-player-column {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
     min-width: 5.5rem;
 }
 

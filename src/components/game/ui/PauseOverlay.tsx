@@ -8,13 +8,19 @@ import { ActionButton } from './ActionButton';
 
 type PauseOverlayProps = {
     onResume: () => void;
+    onRetry?: () => void;
     onReturnHome: () => void | Promise<void>;
 };
 
 export function PauseOverlay({
     onResume,
+    onRetry,
     onReturnHome,
 }: PauseOverlayProps): JSX.Element {
+    function handleRetryClick() {
+        onRetry?.();
+    }
+
     function handleReturnHomeClick() {
         Promise.resolve(onReturnHome()).catch(() => undefined);
     }
@@ -39,6 +45,14 @@ export function PauseOverlay({
                     <ActionButton onClick={onResume} variant='primary'>
                         {uiText.resume}
                     </ActionButton>
+                    {onRetry === undefined ? undefined : (
+                        <ActionButton
+                            onClick={handleRetryClick}
+                            variant='secondary'
+                        >
+                            {uiText.retry}
+                        </ActionButton>
+                    )}
                     <ActionButton
                         onClick={handleReturnHomeClick}
                         variant='secondary'
