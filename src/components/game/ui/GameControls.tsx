@@ -51,11 +51,12 @@ export function GameControls({
 
             <div className='combo-actions-column'>
                 <ActionButton
+                    aria-disabled={backspaceDisabled}
                     aria-label={uiText.backspace}
                     className='combo-backspace-button'
-                    disabled={backspaceDisabled}
                     onClick={onBackspace}
                     shape='rounded'
+                    tabIndex={backspaceDisabled ? -1 : undefined}
                     variant='secondary'
                 >
                     <span className='control-button-content'>
