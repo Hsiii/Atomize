@@ -3,8 +3,8 @@
     --number-blob-font-size-base: var(--type-display-game-size);
     --number-blob-stage-color: var(--color-primary);
     --number-blob-reveal-color: var(--color-secondary);
-    --number-blob-stage-reveal-delay: 1000ms;
-    --number-blob-value-fade-delay: 1000ms;
+    --number-blob-stage-reveal-delay: 1s;
+    --number-blob-value-fade-delay: 1s;
     --number-blob-split-color: var(--color-secondary);
     --number-blob-split-clear-color: color-mix(
         in srgb,
@@ -40,8 +40,8 @@
 .number-blob-display-solo {
     --number-blob-stage-color: var(--color-button-primary-bg);
     --number-blob-reveal-color: var(--color-button-primary-bg);
-    --number-blob-stage-reveal-delay: 0ms;
-    --number-blob-value-fade-delay: 0ms;
+    --number-blob-stage-reveal-delay: 0s;
+    --number-blob-value-fade-delay: 0s;
     --number-blob-split-color: var(--color-button-primary-bg);
     --number-blob-split-clear-color: var(--color-button-primary-bg);
 }
@@ -87,7 +87,7 @@
     border-radius: 50%;
     background: var(--number-blob-stage-color);
     transform: translateY(0) scale(1);
-    transition: opacity 140ms ease;
+    transition: opacity 0.14s ease;
     animation: number-blob-idle 6.6s ease-in-out infinite;
 }
 
@@ -122,8 +122,8 @@
     color: var(--type-display-game-color);
     text-align: center;
     transition:
-        opacity 120ms ease,
-        transform 120ms ease;
+        opacity 0.12s ease,
+        transform 0.12s ease;
 }
 
 .number-main-blob {
@@ -162,7 +162,7 @@
 }
 
 .number-main-blob-shell.is-impact-active {
-    animation: number-blob-impact 520ms cubic-bezier(0.18, 0.85, 0.26, 1);
+    animation: number-blob-impact 0.52s cubic-bezier(0.18, 0.85, 0.26, 1);
 }
 
 .number-main-blob-shell.is-impact-active > .number-main-blob {
@@ -170,7 +170,7 @@
 }
 
 .number-blob-display.is-combo-running .number-main-blob-shell.is-impact-active {
-    animation-duration: 520ms;
+    animation-duration: 0.52s;
 }
 
 @keyframes blob-fault-jolt {
@@ -222,13 +222,13 @@
 }
 
 .number-main-blob-shell.is-fault-active {
-    animation: blob-fault-jolt 620ms cubic-bezier(0.22, 0.68, 0.32, 1);
+    animation: blob-fault-jolt 0.62s cubic-bezier(0.22, 0.68, 0.32, 1);
     will-change: transform;
 }
 
 .number-main-blob-shell.is-fault-active > .number-main-blob {
     animation:
-        blob-fault-flash 560ms ease-out forwards,
+        blob-fault-flash 0.56s ease-out forwards,
         number-blob-idle 6.6s ease-in-out infinite;
 }
 
@@ -236,7 +236,7 @@
     opacity: 0;
     transform: scale(0.12);
     background: var(--number-blob-reveal-color);
-    animation: number-blob-stage-reveal 2000ms cubic-bezier(0.2, 0.84, 0.22, 1)
+    animation: number-blob-stage-reveal 2s cubic-bezier(0.2, 0.84, 0.22, 1)
         var(--number-blob-stage-reveal-delay) both;
 }
 
@@ -247,7 +247,7 @@
 
 .number-main-blob strong.is-value-hidden {
     opacity: 0;
-    animation: number-blob-value-fade-in 2000ms ease
+    animation: number-blob-value-fade-in 2s ease
         var(--number-blob-value-fade-delay) forwards;
 }
 
@@ -262,7 +262,7 @@
         var(--color-border-inverse-soft);
     border-radius: 50%;
     background: var(--number-blob-stage-color);
-    animation: number-blob-clear-pop 260ms cubic-bezier(0.2, 0.9, 0.3, 1)
+    animation: number-blob-clear-pop 0.26s cubic-bezier(0.2, 0.9, 0.3, 1)
         forwards;
     pointer-events: none;
 }
@@ -297,12 +297,12 @@
     transform: translate(-50%, -50%) rotate(var(--echo-angle)) translateY(0)
         rotate(var(--echo-counter-angle)) scale(0.32);
     opacity: 0;
-    animation: number-blob-split-float 820ms ease-out forwards;
+    animation: number-blob-split-float 0.82s ease-out forwards;
 }
 
 .number-blob-split-echo.is-clear-burst {
     background: var(--number-blob-split-clear-color);
-    animation-duration: 900ms;
+    animation-duration: 0.9s;
 }
 
 .number-blob-display-multiplayer.number-blob-display-size-self

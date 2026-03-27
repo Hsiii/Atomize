@@ -106,8 +106,8 @@
     font-weight: var(--type-action-label-weight);
     letter-spacing: var(--type-action-label-letter-spacing);
     transition:
-        transform 160ms ease,
-        border-color 160ms ease;
+        transform 0.16s ease,
+        border-color 0.16s ease;
 }
 
 .auth-page-google-button:hover:not(:disabled) {

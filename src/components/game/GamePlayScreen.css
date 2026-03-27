@@ -8,12 +8,12 @@
 
 .game-screen .single-value-display,
 .game-screen .multiplayer-board {
-    animation: game-entry-fade 400ms ease-out both;
+    animation: game-entry-fade 0.4s ease-out both;
 }
 
 .game-screen .single-controls-grid,
 .game-screen .multiplayer-controls-grid {
-    animation: game-entry-slide-up 500ms cubic-bezier(0.22, 1, 0.36, 1) 120ms
+    animation: game-entry-slide-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.12s
         both;
 }
 
@@ -310,7 +310,7 @@
     font-weight: var(--type-display-burst-soft-weight);
     color: var(--color-gold);
     white-space: nowrap;
-    animation: solo-score-pop 900ms ease-out forwards;
+    animation: solo-score-pop 0.9s ease-out forwards;
 }
 
 @media (min-width: 900px) {

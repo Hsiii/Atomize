@@ -406,8 +406,8 @@ function BattleHpBar({
             ref={outerRef}
             style={
                 {
-                    '--hp-hit-duration': `${impacts?.hit?.durationMs ?? 0}ms`,
-                    '--hp-regen-duration': `${impacts?.regen?.durationMs ?? 0}ms`,
+                    '--hp-hit-duration': `${(impacts?.hit?.durationMs ?? 0) / 1000}s`,
+                    '--hp-regen-duration': `${(impacts?.regen?.durationMs ?? 0) / 1000}s`,
                 } as CSSProperties
             }
         >

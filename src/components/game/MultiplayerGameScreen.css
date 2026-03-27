@@ -105,8 +105,8 @@
 }
 
 .multiplayer-hp-bar {
-    --hp-hit-duration: 0ms;
-    --hp-regen-duration: 0ms;
+    --hp-hit-duration: 0s;
+    --hp-regen-duration: 0s;
     --hp-transition-duration: max(
         var(--hp-hit-duration),
         var(--hp-regen-duration)
@@ -214,7 +214,7 @@
     letter-spacing: 0.14em;
     line-height: 1;
     text-transform: uppercase;
-    animation: multiplayer-perfect-tag 1120ms cubic-bezier(0.16, 0.9, 0.2, 1)
+    animation: multiplayer-perfect-tag 1.12s cubic-bezier(0.16, 0.9, 0.2, 1)
         forwards;
 }
 
@@ -266,7 +266,7 @@
 }
 
 .multiplayer-hp-bar--hit .multiplayer-hp-track::after {
-    animation: multiplayer-hp-flash calc(var(--hp-hit-duration) + 120ms)
+    animation: multiplayer-hp-flash calc(var(--hp-hit-duration) + 0.12s)
         ease-out;
 }
 
@@ -283,7 +283,7 @@
 }
 
 .multiplayer-hp-bar--regen .multiplayer-hp-track::before {
-    animation: multiplayer-hp-regen-shine calc(var(--hp-regen-duration) + 180ms)
+    animation: multiplayer-hp-regen-shine calc(var(--hp-regen-duration) + 0.18s)
         ease-out;
 }
 
