@@ -4,7 +4,6 @@ import type { Prime } from '../core';
 
 type UsePrimeKeyboardControlsOptions = {
     canQueuePrime: boolean;
-    canSubmit: boolean;
     isComboRunning: boolean;
     isInputDisabled: boolean;
     onBackspaceQueue: () => void;
@@ -24,7 +23,6 @@ type UsePrimeKeyboardControlsResult = {
 
 export function usePrimeKeyboardControls({
     canQueuePrime,
-    canSubmit,
     isComboRunning,
     isInputDisabled,
     onBackspaceQueue,
@@ -164,10 +162,6 @@ export function usePrimeKeyboardControls({
 
         clearBufferedPrimeInput();
 
-        if (!canSubmit) {
-            return;
-        }
-
         onSubmit();
     }
 
@@ -236,7 +230,7 @@ export function usePrimeKeyboardControls({
         return () => {
             globalThis.removeEventListener('keydown', handleWindowKeyDown);
         };
-    }, [canQueuePrime, canSubmit, isComboRunning, queueLength]);
+    }, [canQueuePrime, isComboRunning, queueLength]);
 
     return {
         bufferedPrimeInput,

@@ -67,7 +67,6 @@ export function SingleGameScreen({
     const previousScoreRef = useRef(soloState.score);
     const keyboard = usePrimeKeyboardControls({
         canQueuePrime: !isInputDisabled && !isQueueFull,
-        canSubmit: !isInputDisabled && visibleQueue.length > 0,
         isComboRunning: isSoloComboRunning,
         isInputDisabled,
         onBackspaceQueue: () => {
@@ -84,13 +83,7 @@ export function SingleGameScreen({
 
             setLocalQueue([...visibleQueueRef.current, prime]);
         },
-        onSubmit: () => {
-            if (visibleQueueRef.current.length === 0) {
-                return;
-            }
-
-            onSubmit(visibleQueueRef.current);
-        },
+        onSubmit: submitVisibleQueue,
         playablePrimes,
         queueLength: visibleQueue.length,
     });
@@ -138,6 +131,14 @@ export function SingleGameScreen({
 
         visibleQueueRef.current = normalizedQueue;
         setVisibleQueue(normalizedQueue);
+    }
+
+    function submitVisibleQueue() {
+        if (isInputDisabled || visibleQueueRef.current.length === 0) {
+            return;
+        }
+
+        onSubmit(visibleQueueRef.current);
     }
 
     return (

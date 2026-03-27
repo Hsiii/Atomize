@@ -64,11 +64,13 @@ export function GameControls({
                 </ActionButton>
 
                 <ActionButton
+                    aria-disabled={submitDisabled}
                     aria-label={uiText.enterCombo}
                     className={`combo-enter-button${submitClassName ? ` ${submitClassName}` : ''}`}
-                    disabled={submitDisabled}
-                    onClick={onSubmit}
+                    onPress={onSubmit}
                     shape='rounded'
+                    tabIndex={submitDisabled ? -1 : undefined}
+                    triggerMode='press-start'
                     variant='secondary'
                 >
                     <span className='control-button-content'>

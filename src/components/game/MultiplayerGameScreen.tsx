@@ -151,10 +151,6 @@ export function MultiplayerGameScreen({
     }
     const keyboard = usePrimeKeyboardControls({
         canQueuePrime: !isInputDisabled && !isQueueFull,
-        canSubmit:
-            !isInputDisabled &&
-            !tutorial.isSubmitLocked &&
-            (visibleQueue.length > 0 || canSubmitSolvedStage),
         isComboRunning: isMultiplayerComboRunning,
         isInputDisabled,
         onBackspaceQueue: () => {

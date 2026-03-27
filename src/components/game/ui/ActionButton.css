@@ -40,3 +40,7 @@
 .action-button-rounded {
     border-radius: var(--radius-pill);
 }
+
+.app-action-button:disabled {
+    opacity: var(--opacity-disabled);
+}
