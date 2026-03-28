@@ -1,4 +1,4 @@
-# Atomize
+# [Atomize](https://atomize.hsichen.dev)
 
 A web app game built around fast prime factorization.
 
