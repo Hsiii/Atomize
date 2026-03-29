@@ -282,7 +282,7 @@ export default function App(): JSX.Element {
     const navigate = useNavigate();
     const screen = deriveScreen(location.pathname);
 
-    const navigateRef = useRef(navigate);
+    const navigateRef = useRef<ReturnType<typeof useNavigate>>(navigate);
     navigateRef.current = navigate;
 
     const onScreenChange = useCallback((nextScreen: Screen) => {

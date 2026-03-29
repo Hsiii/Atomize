@@ -314,6 +314,7 @@ function AccountPage(): JSX.Element | undefined {
                 detachPromise(navigate({ to: '/' }));
             }}
             playerName={playerName}
+            userId={session.user.id}
         />
     );
 }
@@ -411,7 +412,6 @@ const leaderboardRoute = createRoute({
     component: LeaderboardPage,
 });
 
-// eslint-disable-next-line complete/no-object-any
 const routeTree = rootRoute.addChildren([
     menuRoute,
     tutorialRoute,
