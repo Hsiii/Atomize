@@ -106,7 +106,6 @@ export const uiText = {
     logout: 'Log Out',
     accountTitle: 'Account',
     accountGoal: 'Your profile.',
-    editName: 'Edit Name',
     cancel: 'Cancel',
     gamesPlayed: 'Multiplayer Games',
     wins: 'Wins',
