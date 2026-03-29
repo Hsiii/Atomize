@@ -30,6 +30,7 @@ import {
 import {
     createRealtimeClient,
     getMissingSupabaseEnvVars,
+    supabaseAuthClient,
 } from '../lib/supabase';
 import { useComboQueueState } from './useComboQueueState';
 
@@ -682,6 +683,68 @@ export function useMultiplayerGame({
 
         return undefined;
     }
+
+    const recordedMatchIdRef = useRef<string | undefined>(undefined);
+
+    useEffect(() => {
+        if (!multiplayer.snapshot) {
+            return;
+        }
+
+        if (multiplayer.snapshot.status === 'playing') {
+            recordedMatchIdRef.current = undefined;
+            return;
+        }
+
+        if (
+            multiplayer.snapshot.status === 'finished' &&
+            recordedMatchIdRef.current !== multiplayer.roomId &&
+            multiplayer.roomId
+        ) {
+            recordedMatchIdRef.current = multiplayer.roomId;
+
+            const currentPlayer = multiplayer.snapshot.players.find(
+                (p) => p.id === multiplayer.playerId
+            );
+            const opponent = multiplayer.snapshot.players.find(
+                (p) => p.id !== multiplayer.playerId
+            );
+
+            if (!currentPlayer) {
+                return;
+            }
+
+            const isWinner =
+                currentPlayer.hp > 0 &&
+                opponent !== undefined &&
+                opponent.hp <= 0;
+            const isTie =
+                currentPlayer.hp <= 0 &&
+                opponent !== undefined &&
+                opponent.hp <= 0;
+
+            if (supabaseAuthClient) {
+                detachPromise(
+                    supabaseAuthClient.auth.getSession().then(({ data }) => {
+                        const userId = data.session?.user.id;
+                        if (userId && supabaseAuthClient) {
+                            detachPromise(
+                                Promise.resolve(
+                                    supabaseAuthClient
+                                        .rpc('record_match_result', {
+                                            p_user_id: userId,
+                                            p_is_winner: isWinner,
+                                            p_is_tie: isTie,
+                                        })
+                                        .then(() => undefined)
+                                )
+                            );
+                        }
+                    })
+                );
+            }
+        }
+    }, [multiplayer.snapshot, multiplayer.playerId, multiplayer.roomId]);
 
     return {
         playablePrimes,
