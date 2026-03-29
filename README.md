@@ -48,7 +48,7 @@ Atomize ships with a web app manifest and standalone display mode, so it can be 
 2. Start the dev server:
 
     ```bash
-    bun run dev:web
+    bun run dev
     ```
 
 3. Open the app in your browser:
