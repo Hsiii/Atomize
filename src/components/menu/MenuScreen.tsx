@@ -106,6 +106,9 @@ export function MenuScreen({
         <main className='app-shell fullscreen-shell'>
             <section className='screen screen-menu'>
                 <div className='menu-layout'>
+                    <div aria-label='Version' className='menu-version-label'>
+                        {uiText.versionLabel}
+                    </div>
                     {!needsTutorial && (
                         <div className='hamburger-menu' ref={menuRef}>
                             <button

@@ -18,6 +18,7 @@ export const uiText = {
     title: 'Atomize',
     titleLead: 'At',
     titleTail: 'mize',
+    versionLabel: 'v0.0.0',
     eyebrow: 'Prime factor battle',
     menuPlay: 'Play',
     menuSolo: 'Solo',

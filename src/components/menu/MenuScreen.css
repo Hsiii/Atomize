@@ -16,6 +16,21 @@
     position: relative;
 }
 
+.menu-version-label {
+    position: absolute;
+    top: max(env(safe-area-inset-top), 0.9rem);
+    left: max(env(safe-area-inset-left), 0.9rem);
+    z-index: 10;
+    font-family: var(--type-body-meta-family);
+    font-size: var(--type-body-meta-size);
+    font-weight: var(--type-body-meta-weight);
+    line-height: var(--type-body-meta-line-height);
+    letter-spacing: var(--type-body-meta-letter-spacing);
+    color: rgba(255, 255, 255, 0.64);
+    pointer-events: none;
+    user-select: none;
+}
+
 .menu-title-orb {
     --menu-title-diameter: max(160vw, 130dvh);
     position: absolute;
