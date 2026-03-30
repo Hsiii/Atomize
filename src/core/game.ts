@@ -66,9 +66,15 @@ function getAvailableStagePrimes(
     const hasLargeRepeatPrime = factors.some((factor) =>
         isLargeRepeatPrime(factor)
     );
+    const hasTwo = factors.includes(2);
+    const hasFive = factors.includes(5);
 
     return PLAYABLE_STAGE_PRIMES.filter((prime) => {
         if (prime > maxPrimeValue) {
+            return false;
+        }
+
+        if ((prime === 5 && hasTwo) || (prime === 2 && hasFive)) {
             return false;
         }
 
