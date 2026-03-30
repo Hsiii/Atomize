@@ -61,6 +61,24 @@ type LobbyPresenceUser = {
     status: 'lobby' | 'in-game' | 'in-team';
 };
 
+function getLobbyPresenceStatusPriority(
+    status: LobbyPresenceUser['status']
+): number {
+    switch (status) {
+        case 'in-game': {
+            return 2;
+        }
+
+        case 'in-team': {
+            return 1;
+        }
+
+        case 'lobby': {
+            return 0;
+        }
+    }
+}
+
 function normalizePlayerNameKey(value: string | undefined): string {
     return (value ?? '').trim().replaceAll(/\s+/g, ' ').toLowerCase();
 }
@@ -118,6 +136,46 @@ function resolveGuestLobbyNames(
             ...user,
             name: numberedGuestName,
         };
+    });
+}
+
+function dedupeLobbyPresenceUsers(
+    users: readonly LobbyPresenceUser[]
+): readonly LobbyPresenceUser[] {
+    const usersById = new Map<string, LobbyPresenceUser>();
+    const orderedPlayerIds: string[] = [];
+
+    for (const user of users) {
+        const existingUser = usersById.get(user.playerId);
+
+        if (!existingUser) {
+            usersById.set(user.playerId, user);
+            orderedPlayerIds.push(user.playerId);
+            continue;
+        }
+
+        const nextName =
+            isGuestDisplayName(existingUser.name) &&
+            !isGuestDisplayName(user.name)
+                ? user.name
+                : existingUser.name;
+        const nextStatus =
+            getLobbyPresenceStatusPriority(user.status) >
+            getLobbyPresenceStatusPriority(existingUser.status)
+                ? user.status
+                : existingUser.status;
+
+        usersById.set(user.playerId, {
+            playerId: user.playerId,
+            name: nextName,
+            status: nextStatus,
+        });
+    }
+
+    return orderedPlayerIds.flatMap((playerId) => {
+        const user = usersById.get(playerId);
+
+        return user ? [user] : [];
     });
 }
 
@@ -1229,7 +1287,7 @@ export function useMultiplayerGame({
             }
         }
 
-        return resolveGuestLobbyNames(users);
+        return resolveGuestLobbyNames(dedupeLobbyPresenceUsers(users));
     }
 
     function getCurrentLobbyDisplayName(): string {
