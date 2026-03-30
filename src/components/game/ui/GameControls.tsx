@@ -3,6 +3,10 @@ import { CircleArrowUp, Delete } from 'lucide-react';
 
 import { uiText } from '../../../app-state';
 import type { Prime } from '../../../core';
+import {
+    desktopActionKeybinds,
+    getDesktopPrimeKeybind,
+} from '../../../lib/game-keybinds';
 import { ActionButton } from './ActionButton';
 import { PrimeKeyButton } from './PrimeKeyButton';
 
@@ -41,6 +45,7 @@ export function GameControls({
                         disabled={getPrimeDisabledState?.(prime) === true}
                         isHighlighted={highlightedPrime === prime}
                         key={prime}
+                        keybindHint={getDesktopPrimeKeybind(primes, prime)}
                         onPress={onPrimeTap}
                         prime={prime}
                     >
@@ -60,7 +65,18 @@ export function GameControls({
                     variant='secondary'
                 >
                     <span className='control-button-content'>
-                        <Delete aria-hidden='true' className='control-icon' />
+                        <span className='control-button-main'>
+                            <Delete
+                                aria-hidden='true'
+                                className='control-icon'
+                            />
+                        </span>
+                        <span
+                            aria-hidden='true'
+                            className='control-button-keybind'
+                        >
+                            {desktopActionKeybinds.backspace.toUpperCase()}
+                        </span>
                     </span>
                 </ActionButton>
 
@@ -75,10 +91,18 @@ export function GameControls({
                     variant='secondary'
                 >
                     <span className='control-button-content'>
-                        <CircleArrowUp
+                        <span className='control-button-main'>
+                            <CircleArrowUp
+                                aria-hidden='true'
+                                className='control-icon'
+                            />
+                        </span>
+                        <span
                             aria-hidden='true'
-                            className='control-icon'
-                        />
+                            className='control-button-keybind'
+                        >
+                            {desktopActionKeybinds.submit.toUpperCase()}
+                        </span>
                     </span>
                 </ActionButton>
             </div>

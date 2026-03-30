@@ -170,7 +170,7 @@ export const seoText = {
 } as const;
 
 export const keyboardHintText = {
-    body: 'Press digit 4 to input 23',
+    body: 'Desktop keys mirror the keypad: R/F/V, T/G/B, Y/H/N. U deletes and J sends.',
     dismissAction: 'Hide hint',
     title: 'Hint',
 } as const;

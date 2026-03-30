@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 
 import type { Prime } from '../core';
+import {
+    desktopActionKeybinds,
+    getDesktopPrimeFromKey,
+} from '../lib/game-keybinds';
 
 type UsePrimeKeyboardControlsOptions = {
     canQueuePrime: boolean;
@@ -177,6 +181,7 @@ export function usePrimeKeyboardControls({
     useEffect(() => {
         function handleWindowKeyDown(event: KeyboardEvent) {
             const { target } = event;
+            const normalizedKey = event.key.toLowerCase();
 
             if (
                 target instanceof HTMLElement &&
@@ -217,7 +222,41 @@ export function usePrimeKeyboardControls({
                 return;
             }
 
-            if (!/^[1-9]$/.test(event.key) || event.repeat) {
+            if (event.repeat) {
+                return;
+            }
+
+            const directPrime = getDesktopPrimeFromKey(
+                playablePrimes,
+                normalizedKey
+            );
+
+            if (directPrime !== undefined) {
+                event.preventDefault();
+                handlePrimeTap(directPrime);
+                return;
+            }
+
+            if (normalizedKey === desktopActionKeybinds.backspace) {
+                if (
+                    isComboRunning ||
+                    (bufferedPrimeInputRef.current === '' && queueLength === 0)
+                ) {
+                    return;
+                }
+
+                event.preventDefault();
+                handleBackspace();
+                return;
+            }
+
+            if (normalizedKey === desktopActionKeybinds.submit) {
+                event.preventDefault();
+                handleSubmit();
+                return;
+            }
+
+            if (!/^[1-9]$/.test(event.key)) {
                 return;
             }
 

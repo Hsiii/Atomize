@@ -10,6 +10,7 @@ type PrimeKeyButtonProps = {
     children: ReactNode;
     disabled?: boolean;
     isHighlighted?: boolean;
+    keybindHint?: string;
 };
 
 export function PrimeKeyButton({
@@ -18,6 +19,7 @@ export function PrimeKeyButton({
     children,
     disabled = false,
     isHighlighted = false,
+    keybindHint,
 }: PrimeKeyButtonProps): JSX.Element {
     function handlePointerDown(event: PointerEvent<HTMLButtonElement>) {
         if (disabled) {
@@ -52,7 +54,14 @@ export function PrimeKeyButton({
             onPointerDown={handlePointerDown}
             type='button'
         >
-            <span className='prime-key-button-label'>{children}</span>
+            <span className='prime-key-button-label'>
+                <span className='prime-key-button-main'>{children}</span>
+                {keybindHint ? (
+                    <span aria-hidden='true' className='prime-key-button-hint'>
+                        {keybindHint.toUpperCase()}
+                    </span>
+                ) : undefined}
+            </span>
         </button>
     );
 }

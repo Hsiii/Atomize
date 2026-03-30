@@ -260,9 +260,28 @@
 
 .control-button-content {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 0.18rem;
     min-width: 0;
+}
+
+.control-button-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.control-button-keybind {
+    display: none;
+    font-family: var(--type-action-label-family);
+    font-size: 0.62rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.72;
 }
 
 .combo-enter-button .control-icon {
@@ -274,6 +293,10 @@
     .game-screen {
         --combo-backspace-icon-size: 2rem;
         --combo-enter-icon-size: 2.35rem;
+    }
+
+    .control-button-keybind {
+        display: block;
     }
 }
 
