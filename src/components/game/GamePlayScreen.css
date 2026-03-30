@@ -118,12 +118,6 @@
     }
 }
 
-/* ── Desktop keyboard hint (tutorial-hint variant) ── */
-
-.desktop-keyboard-hint {
-    display: none;
-}
-
 .single-value-display {
     position: relative;
     flex: 1;
@@ -334,17 +328,6 @@
     color: var(--color-gold);
     white-space: nowrap;
     animation: solo-score-pop 0.9s ease-out forwards;
-}
-
-@media (min-width: 900px) {
-    .desktop-keyboard-hint {
-        display: grid;
-        top: 0;
-        right: max(var(--space-2), env(safe-area-inset-right));
-        left: auto;
-        width: min(15rem, calc(100vw - 3rem));
-        margin-inline: 0;
-    }
 }
 
 @keyframes solo-score-pop {

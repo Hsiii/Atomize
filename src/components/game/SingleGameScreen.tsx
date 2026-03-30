@@ -10,7 +10,6 @@ import './GamePlayScreen.css';
 
 import { GameStatusHeader } from './GameStatusHeader';
 import { COMBO_QUEUE_MAX_ITEMS, ComboQueuePanel } from './ui/ComboQueuePanel';
-import { DesktopKeyboardHint } from './ui/DesktopKeyboardHint';
 import { GameControls } from './ui/GameControls';
 import { NumberBlobDisplay } from './ui/NumberBlobDisplay';
 import { PauseOverlay } from './ui/PauseOverlay';
@@ -144,8 +143,6 @@ export function SingleGameScreen({
     return (
         <main className='app-shell fullscreen-shell'>
             <section className='screen game-screen single-game-screen'>
-                <DesktopKeyboardHint />
-
                 <GameStatusHeader
                     countdownProgress={soloCountdownProgress}
                     formatCountdown={formatCountdown}

@@ -24,7 +24,6 @@ import './MultiplayerGameScreen.css';
 
 import { ActionButton } from './ui/ActionButton';
 import { COMBO_QUEUE_MAX_ITEMS, ComboQueuePanel } from './ui/ComboQueuePanel';
-import { DesktopKeyboardHint } from './ui/DesktopKeyboardHint';
 import { GameControls } from './ui/GameControls';
 import { NumberBlobDisplay } from './ui/NumberBlobDisplay';
 import { ScoreDialog } from './ui/ScoreDialog';
@@ -173,8 +172,6 @@ export function MultiplayerGameScreen({
     return (
         <main className='app-shell fullscreen-shell'>
             <section className='screen game-screen multiplayer-game-screen'>
-                {tutorialMode ? undefined : <DesktopKeyboardHint />}
-
                 <section className='multiplayer-board' ref={battle.overlayRef}>
                     <BattleHpBar
                         damagePops={battle.damagePops.filter(

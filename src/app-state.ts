@@ -169,12 +169,6 @@ export const seoText = {
     tutorialTitle: 'Tutorial | Atomize',
 } as const;
 
-export const keyboardHintText = {
-    body: 'Desktop keys mirror the keypad: R/F/V, T/G/B, Y/H/N. U deletes and J sends.',
-    dismissAction: 'Hide hint',
-    title: 'Hint',
-} as const;
-
 type TutorialLessonTextEntry = {
     actionLabel?: string;
     body: string;
