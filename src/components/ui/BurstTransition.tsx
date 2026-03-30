@@ -9,7 +9,7 @@ type BurstTransitionProps = {
 };
 
 export function BurstTransition({ onNavigate, onComplete }: BurstTransitionProps): JSX.Element {
-    const [containerOpacity, setContainerOpacity] = useState(1);
+    const [isExiting, setIsExiting] = useState(false);
     
     // Store latest callbacks safely
     const onNavigateRef = useRef(onNavigate);
@@ -21,13 +21,13 @@ export function BurstTransition({ onNavigate, onComplete }: BurstTransitionProps
     }, [onNavigate, onComplete]);
     
     useEffect(() => {
-        // Navigation buffer (after secondary wipe covers the screen entirely)
+        // Navigation buffer (after primary wipe covers the screen entirely)
         const timeoutNav = setTimeout(() => {
             onNavigateRef.current();
             
-            // Allow router DOM mounting gap, then execute the symmetrical Fade Out
+            // Allow router DOM mounting gap, then execute the Exit Sweep
             setTimeout(() => {
-                setContainerOpacity(0);
+                setIsExiting(true);
             }, 100);
         }, 1250); 
         
@@ -43,19 +43,12 @@ export function BurstTransition({ onNavigate, onComplete }: BurstTransitionProps
     }, []);
 
     return (
-        <div 
-            className='burst-transition-screen'
-            style={{ 
-                opacity: containerOpacity, 
-                transition: 'opacity 0.4s ease-out' 
-            }}
-        >
+        <div className={`burst-transition-screen ${isExiting ? 'is-exiting' : ''}`}>
             {/* Primary Wipe (Color Primary) extending downwards with exact page header curve */}
             <div className='wipe-group wipe-primary'>
                 <div className='wipe-rect' />
                 <div className='wipe-circle' />
             </div>
-
             
             {/* Hardware Accelerated Final ATOMIZE Reveal Overlay */}
             <div className='wipe-text-overlay'>

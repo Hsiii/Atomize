@@ -2,18 +2,20 @@
     position: fixed;
     inset: 0;
     z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
+    display: block;
     pointer-events: all;
     cursor: default;
     background-color: transparent;
 }
 
 @keyframes sweep-down {
-    0% { transform: translateY(calc(-100vh - max(80vw, 50vh))); }
+    0% { transform: translateY(calc(-100dvh - max(80vw, 50dvh))); }
     100% { transform: translateY(0); }
+}
+
+@keyframes sweep-up {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(calc(-100dvh - max(80vw, 50dvh))); }
 }
 
 @keyframes text-fade-in {
@@ -21,12 +23,16 @@
     100% { opacity: 1; transform: translateY(0); }
 }
 
+.burst-transition-screen.is-exiting {
+    animation: sweep-up 0.5s cubic-bezier(0.85, 0, 0.15, 1) forwards;
+}
+
 .wipe-group {
     position: absolute;
     left: 0;
     bottom: 0;
     width: 100%;
-    height: 100vh;
+    height: 100dvh;
     animation: sweep-down 0.6s cubic-bezier(0.85, 0, 0.15, 1) both;
 }
 
@@ -40,7 +46,7 @@
     left: 0;
     bottom: 0;
     width: 100%;
-    height: 200vh;
+    height: 200dvh;
     background-color: currentColor;
 }
 
@@ -48,8 +54,8 @@
     position: absolute;
     left: 50%;
     top: 100%;
-    width: max(160vw, 100vh);
-    height: max(160vw, 100vh);
+    width: max(160vw, 100dvh);
+    height: max(160vw, 100dvh);
     transform: translate(-50%, -50%);
     border-radius: 50%;
     background-color: currentColor;
