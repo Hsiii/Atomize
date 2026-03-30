@@ -54,7 +54,7 @@ export function BurstTransition({ onNavigate, onComplete }: BurstTransitionProps
             <div className='wipe-text-overlay'>
                 <div className='wipe-text-content'>
                     <span>{uiText.titleLead}</span>
-                    <span aria-hidden='true' className='wipe-text-orb' />
+                    <span aria-hidden='true' className='hero-title-filled-o' />
                     <span>{uiText.titleTail}</span>
                 </div>
             </div>

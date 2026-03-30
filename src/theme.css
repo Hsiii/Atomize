@@ -11,6 +11,7 @@
     --type-display-hero-weight: 900;
     --type-display-hero-line-height: 0.82;
     --type-display-hero-letter-spacing: 0.015em;
+    --type-display-hero-gap: 0.035em;
     --type-display-hero-text-transform: uppercase;
     --type-display-hero-color: var(--color-text-inverse);
 
