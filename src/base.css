@@ -168,3 +168,13 @@ input::placeholder {
     height: var(--size-icon);
     stroke-width: 2.1;
 }
+
+/* === Global Typography Utilities === */
+.hero-title-filled-o {
+    width: 0.66em;
+    height: 0.66em;
+    flex: 0 0 0.66em;
+    border-radius: 50%;
+    background: currentColor;
+    transform: translateY(-0.015em);
+}

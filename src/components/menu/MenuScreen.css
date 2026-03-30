@@ -66,18 +66,9 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.035em;
+    gap: var(--type-display-hero-gap);
     transform: translate(-50%, -50%);
     z-index: 3;
-}
-
-.hero-title-filled-o {
-    width: 0.66em;
-    height: 0.66em;
-    flex: 0 0 0.66em;
-    border-radius: 50%;
-    background: currentColor;
-    transform: translateY(-0.015em);
 }
 
 /* === Content below orb === */
