@@ -20,7 +20,7 @@ type MenuScreenProps = {
     onOpenAuth: () => void;
     onOpenAccount: () => void;
     onOpenLeaderboard: () => void;
-    onOpenSolo: () => void;
+    onOpenSolo: (e: React.MouseEvent<HTMLButtonElement>) => void;
     onOpenBattle: () => void;
     onOpenTutorial?: () => void;
     isGuest: boolean;
@@ -40,6 +40,7 @@ export function MenuScreen({
     needsTutorial,
 }: MenuScreenProps): JSX.Element {
     const [menuOpen, setMenuOpen] = useState(false);
+    const [clickedMode, setClickedMode] = useState<string | null>(null);
     const menuRef = useRef<HTMLDivElement>(null);
     const [visibleToast, setVisibleToast] = useState<string | undefined>(
         undefined
@@ -187,8 +188,15 @@ export function MenuScreen({
                         {needsTutorial ? (
                             <div className='menu-mode-cards'>
                                 <button
-                                    className='mode-card mode-card-tutorial'
-                                    onClick={onOpenTutorial}
+                                    className={`mode-card mode-card-tutorial${
+                                        clickedMode === 'tutorial'
+                                            ? ' mode-card-clicked'
+                                            : ''
+                                    }`}
+                                    onClick={(e) => {
+                                        setClickedMode('tutorial');
+                                        if (onOpenTutorial) onOpenTutorial();
+                                    }}
                                     type='button'
                                 >
                                     <div className='mode-card-blob'>
@@ -205,8 +213,15 @@ export function MenuScreen({
                         ) : (
                             <div className='menu-mode-cards'>
                                 <button
-                                    className='mode-card mode-card-solo'
-                                    onClick={onOpenSolo}
+                                    className={`mode-card mode-card-solo${
+                                        clickedMode === 'solo'
+                                            ? ' mode-card-clicked'
+                                            : ''
+                                    }`}
+                                    onClick={(e) => {
+                                        setClickedMode('solo');
+                                        onOpenSolo(e);
+                                    }}
                                     type='button'
                                 >
                                     <div className='mode-card-blob'>
@@ -220,8 +235,15 @@ export function MenuScreen({
                                     </div>
                                 </button>
                                 <button
-                                    className='mode-card mode-card-battle'
-                                    onClick={onOpenBattle}
+                                    className={`mode-card mode-card-battle${
+                                        clickedMode === 'battle'
+                                            ? ' mode-card-clicked'
+                                            : ''
+                                    }`}
+                                    onClick={() => {
+                                        setClickedMode('battle');
+                                        onOpenBattle();
+                                    }}
                                     type='button'
                                 >
                                     <div className='mode-card-blob'>

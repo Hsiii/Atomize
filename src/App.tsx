@@ -14,6 +14,7 @@ import { useLocalCpuGame } from './hooks/useLocalCpuGame';
 import { useMultiplayerGame } from './hooks/useMultiplayerGame';
 import { useSoloGame } from './hooks/useSoloGame';
 import { useTutorialGame } from './hooks/useTutorialGame';
+import { BlobTransition } from './components/ui/BlobTransition';
 import { BurstTransition } from './components/ui/BurstTransition';
 import {
     detachPromise,
@@ -291,6 +292,20 @@ export default function App(): JSX.Element {
     navigateRef.current = navigate;
 
     const [pendingTransitionScreen, setPendingTransitionScreen] = useState<Screen | undefined>(undefined);
+
+    const [pendingBlobTransition, setPendingBlobTransition] = useState<{
+        clientX: number;
+        clientY: number;
+        colorKey: string;
+        targetPath: string;
+    } | null>(null);
+
+    const startBlobTransition = useCallback(
+        (targetPath: string, clientX: number, clientY: number, colorKey: string) => {
+            setPendingBlobTransition({ clientX, clientY, colorKey, targetPath });
+        },
+        []
+    );
 
     const onScreenChange = useCallback((nextScreen: Screen) => {
         // Intercept transitions strictly requiring the burst effect
@@ -674,6 +689,7 @@ export default function App(): JSX.Element {
         handleLogout,
         handleTutorialReturn,
         returnToMenu,
+        startBlobTransition,
     };
 
     const pendingInvitation =
@@ -693,6 +709,19 @@ export default function App(): JSX.Element {
     return (
         <AppProvider value={contextValue}>
             <Outlet />
+            {pendingBlobTransition ? (
+                <BlobTransition
+                    clientX={pendingBlobTransition.clientX}
+                    clientY={pendingBlobTransition.clientY}
+                    colorKey={pendingBlobTransition.colorKey}
+                    onComplete={() => {
+                        setPendingBlobTransition(null);
+                    }}
+                    onMiddle={() => {
+                        detachPromise(navigateRef.current({ to: pendingBlobTransition.targetPath }));
+                    }}
+                />
+            ) : undefined}
             {pendingTransitionScreen ? (
                 <BurstTransition 
                     onNavigate={() => {

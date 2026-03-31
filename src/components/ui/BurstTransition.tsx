@@ -21,20 +21,20 @@ export function BurstTransition({ onNavigate, onComplete }: BurstTransitionProps
     }, [onNavigate, onComplete]);
     
     useEffect(() => {
-        // Navigation buffer (after primary wipe covers the screen entirely)
+        // Navigation buffer: trigger immediately after text finishes fading in
         const timeoutNav = setTimeout(() => {
             onNavigateRef.current();
             
-            // Allow router DOM mounting gap, then execute the Exit Sweep
+            // Allow shorter router DOM mounting gap, then execute the Exit Sweep
             setTimeout(() => {
                 setIsExiting(true);
-            }, 100);
-        }, 1250); 
+            }, 50);
+        }, 800); 
         
-        // Complete the transition
+        // Complete the transition (800ms + 50ms + 500ms sweep-up animation)
         const timeoutEnd = setTimeout(() => {
             onCompleteRef.current();
-        }, 1850); 
+        }, 1400); 
         
         return () => {
             clearTimeout(timeoutNav);

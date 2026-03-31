@@ -165,6 +165,26 @@
     transition-duration: 0.08s;
 }
 
+.mode-card.mode-card-clicked .mode-card-blob {
+    /* Explode out like a water balloon right before the foam avalanche hits */
+    animation: jelly-water-burst 0.7s cubic-bezier(0.1, 0.9, 0.2, 1) forwards !important;
+}
+
+@keyframes jelly-water-burst {
+    0% { 
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 var(--color-primary-strong); 
+    }
+    30% { 
+        transform: scale(1.15);
+        box-shadow: 0 0 0 15px transparent; 
+    }
+    100% { 
+        transform: scale(0.85);
+        box-shadow: 0 0 0 35px transparent; 
+    }
+}
+
 @keyframes mode-blob-idle {
     0%,
     100% {
