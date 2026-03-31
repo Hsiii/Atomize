@@ -1,0 +1,73 @@
+.blob-transition-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: auto; /* Prevent clicks during transition */
+    overflow: hidden;
+    /* Overlay stays 100% visible so individual bubbles can shrink away natively */
+    opacity: 1;
+}
+
+.blob-phase-fading {
+    /* No global screen fade out anymore */
+    opacity: 1;
+}
+
+.foam-bubble {
+    position: absolute;
+    left: var(--sx);
+    bottom: var(--sy);
+    /* Small 2rem base so the circles look like delicate water droplets when spawned */
+    width: 2rem;
+    height: 2rem;
+    margin-left: -1rem;
+    margin-bottom: -1rem;
+    border-radius: 50%;
+    will-change: transform, opacity;
+    transform: translate(0, 0) scale(0);
+    opacity: 0;
+}
+
+/* Bind animation to both expanding and expanded so it safely holds its 100% position */
+.blob-phase-expanding .foam-bubble,
+.blob-phase-expanded .foam-bubble {
+    /* Using linear ensures that the speed is perfectly even from the bottom floor all the way to the top */
+    animation: foam-wall-anim 0.8s linear forwards;
+    animation-delay: var(--delay);
+}
+
+@keyframes foam-wall-anim {
+    0% {
+        transform: translate(0, 0) scale(0);
+        opacity: 0;
+    }
+    30% {
+        /* Only handle the opacity journey here. Removing transform forces CSS to interpolate the rising speed completely evenly! */
+        opacity: var(--op);
+    }
+    100% {
+        /* Reach final destination high up, evenly scaling and rising */
+        transform: translate(var(--tx), var(--ty)) scale(calc(10 * var(--scale)));
+        opacity: 1;
+    }
+}
+
+/* Individual foam bubbles shrink and pop out in reverse when fading */
+.blob-phase-fading .foam-bubble {
+    /* Use 'both' to guarantee it perfectly maintains its massive 100% state during the stagger delay */
+    animation: foam-wall-out 0.6s cubic-bezier(0.3, 0, 0, 1) both;
+    animation-delay: calc(var(--delay) * 0.75); /* Stagger the pops smoothly so they don't break at once */
+}
+
+@keyframes foam-wall-out {
+    0% {
+        /* Hold absolute position matching the precise end of foam-wall-anim */
+        transform: translate(var(--tx), var(--ty)) scale(calc(10 * var(--scale)));
+        opacity: 1;
+    }
+    100% {
+        /* Continue upward drift slightly while shrinking out of existence back into 0 */
+        transform: translate(calc(var(--tx) * 1.05), calc(var(--ty) * 1.15)) scale(0);
+        opacity: 0;
+    }
+}

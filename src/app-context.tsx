@@ -21,6 +21,7 @@ export type AppContextValue = {
     handleLogout: () => void;
     handleTutorialReturn: () => void;
     returnToMenu: () => Promise<void>;
+    startBlobTransition: (targetPath: string, clientX: number, clientY: number, colorKey: string) => void;
 };
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
