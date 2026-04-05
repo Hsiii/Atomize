@@ -30,8 +30,7 @@ import {
 // ---------------------------------------------------------------------------
 
 function MenuPage(): JSX.Element {
-    const { session, isGuest, playerLevel, localCpuGame, multiplayerGame } =
-        useAppContext();
+    const { session, isGuest, localCpuGame, multiplayerGame } = useAppContext();
     const navigate = useNavigate();
     const needsTutorial = !isTutorialComplete();
 
@@ -62,7 +61,6 @@ function MenuPage(): JSX.Element {
             onOpenTutorial={() => {
                 detachPromise(navigate({ to: '/tutorial' }));
             }}
-            playerLevel={playerLevel}
             toastId={toastId}
             toastMessage={toastMessage}
         />

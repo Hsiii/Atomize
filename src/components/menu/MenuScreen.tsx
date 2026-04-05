@@ -25,7 +25,6 @@ type MenuScreenProps = {
     onOpenTutorial?: () => void;
     isGuest: boolean;
     needsTutorial?: boolean;
-    playerLevel?: number;
 };
 
 export function MenuScreen({
@@ -39,7 +38,6 @@ export function MenuScreen({
     onOpenTutorial,
     isGuest,
     needsTutorial,
-    playerLevel,
 }: MenuScreenProps): JSX.Element {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
@@ -159,12 +157,7 @@ export function MenuScreen({
                                     }
                                     type='button'
                                 >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        <CircleUserRound size={22} />
-                                        {playerLevel !== undefined && (
-                                            <span className='menu-level-badge'>Lv. {playerLevel}</span>
-                                        )}
-                                    </div>
+                                    <CircleUserRound size={22} />
                                 </button>
                                 <button
                                     className='hamburger-toggle'
