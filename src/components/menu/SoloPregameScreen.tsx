@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import type { JSX } from 'react';
 import { Timer } from 'lucide-react';
 
@@ -20,7 +19,6 @@ export function SoloPregameScreen({
     onBack,
     onStart,
 }: SoloPregameScreenProps): JSX.Element {
-    
     const handleStart = () => {
         onStart();
     };
