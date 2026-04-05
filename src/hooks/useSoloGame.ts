@@ -22,6 +22,7 @@ type UseSoloGameOptions = {
     screen: Screen;
     onScreenChange: (screen: Screen) => void;
     onNewBest?: (score: number, maxCombo: number) => void;
+    onGameFinish?: (score: number) => void;
 };
 
 type UseSoloGameResult = {
@@ -47,6 +48,7 @@ export function useSoloGame({
     screen,
     onScreenChange,
     onNewBest,
+    onGameFinish,
 }: UseSoloGameOptions): UseSoloGameResult {
     const initialSoloSeedRef = useRef(createSoloRunSeed());
     const [soloSeed, setSoloSeed] = useState(initialSoloSeedRef.current);
@@ -100,6 +102,8 @@ export function useSoloGame({
                         if (didBeat) {
                             onNewBest?.(finalState.score, finalState.maxCombo);
                         }
+
+                        onGameFinish?.(finalState.score);
 
                         setBestScore(loadBestScore());
                         setIsNewBest(didBeat);

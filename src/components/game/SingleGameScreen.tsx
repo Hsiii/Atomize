@@ -199,6 +199,7 @@ export function SingleGameScreen({
                         atomized={soloState.clearedStages}
                         bestScore={bestScore.score}
                         comboCount={soloState.maxCombo}
+                        expGained={Math.floor(soloState.score / 10)}
                         isNewBest={isNewBest}
                         mode='solo'
                         onRetry={onRetry}

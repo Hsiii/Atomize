@@ -23,6 +23,7 @@ import {
     persistPlayerName,
     saveBestScore,
     setGuestModeEnabled,
+    calculateLevel,
 } from './lib/app-helpers';
 import type { Database } from './lib/database.types';
 import { GOOGLE_AUTH_POPUP_NAME, supabaseAuthClient } from './lib/supabase';
@@ -184,7 +185,7 @@ async function syncAuthenticatedLeaderboardProfile({
     const fallbackHighScore = loadBestScore().score;
     const existingRecordResponse = await authClient
         .from('combo_leaderboard')
-        .select('player_name, high_score')
+        .select('player_name, high_score, experience')
         .eq('user_id', userId)
         .maybeSingle();
 
@@ -195,6 +196,7 @@ async function syncAuthenticatedLeaderboardProfile({
     const existingRecord = existingRecordResponse.data as {
         player_name: string;
         high_score: number;
+        experience: number;
     } | null;
     const nextHighScore = Math.max(
         existingRecord?.high_score ?? 0,
@@ -252,6 +254,8 @@ async function syncAuthenticatedLeaderboardProfile({
                 .then(() => undefined)
         );
     }
+
+    return calculateLevel(existingRecord?.experience ?? 0);
 }
 
 const SCREEN_TO_PATH = {
@@ -310,7 +314,7 @@ export default function App(): JSX.Element {
                     setIsGuest(false);
                     setGuestModeEnabled(false);
                     finishGoogleAuthPopup();
-                    await syncAuthenticatedLeaderboardProfile({
+                    const level = await syncAuthenticatedLeaderboardProfile({
                         authClient,
                         currentSession: data.session,
                         fallbackName: getAuthDisplayName(
@@ -321,6 +325,9 @@ export default function App(): JSX.Element {
                         ),
                         onPlayerName: setPlayerName,
                     });
+                    if (level !== undefined) {
+                        setPlayerLevel(level);
+                    }
                 }
                 setSessionLoading(false);
             })
@@ -346,6 +353,10 @@ export default function App(): JSX.Element {
                                 currentSession.user.email
                             ),
                             onPlayerName: setPlayerName,
+                        }).then((level) => {
+                            if (level !== undefined) {
+                                setPlayerLevel(level);
+                            }
                         })
                     );
                 }
@@ -358,6 +369,7 @@ export default function App(): JSX.Element {
     }, []);
 
     const [playerName, setPlayerName] = useState(() => getInitialPlayerName());
+    const [playerLevel, setPlayerLevel] = useState<number | undefined>(undefined);
     const soloGame = useSoloGame({
         screen,
         onScreenChange,
@@ -378,6 +390,33 @@ export default function App(): JSX.Element {
                     )
                 )
             );
+        },
+        onGameFinish: (score) => {
+            const userId = session?.user.id;
+            const authClient = supabaseAuthClient;
+            if (!authClient || !userId) {
+                return;
+            }
+            const expGain = Math.floor(score / 10);
+            if (expGain > 0) {
+                detachPromise(
+                    Promise.resolve(
+                        authClient.rpc('add_solo_exp', {
+                            p_user_id: userId,
+                            p_exp_gain: expGain,
+                        }).then(() => authClient
+                                .from('combo_leaderboard')
+                                .select('experience')
+                                .eq('user_id', userId)
+                                .single()
+                        ).then((res) => {
+                            if (res.data) {
+                                setPlayerLevel(calculateLevel(res.data.experience));
+                            }
+                        })
+                    )
+                );
+            }
         },
     });
     const multiplayerGame = useMultiplayerGame({
@@ -605,6 +644,7 @@ export default function App(): JSX.Element {
         setIsGuest(true);
         setGuestModeEnabled(true);
         setPlayerName('');
+        setPlayerLevel(undefined);
         persistPlayerName('');
     }
 
@@ -616,6 +656,7 @@ export default function App(): JSX.Element {
         session,
         isGuest,
         playerName,
+        playerLevel,
         soloGame,
         multiplayerGame,
         localCpuGame,

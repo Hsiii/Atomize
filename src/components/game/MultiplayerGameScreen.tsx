@@ -342,6 +342,18 @@ export function MultiplayerGameScreen({
                             atomized: currentMultiplayerPlayer?.stageIndex ?? 0,
                             isWinner: currentPlayerWon,
                         }}
+                        expGained={(() => {
+                            if (currentPlayerWon) {
+                                return 150;
+                            }
+                            if (
+                                currentMultiplayerPlayer?.hp === 0 &&
+                                opponentPlayer?.hp === 0
+                            ) {
+                                return 50;
+                            }
+                            return 30;
+                        })()}
                         mode='battle'
                         onRematch={onRematch}
                         onReturnHome={onBack}

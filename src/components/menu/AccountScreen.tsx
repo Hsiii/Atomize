@@ -6,7 +6,7 @@ import { uiText } from '../../app-state';
 import { ActionButton } from '../game/ui/ActionButton';
 import { BackButton } from '../ui/BackButton';
 import { supabaseAuthClient } from '../../lib/supabase';
-import { loadBestScore } from '../../lib/app-helpers';
+import { getExpProgress, loadBestScore } from '../../lib/app-helpers';
 
 import './AccountScreen.css';
 import './SoloPregameScreen.css';
@@ -31,6 +31,7 @@ type ProfileStats = {
     losses: number;
     max_combo: number;
     high_score: number;
+    experience: number;
 };
 
 export function AccountScreen({
@@ -62,7 +63,7 @@ export function AccountScreen({
             try {
                 const { data, error } = await supabaseAuthClient
                     .from('combo_leaderboard')
-                    .select('games_played, wins, losses, max_combo, high_score')
+                    .select('games_played, wins, losses, max_combo, high_score, experience')
                     .eq('user_id', userId)
                     .single();
 
@@ -76,6 +77,7 @@ export function AccountScreen({
                         losses: 0,
                         max_combo: localBest.maxCombo || 0,
                         high_score: localBest.score || 0,
+                        experience: 0,
                     });
                 }
             } catch {
@@ -150,37 +152,51 @@ export function AccountScreen({
             </div>
         );
     } else if (stats) {
+        const expData = getExpProgress(stats.experience);
         statsContent = (
-            <div className='solo-pregame-pb account-stats-centered'>
-                <div className='solo-pregame-pb-stat'>
-                    <span className='solo-pregame-pb-label'>
-                        {uiText.winRate}
-                    </span>
-                    <span className='solo-pregame-pb-value'>{winRate}%</span>
-                </div>
-                <div className='solo-pregame-pb-stat'>
-                    <span className='solo-pregame-pb-label'>
-                        {uiText.gamesPlayed}
-                    </span>
-                    <span className='solo-pregame-pb-value'>
-                        {stats.games_played}
-                    </span>
-                </div>
-                <div className='solo-pregame-pb-stat'>
-                    <span className='solo-pregame-pb-label'>
-                        {uiText.highScore}
-                    </span>
-                    <span className='solo-pregame-pb-value'>
-                        {stats.high_score}
-                    </span>
-                </div>
-                <div className='solo-pregame-pb-stat'>
-                    <span className='solo-pregame-pb-label'>
-                        {uiText.maxCombo}
-                    </span>
-                    <span className='solo-pregame-pb-value'>
-                        {stats.max_combo}
-                    </span>
+            <div className='account-stats-container-inner'>
+                <div className='solo-pregame-pb account-stats-centered'>
+                    <div className='solo-pregame-pb-stat' style={{ flexDirection: 'column', alignItems: 'stretch', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                            <span className='solo-pregame-pb-label'>Lv. {expData.level}</span>
+                            <span className='solo-pregame-pb-label' style={{ fontSize: '0.8em', color: 'var(--color-ink-soft)' }}>
+                                {Math.floor(expData.progressInLevel)} / {expData.totalRequiredForNext} EXP
+                            </span>
+                        </div>
+                        <div style={{ height: '6px', background: 'var(--color-border-soft)', borderRadius: '3px', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', background: 'var(--color-primary)', width: `${expData.progressPercent}%`, borderRadius: '3px', transition: 'width 0.8s ease-out' }} />
+                        </div>
+                    </div>
+                    <div className='solo-pregame-pb-stat'>
+                        <span className='solo-pregame-pb-label'>
+                            {uiText.winRate}
+                        </span>
+                        <span className='solo-pregame-pb-value'>{winRate}%</span>
+                    </div>
+                    <div className='solo-pregame-pb-stat'>
+                        <span className='solo-pregame-pb-label'>
+                            {uiText.gamesPlayed}
+                        </span>
+                        <span className='solo-pregame-pb-value'>
+                            {stats.games_played}
+                        </span>
+                    </div>
+                    <div className='solo-pregame-pb-stat'>
+                        <span className='solo-pregame-pb-label'>
+                            {uiText.highScore}
+                        </span>
+                        <span className='solo-pregame-pb-value'>
+                            {stats.high_score}
+                        </span>
+                    </div>
+                    <div className='solo-pregame-pb-stat'>
+                        <span className='solo-pregame-pb-label'>
+                            {uiText.maxCombo}
+                        </span>
+                        <span className='solo-pregame-pb-value'>
+                            {stats.max_combo}
+                        </span>
+                    </div>
                 </div>
             </div>
         );
