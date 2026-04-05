@@ -10,13 +10,14 @@ import type { PendingInvitation, Screen } from './app-state';
 import { ActionButton } from './components/game/ui/ActionButton';
 import { fetchLeaderboardData } from './components/menu/LeaderboardScreen';
 import type { LeaderboardEntry } from './components/menu/LeaderboardScreen';
+import { BlobTransition } from './components/ui/BlobTransition';
+import { BurstTransition } from './components/ui/BurstTransition';
 import { useLocalCpuGame } from './hooks/useLocalCpuGame';
 import { useMultiplayerGame } from './hooks/useMultiplayerGame';
 import { useSoloGame } from './hooks/useSoloGame';
 import { useTutorialGame } from './hooks/useTutorialGame';
-import { BlobTransition } from './components/ui/BlobTransition';
-import { BurstTransition } from './components/ui/BurstTransition';
 import {
+    calculateLevel,
     detachPromise,
     getInitialPlayerName,
     isGuestModeEnabled,
@@ -25,7 +26,6 @@ import {
     persistPlayerName,
     saveBestScore,
     setGuestModeEnabled,
-    calculateLevel,
 } from './lib/app-helpers';
 import type { Database } from './lib/database.types';
 import { GOOGLE_AUTH_POPUP_NAME, supabaseAuthClient } from './lib/supabase';
@@ -291,28 +291,45 @@ export default function App(): JSX.Element {
     const navigateRef = useRef<ReturnType<typeof useNavigate>>(navigate);
     navigateRef.current = navigate;
 
-    const [pendingTransitionScreen, setPendingTransitionScreen] = useState<Screen | undefined>(undefined);
+    const [pendingTransitionScreen, setPendingTransitionScreen] = useState<
+        Screen | undefined
+    >(undefined);
 
-    const [pendingBlobTransition, setPendingBlobTransition] = useState<{
-        clientX: number;
-        clientY: number;
-        colorKey: string;
-        targetPath: string;
-    } | null>(null);
+    const [pendingBlobTransition, setPendingBlobTransition] = useState<
+        | {
+              clientX: number;
+              clientY: number;
+              colorKey: string;
+              targetPath: string;
+          }
+        | undefined
+    >(undefined);
 
     const startBlobTransition = useCallback(
-        (targetPath: string, clientX: number, clientY: number, colorKey: string) => {
-            setPendingBlobTransition({ clientX, clientY, colorKey, targetPath });
+        (
+            targetPath: string,
+            clientX: number,
+            clientY: number,
+            colorKey: string
+        ) => {
+            setPendingBlobTransition({
+                clientX,
+                clientY,
+                colorKey,
+                targetPath,
+            });
         },
         []
     );
 
     const onScreenChange = useCallback((nextScreen: Screen) => {
-        // Intercept transitions strictly requiring the burst effect
+        // Intercept transitions strictly requiring the burst effect.
         if (nextScreen === 'multi-game' || nextScreen === 'single') {
             setPendingTransitionScreen(nextScreen);
         } else {
-            detachPromise(navigateRef.current({ to: SCREEN_TO_PATH[nextScreen] }));
+            detachPromise(
+                navigateRef.current({ to: SCREEN_TO_PATH[nextScreen] })
+            );
         }
     }, []);
 
@@ -392,7 +409,9 @@ export default function App(): JSX.Element {
     }, []);
 
     const [playerName, setPlayerName] = useState(() => getInitialPlayerName());
-    const [playerLevel, setPlayerLevel] = useState<number | undefined>(undefined);
+    const [playerLevel, setPlayerLevel] = useState<number | undefined>(
+        undefined
+    );
     const soloGame = useSoloGame({
         screen,
         onScreenChange,
@@ -424,19 +443,25 @@ export default function App(): JSX.Element {
             if (expGain > 0) {
                 detachPromise(
                     Promise.resolve(
-                        authClient.rpc('add_solo_exp', {
-                            p_user_id: userId,
-                            p_exp_gain: expGain,
-                        }).then(() => authClient
-                                .from('combo_leaderboard')
-                                .select('experience')
-                                .eq('user_id', userId)
-                                .single()
-                        ).then((res) => {
-                            if (res.data) {
-                                setPlayerLevel(calculateLevel(res.data.experience));
-                            }
-                        })
+                        authClient
+                            .rpc('add_solo_exp', {
+                                p_user_id: userId,
+                                p_exp_gain: expGain,
+                            })
+                            .then(() =>
+                                authClient
+                                    .from('combo_leaderboard')
+                                    .select('experience')
+                                    .eq('user_id', userId)
+                                    .single()
+                            )
+                            .then((res) => {
+                                if (res.data) {
+                                    setPlayerLevel(
+                                        calculateLevel(res.data.experience)
+                                    );
+                                }
+                            })
                     )
                 );
             }
@@ -715,24 +740,30 @@ export default function App(): JSX.Element {
                     clientY={pendingBlobTransition.clientY}
                     colorKey={pendingBlobTransition.colorKey}
                     onComplete={() => {
-                        setPendingBlobTransition(null);
+                        setPendingBlobTransition(undefined);
                     }}
                     onMiddle={() => {
-                        detachPromise(navigateRef.current({ to: pendingBlobTransition.targetPath }));
+                        detachPromise(
+                            navigateRef.current({
+                                to: pendingBlobTransition.targetPath,
+                            })
+                        );
                     }}
                 />
             ) : undefined}
             {pendingTransitionScreen ? (
-                <BurstTransition 
+                <BurstTransition
+                    onComplete={() => {
+                        // Unmount overlay after it has completely faded to 0 opacity.
+                        setPendingTransitionScreen(undefined);
+                    }}
                     onNavigate={() => {
                         const targetScreen = pendingTransitionScreen;
-                        // Execute actual navigation while the screen is completely white/wiped
-                        detachPromise(navigate({ to: SCREEN_TO_PATH[targetScreen] }));
+                        // Execute actual navigation while the screen is completely white/wiped.
+                        detachPromise(
+                            navigate({ to: SCREEN_TO_PATH[targetScreen] })
+                        );
                     }}
-                    onComplete={() => {
-                        // Unmount overlay after it has completely faded to 0 opacity
-                        setPendingTransitionScreen(undefined);
-                    }} 
                 />
             ) : undefined}
             {pendingInvitation ? (

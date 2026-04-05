@@ -40,7 +40,9 @@ export function MenuScreen({
     needsTutorial,
 }: MenuScreenProps): JSX.Element {
     const [menuOpen, setMenuOpen] = useState(false);
-    const [clickedMode, setClickedMode] = useState<string | null>(null);
+    const [clickedMode, setClickedMode] = useState<string | undefined>(
+        undefined
+    );
     const menuRef = useRef<HTMLDivElement>(null);
     const [visibleToast, setVisibleToast] = useState<string | undefined>(
         undefined
@@ -193,9 +195,11 @@ export function MenuScreen({
                                             ? ' mode-card-clicked'
                                             : ''
                                     }`}
-                                    onClick={(e) => {
+                                    onClick={() => {
                                         setClickedMode('tutorial');
-                                        if (onOpenTutorial) onOpenTutorial();
+                                        if (onOpenTutorial) {
+                                            onOpenTutorial();
+                                        }
                                     }}
                                     type='button'
                                 >
