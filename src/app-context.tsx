@@ -12,6 +12,7 @@ export type AppContextValue = {
     session: Session | undefined;
     isGuest: boolean;
     playerName: string;
+    playerLevel: number | undefined;
     soloGame: ReturnType<typeof useSoloGame>;
     multiplayerGame: ReturnType<typeof useMultiplayerGame>;
     localCpuGame: ReturnType<typeof useLocalCpuGame>;

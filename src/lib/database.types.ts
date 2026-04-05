@@ -25,6 +25,7 @@ export type Database = {
                     updated_at: string | null;
                     user_id: string;
                     wins: number;
+                    experience: number;
                 };
                 Insert: {
                     games_played?: number;
@@ -36,6 +37,7 @@ export type Database = {
                     updated_at?: string | null;
                     user_id: string;
                     wins?: number;
+                    experience?: number;
                 };
                 Update: {
                     games_played?: number;
@@ -47,6 +49,7 @@ export type Database = {
                     updated_at?: string | null;
                     user_id?: string;
                     wins?: number;
+                    experience?: number;
                 };
                 Relationships: [];
             };
@@ -58,6 +61,13 @@ export type Database = {
                     p_is_tie: boolean;
                     p_is_winner: boolean;
                     p_user_id: string;
+                };
+                Returns: undefined;
+            };
+            add_solo_exp: {
+                Args: {
+                    p_user_id: string;
+                    p_exp_gain: number;
                 };
                 Returns: undefined;
             };

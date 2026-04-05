@@ -146,3 +146,39 @@ export function setGuestModeEnabled(enabled: boolean): void {
         globalThis.localStorage.removeItem(guestModeStorageKey);
     }
 }
+
+export function calculateLevel(experience: number): number {
+    return Math.floor(Math.sqrt(Math.max(0, experience) / 100)) + 1;
+}
+
+export function getExpProgress(
+    experience: number
+): {
+    level: number;
+    currentExp: number;
+    expForCurrentLevel: number;
+    expForNextLevel: number;
+    progressInLevel: number;
+    totalRequiredForNext: number;
+    progressPercent: number;
+} {
+    const exp = Math.max(0, experience);
+    const currentLevel = calculateLevel(exp);
+    const expForCurrentLevel = (currentLevel - 1) ** 2 * 100;
+    const expForNextLevel = currentLevel ** 2 * 100;
+    const progressInLevel = exp - expForCurrentLevel;
+    const totalRequiredForNext = expForNextLevel - expForCurrentLevel;
+
+    return {
+        level: currentLevel,
+        currentExp: exp,
+        expForCurrentLevel,
+        expForNextLevel,
+        progressInLevel,
+        totalRequiredForNext,
+        progressPercent: Math.min(
+            100,
+            Math.max(0, (progressInLevel / totalRequiredForNext) * 100)
+        ),
+    };
+}
