@@ -30,7 +30,8 @@ import {
 // ---------------------------------------------------------------------------
 
 function MenuPage(): JSX.Element {
-    const { session, isGuest, playerLevel, localCpuGame, multiplayerGame } = useAppContext();
+    const { session, isGuest, playerLevel, localCpuGame, multiplayerGame } =
+        useAppContext();
     const navigate = useNavigate();
     const needsTutorial = !isTutorialComplete();
 
@@ -413,18 +414,18 @@ const leaderboardRoute = createRoute({
     component: LeaderboardPage,
 });
 
-const routeTree = rootRoute.addChildren([
-    menuRoute,
-    tutorialRoute,
-    soloRoute.addChildren([soloIndexRoute, soloPlayRoute]),
-    battleRoute.addChildren([battleIndexRoute, battlePlayRoute]),
-    loginRoute,
-    signupRoute,
-    accountRoute,
-    leaderboardRoute,
-]);
-
-export const router = createRouter({ routeTree });
+export const router = createRouter({
+    routeTree: rootRoute.addChildren([
+        menuRoute,
+        tutorialRoute,
+        soloRoute.addChildren([soloIndexRoute, soloPlayRoute]),
+        battleRoute.addChildren([battleIndexRoute, battlePlayRoute]),
+        loginRoute,
+        signupRoute,
+        accountRoute,
+        leaderboardRoute,
+    ]),
+});
 
 declare module '@tanstack/react-router' {
     interface Register {
