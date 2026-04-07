@@ -252,7 +252,10 @@ export function createInitialSoloState(seed: string): SoloState {
 export function advanceSoloState(
     state: SoloState,
     seed: string,
-    selectedPrime: Prime
+    selectedPrime: Prime,
+    options?: {
+        resolvingQueueLength?: number;
+    }
 ): SoloState {
     const outcome = applyPrimeSelection(state.currentStage, selectedPrime);
 
@@ -264,13 +267,14 @@ export function advanceSoloState(
         return {
             ...state,
             currentStage: outcome.stage,
-            score: state.score + 10,
+            score: state.score + computeBattleFactorDamage(selectedPrime),
         };
     }
 
     const nextStageIndex = state.clearedStages + 1;
-    const nextCombo = state.combo + 1;
-    const comboBonus = nextCombo * 15;
+    const nextCombo = Math.max(1, options?.resolvingQueueLength ?? 1);
+    const factorDamage = computeBattleFactorDamage(selectedPrime);
+    const comboDamage = computeBattleComboDamage(nextCombo);
 
     return {
         hp: Math.min(
@@ -279,7 +283,7 @@ export function advanceSoloState(
         ),
         combo: nextCombo,
         maxCombo: Math.max(state.maxCombo, nextCombo),
-        score: state.score + 50 + comboBonus,
+        score: state.score + factorDamage + comboDamage,
         clearedStages: nextStageIndex,
         currentStage: generateStage(seed, nextStageIndex),
     };
