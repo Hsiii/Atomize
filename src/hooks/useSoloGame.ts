@@ -66,6 +66,7 @@ export function useSoloGame({
     const [isNewBest, setIsNewBest] = useState(false);
     const latestSoloStateRef = useRef(soloState);
     const isPausedRef = useRef(false);
+    const submittedSoloQueueLengthRef = useRef(0);
 
     const soloCountdownProgress = (soloTimeLeft / soloDurationSeconds) * 100;
 
@@ -149,6 +150,7 @@ export function useSoloGame({
                 if (outcome.kind === 'wrong') {
                     setSoloState(applySoloPenalty(currentState));
                     setSoloPrimeQueue([]);
+                    submittedSoloQueueLengthRef.current = 0;
                     setSoloTimeLeft((currentTime) =>
                         Math.max(0, currentTime - 1)
                     );
@@ -157,13 +159,21 @@ export function useSoloGame({
                     return;
                 }
 
+                const hasRedundantBufferedPrimes =
+                    outcome.cleared && soloPrimeQueue.length > 1;
+                const resolvingQueueLength =
+                    !outcome.cleared || hasRedundantBufferedPrimes
+                        ? undefined
+                        : submittedSoloQueueLengthRef.current;
+
                 const nextState = advanceSoloState(
                     currentState,
                     soloSeed,
-                    nextPrime
+                    nextPrime,
+                    {
+                        resolvingQueueLength,
+                    }
                 );
-                const hasRedundantBufferedPrimes =
-                    outcome.cleared && soloPrimeQueue.length > 1;
 
                 if (hasRedundantBufferedPrimes) {
                     setSoloStageAdvanceSolvedStateKey(
@@ -171,6 +181,7 @@ export function useSoloGame({
                     );
                     setSoloState(applySoloPenalty(nextState));
                     setSoloPrimeQueue([]);
+                    submittedSoloQueueLengthRef.current = 0;
                     setSoloTimeLeft((currentTime) =>
                         Math.max(0, currentTime - 1)
                     );
@@ -186,6 +197,7 @@ export function useSoloGame({
                 );
 
                 if (outcome.cleared) {
+                    submittedSoloQueueLengthRef.current = 0;
                     setSoloStageAdvanceSolvedStateKey(
                         (currentKey) => currentKey + 1
                     );
@@ -206,6 +218,7 @@ export function useSoloGame({
             return;
         }
 
+        submittedSoloQueueLengthRef.current = queue.length;
         setSoloPrimeQueue([...queue]);
         setIsSoloComboRunning(true);
     }
@@ -217,6 +230,7 @@ export function useSoloGame({
         setSoloState(createInitialSoloState(nextSoloSeed));
         setSoloTimeLeft(soloDurationSeconds);
         setSoloPrimeQueue([]);
+        submittedSoloQueueLengthRef.current = 0;
         setIsSoloComboRunning(false);
         setSoloStageAdvanceSolvedStateKey(0);
         setSoloTimerPenaltyPopKey(0);
@@ -228,6 +242,7 @@ export function useSoloGame({
 
     function resetSoloGame() {
         setSoloPrimeQueue([]);
+        submittedSoloQueueLengthRef.current = 0;
         setIsSoloComboRunning(false);
         setSoloStageAdvanceSolvedStateKey(0);
         setSoloTimerPenaltyPopKey(0);
