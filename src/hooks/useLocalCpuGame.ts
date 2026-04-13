@@ -300,7 +300,7 @@ export function useLocalCpuGame({
         clearCpuTurnTimeout();
         clearCpuRevealTimeout();
         previousCpuStageIndexRef.current = undefined;
-        setIsCpuBlobRevealActive(false);
+        endBlobReveal();
 
         const displayPlayerName = getDisplayPlayerName(playerName);
         const roomId = `cpu:${crypto.randomUUID()}`;

@@ -20,7 +20,7 @@ import {
 import { useBlobRevealState } from './useBlobRevealState';
 
 // The following table defines the time compensation factor for each prime number.
-const PRIME_COMPENSATION_FACTORS = {
+const primeCompensationFactors = {
     2: 0.2,
     3: 0.2,
     5: 0.2,
@@ -38,8 +38,13 @@ function computeTimeCompensation(
 ): number {
     let sum = 0;
     for (const p of primes) {
-        // Add the compensation factor for each prime, or 0 if not present.
-        sum += PRIME_COMPENSATION_FACTORS[p] ?? 0;
+        // Add the compensation factor only for primes with a defined bonus.
+        if (Object.hasOwn(primeCompensationFactors, p)) {
+            sum +=
+                primeCompensationFactors[
+                    p as keyof typeof primeCompensationFactors
+                ];
+        }
     }
     if (isPerfect) {
         sum *= 2;
@@ -91,9 +96,8 @@ export function useSoloGame({
         useState(0);
     const [soloTimerPenaltyPopKey, setSoloTimerPenaltyPopKey] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
-    // Blob reveal state for pausing the timer.
-    const [isBlobRevealActive, startBlobReveal, endBlobReveal] =
-        useBlobRevealState(900); // 900ms is a placeholder, adjust as needed.
+    // Blob reveal state pauses the solo timer while reveal animations resolve.
+    const [isBlobRevealActive] = useBlobRevealState(900);
     const [bestScore, setBestScore] = useState<BestScoreRecord>(loadBestScore);
     const [isNewBest, setIsNewBest] = useState(false);
     const latestSoloStateRef = useRef(soloState);
@@ -328,9 +332,5 @@ export function useSoloGame({
         resetSoloGame,
         pause,
         resume,
-        // Expose for testing or debugging if needed.
-        isBlobRevealActive,
-        startBlobReveal,
-        endBlobReveal,
     };
 }
