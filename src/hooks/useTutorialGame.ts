@@ -13,6 +13,7 @@ import {
     clearSolvedBattleStage,
 } from '../lib/multiplayer-room';
 import { getTutorialScriptedFactors } from '../lib/tutorial-config';
+import { useBlobRevealState } from './useBlobRevealState';
 import { useComboQueueState } from './useComboQueueState';
 
 const tutorialCpuPlayerId = 'tutorial-cpu';
@@ -55,12 +56,14 @@ export function useTutorialGame({
     const cpuTurnTimeoutRef = useRef<number | undefined>(undefined);
     const cpuRevealTimeoutRef = useRef<number | undefined>(undefined);
     const previousCpuStageIndexRef = useRef<number | undefined>(undefined);
+    // Use shared blob reveal state.
+    const [isCpuBlobRevealActive, startBlobReveal, endBlobReveal] =
+        useBlobRevealState(BLOB_REVEAL_TOTAL_MS);
     const isCpuBlobRevealActiveRef = useRef(false);
     const hasCpuShownPenaltyRef = useRef(false);
     const tutorialDoneRef = useRef(false);
     const cpuAttackAllowedRef = useRef(false);
     const [cpuAttackGate, setCpuAttackGate] = useState(0);
-    const [isCpuBlobRevealActive, setIsCpuBlobRevealActive] = useState(false);
 
     const currentMultiplayerPlayer = multiplayerSnapshot?.players.find(
         (player) => player.id === playerId
@@ -107,8 +110,7 @@ export function useTutorialGame({
             cpuStageIndex === undefined
         ) {
             previousCpuStageIndexRef.current = undefined;
-            clearCpuRevealTimeout();
-            setIsCpuBlobRevealActive(false);
+            endBlobReveal();
             return undefined;
         }
 
@@ -117,21 +119,19 @@ export function useTutorialGame({
         }
 
         previousCpuStageIndexRef.current = cpuStageIndex;
-        clearCpuRevealTimeout();
-        setIsCpuBlobRevealActive(true);
-        cpuRevealTimeoutRef.current = globalThis.setTimeout(
-            () => {
-                cpuRevealTimeoutRef.current = undefined;
-                setIsCpuBlobRevealActive(false);
-            },
-            BLOB_REVEAL_TOTAL_MS,
-            undefined
-        );
+        endBlobReveal();
+        startBlobReveal();
 
         return () => {
-            clearCpuRevealTimeout();
+            endBlobReveal();
         };
-    }, [cpuPlayer?.stageIndex, isTutorialActive, screen]);
+    }, [
+        cpuPlayer?.stageIndex,
+        isTutorialActive,
+        screen,
+        startBlobReveal,
+        endBlobReveal,
+    ]);
 
     useEffect(() => {
         clearCpuTurnTimeout();
