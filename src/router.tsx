@@ -30,7 +30,7 @@ import {
 // ---------------------------------------------------------------------------
 
 function MenuPage(): JSX.Element {
-    const { session, isGuest, localCpuGame, multiplayerGame, startBlobTransition } = useAppContext();
+    const { session, isGuest, localCpuGame, multiplayerGame } = useAppContext();
     const navigate = useNavigate();
     const needsTutorial = !isTutorialComplete();
 
@@ -55,7 +55,7 @@ function MenuPage(): JSX.Element {
             onOpenLeaderboard={() => {
                 detachPromise(navigate({ to: '/leaderboard' }));
             }}
-            onOpenSolo={(e) => {
+            onOpenSolo={() => {
                 detachPromise(navigate({ to: '/solo' }));
             }}
             onOpenTutorial={() => {
