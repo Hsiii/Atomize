@@ -18,6 +18,34 @@ import {
     soloDurationSeconds,
 } from '../lib/app-helpers';
 
+// The following table defines the time compensation factor for each prime number.
+const PRIME_COMPENSATION_FACTORS = {
+    2: 0.2,
+    3: 0.2,
+    5: 0.2,
+    7: 0.4,
+    11: 0.4,
+    13: 0.4,
+    17: 0.8,
+    19: 0.8,
+    23: 0.8,
+} as const;
+
+function computeTimeCompensation(
+    primes: readonly number[],
+    isPerfect: boolean
+): number {
+    let sum = 0;
+    for (const p of primes) {
+        // Add the compensation factor for each prime, or 0 if not present.
+        sum += PRIME_COMPENSATION_FACTORS[p] ?? 0;
+    }
+    if (isPerfect) {
+        sum *= 2;
+    }
+    return sum;
+}
+
 type UseSoloGameOptions = {
     screen: Screen;
     onScreenChange: (screen: Screen) => void;
@@ -190,8 +218,29 @@ export function useSoloGame({
                     return;
                 }
 
-                setSoloState(nextState);
+                // Apply time compensation logic when a stage is cleared. This uses the primes
+                // submitted at the start of the combo.
+                if (outcome.cleared) {
+                    // The primes used for this attack are determined by slicing the factors array.
+                    const allFactors = currentState.currentStage.factors;
+                    const usedPrimes = allFactors.slice(
+                        allFactors.length - (resolvingQueueLength ?? 1)
+                    );
+                    // If all factors are used in one combo, it is a perfect solve.
+                    const isPerfect =
+                        resolvingQueueLength === allFactors.length;
+                    const compensation = computeTimeCompensation(
+                        usedPrimes,
+                        isPerfect
+                    );
+                    if (compensation > 0) {
+                        setSoloTimeLeft(
+                            (currentTime) => currentTime + compensation
+                        );
+                    }
+                }
 
+                setSoloState(nextState);
                 setSoloPrimeQueue((currentQueue: readonly Prime[]) =>
                     currentQueue.slice(1)
                 );
