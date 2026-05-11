@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import type { Screen } from '../app-state';
 import { uiText } from '../app-state';
-import { applyPrimeSelection, generateStage } from '../core';
+import { applyPrimeSelection, generateStage, SOLO_MAX_HP } from '../core';
 import type { Prime, RoomPlayer, RoomSnapshot, StageState } from '../core';
 import { BLOB_REVEAL_TOTAL_MS } from '../core/timing';
 import { getDisplayPlayerName, playablePrimes } from '../lib/app-helpers';
@@ -17,7 +17,7 @@ import { useBlobRevealState } from './useBlobRevealState';
 import { useComboQueueState } from './useComboQueueState';
 
 const tutorialCpuPlayerId = 'tutorial-cpu';
-const tutorialCpuHp = 68;
+const tutorialCpuHp = 136;
 const tutorialCpuThinkBaseMs = 1400;
 
 type UseTutorialGameOptions = {
@@ -196,14 +196,14 @@ export function useTutorialGame({
         const tutorialSnapshot: RoomSnapshot = {
             roomId,
             seed,
-            maxHp: 500,
+            maxHp: SOLO_MAX_HP,
             stageIndex: 0,
             stage: initialStage,
             players: [
                 {
                     id: localPlayerId,
                     name: displayPlayerName,
-                    hp: 500,
+                    hp: SOLO_MAX_HP,
                     pendingFactorDamage: 0,
                     combo: 0,
                     maxCombo: 0,

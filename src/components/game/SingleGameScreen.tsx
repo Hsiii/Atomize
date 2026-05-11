@@ -5,7 +5,6 @@ import { uiText } from '../../app-state';
 import type { Prime, SoloState } from '../../core';
 import { usePrimeKeyboardControls } from '../../hooks/usePrimeKeyboardControls';
 import type { BestScoreRecord } from '../../lib/app-helpers';
-import { normalizeSoloLeaderboardScore } from '../../lib/app-helpers';
 
 import './GamePlayScreen.css';
 
@@ -57,7 +56,6 @@ export function SingleGameScreen({
 }: SingleGameScreenProps): JSX.Element {
     const isTimeUp = soloTimeLeft === 0;
     const isInputDisabled = isTimeUp || isSoloComboRunning;
-    const normalizedScore = normalizeSoloLeaderboardScore(soloState.score);
     const [visibleQueue, setVisibleQueue] = useState<Prime[]>(soloPrimeQueue);
     const visibleQueueRef = useRef(visibleQueue);
     const isQueueFull = visibleQueue.length >= COMBO_QUEUE_MAX_ITEMS;
@@ -95,9 +93,7 @@ export function SingleGameScreen({
     }, [soloPrimeQueue]);
 
     useEffect(() => {
-        const delta =
-            normalizeSoloLeaderboardScore(soloState.score) -
-            normalizeSoloLeaderboardScore(previousScoreRef.current);
+        const delta = soloState.score - previousScoreRef.current;
         previousScoreRef.current = soloState.score;
 
         if (delta <= 0) {
@@ -153,7 +149,7 @@ export function SingleGameScreen({
                     onPause={isTimeUp ? undefined : onPause}
                     penaltyKey={soloTimerPenaltyPopKey}
                     penaltyText={uiText.timerPenalty}
-                    score={normalizedScore}
+                    score={soloState.score}
                     timeLeft={soloTimeLeft}
                 />
 
@@ -208,7 +204,7 @@ export function SingleGameScreen({
                         mode='solo'
                         onRetry={onRetry}
                         onReturnHome={onBack}
-                        score={normalizedScore}
+                        score={soloState.score}
                         title={uiText.timeUp}
                     />
                 ) : undefined}

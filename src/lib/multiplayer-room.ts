@@ -6,8 +6,8 @@ import {
 } from '../core';
 import type { BattleEvent, Prime, RoomPlayer, RoomSnapshot } from '../core';
 
-const STARTING_HP = 500;
-const WRONG_SELECTION_DAMAGE = 4;
+const STARTING_HP = 1000;
+const WRONG_SELECTION_DAMAGE = 8;
 
 function computePerfectSolveRegen(
     hp: number,
@@ -398,7 +398,7 @@ export function clearSolvedBattleStage(
         return snapshot;
     }
 
-    const clearDamage = 1;
+    const clearDamage = 2;
     const combo = 1;
     const stageIndex = actingPlayer.stageIndex + 1;
     const nextStage = generateStage(snapshot.seed, stageIndex);

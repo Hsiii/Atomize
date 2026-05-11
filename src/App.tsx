@@ -23,6 +23,7 @@ import {
     isGuestModeEnabled,
     loadBestScore,
     markTutorialComplete,
+    normalizeHistoricSoloHighScore,
     persistPlayerName,
     saveBestScore,
     setGuestModeEnabled,
@@ -187,7 +188,7 @@ async function syncAuthenticatedLeaderboardProfile({
     const fallbackHighScore = loadBestScore().score;
     const existingRecordResponse = await authClient
         .from('combo_leaderboard')
-        .select('player_name, high_score, experience')
+        .select('player_name, high_score, experience, updated_at')
         .eq('user_id', userId)
         .maybeSingle();
 
@@ -199,9 +200,13 @@ async function syncAuthenticatedLeaderboardProfile({
         player_name: string;
         high_score: number;
         experience: number;
+        updated_at: string | null;
     } | null;
     const nextHighScore = Math.max(
-        existingRecord?.high_score ?? 0,
+        normalizeHistoricSoloHighScore(
+            existingRecord?.high_score ?? 0,
+            existingRecord?.updated_at
+        ),
         fallbackHighScore
     );
 
@@ -629,7 +634,7 @@ export default function App(): JSX.Element {
 
         const currentRecordResponse = await supabaseAuthClient
             .from('combo_leaderboard')
-            .select('high_score')
+            .select('high_score, updated_at')
             .eq('user_id', userId)
             .maybeSingle();
 
@@ -637,8 +642,13 @@ export default function App(): JSX.Element {
             return uiText.nameSaveError;
         }
 
-        const nextHighScore =
-            currentRecordResponse.data?.high_score ?? loadBestScore().score;
+        const nextHighScore = Math.max(
+            normalizeHistoricSoloHighScore(
+                currentRecordResponse.data?.high_score ?? 0,
+                currentRecordResponse.data?.updated_at
+            ),
+            loadBestScore().score
+        );
         const upsertResponse = await supabaseAuthClient
             .from('combo_leaderboard')
             .upsert(

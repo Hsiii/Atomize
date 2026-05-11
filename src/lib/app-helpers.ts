@@ -7,17 +7,14 @@ const bestScoreStorageKey = 'atomize.bestScore';
 const bestMaxComboStorageKey = 'atomize.bestMaxCombo';
 const tutorialCompleteStorageKey = 'atomize.tutorialComplete';
 const guestModeStorageKey = 'atomize.isGuestMode';
+const SOLO_SCORE_REDESIGN_AT = '2026-04-07T10:48:36.000Z';
+const HISTORIC_SOLO_SCORE_FACTOR = 0.5;
+const HISTORIC_SOLO_SCORE_CAP = 600;
 
 const guestSessionNumber = Math.floor(Math.random() * 999) + 1;
 
 export const soloDurationSeconds = 60;
 export const playablePrimes = PRIME_POOL.slice(0, 9);
-/*
- * Scale post-April-2026 solo scores back onto the historical leaderboard range.
- * The factor is anchored to the current Supabase leaderboard average (~738)
- * versus the post-rebalance solo average the app now produces (~100).
- */
-const SOLO_SCORE_NORMALIZATION_FACTOR = 7.4;
 
 export async function wait(durationMs: number): Promise<undefined> {
     await new Promise<void>((resolve) => {
@@ -99,12 +96,32 @@ export type BestScoreRecord = {
     maxCombo: number;
 };
 
-export function normalizeSoloLeaderboardScore(score: number): number {
+export function normalizeHistoricSoloHighScore(
+    score: number,
+    updatedAt?: string | null
+): number {
     if (!Number.isFinite(score) || score <= 0) {
         return 0;
     }
 
-    return Math.round(score * SOLO_SCORE_NORMALIZATION_FACTOR);
+    if (!updatedAt) {
+        return Math.round(score);
+    }
+
+    const updatedAtTime = Date.parse(updatedAt);
+
+    if (Number.isNaN(updatedAtTime)) {
+        return Math.round(score);
+    }
+
+    if (updatedAtTime >= Date.parse(SOLO_SCORE_REDESIGN_AT)) {
+        return Math.round(score);
+    }
+
+    return Math.min(
+        HISTORIC_SOLO_SCORE_CAP,
+        Math.round(score * HISTORIC_SOLO_SCORE_FACTOR)
+    );
 }
 
 export function loadBestScore(): BestScoreRecord {

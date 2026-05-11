@@ -36,7 +36,7 @@ const MAX_PLAYABLE_PRIME_COUNT = 9;
 const MIN_FACTOR_COUNT = 2;
 const MAX_STAGE_VALUE = 1_000_000;
 const MIN_PRIME = PRIME_POOL[0];
-const SOLO_MAX_HP = 500;
+export const SOLO_MAX_HP = 1000;
 const PLAYABLE_STAGE_PRIMES: readonly Prime[] = PRIME_POOL.slice(
     0,
     MAX_PLAYABLE_PRIME_COUNT
@@ -290,9 +290,9 @@ export function advanceSoloState(
 }
 
 export function computeBattleFactorDamage(selectedPrime: Prime): number {
-    return selectedPrime;
+    return selectedPrime * 2;
 }
 
 export function computeBattleComboDamage(combo: number): number {
-    return Math.max(0, combo - 1) * 8;
+    return Math.max(0, combo - 1) * 16;
 }
