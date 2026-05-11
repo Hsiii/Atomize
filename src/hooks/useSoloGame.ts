@@ -13,6 +13,7 @@ import type { BestScoreRecord } from '../lib/app-helpers';
 import {
     createSoloRunSeed,
     loadBestScore,
+    normalizeSoloLeaderboardScore,
     playablePrimes,
     saveBestScore,
     soloDurationSeconds,
@@ -131,13 +132,18 @@ export function useSoloGame({
                     if (currentTime <= 1) {
                         globalThis.clearInterval(timer);
                         const finalState = latestSoloStateRef.current;
+                        const normalizedFinalScore =
+                            normalizeSoloLeaderboardScore(finalState.score);
                         const didBeat = saveBestScore(
-                            finalState.score,
+                            normalizedFinalScore,
                             finalState.maxCombo
                         );
 
                         if (didBeat) {
-                            onNewBest?.(finalState.score, finalState.maxCombo);
+                            onNewBest?.(
+                                normalizedFinalScore,
+                                finalState.maxCombo
+                            );
                         }
 
                         onGameFinish?.(finalState.score);

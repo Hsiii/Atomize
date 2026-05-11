@@ -12,6 +12,12 @@ const guestSessionNumber = Math.floor(Math.random() * 999) + 1;
 
 export const soloDurationSeconds = 60;
 export const playablePrimes = PRIME_POOL.slice(0, 9);
+/*
+ * Scale post-April-2026 solo scores back onto the historical leaderboard range.
+ * The factor is anchored to the current Supabase leaderboard average (~738)
+ * versus the post-rebalance solo average the app now produces (~100).
+ */
+const SOLO_SCORE_NORMALIZATION_FACTOR = 7.4;
 
 export async function wait(durationMs: number): Promise<undefined> {
     await new Promise<void>((resolve) => {
@@ -93,6 +99,14 @@ export type BestScoreRecord = {
     maxCombo: number;
 };
 
+export function normalizeSoloLeaderboardScore(score: number): number {
+    if (!Number.isFinite(score) || score <= 0) {
+        return 0;
+    }
+
+    return Math.round(score * SOLO_SCORE_NORMALIZATION_FACTOR);
+}
+
 export function loadBestScore(): BestScoreRecord {
     const score = Number(
         globalThis.localStorage.getItem(bestScoreStorageKey) ?? '0'
@@ -151,9 +165,7 @@ export function calculateLevel(experience: number): number {
     return Math.floor(Math.sqrt(Math.max(0, experience) / 100)) + 1;
 }
 
-export function getExpProgress(
-    experience: number
-): {
+export function getExpProgress(experience: number): {
     level: number;
     currentExp: number;
     expForCurrentLevel: number;
