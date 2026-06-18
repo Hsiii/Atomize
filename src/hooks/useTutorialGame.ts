@@ -530,26 +530,13 @@ function createStageState(
     stageIndex: number,
     factors: readonly Prime[]
 ): StageState {
-    const normalizedFactors: Prime[] = [];
-
-    for (const prime of factors) {
-        const insertionIndex = normalizedFactors.findIndex(
-            (sortedPrime) => sortedPrime > prime
-        );
-
-        if (insertionIndex === -1) {
-            normalizedFactors.push(prime);
-            continue;
-        }
-
-        normalizedFactors.splice(insertionIndex, 0, prime);
-    }
-
-    let targetValue = 1;
-
-    for (const prime of normalizedFactors) {
-        targetValue *= prime;
-    }
+    const normalizedFactors: Prime[] = factors.toSorted(
+        (left, right) => left - right
+    );
+    const targetValue = normalizedFactors.reduce(
+        (product, prime) => product * prime,
+        1
+    );
 
     return {
         stageIndex,
