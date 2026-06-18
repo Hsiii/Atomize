@@ -18,16 +18,28 @@ export function ComboQueuePanel({
     return (
         <section aria-live='polite' className='combo-panel'>
             <div className='combo-bar'>
-                {displayQueue.map((val, idx) => (
-                    <span className='combo-bar-item' key={`${val}-${idx}`}>
-                        <span className='combo-bar-chip'>{val}</span>
-                        {idx < displayQueue.length - 1 ? (
-                            <span aria-hidden='true' className='combo-bar-sep'>
-                                {'\u00D7'}
+                {displayQueue.map((val, idx) => {
+                    const isPendingInput =
+                        pendingInput !== '' && idx === displayQueue.length - 1;
+
+                    return (
+                        <span className='combo-bar-item' key={`${val}-${idx}`}>
+                            <span
+                                className={`combo-bar-chip${isPendingInput ? ' combo-bar-chip-pending' : ''}`}
+                            >
+                                {val}
                             </span>
-                        ) : undefined}
-                    </span>
-                ))}
+                            {idx < displayQueue.length - 1 ? (
+                                <span
+                                    aria-hidden='true'
+                                    className='combo-bar-sep'
+                                >
+                                    {'\u00D7'}
+                                </span>
+                            ) : undefined}
+                        </span>
+                    );
+                })}
             </div>
         </section>
     );

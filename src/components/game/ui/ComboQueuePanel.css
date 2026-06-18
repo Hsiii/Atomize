@@ -41,6 +41,10 @@
     font-variant-numeric: tabular-nums;
 }
 
+.combo-bar-chip-pending {
+    opacity: var(--opacity-muted);
+}
+
 .combo-bar-sep {
     color: var(--color-ink-soft);
     font-family: var(--type-display-burst-family);
