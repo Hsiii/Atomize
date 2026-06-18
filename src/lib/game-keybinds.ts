@@ -1,4 +1,4 @@
-import type { Prime } from '../core';
+import type { Prime } from '../core/primes';
 
 export const desktopPrimeKeybinds = [
     'r',

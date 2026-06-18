@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import type { Prime } from '../core';
+import type { Prime } from '../core/primes';
 import {
     desktopActionKeybinds,
     getDesktopPrimeFromKey,

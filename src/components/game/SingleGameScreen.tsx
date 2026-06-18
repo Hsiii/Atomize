@@ -2,7 +2,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { JSX } from 'react';
 
 import { uiText } from '../../app-state';
-import type { Prime, SoloState } from '../../core';
+import type { SoloState } from '../../core/game';
+import type { Prime } from '../../core/primes';
 import { usePrimeKeyboardControls } from '../../hooks/usePrimeKeyboardControls';
 import type { BestScoreRecord } from '../../lib/app-helpers';
 

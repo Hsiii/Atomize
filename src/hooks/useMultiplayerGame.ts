@@ -4,7 +4,8 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 
 import { uiText } from '../app-state';
 import type { MultiplayerState, OnlineLobbyUser, Screen } from '../app-state';
-import type { Prime, RoomSnapshot } from '../core';
+import type { RoomSnapshot } from '../core/multiplayer';
+import type { Prime } from '../core/primes';
 import {
     createRoomId,
     detachPromise,

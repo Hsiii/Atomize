@@ -6,8 +6,8 @@ import {
     applyPrimeSelection,
     applySoloPenalty,
     createInitialSoloState,
-} from '../core';
-import type { Prime } from '../core';
+} from '../core/game';
+import type { Prime } from '../core/primes';
 import { SOLO_COMBO_STEP_DELAY_MS } from '../core/timing';
 import type { BestScoreRecord } from '../lib/app-helpers';
 import {

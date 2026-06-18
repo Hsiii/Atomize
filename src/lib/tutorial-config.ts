@@ -1,5 +1,5 @@
 import { tutorialLessonText } from '../app-state';
-import type { Prime } from '../core';
+import type { Prime } from '../core/primes';
 
 export type TutorialFocusTarget =
     | 'self-blob'

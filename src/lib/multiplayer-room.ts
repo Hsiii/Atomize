@@ -3,8 +3,13 @@ import {
     computeBattleComboDamage,
     computeBattleFactorDamage,
     generateStage,
-} from '../core';
-import type { BattleEvent, Prime, RoomPlayer, RoomSnapshot } from '../core';
+} from '../core/game';
+import type {
+    BattleEvent,
+    RoomPlayer,
+    RoomSnapshot,
+} from '../core/multiplayer';
+import type { Prime } from '../core/primes';
 
 const STARTING_HP = 1000;
 const WRONG_SELECTION_DAMAGE = 8;

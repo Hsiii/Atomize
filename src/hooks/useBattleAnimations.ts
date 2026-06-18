@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import type { RoomPlayer, RoomSnapshot } from '../core';
+import type { RoomPlayer, RoomSnapshot } from '../core/multiplayer';
 import {
     BLOB_REVEAL_TOTAL_MS,
     DAMAGE_POP_LIFETIME_MS,

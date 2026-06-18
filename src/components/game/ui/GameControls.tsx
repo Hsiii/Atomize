@@ -2,7 +2,7 @@ import type { JSX } from 'react';
 import { CircleArrowUp, Delete } from 'lucide-react';
 
 import { uiText } from '../../../app-state';
-import type { Prime } from '../../../core';
+import type { Prime } from '../../../core/primes';
 import {
     desktopActionKeybinds,
     getDesktopPrimeKeybind,
