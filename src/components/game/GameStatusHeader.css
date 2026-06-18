@@ -113,7 +113,7 @@
 }
 
 .single-score-pill {
-    min-width: 0;
+    min-width: var(--size-score-pill-min);
     padding: var(--space-0);
     border-radius: 0;
     background: transparent;
