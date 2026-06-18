@@ -140,6 +140,11 @@ export function SingleGameScreen({
         onSubmit(visibleQueueRef.current);
     }
 
+    function handleRetry() {
+        keyboard.clearBufferedPrimeInput();
+        onRetry();
+    }
+
     return (
         <main className='app-shell fullscreen-shell'>
             <section className='screen game-screen single-game-screen'>
@@ -172,7 +177,10 @@ export function SingleGameScreen({
                 </section>
 
                 <section className='single-controls-grid'>
-                    <ComboQueuePanel queue={visibleQueue} />
+                    <ComboQueuePanel
+                        pendingInput={keyboard.bufferedPrimeInput}
+                        queue={visibleQueue}
+                    />
 
                     <GameControls
                         backspaceDisabled={
@@ -202,7 +210,7 @@ export function SingleGameScreen({
                         expGained={Math.floor(soloState.score / 10)}
                         isNewBest={isNewBest}
                         mode='solo'
-                        onRetry={onRetry}
+                        onRetry={handleRetry}
                         onReturnHome={onBack}
                         score={soloState.score}
                         title={uiText.timeUp}
@@ -212,7 +220,7 @@ export function SingleGameScreen({
                 {isPaused ? (
                     <PauseOverlay
                         onResume={onResume}
-                        onRetry={onRetry}
+                        onRetry={handleRetry}
                         onReturnHome={onBack}
                     />
                 ) : undefined}
