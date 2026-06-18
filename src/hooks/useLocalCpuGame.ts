@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 
 import type { Screen } from '../app-state';
 import { uiText } from '../app-state';
-import { applyPrimeSelection } from '../core';
-import type { Prime, RoomPlayer, RoomSnapshot } from '../core';
+import { applyPrimeSelection } from '../core/game';
+import type { RoomPlayer, RoomSnapshot } from '../core/multiplayer';
+import type { Prime } from '../core/primes';
 import { BLOB_REVEAL_TOTAL_MS } from '../core/timing';
 import { getDisplayPlayerName, playablePrimes } from '../lib/app-helpers';
 import { processComboQueue } from '../lib/combo-queue';

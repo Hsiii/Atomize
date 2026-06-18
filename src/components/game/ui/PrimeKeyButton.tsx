@@ -1,6 +1,6 @@
 import type { JSX, KeyboardEvent, PointerEvent, ReactNode } from 'react';
 
-import type { Prime } from '../../../core';
+import type { Prime } from '../../../core/primes';
 
 import './PrimeKeyButton.css';
 

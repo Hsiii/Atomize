@@ -1,4 +1,5 @@
-import type { Prime, RoomSnapshot } from '../core';
+import type { RoomSnapshot } from '../core/multiplayer';
+import type { Prime } from '../core/primes';
 
 export type RoomBroadcastMessage =
     | {

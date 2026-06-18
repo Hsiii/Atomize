@@ -1,4 +1,4 @@
-import type { RoomSnapshot } from './core';
+import type { RoomSnapshot } from './core/multiplayer';
 
 export const uiText = {
     back: 'Back',

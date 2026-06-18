@@ -1,5 +1,6 @@
-import { applyPrimeSelection, computeBattleFactorDamage } from '../core';
-import type { Prime, StageState } from '../core';
+import { applyPrimeSelection, computeBattleFactorDamage } from '../core/game';
+import type { StageState } from '../core/game';
+import type { Prime } from '../core/primes';
 import { MULTIPLAYER_COMBO_STEP_DELAY_MS } from '../core/timing';
 import { wait } from './app-helpers';
 

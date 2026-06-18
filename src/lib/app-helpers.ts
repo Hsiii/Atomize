@@ -1,6 +1,6 @@
 import { uiText } from '../app-state';
 import type { MultiplayerState } from '../app-state';
-import { PRIME_POOL } from '../core';
+import { PRIME_POOL } from '../core/primes';
 
 const playerNameStorageKey = 'atomize.playerName';
 const bestScoreStorageKey = 'atomize.bestScore';

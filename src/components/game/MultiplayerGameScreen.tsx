@@ -2,7 +2,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, JSX } from 'react';
 
 import { uiText } from '../../app-state';
-import type { Prime, RoomPlayer, RoomSnapshot } from '../../core';
+import type { RoomPlayer, RoomSnapshot } from '../../core/multiplayer';
+import type { Prime } from '../../core/primes';
 import { useBattleAnimations } from '../../hooks/useBattleAnimations';
 import type {
     AttackEffectState,
