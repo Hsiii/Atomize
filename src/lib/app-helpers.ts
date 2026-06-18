@@ -140,11 +140,10 @@ export function loadBestScore(): BestScoreRecord {
 
 export function saveBestScore(score: number, maxCombo: number): boolean {
     const current = loadBestScore();
-    let updated = false;
+    const isNewHighScore = score > current.score;
 
-    if (score > current.score) {
+    if (isNewHighScore) {
         globalThis.localStorage.setItem(bestScoreStorageKey, String(score));
-        updated = true;
     }
 
     if (maxCombo > current.maxCombo) {
@@ -152,10 +151,9 @@ export function saveBestScore(score: number, maxCombo: number): boolean {
             bestMaxComboStorageKey,
             String(maxCombo)
         );
-        updated = true;
     }
 
-    return updated;
+    return isNewHighScore;
 }
 
 export function isTutorialComplete(): boolean {
