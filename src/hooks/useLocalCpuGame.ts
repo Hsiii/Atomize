@@ -7,7 +7,7 @@ import type { RoomPlayer, RoomSnapshot } from '../core/multiplayer';
 import type { Prime } from '../core/primes';
 import { BLOB_REVEAL_TOTAL_MS } from '../core/timing';
 import { getDisplayPlayerName, playablePrimes } from '../lib/app-helpers';
-import { processComboQueue } from '../lib/combo-queue';
+import { processLocalBattleQueue } from '../lib/local-battle-queue';
 import {
     addPlayerToRoom,
     applyBattlePenalty,
@@ -373,78 +373,17 @@ export function useLocalCpuGame({
     }
 
     async function processMultiplayerQueue(queuedPrimes: readonly Prime[]) {
-        await processComboQueue(queuedPrimes, {
-            getPlayer() {
-                const snapshot = latestSnapshotRef.current;
-                const localPlayerId = latestPlayerIdRef.current;
-                return snapshot?.players.find(
-                    (player) => player.id === localPlayerId
-                );
-            },
-            clearQueue() {
+        await processLocalBattleQueue(queuedPrimes, {
+            getSnapshot: () => latestSnapshotRef.current,
+            getLocalPlayerId: () => latestPlayerIdRef.current,
+            updateSnapshot,
+            clearQueue: () => {
                 comboQueue.setPrimeQueue([]);
             },
-            advanceQueue() {
+            advanceQueue: () => {
                 comboQueue.setPrimeQueue((currentQueue: readonly Prime[]) =>
                     currentQueue.slice(1)
                 );
-            },
-            onWrongPrime(player) {
-                const snapshot = latestSnapshotRef.current;
-                const localPlayerId = latestPlayerIdRef.current;
-
-                if (!snapshot || !localPlayerId) {
-                    return;
-                }
-
-                updateSnapshot(
-                    applyBattlePenalty(
-                        snapshot,
-                        localPlayerId,
-                        player.stage,
-                        player.pendingFactorDamage
-                    )
-                );
-            },
-            onRedundantPrimes(_player, clearedStage, releasedDamage) {
-                const snapshot = latestSnapshotRef.current;
-                const localPlayerId = latestPlayerIdRef.current;
-
-                if (!snapshot || !localPlayerId) {
-                    return;
-                }
-
-                updateSnapshot(
-                    applyBattlePenalty(
-                        snapshot,
-                        localPlayerId,
-                        clearedStage,
-                        releasedDamage
-                    )
-                );
-            },
-            onCorrectPrime(
-                prime,
-                suppressAttack,
-                perfectSolveEligible,
-                resolvingQueueLength
-            ) {
-                const snapshot = latestSnapshotRef.current;
-                const localPlayerId = latestPlayerIdRef.current;
-
-                if (!snapshot || !localPlayerId) {
-                    return undefined;
-                }
-
-                updateSnapshot(
-                    applyBattlePrimeSelection(snapshot, localPlayerId, prime, {
-                        suppressAttack,
-                        perfectSolveEligible,
-                        resolvingQueueLength,
-                    })
-                );
-
-                return undefined;
             },
         });
     }
