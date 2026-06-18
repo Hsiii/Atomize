@@ -30,6 +30,7 @@ export function PrimeKeyButton({
             return;
         }
 
+        event.preventDefault();
         onPress(prime);
     }
 
@@ -43,6 +44,7 @@ export function PrimeKeyButton({
         }
 
         event.preventDefault();
+        event.stopPropagation();
         onPress(prime);
     }
 
