@@ -53,6 +53,27 @@ export type Database = {
                 };
                 Relationships: [];
             };
+            friendships: {
+                Row: {
+                    id: string;
+                    created_at: string | null;
+                    friend_id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    id?: string;
+                    created_at?: string | null;
+                    friend_id: string;
+                    user_id: string;
+                };
+                Update: {
+                    id?: string;
+                    created_at?: string | null;
+                    friend_id?: string;
+                    user_id?: string;
+                };
+                Relationships: [];
+            };
         };
         Views: Record<string, never>;
         Functions: {

@@ -563,6 +563,14 @@ export default function App(): JSX.Element {
                 break;
             }
 
+            case '/friends': {
+                seoContent = {
+                    description: seoText.friendsDescription,
+                    title: seoText.friendsTitle,
+                };
+                break;
+            }
+
             case '/leaderboard': {
                 seoContent = {
                     description: seoText.leaderboardDescription,

@@ -8,6 +8,7 @@ import {
     Play,
     Swords,
     Timer,
+    UsersRound,
 } from 'lucide-react';
 
 import { uiText } from '../../app-state';
@@ -19,6 +20,7 @@ type MenuScreenProps = {
     toastId: number;
     onOpenAuth: () => void;
     onOpenAccount: () => void;
+    onOpenFriends: () => void;
     onOpenLeaderboard: () => void;
     onOpenSolo: (e: React.MouseEvent<HTMLButtonElement>) => void;
     onOpenBattle: () => void;
@@ -32,6 +34,7 @@ export function MenuScreen({
     toastId,
     onOpenAuth,
     onOpenAccount,
+    onOpenFriends,
     onOpenLeaderboard,
     onOpenSolo,
     onOpenBattle,
@@ -161,6 +164,27 @@ export function MenuScreen({
                                     type='button'
                                 >
                                     <CircleUserRound size={22} />
+                                </button>
+                                <button
+                                    className='hamburger-toggle'
+                                    onClick={() => {
+                                        setMenuOpen(false);
+
+                                        if (isGuest) {
+                                            onOpenAuth();
+                                            return;
+                                        }
+
+                                        onOpenFriends();
+                                    }}
+                                    title={
+                                        isGuest
+                                            ? uiText.signIn
+                                            : uiText.friendsTitle
+                                    }
+                                    type='button'
+                                >
+                                    <UsersRound size={22} />
                                 </button>
                                 <button
                                     className='hamburger-toggle'

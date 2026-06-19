@@ -191,6 +191,9 @@
     --size-settings-height: 28rem;
     --size-score-dialog-width: 18rem;
     --size-room-panel-width: 22rem;
+    --size-friend-avatar: 2.5rem;
+    --size-friend-empty-min-height: 8rem;
+    --size-friend-score-min: 3rem;
     --font-size-keypad-digit: var(--type-display-input-size);
     --font-size-keypad-digit-mobile: var(--type-display-input-compact-size);
     --size-menu-title-orb: 17rem;

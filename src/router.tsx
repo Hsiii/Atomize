@@ -6,6 +6,7 @@ import { MultiplayerGameScreen } from './components/game/MultiplayerGameScreen';
 import { SingleGameScreen } from './components/game/SingleGameScreen';
 import { AccountScreen } from './components/menu/AccountScreen';
 import { AuthScreen } from './components/menu/AuthScreen';
+import { FriendsScreen } from './components/menu/FriendsScreen';
 import { LeaderboardScreen } from './components/menu/LeaderboardScreen';
 import { MenuScreen } from './components/menu/MenuScreen';
 import { OpponentPickerScreen } from './components/menu/OpponentPickerScreen';
@@ -38,6 +39,9 @@ function MenuPage(): JSX.Element {
             }}
             onOpenBattle={() => {
                 navigateTo('/battle');
+            }}
+            onOpenFriends={() => {
+                navigateTo('/friends');
             }}
             onOpenLeaderboard={() => {
                 navigateTo('/leaderboard');
@@ -302,6 +306,30 @@ function AccountPage(): JSX.Element | undefined {
     );
 }
 
+function FriendsPage(): JSX.Element | undefined {
+    const { navigateTo, playerName, session } = useAppContext();
+
+    useEffect(() => {
+        if (!session) {
+            navigateTo('/');
+        }
+    }, [session, navigateTo]);
+
+    if (!session) {
+        return undefined;
+    }
+
+    return (
+        <FriendsScreen
+            onBack={() => {
+                navigateTo('/');
+            }}
+            playerName={playerName}
+            userId={session.user.id}
+        />
+    );
+}
+
 function LeaderboardPage(): JSX.Element {
     const { leaderboardData, navigateTo, playerName } = useAppContext();
 
@@ -350,6 +378,10 @@ export function AppRoutes(): JSX.Element {
 
         case '/account': {
             return <AccountPage />;
+        }
+
+        case '/friends': {
+            return <FriendsPage />;
         }
 
         case '/leaderboard': {
