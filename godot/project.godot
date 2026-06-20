@@ -1,0 +1,27 @@
+; Engine configuration file.
+; It is best edited using the Godot editor, not directly.
+
+config_version=5
+
+[application]
+
+config/name="Atomize"
+run/main_scene="res://scenes/Main.tscn"
+config/features=PackedStringArray("4.4", "Mobile")
+
+[display]
+
+window/size/viewport_width=390
+window/size/viewport_height=844
+window/handheld/orientation=1
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+
+[rendering]
+
+renderer/rendering_method="mobile"
+renderer/rendering_method.mobile="mobile"
