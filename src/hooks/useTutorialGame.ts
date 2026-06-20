@@ -32,6 +32,7 @@ type UseTutorialGameResult = {
     playablePrimes: typeof playablePrimes;
     multiplayerSnapshot: RoomSnapshot | undefined;
     multiplayerPrimeQueue: Prime[];
+    multiplayerInputResetKey: number;
     isMultiplayerComboRunning: boolean;
     isMultiplayerInputDisabled: boolean;
     currentMultiplayerPlayer: RoomPlayer | undefined;
@@ -52,11 +53,13 @@ export function useTutorialGame({
     const [multiplayerSnapshot, setMultiplayerSnapshot] = useState<
         RoomSnapshot | undefined
     >(undefined);
+    const [multiplayerInputResetKey, setMultiplayerInputResetKey] = useState(0);
     const comboQueue = useComboQueueState();
     const latestSnapshotRef = useRef<RoomSnapshot | undefined>(undefined);
     const latestPlayerIdRef = useRef<string | undefined>(undefined);
     const cpuTurnTimeoutRef = useRef<number | undefined>(undefined);
     const cpuRevealTimeoutRef = useRef<number | undefined>(undefined);
+    const gameplayGenerationRef = useRef(0);
     const previousCpuStageIndexRef = useRef<number | undefined>(undefined);
     // Use shared blob reveal state.
     const [isCpuBlobRevealActive, startBlobReveal, endBlobReveal] =
@@ -238,6 +241,8 @@ export function useTutorialGame({
         cpuAttackAllowedRef.current = false;
         setPlayerId(localPlayerId);
         updateSnapshot(normalizeTutorialSnapshot(tutorialSnapshot));
+        gameplayGenerationRef.current++;
+        setMultiplayerInputResetKey((currentKey) => currentKey + 1);
         comboQueue.reset();
         onScreenChange('tutorial');
     }
@@ -272,6 +277,8 @@ export function useTutorialGame({
     function resetTutorialGame() {
         clearCpuTurnTimeout();
         clearCpuRevealTimeout();
+        gameplayGenerationRef.current++;
+        setMultiplayerInputResetKey((currentKey) => currentKey + 1);
         latestPlayerIdRef.current = undefined;
         latestSnapshotRef.current = undefined;
         hasCpuShownPenaltyRef.current = false;
@@ -286,6 +293,7 @@ export function useTutorialGame({
         playablePrimes,
         multiplayerSnapshot,
         multiplayerPrimeQueue: comboQueue.primeQueue,
+        multiplayerInputResetKey,
         isMultiplayerComboRunning: comboQueue.isComboRunning,
         isMultiplayerInputDisabled,
         currentMultiplayerPlayer,
@@ -326,7 +334,11 @@ export function useTutorialGame({
     }
 
     async function processMultiplayerQueue(queuedPrimes: readonly Prime[]) {
+        const gameplayGeneration = gameplayGenerationRef.current;
+
         await processLocalBattleQueue(queuedPrimes, {
+            shouldContinue: () =>
+                gameplayGeneration === gameplayGenerationRef.current,
             getSnapshot: () => latestSnapshotRef.current,
             getLocalPlayerId: () => latestPlayerIdRef.current,
             updateSnapshot,

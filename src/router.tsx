@@ -62,6 +62,7 @@ function TutorialPage(): JSX.Element {
             currentMultiplayerPlayer={tutorialGame.currentMultiplayerPlayer}
             isMultiplayerComboRunning={tutorialGame.isMultiplayerComboRunning}
             isMultiplayerInputDisabled={tutorialGame.isMultiplayerInputDisabled}
+            multiplayerInputResetKey={tutorialGame.multiplayerInputResetKey}
             multiplayerPrimeQueue={tutorialGame.multiplayerPrimeQueue}
             multiplayerSnapshot={tutorialGame.multiplayerSnapshot}
             onAllowCpuAttack={tutorialGame.allowCpuAttack}
@@ -107,6 +108,7 @@ function SoloPlayPage(): JSX.Element {
             onSubmit={soloGame.handleSoloComboSubmit}
             playablePrimes={soloGame.playablePrimes}
             soloCountdownProgress={soloGame.soloCountdownProgress}
+            soloInputResetKey={soloGame.soloInputResetKey}
             soloPrimeQueue={soloGame.soloPrimeQueue}
             soloStageAdvanceSolvedStateKey={
                 soloGame.soloStageAdvanceSolvedStateKey
@@ -181,6 +183,7 @@ function BattlePlayPage(): JSX.Element {
               isMultiplayerComboRunning: localCpuGame.isMultiplayerComboRunning,
               isMultiplayerInputDisabled:
                   localCpuGame.isMultiplayerInputDisabled,
+              multiplayerInputResetKey: localCpuGame.multiplayerInputResetKey,
               multiplayerPrimeQueue: localCpuGame.multiplayerPrimeQueue,
               multiplayerSnapshot: localCpuGame.multiplayerSnapshot,
               onRematch: localCpuGame.rematchLocalCpuGame,
@@ -194,6 +197,8 @@ function BattlePlayPage(): JSX.Element {
                   multiplayerGame.isMultiplayerComboRunning,
               isMultiplayerInputDisabled:
                   multiplayerGame.isMultiplayerInputDisabled,
+              multiplayerInputResetKey:
+                  multiplayerGame.multiplayerInputResetKey,
               multiplayerPrimeQueue: multiplayerGame.multiplayerPrimeQueue,
               multiplayerSnapshot: multiplayerGame.multiplayer.snapshot,
               onRematch: undefined,
@@ -210,6 +215,7 @@ function BattlePlayPage(): JSX.Element {
             isMultiplayerInputDisabled={
                 activeBattleGame.isMultiplayerInputDisabled
             }
+            multiplayerInputResetKey={activeBattleGame.multiplayerInputResetKey}
             multiplayerPrimeQueue={activeBattleGame.multiplayerPrimeQueue}
             multiplayerSnapshot={activeBattleGame.multiplayerSnapshot}
             onBack={returnToMenu}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import type { Prime } from '../core/primes';
 
@@ -21,6 +21,7 @@ type UseComboQueueStateResult = {
 export function useComboQueueState(): UseComboQueueStateResult {
     const [primeQueue, setPrimeQueue] = useState<Prime[]>([]);
     const [isComboRunning, setIsComboRunning] = useState(false);
+    const submissionTokenRef = useRef(0);
 
     async function submitCombo(
         queue: readonly Prime[],
@@ -40,17 +41,23 @@ export function useComboQueueState(): UseComboQueueStateResult {
                 return;
             }
 
+            submissionTokenRef.current++;
+            const submissionToken = submissionTokenRef.current;
             setIsComboRunning(true);
 
             try {
                 await options.onSolvedStageClear();
             } finally {
-                setIsComboRunning(false);
+                if (submissionToken === submissionTokenRef.current) {
+                    setIsComboRunning(false);
+                }
             }
 
             return;
         }
 
+        submissionTokenRef.current++;
+        const submissionToken = submissionTokenRef.current;
         setIsComboRunning(true);
 
         const queuedPrimes = [...queue];
@@ -59,11 +66,14 @@ export function useComboQueueState(): UseComboQueueStateResult {
         try {
             await options.processQueue(queuedPrimes);
         } finally {
-            setIsComboRunning(false);
+            if (submissionToken === submissionTokenRef.current) {
+                setIsComboRunning(false);
+            }
         }
     }
 
     function reset() {
+        submissionTokenRef.current++;
         setPrimeQueue([]);
         setIsComboRunning(false);
     }
