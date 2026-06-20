@@ -63,3 +63,9 @@ To enable multiplayer locally, create `.env.local` in the repository root:
 VITE_SUPABASE_URL=your-project-url
 VITE_SUPABASE_ANON_KEY=your-anon-key
 ```
+
+## Godot mobile port
+
+The parallel Godot iOS/Android port lives in `godot/`. The Vite app remains the
+web/PWA client. See `godot/README.md` for Godot setup, parity tests, and mobile
+export commands.

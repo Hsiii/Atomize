@@ -1,30 +1,9 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
-import path from 'node:path';
 import process from 'node:process';
 
-const rootDirectory = path.resolve(import.meta.dirname, '../..');
-const godotDirectory = path.resolve(rootDirectory, 'godot');
-const configuredGodotBinary = process.env.GODOT_BIN;
-const candidateBinaries = [
-    ...(configuredGodotBinary ? [configuredGodotBinary] : []),
-    'godot',
-    'godot4',
-    '/Applications/Godot.app/Contents/MacOS/Godot',
-    '/Applications/Godot_mono.app/Contents/MacOS/Godot',
-];
+import { findGodotBinary, GODOT_DIRECTORY } from './godot-cli';
 
-const godotBinary = candidateBinaries.find((candidate) => {
-    if (candidate.includes(path.sep) && !existsSync(candidate)) {
-        return false;
-    }
-
-    const result = spawnSync(candidate, ['--version'], {
-        stdio: 'ignore',
-    });
-
-    return result.status === 0;
-});
+const godotBinary = findGodotBinary();
 
 if (!godotBinary) {
     console.error(
@@ -38,7 +17,7 @@ const result = spawnSync(
     [
         '--headless',
         '--path',
-        godotDirectory,
+        GODOT_DIRECTORY,
         '--script',
         'res://tests/run_core_parity.gd',
     ],
