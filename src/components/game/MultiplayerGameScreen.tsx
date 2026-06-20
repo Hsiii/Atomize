@@ -34,6 +34,7 @@ type MultiplayerGameScreenProps = {
     currentMultiplayerPlayer: RoomPlayer | undefined;
     multiplayerSnapshot: RoomSnapshot | undefined;
     multiplayerPrimeQueue: Prime[];
+    multiplayerInputResetKey: number;
     isMultiplayerInputDisabled: boolean;
     isMultiplayerComboRunning: boolean;
     onAllowCpuAttack?: () => void;
@@ -49,6 +50,7 @@ export function MultiplayerGameScreen({
     currentMultiplayerPlayer,
     multiplayerSnapshot,
     multiplayerPrimeQueue,
+    multiplayerInputResetKey,
     isMultiplayerInputDisabled,
     isMultiplayerComboRunning,
     onAllowCpuAttack,
@@ -97,6 +99,10 @@ export function MultiplayerGameScreen({
         visibleQueueRef.current = multiplayerPrimeQueue;
         setVisibleQueue(multiplayerPrimeQueue);
     }, [multiplayerPrimeQueue]);
+
+    useLayoutEffect(() => {
+        setLocalQueue([]);
+    }, [multiplayerInputResetKey]);
 
     useEffect(() => {
         if (
@@ -151,6 +157,7 @@ export function MultiplayerGameScreen({
     }
     const keyboard = usePrimeKeyboardControls({
         canQueuePrime: !isInputDisabled && !isQueueFull,
+        inputResetKey: multiplayerInputResetKey,
         isComboRunning: isMultiplayerComboRunning,
         isInputDisabled,
         onBackspaceQueue: () => {

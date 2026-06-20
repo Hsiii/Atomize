@@ -25,6 +25,7 @@ type SingleGameScreenProps = {
     isSoloComboRunning: boolean;
     soloStageAdvanceSolvedStateKey: number;
     soloTimerPenaltyPopKey: number;
+    soloInputResetKey: number;
     isPaused: boolean;
     bestScore: BestScoreRecord;
     isNewBest: boolean;
@@ -45,6 +46,7 @@ export function SingleGameScreen({
     isSoloComboRunning,
     soloStageAdvanceSolvedStateKey,
     soloTimerPenaltyPopKey,
+    soloInputResetKey,
     isPaused,
     bestScore,
     isNewBest,
@@ -67,6 +69,7 @@ export function SingleGameScreen({
     const previousScoreRef = useRef(soloState.score);
     const keyboard = usePrimeKeyboardControls({
         canQueuePrime: !isInputDisabled && !isQueueFull,
+        inputResetKey: soloInputResetKey,
         isComboRunning: isSoloComboRunning,
         isInputDisabled,
         onBackspaceQueue: () => {
@@ -92,6 +95,10 @@ export function SingleGameScreen({
         visibleQueueRef.current = soloPrimeQueue;
         setVisibleQueue(soloPrimeQueue);
     }, [soloPrimeQueue]);
+
+    useLayoutEffect(() => {
+        setLocalQueue([]);
+    }, [soloInputResetKey]);
 
     useEffect(() => {
         const delta = soloState.score - previousScoreRef.current;

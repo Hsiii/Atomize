@@ -11,6 +11,7 @@ type LocalBattleQueueOptions = {
     clearQueue: () => void;
     getLocalPlayerId: () => string | undefined;
     getSnapshot: () => RoomSnapshot | undefined;
+    shouldContinue?: () => boolean;
     updateSnapshot: (nextSnapshot: RoomSnapshot) => void;
 };
 
@@ -21,10 +22,12 @@ export async function processLocalBattleQueue(
         clearQueue,
         getLocalPlayerId,
         getSnapshot,
+        shouldContinue,
         updateSnapshot,
     }: LocalBattleQueueOptions
 ): Promise<void> {
     await processComboQueue(queuedPrimes, {
+        shouldContinue,
         getPlayer() {
             const snapshot = getSnapshot();
             const localPlayerId = getLocalPlayerId();

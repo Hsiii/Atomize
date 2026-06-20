@@ -68,6 +68,7 @@ type UseSoloGameResult = {
     isSoloComboRunning: boolean;
     soloStageAdvanceSolvedStateKey: number;
     soloTimerPenaltyPopKey: number;
+    soloInputResetKey: number;
     isPaused: boolean;
     bestScore: BestScoreRecord;
     isNewBest: boolean;
@@ -95,6 +96,7 @@ export function useSoloGame({
     const [soloStageAdvanceSolvedStateKey, setSoloStageAdvanceSolvedStateKey] =
         useState(0);
     const [soloTimerPenaltyPopKey, setSoloTimerPenaltyPopKey] = useState(0);
+    const [soloInputResetKey, setSoloInputResetKey] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
     // Blob reveal state pauses the solo timer while reveal animations resolve.
     const [isBlobRevealActive] = useBlobRevealState(900);
@@ -291,6 +293,7 @@ export function useSoloGame({
         setIsSoloComboRunning(false);
         setSoloStageAdvanceSolvedStateKey(0);
         setSoloTimerPenaltyPopKey(0);
+        setSoloInputResetKey((currentKey) => currentKey + 1);
         setIsPaused(false);
         setIsNewBest(false);
         setBestScore(loadBestScore());
@@ -303,6 +306,7 @@ export function useSoloGame({
         setIsSoloComboRunning(false);
         setSoloStageAdvanceSolvedStateKey(0);
         setSoloTimerPenaltyPopKey(0);
+        setSoloInputResetKey((currentKey) => currentKey + 1);
         setIsPaused(false);
         setIsNewBest(false);
     }
@@ -324,6 +328,7 @@ export function useSoloGame({
         isSoloComboRunning,
         soloStageAdvanceSolvedStateKey,
         soloTimerPenaltyPopKey,
+        soloInputResetKey,
         isPaused,
         bestScore,
         isNewBest,

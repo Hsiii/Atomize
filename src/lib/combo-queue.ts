@@ -10,6 +10,7 @@ export type ComboQueuePlayer = {
 };
 
 export type ComboQueueCallbacks = {
+    shouldContinue?: () => boolean;
     getPlayer: () => ComboQueuePlayer | undefined;
     clearQueue: () => void;
     advanceQueue: () => void;
@@ -37,6 +38,10 @@ export async function processComboQueue(
     shouldBatchComboDamage?: boolean,
     perfectSolveEligible?: boolean
 ): Promise<void> {
+    if (callbacks.shouldContinue?.() === false) {
+        return;
+    }
+
     if (index >= queuedPrimes.length) {
         return;
     }
@@ -57,12 +62,18 @@ export async function processComboQueue(
 
     if (outcome.kind === 'wrong') {
         callbacks.clearQueue();
+        if (callbacks.shouldContinue?.() === false) {
+            return;
+        }
         await callbacks.onWrongPrime(player);
         return;
     }
 
     if (outcome.cleared && index < queuedPrimes.length - 1) {
         callbacks.clearQueue();
+        if (callbacks.shouldContinue?.() === false) {
+            return;
+        }
         const releasedDamage =
             player.pendingFactorDamage + computeBattleFactorDamage(prime);
         await callbacks.onRedundantPrimes(
@@ -74,6 +85,10 @@ export async function processComboQueue(
     }
 
     callbacks.advanceQueue();
+
+    if (callbacks.shouldContinue?.() === false) {
+        return;
+    }
 
     const isFinalQueuedPrime = index >= queuedPrimes.length - 1;
     const result = await callbacks.onCorrectPrime(
@@ -93,6 +108,10 @@ export async function processComboQueue(
     }
 
     await wait(MULTIPLAYER_COMBO_STEP_DELAY_MS);
+    if (callbacks.shouldContinue?.() === false) {
+        return;
+    }
+
     await processComboQueue(
         queuedPrimes,
         callbacks,

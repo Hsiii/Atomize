@@ -236,6 +236,7 @@ type UseMultiplayerGameResult = {
     playablePrimes: typeof playablePrimes;
     multiplayer: MultiplayerState;
     multiplayerPrimeQueue: Prime[];
+    multiplayerInputResetKey: number;
     isMultiplayerComboRunning: boolean;
     isMultiplayerInputDisabled: boolean;
     currentMultiplayerPlayer: RoomSnapshot['players'][number] | undefined;
@@ -275,6 +276,7 @@ export function useMultiplayerGame({
         roomId: '',
         isHost: false,
     });
+    const [multiplayerInputResetKey, setMultiplayerInputResetKey] = useState(0);
     const [onlineUsers, setOnlineUsers] = useState<OnlineLobbyUser[]>([]);
     const channelRef = useRef<RealtimeChannel | undefined>(undefined);
     const lobbyChannelRef = useRef<RealtimeChannel | undefined>(undefined);
@@ -286,6 +288,7 @@ export function useMultiplayerGame({
     const joinLookupTimeoutRef = useRef<number | undefined>(undefined);
     const joinRetryIntervalRef = useRef<number | undefined>(undefined);
     const localGameplayActionOrderRef = useRef(0);
+    const gameplayGenerationRef = useRef(0);
     const orderedGameplayMessagesRef = useRef<
         Map<string, OrderedGameplayMessageState>
     >(new Map());
@@ -508,6 +511,8 @@ export function useMultiplayerGame({
 
     async function resetMultiplayerGame() {
         await closeActiveChannel();
+        gameplayGenerationRef.current++;
+        setMultiplayerInputResetKey((currentKey) => currentKey + 1);
         resetGameplayMessageOrdering();
         comboQueue.reset();
         setMultiplayerState({
@@ -809,6 +814,7 @@ export function useMultiplayerGame({
         playablePrimes,
         multiplayer,
         multiplayerPrimeQueue: comboQueue.primeQueue,
+        multiplayerInputResetKey,
         isMultiplayerComboRunning: comboQueue.isComboRunning,
         isMultiplayerInputDisabled,
         currentMultiplayerPlayer,
@@ -992,6 +998,8 @@ export function useMultiplayerGame({
 
         resetGameplayMessageOrdering();
         await closeActiveChannel();
+        gameplayGenerationRef.current++;
+        setMultiplayerInputResetKey((currentKey) => currentKey + 1);
 
         const channel = supabase.channel(`atomize:${roomId}`, {
             config: {
@@ -1372,7 +1380,13 @@ export function useMultiplayerGame({
     async function processMultiplayerQueue(
         queuedPrimes: readonly Prime[]
     ): Promise<undefined> {
+        const gameplayGeneration = gameplayGenerationRef.current;
+        const sourcePlayerId = latestMultiplayerRef.current.playerId;
+
         await processComboQueue(queuedPrimes, {
+            shouldContinue: () =>
+                gameplayGeneration === gameplayGenerationRef.current &&
+                sourcePlayerId === latestMultiplayerRef.current.playerId,
             getPlayer() {
                 const currentState = latestMultiplayerRef.current;
                 const gameplaySnapshot = getEffectiveMultiplayerSnapshot(

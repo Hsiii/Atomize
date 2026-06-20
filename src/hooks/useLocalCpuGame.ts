@@ -31,6 +31,7 @@ type UseLocalCpuGameResult = {
     playablePrimes: typeof playablePrimes;
     multiplayerSnapshot: RoomSnapshot | undefined;
     multiplayerPrimeQueue: Prime[];
+    multiplayerInputResetKey: number;
     isMultiplayerComboRunning: boolean;
     isMultiplayerInputDisabled: boolean;
     currentMultiplayerPlayer: RoomPlayer | undefined;
@@ -55,11 +56,13 @@ export function useLocalCpuGame({
     const [multiplayerSnapshot, setMultiplayerSnapshot] = useState<
         RoomSnapshot | undefined
     >(undefined);
+    const [multiplayerInputResetKey, setMultiplayerInputResetKey] = useState(0);
     const comboQueue = useComboQueueState();
     const latestSnapshotRef = useRef<RoomSnapshot | undefined>(undefined);
     const latestPlayerIdRef = useRef<string | undefined>(undefined);
     const cpuTurnTimeoutRef = useRef<number | undefined>(undefined);
     const cpuRevealTimeoutRef = useRef<number | undefined>(undefined);
+    const gameplayGenerationRef = useRef(0);
     const previousCpuStageIndexRef = useRef<number | undefined>(undefined);
     // Use shared blob reveal state.
     const [isCpuBlobRevealActive, startBlobReveal, endBlobReveal] =
@@ -222,6 +225,8 @@ export function useLocalCpuGame({
         latestPlayerIdRef.current = localPlayerId;
         setPlayerId(localPlayerId);
         updateSnapshot(waitingSnapshot);
+        gameplayGenerationRef.current++;
+        setMultiplayerInputResetKey((currentKey) => currentKey + 1);
         comboQueue.reset();
     }
 
@@ -284,6 +289,9 @@ export function useLocalCpuGame({
 
     function resetLocalCpuGame() {
         clearCpuTurnTimeout();
+        clearCpuRevealTimeout();
+        gameplayGenerationRef.current++;
+        setMultiplayerInputResetKey((currentKey) => currentKey + 1);
         latestPlayerIdRef.current = undefined;
         latestSnapshotRef.current = undefined;
         setPlayerId(undefined);
@@ -300,6 +308,8 @@ export function useLocalCpuGame({
 
         clearCpuTurnTimeout();
         clearCpuRevealTimeout();
+        gameplayGenerationRef.current++;
+        setMultiplayerInputResetKey((currentKey) => currentKey + 1);
         previousCpuStageIndexRef.current = undefined;
         endBlobReveal();
 
@@ -338,6 +348,7 @@ export function useLocalCpuGame({
         playablePrimes,
         multiplayerSnapshot,
         multiplayerPrimeQueue: comboQueue.primeQueue,
+        multiplayerInputResetKey,
         isMultiplayerComboRunning: comboQueue.isComboRunning,
         isMultiplayerInputDisabled,
         currentMultiplayerPlayer,
@@ -373,7 +384,11 @@ export function useLocalCpuGame({
     }
 
     async function processMultiplayerQueue(queuedPrimes: readonly Prime[]) {
+        const gameplayGeneration = gameplayGenerationRef.current;
+
         await processLocalBattleQueue(queuedPrimes, {
+            shouldContinue: () =>
+                gameplayGeneration === gameplayGenerationRef.current,
             getSnapshot: () => latestSnapshotRef.current,
             getLocalPlayerId: () => latestPlayerIdRef.current,
             updateSnapshot,

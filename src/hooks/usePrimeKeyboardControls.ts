@@ -8,6 +8,7 @@ import {
 
 type UsePrimeKeyboardControlsOptions = {
     canQueuePrime: boolean;
+    inputResetKey?: number;
     isComboRunning: boolean;
     isInputDisabled: boolean;
     onBackspaceQueue: () => void;
@@ -27,6 +28,7 @@ type UsePrimeKeyboardControlsResult = {
 
 export function usePrimeKeyboardControls({
     canQueuePrime,
+    inputResetKey,
     isComboRunning,
     isInputDisabled,
     onBackspaceQueue,
@@ -51,6 +53,10 @@ export function usePrimeKeyboardControls({
     }, [isInputDisabled]);
 
     useEffect(() => clearBufferedPrimeInput, []);
+
+    useEffect(() => {
+        clearBufferedPrimeInput();
+    }, [inputResetKey]);
 
     function clearBufferedPrimeInput() {
         bufferedPrimeInputRef.current = '';
