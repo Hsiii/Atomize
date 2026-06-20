@@ -17,134 +17,41 @@
         "soloComboStepDelayMs": 140
     },
     "damage": [
-        {
-            "prime": 2,
-            "factorDamage": 4
-        },
-        {
-            "prime": 3,
-            "factorDamage": 6
-        },
-        {
-            "prime": 5,
-            "factorDamage": 10
-        },
-        {
-            "prime": 7,
-            "factorDamage": 14
-        },
-        {
-            "prime": 11,
-            "factorDamage": 22
-        },
-        {
-            "prime": 13,
-            "factorDamage": 26
-        },
-        {
-            "prime": 17,
-            "factorDamage": 34
-        },
-        {
-            "prime": 19,
-            "factorDamage": 38
-        },
-        {
-            "prime": 23,
-            "factorDamage": 46
-        },
-        {
-            "prime": 29,
-            "factorDamage": 58
-        },
-        {
-            "prime": 31,
-            "factorDamage": 62
-        },
-        {
-            "prime": 37,
-            "factorDamage": 74
-        },
-        {
-            "prime": 41,
-            "factorDamage": 82
-        },
-        {
-            "prime": 43,
-            "factorDamage": 86
-        },
-        {
-            "prime": 47,
-            "factorDamage": 94
-        },
-        {
-            "prime": 53,
-            "factorDamage": 106
-        }
+        { "prime": 2, "factorDamage": 4 },
+        { "prime": 3, "factorDamage": 6 },
+        { "prime": 5, "factorDamage": 10 },
+        { "prime": 7, "factorDamage": 14 },
+        { "prime": 11, "factorDamage": 22 },
+        { "prime": 13, "factorDamage": 26 },
+        { "prime": 17, "factorDamage": 34 },
+        { "prime": 19, "factorDamage": 38 },
+        { "prime": 23, "factorDamage": 46 },
+        { "prime": 29, "factorDamage": 58 },
+        { "prime": 31, "factorDamage": 62 },
+        { "prime": 37, "factorDamage": 74 },
+        { "prime": 41, "factorDamage": 82 },
+        { "prime": 43, "factorDamage": 86 },
+        { "prime": 47, "factorDamage": 94 },
+        { "prime": 53, "factorDamage": 106 }
     ],
     "comboDamage": [
-        {
-            "combo": 0,
-            "damage": 0
-        },
-        {
-            "combo": 1,
-            "damage": 0
-        },
-        {
-            "combo": 2,
-            "damage": 16
-        },
-        {
-            "combo": 3,
-            "damage": 32
-        },
-        {
-            "combo": 4,
-            "damage": 48
-        },
-        {
-            "combo": 5,
-            "damage": 64
-        },
-        {
-            "combo": 6,
-            "damage": 80
-        },
-        {
-            "combo": 7,
-            "damage": 96
-        },
-        {
-            "combo": 8,
-            "damage": 112
-        },
-        {
-            "combo": 9,
-            "damage": 128
-        }
+        { "combo": 0, "damage": 0 },
+        { "combo": 1, "damage": 0 },
+        { "combo": 2, "damage": 16 },
+        { "combo": 3, "damage": 32 },
+        { "combo": 4, "damage": 48 },
+        { "combo": 5, "damage": 64 },
+        { "combo": 6, "damage": 80 },
+        { "combo": 7, "damage": 96 },
+        { "combo": 8, "damage": 112 },
+        { "combo": 9, "damage": 128 }
     ],
     "hashes": [
-        {
-            "seed": "atomize",
-            "hash": 3866197210
-        },
-        {
-            "seed": "room-42",
-            "hash": 319409459
-        },
-        {
-            "seed": "tutorial:left",
-            "hash": 986013446
-        },
-        {
-            "seed": "large-repeat",
-            "hash": 2123124012
-        },
-        {
-            "seed": "2026-06-20",
-            "hash": 2983991765
-        }
+        { "seed": "atomize", "hash": 3866197210 },
+        { "seed": "room-42", "hash": 319409459 },
+        { "seed": "tutorial:left", "hash": 986013446 },
+        { "seed": "large-repeat", "hash": 2123124012 },
+        { "seed": "2026-06-20", "hash": 2983991765 }
     ],
     "rng": [
         {
@@ -197,151 +104,51 @@
         {
             "seed": "atomize",
             "ranges": [
-                {
-                    "min": 0,
-                    "max": 1,
-                    "value": 1
-                },
-                {
-                    "min": 1,
-                    "max": 5,
-                    "value": 5
-                },
-                {
-                    "min": 3,
-                    "max": 17,
-                    "value": 4
-                },
-                {
-                    "min": 0,
-                    "max": 31,
-                    "value": 7
-                },
-                {
-                    "min": 11,
-                    "max": 53,
-                    "value": 29
-                }
+                { "min": 0, "max": 1, "value": 1 },
+                { "min": 1, "max": 5, "value": 5 },
+                { "min": 3, "max": 17, "value": 4 },
+                { "min": 0, "max": 31, "value": 7 },
+                { "min": 11, "max": 53, "value": 29 }
             ]
         },
         {
             "seed": "room-42",
             "ranges": [
-                {
-                    "min": 0,
-                    "max": 1,
-                    "value": 0
-                },
-                {
-                    "min": 1,
-                    "max": 5,
-                    "value": 3
-                },
-                {
-                    "min": 3,
-                    "max": 17,
-                    "value": 4
-                },
-                {
-                    "min": 0,
-                    "max": 31,
-                    "value": 1
-                },
-                {
-                    "min": 11,
-                    "max": 53,
-                    "value": 17
-                }
+                { "min": 0, "max": 1, "value": 0 },
+                { "min": 1, "max": 5, "value": 3 },
+                { "min": 3, "max": 17, "value": 4 },
+                { "min": 0, "max": 31, "value": 1 },
+                { "min": 11, "max": 53, "value": 17 }
             ]
         },
         {
             "seed": "tutorial:left",
             "ranges": [
-                {
-                    "min": 0,
-                    "max": 1,
-                    "value": 1
-                },
-                {
-                    "min": 1,
-                    "max": 5,
-                    "value": 1
-                },
-                {
-                    "min": 3,
-                    "max": 17,
-                    "value": 6
-                },
-                {
-                    "min": 0,
-                    "max": 31,
-                    "value": 14
-                },
-                {
-                    "min": 11,
-                    "max": 53,
-                    "value": 53
-                }
+                { "min": 0, "max": 1, "value": 1 },
+                { "min": 1, "max": 5, "value": 1 },
+                { "min": 3, "max": 17, "value": 6 },
+                { "min": 0, "max": 31, "value": 14 },
+                { "min": 11, "max": 53, "value": 53 }
             ]
         },
         {
             "seed": "large-repeat",
             "ranges": [
-                {
-                    "min": 0,
-                    "max": 1,
-                    "value": 1
-                },
-                {
-                    "min": 1,
-                    "max": 5,
-                    "value": 5
-                },
-                {
-                    "min": 3,
-                    "max": 17,
-                    "value": 13
-                },
-                {
-                    "min": 0,
-                    "max": 31,
-                    "value": 6
-                },
-                {
-                    "min": 11,
-                    "max": 53,
-                    "value": 52
-                }
+                { "min": 0, "max": 1, "value": 1 },
+                { "min": 1, "max": 5, "value": 5 },
+                { "min": 3, "max": 17, "value": 13 },
+                { "min": 0, "max": 31, "value": 6 },
+                { "min": 11, "max": 53, "value": 52 }
             ]
         },
         {
             "seed": "2026-06-20",
             "ranges": [
-                {
-                    "min": 0,
-                    "max": 1,
-                    "value": 0
-                },
-                {
-                    "min": 1,
-                    "max": 5,
-                    "value": 4
-                },
-                {
-                    "min": 3,
-                    "max": 17,
-                    "value": 6
-                },
-                {
-                    "min": 0,
-                    "max": 31,
-                    "value": 4
-                },
-                {
-                    "min": 11,
-                    "max": 53,
-                    "value": 26
-                }
+                { "min": 0, "max": 1, "value": 0 },
+                { "min": 1, "max": 5, "value": 4 },
+                { "min": 3, "max": 17, "value": 6 },
+                { "min": 0, "max": 31, "value": 4 },
+                { "min": 11, "max": 53, "value": 26 }
             ]
         }
     ],
@@ -1561,9 +1368,7 @@
                         }
                     },
                     "prime": 5,
-                    "options": {
-                        "resolvingQueueLength": 3
-                    }
+                    "options": { "resolvingQueueLength": 3 }
                 },
                 {
                     "before": {
@@ -1719,9 +1524,7 @@
                         }
                     },
                     "prime": 19,
-                    "options": {
-                        "resolvingQueueLength": 3
-                    }
+                    "options": { "resolvingQueueLength": 3 }
                 },
                 {
                     "before": {
@@ -1877,9 +1680,7 @@
                         }
                     },
                     "prime": 23,
-                    "options": {
-                        "resolvingQueueLength": 3
-                    }
+                    "options": { "resolvingQueueLength": 3 }
                 },
                 {
                     "before": {
@@ -2161,9 +1962,7 @@
                         }
                     },
                     "prime": 7,
-                    "options": {
-                        "resolvingQueueLength": 3
-                    }
+                    "options": { "resolvingQueueLength": 3 }
                 },
                 {
                     "before": {
@@ -2319,9 +2118,7 @@
                         }
                     },
                     "prime": 17,
-                    "options": {
-                        "resolvingQueueLength": 3
-                    }
+                    "options": { "resolvingQueueLength": 3 }
                 },
                 {
                     "before": {
@@ -2477,9 +2274,7 @@
                         }
                     },
                     "prime": 17,
-                    "options": {
-                        "resolvingQueueLength": 3
-                    }
+                    "options": { "resolvingQueueLength": 3 }
                 },
                 {
                     "before": {
@@ -2761,9 +2556,7 @@
                         }
                     },
                     "prime": 7,
-                    "options": {
-                        "resolvingQueueLength": 3
-                    }
+                    "options": { "resolvingQueueLength": 3 }
                 },
                 {
                     "before": {
@@ -2919,9 +2712,7 @@
                         }
                     },
                     "prime": 13,
-                    "options": {
-                        "resolvingQueueLength": 3
-                    }
+                    "options": { "resolvingQueueLength": 3 }
                 },
                 {
                     "before": {
@@ -3077,9 +2868,7 @@
                         }
                     },
                     "prime": 19,
-                    "options": {
-                        "resolvingQueueLength": 3
-                    }
+                    "options": { "resolvingQueueLength": 3 }
                 },
                 {
                     "before": {
