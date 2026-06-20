@@ -118,6 +118,10 @@ function pickStagePrime(
     return weightedPrimes[randomInt(rng, 0, weightedPrimes.length - 1)];
 }
 
+function getFallbackStagePrimes(maxPrimeValue: number): readonly Prime[] {
+    return PLAYABLE_STAGE_PRIMES.filter((prime) => prime <= maxPrimeValue);
+}
+
 function pickLargeRepeatPrime(rng: () => number): Prime {
     const weightedLargePrimes: Prime[] = [19, 19, 23];
 
@@ -187,8 +191,12 @@ export function generateStage(seed: string, stageIndex: number): StageState {
             largeRepeatPrime,
             canPlaceMoreLargeRepeats
         );
+        const selectablePrimes =
+            availablePrimes.length === 0
+                ? getFallbackStagePrimes(maxPrimeValue)
+                : availablePrimes;
         const selectedPrime = pickStagePrime(
-            availablePrimes,
+            selectablePrimes,
             rng,
             largeRepeatPrime
         );

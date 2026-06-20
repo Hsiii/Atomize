@@ -1,11 +1,12 @@
 class_name AtomizeMultiplayerRoom
 extends RefCounted
 
+const Game := preload("res://scripts/core/game.gd")
 const STARTING_HP := 1000
 const WRONG_SELECTION_DAMAGE := 8
 
 static func create_room_snapshot(room_id: String, host_id: String, host_name: String) -> Dictionary:
-	var initial_stage := AtomizeGame.generate_stage(room_id, 0)
+	var initial_stage: Dictionary = Game.generate_stage(room_id, 0)
 
 	return {
 		"roomId": room_id,
@@ -86,30 +87,30 @@ static func apply_battle_prime_selection(
 	if acting_player == null or target_player == null:
 		return snapshot
 
-	var selection := AtomizeGame.apply_prime_selection(acting_player["stage"], prime)
+	var selection: Dictionary = Game.apply_prime_selection(acting_player["stage"], prime)
 
 	if selection["kind"] == "wrong":
 		return apply_battle_penalty(snapshot, player_id)
 
-	var combo := max(1, int(options.get("resolvingQueueLength", 1))) if selection["cleared"] else 0
-	var stage_index := acting_player["stageIndex"] + 1 if selection["cleared"] else acting_player["stageIndex"]
-	var next_stage = (
-		AtomizeGame.generate_stage(snapshot["seed"], stage_index) if selection["cleared"] else selection["stage"]
+	var combo: int = max(1, int(options.get("resolvingQueueLength", 1))) if selection["cleared"] else 0
+	var stage_index: int = acting_player["stageIndex"] + 1 if selection["cleared"] else acting_player["stageIndex"]
+	var next_stage: Dictionary = (
+		Game.generate_stage(snapshot["seed"], stage_index) if selection["cleared"] else selection["stage"]
 	)
-	var should_suppress_attack := options.get("suppressAttack", false) == true and not selection["cleared"]
+	var should_suppress_attack: bool = options.get("suppressAttack", false) == true and not selection["cleared"]
 	var pending_factor_damage: int = acting_player["pendingFactorDamage"]
-	var factor_damage := AtomizeGame.compute_battle_factor_damage(prime)
-	var total_factor_damage := pending_factor_damage + factor_damage
-	var perfect_solve := selection["cleared"] and options.get("perfectSolveEligible", false) == true
-	var combo_damage := AtomizeGame.compute_battle_combo_damage(combo) if selection["cleared"] else 0
-	var regen := compute_perfect_solve_regen(
+	var factor_damage: int = Game.compute_battle_factor_damage(prime)
+	var total_factor_damage: int = pending_factor_damage + factor_damage
+	var perfect_solve: bool = selection["cleared"] and options.get("perfectSolveEligible", false) == true
+	var combo_damage: int = Game.compute_battle_combo_damage(combo) if selection["cleared"] else 0
+	var regen: int = compute_perfect_solve_regen(
 		acting_player["hp"],
 		snapshot["maxHp"],
 		total_factor_damage,
 		perfect_solve
 	)
-	var next_pending_factor_damage := total_factor_damage if should_suppress_attack else 0
-	var damage := 0 if should_suppress_attack else total_factor_damage + combo_damage
+	var next_pending_factor_damage: int = total_factor_damage if should_suppress_attack else 0
+	var damage: int = 0 if should_suppress_attack else total_factor_damage + combo_damage
 	var next_players: Array = []
 
 	for player in snapshot["players"]:
@@ -300,7 +301,7 @@ static func clear_solved_battle_stage(snapshot: Dictionary, player_id: String) -
 	var clear_damage := 2
 	var combo := 1
 	var stage_index: int = acting_player["stageIndex"] + 1
-	var next_stage := AtomizeGame.generate_stage(snapshot["seed"], stage_index)
+	var next_stage: Dictionary = Game.generate_stage(snapshot["seed"], stage_index)
 	var next_players: Array = []
 
 	for player in snapshot["players"]:
@@ -383,7 +384,7 @@ static func create_player(id: String, name: String, seed: String) -> Dictionary:
 		"combo": 0,
 		"maxCombo": 0,
 		"stageIndex": 0,
-		"stage": AtomizeGame.generate_stage(seed, 0),
+		"stage": Game.generate_stage(seed, 0),
 		"connected": true,
 		"ready": false,
 	}

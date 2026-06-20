@@ -1,5 +1,10 @@
 extends SceneTree
 
+const Game := preload("res://scripts/core/game.gd")
+const MultiplayerRoom := preload("res://scripts/core/multiplayer_room.gd")
+const Primes := preload("res://scripts/core/primes.gd")
+const Random := preload("res://scripts/core/random.gd")
+const Timing := preload("res://scripts/core/timing.gd")
 const EPSILON := 0.000000000001
 const MAX_FAILURES := 50
 
@@ -42,8 +47,8 @@ func _load_fixture() -> Dictionary:
 func _create_actual_fixture(fixture: Dictionary) -> Dictionary:
 	return {
 		"generatedBy": fixture["generatedBy"],
-		"primePool": AtomizePrimes.PRIME_POOL,
-		"timing": AtomizeTiming.to_fixture(),
+		"primePool": Primes.PRIME_POOL,
+		"timing": Timing.to_fixture(),
 		"damage": _create_damage_fixture(),
 		"comboDamage": _create_combo_damage_fixture(),
 		"hashes": _create_hash_fixtures(fixture["hashes"]),
@@ -56,11 +61,11 @@ func _create_actual_fixture(fixture: Dictionary) -> Dictionary:
 	}
 
 func _create_damage_fixture() -> Array:
-	return AtomizePrimes.PRIME_POOL.map(
+	return Primes.PRIME_POOL.map(
 		func(prime):
 			return {
 				"prime": prime,
-				"factorDamage": AtomizeGame.compute_battle_factor_damage(prime),
+				"factorDamage": Game.compute_battle_factor_damage(prime),
 			}
 	)
 
@@ -69,10 +74,10 @@ func _create_combo_damage_fixture() -> Array:
 
 	for combo in range(10):
 		combo_damage.append(
-			{
-				"combo": combo,
-				"damage": AtomizeGame.compute_battle_combo_damage(combo),
-			}
+				{
+					"combo": combo,
+					"damage": Game.compute_battle_combo_damage(combo),
+				}
 		)
 
 	return combo_damage
@@ -84,7 +89,7 @@ func _create_hash_fixtures(expected_hashes: Array) -> Array:
 
 			return {
 				"seed": seed,
-				"hash": AtomizeRandom.hash_seed(seed),
+				"hash": Random.hash_seed(seed),
 			}
 	)
 
@@ -92,7 +97,7 @@ func _create_rng_fixtures(expected_rng: Array) -> Array:
 	return expected_rng.map(
 		func(expected_entry):
 			var seed: String = expected_entry["seed"]
-			var rng := AtomizeRandom.Rng.new(seed)
+			var rng: Random.Rng = Random.Rng.new(seed)
 			var values := []
 
 			for index in range(expected_entry["values"].size()):
@@ -108,7 +113,7 @@ func _create_random_int_fixtures(expected_random_ints: Array) -> Array:
 	return expected_random_ints.map(
 		func(expected_entry):
 			var seed: String = expected_entry["seed"]
-			var rng := AtomizeRandom.Rng.new(seed)
+			var rng: Random.Rng = Random.Rng.new(seed)
 			var ranges := []
 
 			for expected_range in expected_entry["ranges"]:
@@ -116,7 +121,7 @@ func _create_random_int_fixtures(expected_random_ints: Array) -> Array:
 					{
 						"min": expected_range["min"],
 						"max": expected_range["max"],
-						"value": AtomizeRandom.random_int(
+						"value": Random.random_int(
 							rng,
 							expected_range["min"],
 							expected_range["max"]
@@ -139,7 +144,7 @@ func _create_stage_fixtures(expected_stages: Array) -> Array:
 			return {
 				"seed": seed,
 				"stageIndex": stage_index,
-				"stage": AtomizeGame.generate_stage(seed, stage_index),
+				"stage": Game.generate_stage(seed, stage_index),
 			}
 	)
 
@@ -149,13 +154,13 @@ func _create_selection_fixtures(expected_selections: Array) -> Array:
 			var seed: String = expected_selection["seed"]
 			var stage_index: int = expected_selection["stageIndex"]
 			var prime: int = expected_selection["prime"]
-			var stage := AtomizeGame.generate_stage(seed, stage_index)
+			var stage: Dictionary = Game.generate_stage(seed, stage_index)
 
 			return {
 				"seed": seed,
 				"stageIndex": stage_index,
 				"prime": prime,
-				"result": AtomizeGame.apply_prime_selection(stage, prime),
+				"result": Game.apply_prime_selection(stage, prime),
 			}
 	)
 
@@ -163,15 +168,15 @@ func _create_solo_fixtures(expected_solo_runs: Array) -> Array:
 	return expected_solo_runs.map(
 		func(expected_run):
 			var seed: String = expected_run["seed"]
-			var state := AtomizeGame.create_initial_solo_state(seed)
-			var initial_state := state
+			var state: Dictionary = Game.create_initial_solo_state(seed)
+			var initial_state: Dictionary = state
 			var steps := []
 
 			for expected_step in expected_run["steps"]:
 				var options: Dictionary = expected_step.get("options", {})
 				var prime: int = expected_step["prime"]
 				var before := state
-				state = AtomizeGame.advance_solo_state(state, seed, prime, options)
+				state = Game.advance_solo_state(state, seed, prime, options)
 				var step := {
 					"before": before,
 					"after": state,
@@ -192,7 +197,7 @@ func _create_solo_fixtures(expected_solo_runs: Array) -> Array:
 	)
 
 func _create_room_fixtures() -> Array:
-	var snapshot := AtomizeMultiplayerRoom.create_room_snapshot("duel-room", "host", "Host")
+	var snapshot: Dictionary = MultiplayerRoom.create_room_snapshot("duel-room", "host", "Host")
 	var steps := [
 		{
 			"label": "created",
@@ -200,7 +205,7 @@ func _create_room_fixtures() -> Array:
 		}
 	]
 
-	snapshot = AtomizeMultiplayerRoom.add_player_to_room(snapshot, "guest", "Guest")
+	snapshot = MultiplayerRoom.add_player_to_room(snapshot, "guest", "Guest")
 	steps.append(
 		{
 			"label": "guest-joined",
@@ -208,7 +213,7 @@ func _create_room_fixtures() -> Array:
 		}
 	)
 
-	snapshot = AtomizeMultiplayerRoom.set_player_ready(snapshot, "host", true)
+	snapshot = MultiplayerRoom.set_player_ready(snapshot, "host", true)
 	steps.append(
 		{
 			"label": "host-ready",
@@ -216,7 +221,7 @@ func _create_room_fixtures() -> Array:
 		}
 	)
 
-	snapshot = AtomizeMultiplayerRoom.set_player_ready(snapshot, "guest", true)
+	snapshot = MultiplayerRoom.set_player_ready(snapshot, "guest", true)
 	steps.append(
 		{
 			"label": "guest-ready",
@@ -224,7 +229,7 @@ func _create_room_fixtures() -> Array:
 		}
 	)
 
-	snapshot = AtomizeMultiplayerRoom.begin_room_match(snapshot)
+	snapshot = MultiplayerRoom.begin_room_match(snapshot)
 	steps.append(
 		{
 			"label": "playing",
@@ -235,7 +240,7 @@ func _create_room_fixtures() -> Array:
 	var host_factors: Array = snapshot["players"][0]["stage"]["remainingFactors"].duplicate()
 
 	for index in range(host_factors.size()):
-		snapshot = AtomizeMultiplayerRoom.apply_battle_prime_selection(
+		snapshot = MultiplayerRoom.apply_battle_prime_selection(
 			snapshot,
 			"host",
 			host_factors[index],
@@ -252,7 +257,7 @@ func _create_room_fixtures() -> Array:
 			}
 		)
 
-	snapshot = AtomizeMultiplayerRoom.apply_battle_penalty(snapshot, "guest")
+	snapshot = MultiplayerRoom.apply_battle_penalty(snapshot, "guest")
 	steps.append(
 		{
 			"label": "guest-penalty",

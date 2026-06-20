@@ -455,10 +455,10 @@
             "stageIndex": 11,
             "stage": {
                 "stageIndex": 11,
-                "targetValue": null,
-                "remainingValue": null,
-                "factors": [3, 5, 5, 19, 19, 19, null],
-                "remainingFactors": [3, 5, 5, 19, 19, 19, null]
+                "targetValue": 685900,
+                "remainingValue": 685900,
+                "factors": [2, 2, 5, 5, 19, 19, 19],
+                "remainingFactors": [2, 2, 5, 5, 19, 19, 19]
             }
         },
         {
@@ -466,10 +466,10 @@
             "stageIndex": 12,
             "stage": {
                 "stageIndex": 12,
-                "targetValue": null,
-                "remainingValue": null,
-                "factors": [5, 11, 11, 13, 17, 23, null],
-                "remainingFactors": [5, 11, 11, 13, 17, 23, null]
+                "targetValue": 723580,
+                "remainingValue": 723580,
+                "factors": [2, 2, 5, 11, 11, 13, 23],
+                "remainingFactors": [2, 2, 5, 11, 11, 13, 23]
             }
         },
         {
@@ -488,10 +488,10 @@
             "stageIndex": 14,
             "stage": {
                 "stageIndex": 14,
-                "targetValue": null,
-                "remainingValue": null,
-                "factors": [3, 5, 5, 17, 23, 23, null],
-                "remainingFactors": [3, 5, 5, 17, 23, 23, null]
+                "targetValue": 899300,
+                "remainingValue": 899300,
+                "factors": [2, 2, 5, 5, 17, 23, 23],
+                "remainingFactors": [2, 2, 5, 5, 17, 23, 23]
             }
         },
         {
@@ -598,10 +598,10 @@
             "stageIndex": 8,
             "stage": {
                 "stageIndex": 8,
-                "targetValue": null,
-                "remainingValue": null,
-                "factors": [5, 7, 7, 11, 23, 23, null],
-                "remainingFactors": [5, 7, 7, 11, 23, 23, null]
+                "targetValue": 814660,
+                "remainingValue": 814660,
+                "factors": [2, 2, 5, 7, 11, 23, 23],
+                "remainingFactors": [2, 2, 5, 7, 11, 23, 23]
             }
         },
         {
@@ -653,10 +653,10 @@
             "stageIndex": 13,
             "stage": {
                 "stageIndex": 13,
-                "targetValue": null,
-                "remainingValue": null,
-                "factors": [5, 5, 11, 11, 19, 19, null],
-                "remainingFactors": [5, 5, 11, 11, 19, 19, null]
+                "targetValue": 873620,
+                "remainingValue": 873620,
+                "factors": [2, 2, 5, 11, 11, 19, 19],
+                "remainingFactors": [2, 2, 5, 11, 11, 19, 19]
             }
         },
         {
@@ -774,10 +774,10 @@
             "stageIndex": 8,
             "stage": {
                 "stageIndex": 8,
-                "targetValue": null,
-                "remainingValue": null,
-                "factors": [5, 5, 7, 11, 11, 23, null],
-                "remainingFactors": [5, 5, 7, 11, 11, 23, null]
+                "targetValue": 974050,
+                "remainingValue": 974050,
+                "factors": [2, 5, 5, 7, 11, 11, 23],
+                "remainingFactors": [2, 5, 5, 7, 11, 11, 23]
             }
         },
         {
@@ -840,10 +840,10 @@
             "stageIndex": 14,
             "stage": {
                 "stageIndex": 14,
-                "targetValue": null,
-                "remainingValue": null,
-                "factors": [5, 13, 13, 13, 17, 23, null],
-                "remainingFactors": [5, 13, 13, 13, 17, 23, null]
+                "targetValue": 746980,
+                "remainingValue": 746980,
+                "factors": [2, 2, 5, 13, 13, 13, 17],
+                "remainingFactors": [2, 2, 5, 13, 13, 13, 17]
             }
         },
         {
@@ -851,10 +851,10 @@
             "stageIndex": 15,
             "stage": {
                 "stageIndex": 15,
-                "targetValue": null,
-                "remainingValue": null,
-                "factors": [5, 5, 7, 19, 19, 19, null],
-                "remainingFactors": [5, 5, 7, 19, 19, 19, null]
+                "targetValue": 685900,
+                "remainingValue": 685900,
+                "factors": [2, 2, 5, 5, 19, 19, 19],
+                "remainingFactors": [2, 2, 5, 5, 19, 19, 19]
             }
         },
         {
@@ -1005,10 +1005,10 @@
             "stageIndex": 13,
             "stage": {
                 "stageIndex": 13,
-                "targetValue": null,
-                "remainingValue": null,
-                "factors": [3, 5, 7, 13, 13, 19, null],
-                "remainingFactors": [3, 5, 7, 13, 13, 19, null]
+                "targetValue": 674310,
+                "remainingValue": 674310,
+                "factors": [2, 3, 5, 7, 13, 13, 19],
+                "remainingFactors": [2, 3, 5, 7, 13, 13, 19]
             }
         },
         {

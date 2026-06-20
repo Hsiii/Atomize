@@ -1,6 +1,7 @@
 class_name AtomizeGame
 extends RefCounted
 
+const Random := preload("res://scripts/core/random.gd")
 const MAX_FACTOR_COUNT := 7
 const MAX_PLAYABLE_PRIME_COUNT := 9
 const MIN_FACTOR_COUNT := 2
@@ -23,10 +24,10 @@ static func apply_solo_penalty(state: Dictionary) -> Dictionary:
 	}
 
 static func generate_stage(seed: String, stage_index: int) -> Dictionary:
-	var rng := AtomizeRandom.Rng.new("%s:%s" % [seed, stage_index])
-	var factor_count = min(
+	var rng: Random.Rng = Random.Rng.new("%s:%s" % [seed, stage_index])
+	var factor_count: int = min(
 		MAX_FACTOR_COUNT,
-		MIN_FACTOR_COUNT + floori(float(stage_index) / 2.0) + AtomizeRandom.random_int(rng, 0, 1)
+		MIN_FACTOR_COUNT + floori(float(stage_index) / 2.0) + Random.random_int(rng, 0, 1)
 	)
 	var factors: Array = []
 	var should_use_large_repeat_prime := (
@@ -42,7 +43,7 @@ static func generate_stage(seed: String, stage_index: int) -> Dictionary:
 	var target_value := 1
 
 	for count in range(factor_count):
-		var remaining_slots := factor_count - count - 1
+		var remaining_slots: int = factor_count - count - 1
 		var reserved_value := int(MIN_PRIME ** remaining_slots)
 		var max_prime_value := floori(float(MAX_STAGE_VALUE) / float(target_value * reserved_value))
 		var can_place_more_large_repeats := (
@@ -61,7 +62,10 @@ static func generate_stage(seed: String, stage_index: int) -> Dictionary:
 			large_repeat_prime,
 			can_place_more_large_repeats
 		)
-		var selected_prime := pick_stage_prime(available_primes, rng, large_repeat_prime)
+		var selectable_primes := (
+			get_fallback_stage_primes(max_prime_value) if available_primes.is_empty() else available_primes
+		)
+		var selected_prime := pick_stage_prime(selectable_primes, rng, large_repeat_prime)
 
 		factors.append(selected_prime)
 		target_value *= selected_prime
@@ -116,7 +120,7 @@ static func advance_solo_state(
 	selected_prime: int,
 	options: Dictionary = {}
 ) -> Dictionary:
-	var outcome := apply_prime_selection(state["currentStage"], selected_prime)
+	var outcome: Dictionary = apply_prime_selection(state["currentStage"], selected_prime)
 
 	if outcome["kind"] == "wrong":
 		return apply_solo_penalty(state)
@@ -132,9 +136,9 @@ static func advance_solo_state(
 		}
 
 	var next_stage_index := int(state["clearedStages"]) + 1
-	var next_combo := max(1, int(options.get("resolvingQueueLength", 1)))
-	var factor_damage := compute_battle_factor_damage(selected_prime)
-	var combo_damage := compute_battle_combo_damage(next_combo)
+	var next_combo: int = max(1, int(options.get("resolvingQueueLength", 1)))
+	var factor_damage: int = compute_battle_factor_damage(selected_prime)
+	var combo_damage: int = compute_battle_combo_damage(next_combo)
 
 	return {
 		"hp": min(SOLO_MAX_HP, int(state["hp"]) + (1 if next_stage_index % 5 == 0 else 0)),
@@ -189,7 +193,7 @@ static func get_available_stage_primes(
 
 	return available_primes
 
-static func pick_stage_prime(available_primes: Array, rng: AtomizeRandom.Rng, large_repeat_prime = null) -> int:
+static func pick_stage_prime(available_primes: Array, rng: Random.Rng, large_repeat_prime = null) -> int:
 	var weighted_primes: Array = []
 
 	for prime in available_primes:
@@ -206,16 +210,25 @@ static func pick_stage_prime(available_primes: Array, rng: AtomizeRandom.Rng, la
 		for count in range(weight):
 			weighted_primes.append(prime)
 
-	return weighted_primes[AtomizeRandom.random_int(rng, 0, weighted_primes.size() - 1)]
+	return weighted_primes[Random.random_int(rng, 0, weighted_primes.size() - 1)]
 
-static func pick_large_repeat_prime(rng: AtomizeRandom.Rng) -> int:
+static func get_fallback_stage_primes(max_prime_value: int) -> Array:
+	var fallback_primes: Array = []
+
+	for prime in PLAYABLE_STAGE_PRIMES:
+		if prime <= max_prime_value:
+			fallback_primes.append(prime)
+
+	return fallback_primes
+
+static func pick_large_repeat_prime(rng: Random.Rng) -> int:
 	var weighted_large_primes := [19, 19, 23]
 
 	return weighted_large_primes[
-		AtomizeRandom.random_int(rng, 0, weighted_large_primes.size() - 1)
+		Random.random_int(rng, 0, weighted_large_primes.size() - 1)
 	]
 
-static func get_desired_large_repeat_count(stage_index: int, factor_count: int, rng: AtomizeRandom.Rng) -> int:
+static func get_desired_large_repeat_count(stage_index: int, factor_count: int, rng: Random.Rng) -> int:
 	var max_repeat_count = min(
 		factor_count,
 		min(1 + floori(float(stage_index) / 4.0), MAX_LARGE_REPEAT_COUNT)
@@ -224,4 +237,4 @@ static func get_desired_large_repeat_count(stage_index: int, factor_count: int, 
 	if max_repeat_count <= 1:
 		return 1
 
-	return AtomizeRandom.random_int(rng, 1, max_repeat_count)
+	return Random.random_int(rng, 1, max_repeat_count)
