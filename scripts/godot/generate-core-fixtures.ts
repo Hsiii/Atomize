@@ -1,5 +1,6 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { format, resolveConfig } from 'prettier';
 
 import {
     advanceSoloState,
@@ -249,6 +250,12 @@ const fixture = {
 };
 
 mkdirSync(path.dirname(outputPath), { recursive: true });
-writeFileSync(outputPath, `${JSON.stringify(fixture, undefined, 2)}\n`);
+const prettierOptions = (await resolveConfig(outputPath)) ?? {};
+const formattedFixture = await format(JSON.stringify(fixture), {
+    ...prettierOptions,
+    parser: 'json',
+});
+
+writeFileSync(outputPath, formattedFixture);
 
 console.log(`Wrote ${outputPath}`);
