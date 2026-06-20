@@ -8,3 +8,7 @@ coverage
 .env.local
 apps/web/.env.local
 .vercel
+godot/.godot/
+godot/.import/
+godot/export/
+godot/build/

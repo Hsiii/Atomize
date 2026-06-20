@@ -6,6 +6,7 @@
     "scripts": {
         "dev": "vite",
         "godot:fixtures": "bun run scripts/godot/generate-core-fixtures.ts",
+        "godot:test": "bun run godot:fixtures && bun run scripts/godot/run-core-parity.ts",
         "prebuild": "tsc -p tsconfig.json --noEmit",
         "build": "vite build",
         "lint": "eslint ."
