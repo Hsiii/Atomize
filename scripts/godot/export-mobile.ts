@@ -39,12 +39,28 @@ const result = spawnSync(
         exportConfig.outputPath,
     ],
     {
-        stdio: 'inherit',
+        encoding: 'utf8',
     }
 );
 
+if (result.stdout) {
+    process.stdout.write(result.stdout);
+}
+
+if (result.stderr) {
+    process.stderr.write(result.stderr);
+}
+
 if (result.error) {
     console.error(`[Error] Godot export failed: ${result.error.message}`);
+    process.exit(1);
+}
+
+if (
+    result.stderr.includes('SCRIPT ERROR') ||
+    result.stderr.includes('Parse Error') ||
+    result.stderr.includes('Failed to load script')
+) {
     process.exit(1);
 }
 

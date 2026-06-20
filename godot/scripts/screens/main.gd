@@ -1,5 +1,6 @@
 extends Control
 
+const Game := preload("res://scripts/core/game.gd")
 const SOLO_SEED := "godot-local"
 
 var solo_state: Dictionary
@@ -11,7 +12,7 @@ var result_label: Label
 var button_grid: GridContainer
 
 func _ready() -> void:
-	solo_state = AtomizeGame.create_initial_solo_state(SOLO_SEED)
+	solo_state = Game.create_initial_solo_state(SOLO_SEED)
 	_build_layout()
 	_render()
 
@@ -58,7 +59,7 @@ func _build_layout() -> void:
 	button_grid.add_theme_constant_override("v_separation", 12)
 	stack.add_child(button_grid)
 
-	for prime in AtomizeGame.get_playable_stage_primes():
+	for prime in Game.get_playable_stage_primes():
 		var button := Button.new()
 		button.text = str(prime)
 		button.custom_minimum_size = Vector2(96, 72)
@@ -80,9 +81,9 @@ func _build_layout() -> void:
 
 func _on_prime_pressed(prime: int) -> void:
 	var current_stage: Dictionary = solo_state["currentStage"]
-	var outcome := AtomizeGame.apply_prime_selection(current_stage, prime)
-	var was_cleared := outcome["kind"] == "correct" and outcome["cleared"]
-	solo_state = AtomizeGame.advance_solo_state(solo_state, SOLO_SEED, prime)
+	var outcome: Dictionary = Game.apply_prime_selection(current_stage, prime)
+	var was_cleared: bool = outcome["kind"] == "correct" and outcome["cleared"]
+	solo_state = Game.advance_solo_state(solo_state, SOLO_SEED, prime)
 
 	if outcome["kind"] == "wrong":
 		result_label.text = "Miss: -1 HP"
@@ -94,7 +95,7 @@ func _on_prime_pressed(prime: int) -> void:
 	_render()
 
 func _on_reset_pressed() -> void:
-	solo_state = AtomizeGame.create_initial_solo_state(SOLO_SEED)
+	solo_state = Game.create_initial_solo_state(SOLO_SEED)
 	result_label.text = ""
 	_render()
 
@@ -105,7 +106,7 @@ func _render() -> void:
 	remaining_label.text = "Factors left: %s" % _join_numbers(stage["remainingFactors"])
 	stats_label.text = "HP %s / %s  Score %s  Combo %s" % [
 		solo_state["hp"],
-		AtomizeGame.SOLO_MAX_HP,
+		Game.SOLO_MAX_HP,
 		solo_state["score"],
 		solo_state["combo"],
 	]
