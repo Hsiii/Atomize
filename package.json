@@ -5,6 +5,7 @@
     "packageManager": "bun@1.2.5",
     "scripts": {
         "dev": "vite",
+        "godot:fixtures": "bun run scripts/godot/generate-core-fixtures.ts",
         "prebuild": "tsc -p tsconfig.json --noEmit",
         "build": "vite build",
         "lint": "eslint ."

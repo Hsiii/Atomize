@@ -1,0 +1,3194 @@
+{
+    "generatedBy": "scripts/godot/generate-core-fixtures.ts",
+    "primePool": [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53],
+    "timing": {
+        "blobRevealTotalMs": 3000,
+        "damagePopLifetimeMs": 780,
+        "hpImpactTailMs": 240,
+        "hpLossBaseDurationMs": 220,
+        "hpLossPerPointDurationMs": 28,
+        "hpRegenBaseDurationMs": 260,
+        "hpRegenPerPointDurationMs": 24,
+        "hpZeroHoldMs": 900,
+        "keyboardDigitBufferWindowMs": 250,
+        "multiplayerComboStepDelayMs": 220,
+        "perfectBurstDurationMs": 1120,
+        "selfFaultDurationMs": 600,
+        "soloComboStepDelayMs": 140
+    },
+    "damage": [
+        {
+            "prime": 2,
+            "factorDamage": 4
+        },
+        {
+            "prime": 3,
+            "factorDamage": 6
+        },
+        {
+            "prime": 5,
+            "factorDamage": 10
+        },
+        {
+            "prime": 7,
+            "factorDamage": 14
+        },
+        {
+            "prime": 11,
+            "factorDamage": 22
+        },
+        {
+            "prime": 13,
+            "factorDamage": 26
+        },
+        {
+            "prime": 17,
+            "factorDamage": 34
+        },
+        {
+            "prime": 19,
+            "factorDamage": 38
+        },
+        {
+            "prime": 23,
+            "factorDamage": 46
+        },
+        {
+            "prime": 29,
+            "factorDamage": 58
+        },
+        {
+            "prime": 31,
+            "factorDamage": 62
+        },
+        {
+            "prime": 37,
+            "factorDamage": 74
+        },
+        {
+            "prime": 41,
+            "factorDamage": 82
+        },
+        {
+            "prime": 43,
+            "factorDamage": 86
+        },
+        {
+            "prime": 47,
+            "factorDamage": 94
+        },
+        {
+            "prime": 53,
+            "factorDamage": 106
+        }
+    ],
+    "comboDamage": [
+        {
+            "combo": 0,
+            "damage": 0
+        },
+        {
+            "combo": 1,
+            "damage": 0
+        },
+        {
+            "combo": 2,
+            "damage": 16
+        },
+        {
+            "combo": 3,
+            "damage": 32
+        },
+        {
+            "combo": 4,
+            "damage": 48
+        },
+        {
+            "combo": 5,
+            "damage": 64
+        },
+        {
+            "combo": 6,
+            "damage": 80
+        },
+        {
+            "combo": 7,
+            "damage": 96
+        },
+        {
+            "combo": 8,
+            "damage": 112
+        },
+        {
+            "combo": 9,
+            "damage": 128
+        }
+    ],
+    "hashes": [
+        {
+            "seed": "atomize",
+            "hash": 3866197210
+        },
+        {
+            "seed": "room-42",
+            "hash": 319409459
+        },
+        {
+            "seed": "tutorial:left",
+            "hash": 986013446
+        },
+        {
+            "seed": "large-repeat",
+            "hash": 2123124012
+        },
+        {
+            "seed": "2026-06-20",
+            "hash": 2983991765
+        }
+    ],
+    "rng": [
+        {
+            "seed": "atomize",
+            "values": [
+                0.8334507723338902, 0.9401239722501487, 0.07541995355859399,
+                0.2449533878825605, 0.427030824823305, 0.8709399569779634,
+                0.39379337383434176, 0.45979159278795123, 0.16387520171701908,
+                0.14184347330592573, 0.4131943369284272, 0.986709201708436
+            ]
+        },
+        {
+            "seed": "room-42",
+            "values": [
+                0.4503304890822619, 0.5844878733623773, 0.11219815630465746,
+                0.04303662572056055, 0.1615998917259276, 0.42467193002812564,
+                0.03536357660777867, 0.10475284280255437, 0.2960865991190076,
+                0.4068233601283282, 0.162415555678308, 0.7491337559185922
+            ]
+        },
+        {
+            "seed": "tutorial:left",
+            "values": [
+                0.761593014234677, 0.03567157848738134, 0.23391291219741106,
+                0.4641902504954487, 0.9770071818493307, 0.6259425831958652,
+                0.30216951412148774, 0.28000856656581163, 0.36091222474351525,
+                0.05072330683469772, 0.5872119853738695, 0.9577184396330267
+            ]
+        },
+        {
+            "seed": "large-repeat",
+            "values": [
+                0.9160655785817653, 0.9454039244446903, 0.7130044179502875,
+                0.21759803663007915, 0.968232637969777, 0.483831514371559,
+                0.09800897864624858, 0.4630976321641356, 0.2598997005261481,
+                0.25608428567647934, 0.365708026336506, 0.7860057516954839
+            ]
+        },
+        {
+            "seed": "2026-06-20",
+            "values": [
+                0.40736746811307967, 0.7942296271212399, 0.2080541644245386,
+                0.14507262804545462, 0.3590348092839122, 0.043256828328594565,
+                0.5934343123808503, 0.27706444286741316, 0.8927783409599215,
+                0.17111447593197227, 0.9023289063479751, 0.3647398161701858
+            ]
+        }
+    ],
+    "randomInts": [
+        {
+            "seed": "atomize",
+            "ranges": [
+                {
+                    "min": 0,
+                    "max": 1,
+                    "value": 1
+                },
+                {
+                    "min": 1,
+                    "max": 5,
+                    "value": 5
+                },
+                {
+                    "min": 3,
+                    "max": 17,
+                    "value": 4
+                },
+                {
+                    "min": 0,
+                    "max": 31,
+                    "value": 7
+                },
+                {
+                    "min": 11,
+                    "max": 53,
+                    "value": 29
+                }
+            ]
+        },
+        {
+            "seed": "room-42",
+            "ranges": [
+                {
+                    "min": 0,
+                    "max": 1,
+                    "value": 0
+                },
+                {
+                    "min": 1,
+                    "max": 5,
+                    "value": 3
+                },
+                {
+                    "min": 3,
+                    "max": 17,
+                    "value": 4
+                },
+                {
+                    "min": 0,
+                    "max": 31,
+                    "value": 1
+                },
+                {
+                    "min": 11,
+                    "max": 53,
+                    "value": 17
+                }
+            ]
+        },
+        {
+            "seed": "tutorial:left",
+            "ranges": [
+                {
+                    "min": 0,
+                    "max": 1,
+                    "value": 1
+                },
+                {
+                    "min": 1,
+                    "max": 5,
+                    "value": 1
+                },
+                {
+                    "min": 3,
+                    "max": 17,
+                    "value": 6
+                },
+                {
+                    "min": 0,
+                    "max": 31,
+                    "value": 14
+                },
+                {
+                    "min": 11,
+                    "max": 53,
+                    "value": 53
+                }
+            ]
+        },
+        {
+            "seed": "large-repeat",
+            "ranges": [
+                {
+                    "min": 0,
+                    "max": 1,
+                    "value": 1
+                },
+                {
+                    "min": 1,
+                    "max": 5,
+                    "value": 5
+                },
+                {
+                    "min": 3,
+                    "max": 17,
+                    "value": 13
+                },
+                {
+                    "min": 0,
+                    "max": 31,
+                    "value": 6
+                },
+                {
+                    "min": 11,
+                    "max": 53,
+                    "value": 52
+                }
+            ]
+        },
+        {
+            "seed": "2026-06-20",
+            "ranges": [
+                {
+                    "min": 0,
+                    "max": 1,
+                    "value": 0
+                },
+                {
+                    "min": 1,
+                    "max": 5,
+                    "value": 4
+                },
+                {
+                    "min": 3,
+                    "max": 17,
+                    "value": 6
+                },
+                {
+                    "min": 0,
+                    "max": 31,
+                    "value": 4
+                },
+                {
+                    "min": 11,
+                    "max": 53,
+                    "value": 26
+                }
+            ]
+        }
+    ],
+    "stages": [
+        {
+            "seed": "atomize",
+            "stageIndex": 0,
+            "stage": {
+                "stageIndex": 0,
+                "targetValue": 255,
+                "remainingValue": 255,
+                "factors": [3, 5, 17],
+                "remainingFactors": [3, 5, 17]
+            }
+        },
+        {
+            "seed": "atomize",
+            "stageIndex": 1,
+            "stage": {
+                "stageIndex": 1,
+                "targetValue": 805,
+                "remainingValue": 805,
+                "factors": [5, 7, 23],
+                "remainingFactors": [5, 7, 23]
+            }
+        },
+        {
+            "seed": "atomize",
+            "stageIndex": 2,
+            "stage": {
+                "stageIndex": 2,
+                "targetValue": 285,
+                "remainingValue": 285,
+                "factors": [3, 5, 19],
+                "remainingFactors": [3, 5, 19]
+            }
+        },
+        {
+            "seed": "atomize",
+            "stageIndex": 3,
+            "stage": {
+                "stageIndex": 3,
+                "targetValue": 10166,
+                "remainingValue": 10166,
+                "factors": [2, 13, 17, 23],
+                "remainingFactors": [2, 13, 17, 23]
+            }
+        },
+        {
+            "seed": "atomize",
+            "stageIndex": 4,
+            "stage": {
+                "stageIndex": 4,
+                "targetValue": 9522,
+                "remainingValue": 9522,
+                "factors": [2, 3, 3, 23, 23],
+                "remainingFactors": [2, 3, 3, 23, 23]
+            }
+        },
+        {
+            "seed": "atomize",
+            "stageIndex": 5,
+            "stage": {
+                "stageIndex": 5,
+                "targetValue": 7084,
+                "remainingValue": 7084,
+                "factors": [2, 2, 7, 11, 23],
+                "remainingFactors": [2, 2, 7, 11, 23]
+            }
+        },
+        {
+            "seed": "atomize",
+            "stageIndex": 6,
+            "stage": {
+                "stageIndex": 6,
+                "targetValue": 807177,
+                "remainingValue": 807177,
+                "factors": [3, 7, 7, 17, 17, 19],
+                "remainingFactors": [3, 7, 7, 17, 17, 19]
+            }
+        },
+        {
+            "seed": "atomize",
+            "stageIndex": 7,
+            "stage": {
+                "stageIndex": 7,
+                "targetValue": 4275,
+                "remainingValue": 4275,
+                "factors": [3, 3, 5, 5, 19],
+                "remainingFactors": [3, 3, 5, 5, 19]
+            }
+        },
+        {
+            "seed": "atomize",
+            "stageIndex": 8,
+            "stage": {
+                "stageIndex": 8,
+                "targetValue": 394212,
+                "remainingValue": 394212,
+                "factors": [2, 2, 3, 7, 13, 19, 19],
+                "remainingFactors": [2, 2, 3, 7, 13, 19, 19]
+            }
+        },
+        {
+            "seed": "atomize",
+            "stageIndex": 9,
+            "stage": {
+                "stageIndex": 9,
+                "targetValue": 798798,
+                "remainingValue": 798798,
+                "factors": [2, 3, 7, 7, 11, 13, 19],
+                "remainingFactors": [2, 3, 7, 7, 11, 13, 19]
+            }
+        },
+        {
+            "seed": "atomize",
+            "stageIndex": 10,
+            "stage": {
+                "stageIndex": 10,
+                "targetValue": 864234,
+                "remainingValue": 864234,
+                "factors": [2, 3, 3, 7, 19, 19, 19],
+                "remainingFactors": [2, 3, 3, 7, 19, 19, 19]
+            }
+        },
+        {
+            "seed": "atomize",
+            "stageIndex": 11,
+            "stage": {
+                "stageIndex": 11,
+                "targetValue": 823004,
+                "remainingValue": 823004,
+                "factors": [2, 2, 7, 7, 13, 17, 19],
+                "remainingFactors": [2, 2, 7, 7, 13, 17, 19]
+            }
+        },
+        {
+            "seed": "atomize",
+            "stageIndex": 12,
+            "stage": {
+                "stageIndex": 12,
+                "targetValue": 844662,
+                "remainingValue": 844662,
+                "factors": [2, 3, 7, 7, 13, 13, 17],
+                "remainingFactors": [2, 3, 7, 7, 13, 13, 17]
+            }
+        },
+        {
+            "seed": "atomize",
+            "stageIndex": 13,
+            "stage": {
+                "stageIndex": 13,
+                "targetValue": 277875,
+                "remainingValue": 277875,
+                "factors": [3, 3, 5, 5, 5, 13, 19],
+                "remainingFactors": [3, 3, 5, 5, 5, 13, 19]
+            }
+        },
+        {
+            "seed": "atomize",
+            "stageIndex": 14,
+            "stage": {
+                "stageIndex": 14,
+                "targetValue": 488796,
+                "remainingValue": 488796,
+                "factors": [2, 2, 3, 7, 11, 23, 23],
+                "remainingFactors": [2, 2, 3, 7, 11, 23, 23]
+            }
+        },
+        {
+            "seed": "atomize",
+            "stageIndex": 15,
+            "stage": {
+                "stageIndex": 15,
+                "targetValue": 513084,
+                "remainingValue": 513084,
+                "factors": [2, 2, 3, 11, 13, 13, 23],
+                "remainingFactors": [2, 2, 3, 11, 13, 13, 23]
+            }
+        },
+        {
+            "seed": "room-42",
+            "stageIndex": 0,
+            "stage": {
+                "stageIndex": 0,
+                "targetValue": 578,
+                "remainingValue": 578,
+                "factors": [2, 17, 17],
+                "remainingFactors": [2, 17, 17]
+            }
+        },
+        {
+            "seed": "room-42",
+            "stageIndex": 1,
+            "stage": {
+                "stageIndex": 1,
+                "targetValue": 2023,
+                "remainingValue": 2023,
+                "factors": [7, 17, 17],
+                "remainingFactors": [7, 17, 17]
+            }
+        },
+        {
+            "seed": "room-42",
+            "stageIndex": 2,
+            "stage": {
+                "stageIndex": 2,
+                "targetValue": 1564,
+                "remainingValue": 1564,
+                "factors": [2, 2, 17, 23],
+                "remainingFactors": [2, 2, 17, 23]
+            }
+        },
+        {
+            "seed": "room-42",
+            "stageIndex": 3,
+            "stage": {
+                "stageIndex": 3,
+                "targetValue": 1105,
+                "remainingValue": 1105,
+                "factors": [5, 13, 17],
+                "remainingFactors": [5, 13, 17]
+            }
+        },
+        {
+            "seed": "room-42",
+            "stageIndex": 4,
+            "stage": {
+                "stageIndex": 4,
+                "targetValue": 2346,
+                "remainingValue": 2346,
+                "factors": [2, 3, 17, 23],
+                "remainingFactors": [2, 3, 17, 23]
+            }
+        },
+        {
+            "seed": "room-42",
+            "stageIndex": 5,
+            "stage": {
+                "stageIndex": 5,
+                "targetValue": 203665,
+                "remainingValue": 203665,
+                "factors": [5, 7, 11, 23, 23],
+                "remainingFactors": [5, 7, 11, 23, 23]
+            }
+        },
+        {
+            "seed": "room-42",
+            "stageIndex": 6,
+            "stage": {
+                "stageIndex": 6,
+                "targetValue": 66885,
+                "remainingValue": 66885,
+                "factors": [3, 5, 7, 7, 7, 13],
+                "remainingFactors": [3, 5, 7, 7, 7, 13]
+            }
+        },
+        {
+            "seed": "room-42",
+            "stageIndex": 7,
+            "stage": {
+                "stageIndex": 7,
+                "targetValue": 828,
+                "remainingValue": 828,
+                "factors": [2, 2, 3, 3, 23],
+                "remainingFactors": [2, 2, 3, 3, 23]
+            }
+        },
+        {
+            "seed": "room-42",
+            "stageIndex": 8,
+            "stage": {
+                "stageIndex": 8,
+                "targetValue": 905388,
+                "remainingValue": 905388,
+                "factors": [2, 2, 3, 11, 19, 19, 19],
+                "remainingFactors": [2, 2, 3, 11, 19, 19, 19]
+            }
+        },
+        {
+            "seed": "room-42",
+            "stageIndex": 9,
+            "stage": {
+                "stageIndex": 9,
+                "targetValue": 676875,
+                "remainingValue": 676875,
+                "factors": [3, 5, 5, 5, 5, 19, 19],
+                "remainingFactors": [3, 5, 5, 5, 5, 19, 19]
+            }
+        },
+        {
+            "seed": "room-42",
+            "stageIndex": 10,
+            "stage": {
+                "stageIndex": 10,
+                "targetValue": 929775,
+                "remainingValue": 929775,
+                "factors": [3, 5, 5, 7, 7, 11, 23],
+                "remainingFactors": [3, 5, 5, 7, 7, 11, 23]
+            }
+        },
+        {
+            "seed": "room-42",
+            "stageIndex": 11,
+            "stage": {
+                "stageIndex": 11,
+                "targetValue": null,
+                "remainingValue": null,
+                "factors": [3, 5, 5, 19, 19, 19, null],
+                "remainingFactors": [3, 5, 5, 19, 19, 19, null]
+            }
+        },
+        {
+            "seed": "room-42",
+            "stageIndex": 12,
+            "stage": {
+                "stageIndex": 12,
+                "targetValue": null,
+                "remainingValue": null,
+                "factors": [5, 11, 11, 13, 17, 23, null],
+                "remainingFactors": [5, 11, 11, 13, 17, 23, null]
+            }
+        },
+        {
+            "seed": "room-42",
+            "stageIndex": 13,
+            "stage": {
+                "stageIndex": 13,
+                "targetValue": 633555,
+                "remainingValue": 633555,
+                "factors": [3, 3, 3, 5, 13, 19, 19],
+                "remainingFactors": [3, 3, 3, 5, 13, 19, 19]
+            }
+        },
+        {
+            "seed": "room-42",
+            "stageIndex": 14,
+            "stage": {
+                "stageIndex": 14,
+                "targetValue": null,
+                "remainingValue": null,
+                "factors": [3, 5, 5, 17, 23, 23, null],
+                "remainingFactors": [3, 5, 5, 17, 23, 23, null]
+            }
+        },
+        {
+            "seed": "room-42",
+            "stageIndex": 15,
+            "stage": {
+                "stageIndex": 15,
+                "targetValue": 426972,
+                "remainingValue": 426972,
+                "factors": [2, 2, 3, 7, 13, 17, 23],
+                "remainingFactors": [2, 2, 3, 7, 13, 17, 23]
+            }
+        },
+        {
+            "seed": "tutorial:left",
+            "stageIndex": 0,
+            "stage": {
+                "stageIndex": 0,
+                "targetValue": 561,
+                "remainingValue": 561,
+                "factors": [3, 11, 17],
+                "remainingFactors": [3, 11, 17]
+            }
+        },
+        {
+            "seed": "tutorial:left",
+            "stageIndex": 1,
+            "stage": {
+                "stageIndex": 1,
+                "targetValue": 1729,
+                "remainingValue": 1729,
+                "factors": [7, 13, 19],
+                "remainingFactors": [7, 13, 19]
+            }
+        },
+        {
+            "seed": "tutorial:left",
+            "stageIndex": 2,
+            "stage": {
+                "stageIndex": 2,
+                "targetValue": 9295,
+                "remainingValue": 9295,
+                "factors": [5, 11, 13, 13],
+                "remainingFactors": [5, 11, 13, 13]
+            }
+        },
+        {
+            "seed": "tutorial:left",
+            "stageIndex": 3,
+            "stage": {
+                "stageIndex": 3,
+                "targetValue": 76,
+                "remainingValue": 76,
+                "factors": [2, 2, 19],
+                "remainingFactors": [2, 2, 19]
+            }
+        },
+        {
+            "seed": "tutorial:left",
+            "stageIndex": 4,
+            "stage": {
+                "stageIndex": 4,
+                "targetValue": 1976,
+                "remainingValue": 1976,
+                "factors": [2, 2, 2, 13, 19],
+                "remainingFactors": [2, 2, 2, 13, 19]
+            }
+        },
+        {
+            "seed": "tutorial:left",
+            "stageIndex": 5,
+            "stage": {
+                "stageIndex": 5,
+                "targetValue": 7935,
+                "remainingValue": 7935,
+                "factors": [3, 5, 23, 23],
+                "remainingFactors": [3, 5, 23, 23]
+            }
+        },
+        {
+            "seed": "tutorial:left",
+            "stageIndex": 6,
+            "stage": {
+                "stageIndex": 6,
+                "targetValue": 13794,
+                "remainingValue": 13794,
+                "factors": [2, 3, 11, 11, 19],
+                "remainingFactors": [2, 3, 11, 11, 19]
+            }
+        },
+        {
+            "seed": "tutorial:left",
+            "stageIndex": 7,
+            "stage": {
+                "stageIndex": 7,
+                "targetValue": 805805,
+                "remainingValue": 805805,
+                "factors": [5, 7, 7, 11, 13, 23],
+                "remainingFactors": [5, 7, 7, 11, 13, 23]
+            }
+        },
+        {
+            "seed": "tutorial:left",
+            "stageIndex": 8,
+            "stage": {
+                "stageIndex": 8,
+                "targetValue": null,
+                "remainingValue": null,
+                "factors": [5, 7, 7, 11, 23, 23, null],
+                "remainingFactors": [5, 7, 7, 11, 23, 23, null]
+            }
+        },
+        {
+            "seed": "tutorial:left",
+            "stageIndex": 9,
+            "stage": {
+                "stageIndex": 9,
+                "targetValue": 329175,
+                "remainingValue": 329175,
+                "factors": [3, 3, 5, 5, 7, 11, 19],
+                "remainingFactors": [3, 3, 5, 5, 7, 11, 19]
+            }
+        },
+        {
+            "seed": "tutorial:left",
+            "stageIndex": 10,
+            "stage": {
+                "stageIndex": 10,
+                "targetValue": 370386,
+                "remainingValue": 370386,
+                "factors": [2, 3, 3, 3, 19, 19, 19],
+                "remainingFactors": [2, 3, 3, 3, 19, 19, 19]
+            }
+        },
+        {
+            "seed": "tutorial:left",
+            "stageIndex": 11,
+            "stage": {
+                "stageIndex": 11,
+                "targetValue": 713336,
+                "remainingValue": 713336,
+                "factors": [2, 2, 2, 13, 19, 19, 19],
+                "remainingFactors": [2, 2, 2, 13, 19, 19, 19]
+            }
+        },
+        {
+            "seed": "tutorial:left",
+            "stageIndex": 12,
+            "stage": {
+                "stageIndex": 12,
+                "targetValue": 25992,
+                "remainingValue": 25992,
+                "factors": [2, 2, 2, 3, 3, 19, 19],
+                "remainingFactors": [2, 2, 2, 3, 3, 19, 19]
+            }
+        },
+        {
+            "seed": "tutorial:left",
+            "stageIndex": 13,
+            "stage": {
+                "stageIndex": 13,
+                "targetValue": null,
+                "remainingValue": null,
+                "factors": [5, 5, 11, 11, 19, 19, null],
+                "remainingFactors": [5, 5, 11, 11, 19, 19, null]
+            }
+        },
+        {
+            "seed": "tutorial:left",
+            "stageIndex": 14,
+            "stage": {
+                "stageIndex": 14,
+                "targetValue": 798798,
+                "remainingValue": 798798,
+                "factors": [2, 3, 7, 7, 11, 13, 19],
+                "remainingFactors": [2, 3, 7, 7, 11, 13, 19]
+            }
+        },
+        {
+            "seed": "tutorial:left",
+            "stageIndex": 15,
+            "stage": {
+                "stageIndex": 15,
+                "targetValue": 640458,
+                "remainingValue": 640458,
+                "factors": [2, 3, 3, 7, 13, 17, 23],
+                "remainingFactors": [2, 3, 3, 7, 13, 17, 23]
+            }
+        },
+        {
+            "seed": "large-repeat",
+            "stageIndex": 0,
+            "stage": {
+                "stageIndex": 0,
+                "targetValue": 33,
+                "remainingValue": 33,
+                "factors": [3, 11],
+                "remainingFactors": [3, 11]
+            }
+        },
+        {
+            "seed": "large-repeat",
+            "stageIndex": 1,
+            "stage": {
+                "stageIndex": 1,
+                "targetValue": 187,
+                "remainingValue": 187,
+                "factors": [11, 17],
+                "remainingFactors": [11, 17]
+            }
+        },
+        {
+            "seed": "large-repeat",
+            "stageIndex": 2,
+            "stage": {
+                "stageIndex": 2,
+                "targetValue": 1955,
+                "remainingValue": 1955,
+                "factors": [5, 17, 23],
+                "remainingFactors": [5, 17, 23]
+            }
+        },
+        {
+            "seed": "large-repeat",
+            "stageIndex": 3,
+            "stage": {
+                "stageIndex": 3,
+                "targetValue": 152,
+                "remainingValue": 152,
+                "factors": [2, 2, 2, 19],
+                "remainingFactors": [2, 2, 2, 19]
+            }
+        },
+        {
+            "seed": "large-repeat",
+            "stageIndex": 4,
+            "stage": {
+                "stageIndex": 4,
+                "targetValue": 5814,
+                "remainingValue": 5814,
+                "factors": [2, 3, 3, 17, 19],
+                "remainingFactors": [2, 3, 3, 17, 19]
+            }
+        },
+        {
+            "seed": "large-repeat",
+            "stageIndex": 5,
+            "stage": {
+                "stageIndex": 5,
+                "targetValue": 28158,
+                "remainingValue": 28158,
+                "factors": [2, 3, 13, 19, 19],
+                "remainingFactors": [2, 3, 13, 19, 19]
+            }
+        },
+        {
+            "seed": "large-repeat",
+            "stageIndex": 6,
+            "stage": {
+                "stageIndex": 6,
+                "targetValue": 576555,
+                "remainingValue": 576555,
+                "factors": [3, 5, 7, 17, 17, 19],
+                "remainingFactors": [3, 5, 7, 17, 17, 19]
+            }
+        },
+        {
+            "seed": "large-repeat",
+            "stageIndex": 7,
+            "stage": {
+                "stageIndex": 7,
+                "targetValue": 25432,
+                "remainingValue": 25432,
+                "factors": [2, 2, 2, 11, 17, 17],
+                "remainingFactors": [2, 2, 2, 11, 17, 17]
+            }
+        },
+        {
+            "seed": "large-repeat",
+            "stageIndex": 8,
+            "stage": {
+                "stageIndex": 8,
+                "targetValue": null,
+                "remainingValue": null,
+                "factors": [5, 5, 7, 11, 11, 23, null],
+                "remainingFactors": [5, 5, 7, 11, 11, 23, null]
+            }
+        },
+        {
+            "seed": "large-repeat",
+            "stageIndex": 9,
+            "stage": {
+                "stageIndex": 9,
+                "targetValue": 111078,
+                "remainingValue": 111078,
+                "factors": [2, 3, 3, 3, 11, 11, 17],
+                "remainingFactors": [2, 3, 3, 3, 11, 11, 17]
+            }
+        },
+        {
+            "seed": "large-repeat",
+            "stageIndex": 10,
+            "stage": {
+                "stageIndex": 10,
+                "targetValue": 44616,
+                "remainingValue": 44616,
+                "factors": [2, 2, 2, 3, 11, 13, 13],
+                "remainingFactors": [2, 2, 2, 3, 11, 13, 13]
+            }
+        },
+        {
+            "seed": "large-repeat",
+            "stageIndex": 11,
+            "stage": {
+                "stageIndex": 11,
+                "targetValue": 41496,
+                "remainingValue": 41496,
+                "factors": [2, 2, 2, 3, 7, 13, 19],
+                "remainingFactors": [2, 2, 2, 3, 7, 13, 19]
+            }
+        },
+        {
+            "seed": "large-repeat",
+            "stageIndex": 12,
+            "stage": {
+                "stageIndex": 12,
+                "targetValue": 460845,
+                "remainingValue": 460845,
+                "factors": [3, 3, 5, 7, 7, 11, 19],
+                "remainingFactors": [3, 3, 5, 7, 7, 11, 19]
+            }
+        },
+        {
+            "seed": "large-repeat",
+            "stageIndex": 13,
+            "stage": {
+                "stageIndex": 13,
+                "targetValue": 273714,
+                "remainingValue": 273714,
+                "factors": [2, 3, 7, 7, 7, 7, 19],
+                "remainingFactors": [2, 3, 7, 7, 7, 7, 19]
+            }
+        },
+        {
+            "seed": "large-repeat",
+            "stageIndex": 14,
+            "stage": {
+                "stageIndex": 14,
+                "targetValue": null,
+                "remainingValue": null,
+                "factors": [5, 13, 13, 13, 17, 23, null],
+                "remainingFactors": [5, 13, 13, 13, 17, 23, null]
+            }
+        },
+        {
+            "seed": "large-repeat",
+            "stageIndex": 15,
+            "stage": {
+                "stageIndex": 15,
+                "targetValue": null,
+                "remainingValue": null,
+                "factors": [5, 5, 7, 19, 19, 19, null],
+                "remainingFactors": [5, 5, 7, 19, 19, 19, null]
+            }
+        },
+        {
+            "seed": "2026-06-20",
+            "stageIndex": 0,
+            "stage": {
+                "stageIndex": 0,
+                "targetValue": 2783,
+                "remainingValue": 2783,
+                "factors": [11, 11, 23],
+                "remainingFactors": [11, 11, 23]
+            }
+        },
+        {
+            "seed": "2026-06-20",
+            "stageIndex": 1,
+            "stage": {
+                "stageIndex": 1,
+                "targetValue": 115,
+                "remainingValue": 115,
+                "factors": [5, 23],
+                "remainingFactors": [5, 23]
+            }
+        },
+        {
+            "seed": "2026-06-20",
+            "stageIndex": 2,
+            "stage": {
+                "stageIndex": 2,
+                "targetValue": 21505,
+                "remainingValue": 21505,
+                "factors": [5, 11, 17, 23],
+                "remainingFactors": [5, 11, 17, 23]
+            }
+        },
+        {
+            "seed": "2026-06-20",
+            "stageIndex": 3,
+            "stage": {
+                "stageIndex": 3,
+                "targetValue": 104,
+                "remainingValue": 104,
+                "factors": [2, 2, 2, 13],
+                "remainingFactors": [2, 2, 2, 13]
+            }
+        },
+        {
+            "seed": "2026-06-20",
+            "stageIndex": 4,
+            "stage": {
+                "stageIndex": 4,
+                "targetValue": 11305,
+                "remainingValue": 11305,
+                "factors": [5, 7, 17, 19],
+                "remainingFactors": [5, 7, 17, 19]
+            }
+        },
+        {
+            "seed": "2026-06-20",
+            "stageIndex": 5,
+            "stage": {
+                "stageIndex": 5,
+                "targetValue": 2145,
+                "remainingValue": 2145,
+                "factors": [3, 5, 11, 13],
+                "remainingFactors": [3, 5, 11, 13]
+            }
+        },
+        {
+            "seed": "2026-06-20",
+            "stageIndex": 6,
+            "stage": {
+                "stageIndex": 6,
+                "targetValue": 124355,
+                "remainingValue": 124355,
+                "factors": [5, 7, 11, 17, 19],
+                "remainingFactors": [5, 7, 11, 17, 19]
+            }
+        },
+        {
+            "seed": "2026-06-20",
+            "stageIndex": 7,
+            "stage": {
+                "stageIndex": 7,
+                "targetValue": 80223,
+                "remainingValue": 80223,
+                "factors": [3, 11, 11, 13, 17],
+                "remainingFactors": [3, 11, 11, 13, 17]
+            }
+        },
+        {
+            "seed": "2026-06-20",
+            "stageIndex": 8,
+            "stage": {
+                "stageIndex": 8,
+                "targetValue": 547515,
+                "remainingValue": 547515,
+                "factors": [3, 3, 5, 23, 23, 23],
+                "remainingFactors": [3, 3, 5, 23, 23, 23]
+            }
+        },
+        {
+            "seed": "2026-06-20",
+            "stageIndex": 9,
+            "stage": {
+                "stageIndex": 9,
+                "targetValue": 947625,
+                "remainingValue": 947625,
+                "factors": [3, 5, 5, 5, 7, 19, 19],
+                "remainingFactors": [3, 5, 5, 5, 7, 19, 19]
+            }
+        },
+        {
+            "seed": "2026-06-20",
+            "stageIndex": 10,
+            "stage": {
+                "stageIndex": 10,
+                "targetValue": 253575,
+                "remainingValue": 253575,
+                "factors": [3, 3, 5, 5, 7, 7, 23],
+                "remainingFactors": [3, 3, 5, 5, 7, 7, 23]
+            }
+        },
+        {
+            "seed": "2026-06-20",
+            "stageIndex": 11,
+            "stage": {
+                "stageIndex": 11,
+                "targetValue": 834632,
+                "remainingValue": 834632,
+                "factors": [2, 2, 2, 17, 17, 19, 19],
+                "remainingFactors": [2, 2, 2, 17, 17, 19, 19]
+            }
+        },
+        {
+            "seed": "2026-06-20",
+            "stageIndex": 12,
+            "stage": {
+                "stageIndex": 12,
+                "targetValue": 966306,
+                "remainingValue": 966306,
+                "factors": [2, 3, 11, 11, 11, 11, 11],
+                "remainingFactors": [2, 3, 11, 11, 11, 11, 11]
+            }
+        },
+        {
+            "seed": "2026-06-20",
+            "stageIndex": 13,
+            "stage": {
+                "stageIndex": 13,
+                "targetValue": null,
+                "remainingValue": null,
+                "factors": [3, 5, 7, 13, 13, 19, null],
+                "remainingFactors": [3, 5, 7, 13, 13, 19, null]
+            }
+        },
+        {
+            "seed": "2026-06-20",
+            "stageIndex": 14,
+            "stage": {
+                "stageIndex": 14,
+                "targetValue": 714714,
+                "remainingValue": 714714,
+                "factors": [2, 3, 7, 7, 11, 13, 17],
+                "remainingFactors": [2, 3, 7, 7, 11, 13, 17]
+            }
+        },
+        {
+            "seed": "2026-06-20",
+            "stageIndex": 15,
+            "stage": {
+                "stageIndex": 15,
+                "targetValue": 748748,
+                "remainingValue": 748748,
+                "factors": [2, 2, 7, 11, 11, 13, 17],
+                "remainingFactors": [2, 2, 7, 11, 11, 13, 17]
+            }
+        }
+    ],
+    "selections": [
+        {
+            "seed": "atomize",
+            "stageIndex": 5,
+            "prime": 2,
+            "result": {
+                "kind": "correct",
+                "stage": {
+                    "stageIndex": 5,
+                    "targetValue": 7084,
+                    "remainingValue": 3542,
+                    "factors": [2, 2, 7, 11, 23],
+                    "remainingFactors": [2, 7, 11, 23]
+                },
+                "cleared": false
+            }
+        },
+        {
+            "seed": "atomize",
+            "stageIndex": 5,
+            "prime": 3,
+            "result": {
+                "kind": "wrong",
+                "stage": {
+                    "stageIndex": 5,
+                    "targetValue": 7084,
+                    "remainingValue": 7084,
+                    "factors": [2, 2, 7, 11, 23],
+                    "remainingFactors": [2, 2, 7, 11, 23]
+                },
+                "selectedPrime": 3
+            }
+        },
+        {
+            "seed": "room-42",
+            "stageIndex": 5,
+            "prime": 5,
+            "result": {
+                "kind": "correct",
+                "stage": {
+                    "stageIndex": 5,
+                    "targetValue": 203665,
+                    "remainingValue": 40733,
+                    "factors": [5, 7, 11, 23, 23],
+                    "remainingFactors": [7, 11, 23, 23]
+                },
+                "cleared": false
+            }
+        },
+        {
+            "seed": "room-42",
+            "stageIndex": 5,
+            "prime": 2,
+            "result": {
+                "kind": "wrong",
+                "stage": {
+                    "stageIndex": 5,
+                    "targetValue": 203665,
+                    "remainingValue": 203665,
+                    "factors": [5, 7, 11, 23, 23],
+                    "remainingFactors": [5, 7, 11, 23, 23]
+                },
+                "selectedPrime": 2
+            }
+        },
+        {
+            "seed": "tutorial:left",
+            "stageIndex": 5,
+            "prime": 3,
+            "result": {
+                "kind": "correct",
+                "stage": {
+                    "stageIndex": 5,
+                    "targetValue": 7935,
+                    "remainingValue": 2645,
+                    "factors": [3, 5, 23, 23],
+                    "remainingFactors": [5, 23, 23]
+                },
+                "cleared": false
+            }
+        },
+        {
+            "seed": "tutorial:left",
+            "stageIndex": 5,
+            "prime": 2,
+            "result": {
+                "kind": "wrong",
+                "stage": {
+                    "stageIndex": 5,
+                    "targetValue": 7935,
+                    "remainingValue": 7935,
+                    "factors": [3, 5, 23, 23],
+                    "remainingFactors": [3, 5, 23, 23]
+                },
+                "selectedPrime": 2
+            }
+        },
+        {
+            "seed": "large-repeat",
+            "stageIndex": 5,
+            "prime": 2,
+            "result": {
+                "kind": "correct",
+                "stage": {
+                    "stageIndex": 5,
+                    "targetValue": 28158,
+                    "remainingValue": 14079,
+                    "factors": [2, 3, 13, 19, 19],
+                    "remainingFactors": [3, 13, 19, 19]
+                },
+                "cleared": false
+            }
+        },
+        {
+            "seed": "large-repeat",
+            "stageIndex": 5,
+            "prime": 5,
+            "result": {
+                "kind": "wrong",
+                "stage": {
+                    "stageIndex": 5,
+                    "targetValue": 28158,
+                    "remainingValue": 28158,
+                    "factors": [2, 3, 13, 19, 19],
+                    "remainingFactors": [2, 3, 13, 19, 19]
+                },
+                "selectedPrime": 5
+            }
+        },
+        {
+            "seed": "2026-06-20",
+            "stageIndex": 5,
+            "prime": 3,
+            "result": {
+                "kind": "correct",
+                "stage": {
+                    "stageIndex": 5,
+                    "targetValue": 2145,
+                    "remainingValue": 715,
+                    "factors": [3, 5, 11, 13],
+                    "remainingFactors": [5, 11, 13]
+                },
+                "cleared": false
+            }
+        },
+        {
+            "seed": "2026-06-20",
+            "stageIndex": 5,
+            "prime": 2,
+            "result": {
+                "kind": "wrong",
+                "stage": {
+                    "stageIndex": 5,
+                    "targetValue": 2145,
+                    "remainingValue": 2145,
+                    "factors": [3, 5, 11, 13],
+                    "remainingFactors": [3, 5, 11, 13]
+                },
+                "selectedPrime": 2
+            }
+        }
+    ],
+    "soloRuns": [
+        {
+            "seed": "atomize",
+            "initialState": {
+                "hp": 1000,
+                "combo": 0,
+                "maxCombo": 0,
+                "score": 0,
+                "clearedStages": 0,
+                "currentStage": {
+                    "stageIndex": 0,
+                    "targetValue": 255,
+                    "remainingValue": 255,
+                    "factors": [3, 5, 17],
+                    "remainingFactors": [3, 5, 17]
+                }
+            },
+            "steps": [
+                {
+                    "before": {
+                        "hp": 1000,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "score": 0,
+                        "clearedStages": 0,
+                        "currentStage": {
+                            "stageIndex": 0,
+                            "targetValue": 255,
+                            "remainingValue": 255,
+                            "factors": [3, 5, 17],
+                            "remainingFactors": [3, 5, 17]
+                        }
+                    },
+                    "after": {
+                        "hp": 1000,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "score": 6,
+                        "clearedStages": 0,
+                        "currentStage": {
+                            "stageIndex": 0,
+                            "targetValue": 255,
+                            "remainingValue": 85,
+                            "factors": [3, 5, 17],
+                            "remainingFactors": [5, 17]
+                        }
+                    },
+                    "prime": 3
+                },
+                {
+                    "before": {
+                        "hp": 1000,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "score": 6,
+                        "clearedStages": 0,
+                        "currentStage": {
+                            "stageIndex": 0,
+                            "targetValue": 255,
+                            "remainingValue": 85,
+                            "factors": [3, 5, 17],
+                            "remainingFactors": [5, 17]
+                        }
+                    },
+                    "after": {
+                        "hp": 1000,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "score": 16,
+                        "clearedStages": 0,
+                        "currentStage": {
+                            "stageIndex": 0,
+                            "targetValue": 255,
+                            "remainingValue": 17,
+                            "factors": [3, 5, 17],
+                            "remainingFactors": [17]
+                        }
+                    },
+                    "prime": 5
+                },
+                {
+                    "before": {
+                        "hp": 1000,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "score": 16,
+                        "clearedStages": 0,
+                        "currentStage": {
+                            "stageIndex": 0,
+                            "targetValue": 255,
+                            "remainingValue": 17,
+                            "factors": [3, 5, 17],
+                            "remainingFactors": [17]
+                        }
+                    },
+                    "after": {
+                        "hp": 1000,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 50,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 805,
+                            "remainingValue": 805,
+                            "factors": [5, 7, 23],
+                            "remainingFactors": [5, 7, 23]
+                        }
+                    },
+                    "prime": 17
+                },
+                {
+                    "before": {
+                        "hp": 1000,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 50,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 805,
+                            "remainingValue": 805,
+                            "factors": [5, 7, 23],
+                            "remainingFactors": [5, 7, 23]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 50,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 805,
+                            "remainingValue": 805,
+                            "factors": [5, 7, 23],
+                            "remainingFactors": [5, 7, 23]
+                        }
+                    },
+                    "prime": 2
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 50,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 805,
+                            "remainingValue": 805,
+                            "factors": [5, 7, 23],
+                            "remainingFactors": [5, 7, 23]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 60,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 805,
+                            "remainingValue": 161,
+                            "factors": [5, 7, 23],
+                            "remainingFactors": [7, 23]
+                        }
+                    },
+                    "prime": 5,
+                    "options": {
+                        "resolvingQueueLength": 3
+                    }
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 60,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 805,
+                            "remainingValue": 161,
+                            "factors": [5, 7, 23],
+                            "remainingFactors": [7, 23]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 74,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 805,
+                            "remainingValue": 23,
+                            "factors": [5, 7, 23],
+                            "remainingFactors": [23]
+                        }
+                    },
+                    "prime": 7
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 74,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 805,
+                            "remainingValue": 23,
+                            "factors": [5, 7, 23],
+                            "remainingFactors": [23]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 120,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 285,
+                            "remainingValue": 285,
+                            "factors": [3, 5, 19],
+                            "remainingFactors": [3, 5, 19]
+                        }
+                    },
+                    "prime": 23
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 120,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 285,
+                            "remainingValue": 285,
+                            "factors": [3, 5, 19],
+                            "remainingFactors": [3, 5, 19]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 126,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 285,
+                            "remainingValue": 95,
+                            "factors": [3, 5, 19],
+                            "remainingFactors": [5, 19]
+                        }
+                    },
+                    "prime": 3
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 126,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 285,
+                            "remainingValue": 95,
+                            "factors": [3, 5, 19],
+                            "remainingFactors": [5, 19]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 136,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 285,
+                            "remainingValue": 19,
+                            "factors": [3, 5, 19],
+                            "remainingFactors": [19]
+                        }
+                    },
+                    "prime": 5
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 136,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 285,
+                            "remainingValue": 19,
+                            "factors": [3, 5, 19],
+                            "remainingFactors": [19]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 3,
+                        "maxCombo": 3,
+                        "score": 206,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 10166,
+                            "remainingValue": 10166,
+                            "factors": [2, 13, 17, 23],
+                            "remainingFactors": [2, 13, 17, 23]
+                        }
+                    },
+                    "prime": 19,
+                    "options": {
+                        "resolvingQueueLength": 3
+                    }
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 3,
+                        "maxCombo": 3,
+                        "score": 206,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 10166,
+                            "remainingValue": 10166,
+                            "factors": [2, 13, 17, 23],
+                            "remainingFactors": [2, 13, 17, 23]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 0,
+                        "maxCombo": 3,
+                        "score": 206,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 10166,
+                            "remainingValue": 10166,
+                            "factors": [2, 13, 17, 23],
+                            "remainingFactors": [2, 13, 17, 23]
+                        }
+                    },
+                    "prime": 3
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 0,
+                        "maxCombo": 3,
+                        "score": 206,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 10166,
+                            "remainingValue": 10166,
+                            "factors": [2, 13, 17, 23],
+                            "remainingFactors": [2, 13, 17, 23]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 0,
+                        "maxCombo": 3,
+                        "score": 210,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 10166,
+                            "remainingValue": 5083,
+                            "factors": [2, 13, 17, 23],
+                            "remainingFactors": [13, 17, 23]
+                        }
+                    },
+                    "prime": 2
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 0,
+                        "maxCombo": 3,
+                        "score": 210,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 10166,
+                            "remainingValue": 5083,
+                            "factors": [2, 13, 17, 23],
+                            "remainingFactors": [13, 17, 23]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 0,
+                        "maxCombo": 3,
+                        "score": 236,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 10166,
+                            "remainingValue": 391,
+                            "factors": [2, 13, 17, 23],
+                            "remainingFactors": [17, 23]
+                        }
+                    },
+                    "prime": 13
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 0,
+                        "maxCombo": 3,
+                        "score": 236,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 10166,
+                            "remainingValue": 391,
+                            "factors": [2, 13, 17, 23],
+                            "remainingFactors": [17, 23]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 0,
+                        "maxCombo": 3,
+                        "score": 270,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 10166,
+                            "remainingValue": 23,
+                            "factors": [2, 13, 17, 23],
+                            "remainingFactors": [23]
+                        }
+                    },
+                    "prime": 17
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 0,
+                        "maxCombo": 3,
+                        "score": 270,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 10166,
+                            "remainingValue": 23,
+                            "factors": [2, 13, 17, 23],
+                            "remainingFactors": [23]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 3,
+                        "maxCombo": 3,
+                        "score": 348,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 9522,
+                            "remainingValue": 9522,
+                            "factors": [2, 3, 3, 23, 23],
+                            "remainingFactors": [2, 3, 3, 23, 23]
+                        }
+                    },
+                    "prime": 23,
+                    "options": {
+                        "resolvingQueueLength": 3
+                    }
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 3,
+                        "maxCombo": 3,
+                        "score": 348,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 9522,
+                            "remainingValue": 9522,
+                            "factors": [2, 3, 3, 23, 23],
+                            "remainingFactors": [2, 3, 3, 23, 23]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 3,
+                        "maxCombo": 3,
+                        "score": 352,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 9522,
+                            "remainingValue": 4761,
+                            "factors": [2, 3, 3, 23, 23],
+                            "remainingFactors": [3, 3, 23, 23]
+                        }
+                    },
+                    "prime": 2
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 3,
+                        "maxCombo": 3,
+                        "score": 352,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 9522,
+                            "remainingValue": 4761,
+                            "factors": [2, 3, 3, 23, 23],
+                            "remainingFactors": [3, 3, 23, 23]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 3,
+                        "maxCombo": 3,
+                        "score": 358,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 9522,
+                            "remainingValue": 1587,
+                            "factors": [2, 3, 3, 23, 23],
+                            "remainingFactors": [3, 23, 23]
+                        }
+                    },
+                    "prime": 3
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 3,
+                        "maxCombo": 3,
+                        "score": 358,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 9522,
+                            "remainingValue": 1587,
+                            "factors": [2, 3, 3, 23, 23],
+                            "remainingFactors": [3, 23, 23]
+                        }
+                    },
+                    "after": {
+                        "hp": 997,
+                        "combo": 0,
+                        "maxCombo": 3,
+                        "score": 358,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 9522,
+                            "remainingValue": 1587,
+                            "factors": [2, 3, 3, 23, 23],
+                            "remainingFactors": [3, 23, 23]
+                        }
+                    },
+                    "prime": 2
+                }
+            ],
+            "finalState": {
+                "hp": 997,
+                "combo": 0,
+                "maxCombo": 3,
+                "score": 358,
+                "clearedStages": 4,
+                "currentStage": {
+                    "stageIndex": 4,
+                    "targetValue": 9522,
+                    "remainingValue": 1587,
+                    "factors": [2, 3, 3, 23, 23],
+                    "remainingFactors": [3, 23, 23]
+                }
+            }
+        },
+        {
+            "seed": "room-42",
+            "initialState": {
+                "hp": 1000,
+                "combo": 0,
+                "maxCombo": 0,
+                "score": 0,
+                "clearedStages": 0,
+                "currentStage": {
+                    "stageIndex": 0,
+                    "targetValue": 578,
+                    "remainingValue": 578,
+                    "factors": [2, 17, 17],
+                    "remainingFactors": [2, 17, 17]
+                }
+            },
+            "steps": [
+                {
+                    "before": {
+                        "hp": 1000,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "score": 0,
+                        "clearedStages": 0,
+                        "currentStage": {
+                            "stageIndex": 0,
+                            "targetValue": 578,
+                            "remainingValue": 578,
+                            "factors": [2, 17, 17],
+                            "remainingFactors": [2, 17, 17]
+                        }
+                    },
+                    "after": {
+                        "hp": 1000,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "score": 4,
+                        "clearedStages": 0,
+                        "currentStage": {
+                            "stageIndex": 0,
+                            "targetValue": 578,
+                            "remainingValue": 289,
+                            "factors": [2, 17, 17],
+                            "remainingFactors": [17, 17]
+                        }
+                    },
+                    "prime": 2
+                },
+                {
+                    "before": {
+                        "hp": 1000,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "score": 4,
+                        "clearedStages": 0,
+                        "currentStage": {
+                            "stageIndex": 0,
+                            "targetValue": 578,
+                            "remainingValue": 289,
+                            "factors": [2, 17, 17],
+                            "remainingFactors": [17, 17]
+                        }
+                    },
+                    "after": {
+                        "hp": 1000,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "score": 38,
+                        "clearedStages": 0,
+                        "currentStage": {
+                            "stageIndex": 0,
+                            "targetValue": 578,
+                            "remainingValue": 17,
+                            "factors": [2, 17, 17],
+                            "remainingFactors": [17]
+                        }
+                    },
+                    "prime": 17
+                },
+                {
+                    "before": {
+                        "hp": 1000,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "score": 38,
+                        "clearedStages": 0,
+                        "currentStage": {
+                            "stageIndex": 0,
+                            "targetValue": 578,
+                            "remainingValue": 17,
+                            "factors": [2, 17, 17],
+                            "remainingFactors": [17]
+                        }
+                    },
+                    "after": {
+                        "hp": 1000,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 72,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 2023,
+                            "remainingValue": 2023,
+                            "factors": [7, 17, 17],
+                            "remainingFactors": [7, 17, 17]
+                        }
+                    },
+                    "prime": 17
+                },
+                {
+                    "before": {
+                        "hp": 1000,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 72,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 2023,
+                            "remainingValue": 2023,
+                            "factors": [7, 17, 17],
+                            "remainingFactors": [7, 17, 17]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 72,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 2023,
+                            "remainingValue": 2023,
+                            "factors": [7, 17, 17],
+                            "remainingFactors": [7, 17, 17]
+                        }
+                    },
+                    "prime": 2
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 72,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 2023,
+                            "remainingValue": 2023,
+                            "factors": [7, 17, 17],
+                            "remainingFactors": [7, 17, 17]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 86,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 2023,
+                            "remainingValue": 289,
+                            "factors": [7, 17, 17],
+                            "remainingFactors": [17, 17]
+                        }
+                    },
+                    "prime": 7,
+                    "options": {
+                        "resolvingQueueLength": 3
+                    }
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 86,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 2023,
+                            "remainingValue": 289,
+                            "factors": [7, 17, 17],
+                            "remainingFactors": [17, 17]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 120,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 2023,
+                            "remainingValue": 17,
+                            "factors": [7, 17, 17],
+                            "remainingFactors": [17]
+                        }
+                    },
+                    "prime": 17
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 120,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 2023,
+                            "remainingValue": 17,
+                            "factors": [7, 17, 17],
+                            "remainingFactors": [17]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 154,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 1564,
+                            "remainingValue": 1564,
+                            "factors": [2, 2, 17, 23],
+                            "remainingFactors": [2, 2, 17, 23]
+                        }
+                    },
+                    "prime": 17
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 154,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 1564,
+                            "remainingValue": 1564,
+                            "factors": [2, 2, 17, 23],
+                            "remainingFactors": [2, 2, 17, 23]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 158,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 1564,
+                            "remainingValue": 782,
+                            "factors": [2, 2, 17, 23],
+                            "remainingFactors": [2, 17, 23]
+                        }
+                    },
+                    "prime": 2
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 158,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 1564,
+                            "remainingValue": 782,
+                            "factors": [2, 2, 17, 23],
+                            "remainingFactors": [2, 17, 23]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 162,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 1564,
+                            "remainingValue": 391,
+                            "factors": [2, 2, 17, 23],
+                            "remainingFactors": [17, 23]
+                        }
+                    },
+                    "prime": 2
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 162,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 1564,
+                            "remainingValue": 391,
+                            "factors": [2, 2, 17, 23],
+                            "remainingFactors": [17, 23]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 196,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 1564,
+                            "remainingValue": 23,
+                            "factors": [2, 2, 17, 23],
+                            "remainingFactors": [23]
+                        }
+                    },
+                    "prime": 17,
+                    "options": {
+                        "resolvingQueueLength": 3
+                    }
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 196,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 1564,
+                            "remainingValue": 23,
+                            "factors": [2, 2, 17, 23],
+                            "remainingFactors": [23]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 196,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 1564,
+                            "remainingValue": 23,
+                            "factors": [2, 2, 17, 23],
+                            "remainingFactors": [23]
+                        }
+                    },
+                    "prime": 2
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 196,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 1564,
+                            "remainingValue": 23,
+                            "factors": [2, 2, 17, 23],
+                            "remainingFactors": [23]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 242,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 1105,
+                            "remainingValue": 1105,
+                            "factors": [5, 13, 17],
+                            "remainingFactors": [5, 13, 17]
+                        }
+                    },
+                    "prime": 23
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 242,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 1105,
+                            "remainingValue": 1105,
+                            "factors": [5, 13, 17],
+                            "remainingFactors": [5, 13, 17]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 252,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 1105,
+                            "remainingValue": 221,
+                            "factors": [5, 13, 17],
+                            "remainingFactors": [13, 17]
+                        }
+                    },
+                    "prime": 5
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 252,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 1105,
+                            "remainingValue": 221,
+                            "factors": [5, 13, 17],
+                            "remainingFactors": [13, 17]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 278,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 1105,
+                            "remainingValue": 17,
+                            "factors": [5, 13, 17],
+                            "remainingFactors": [17]
+                        }
+                    },
+                    "prime": 13
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 278,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 1105,
+                            "remainingValue": 17,
+                            "factors": [5, 13, 17],
+                            "remainingFactors": [17]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 3,
+                        "maxCombo": 3,
+                        "score": 344,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 2346,
+                            "remainingValue": 2346,
+                            "factors": [2, 3, 17, 23],
+                            "remainingFactors": [2, 3, 17, 23]
+                        }
+                    },
+                    "prime": 17,
+                    "options": {
+                        "resolvingQueueLength": 3
+                    }
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 3,
+                        "maxCombo": 3,
+                        "score": 344,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 2346,
+                            "remainingValue": 2346,
+                            "factors": [2, 3, 17, 23],
+                            "remainingFactors": [2, 3, 17, 23]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 3,
+                        "maxCombo": 3,
+                        "score": 348,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 2346,
+                            "remainingValue": 1173,
+                            "factors": [2, 3, 17, 23],
+                            "remainingFactors": [3, 17, 23]
+                        }
+                    },
+                    "prime": 2
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 3,
+                        "maxCombo": 3,
+                        "score": 348,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 2346,
+                            "remainingValue": 1173,
+                            "factors": [2, 3, 17, 23],
+                            "remainingFactors": [3, 17, 23]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 3,
+                        "maxCombo": 3,
+                        "score": 354,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 2346,
+                            "remainingValue": 391,
+                            "factors": [2, 3, 17, 23],
+                            "remainingFactors": [17, 23]
+                        }
+                    },
+                    "prime": 3
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 3,
+                        "maxCombo": 3,
+                        "score": 354,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 2346,
+                            "remainingValue": 391,
+                            "factors": [2, 3, 17, 23],
+                            "remainingFactors": [17, 23]
+                        }
+                    },
+                    "after": {
+                        "hp": 997,
+                        "combo": 0,
+                        "maxCombo": 3,
+                        "score": 354,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 2346,
+                            "remainingValue": 391,
+                            "factors": [2, 3, 17, 23],
+                            "remainingFactors": [17, 23]
+                        }
+                    },
+                    "prime": 2
+                }
+            ],
+            "finalState": {
+                "hp": 997,
+                "combo": 0,
+                "maxCombo": 3,
+                "score": 354,
+                "clearedStages": 4,
+                "currentStage": {
+                    "stageIndex": 4,
+                    "targetValue": 2346,
+                    "remainingValue": 391,
+                    "factors": [2, 3, 17, 23],
+                    "remainingFactors": [17, 23]
+                }
+            }
+        },
+        {
+            "seed": "tutorial:left",
+            "initialState": {
+                "hp": 1000,
+                "combo": 0,
+                "maxCombo": 0,
+                "score": 0,
+                "clearedStages": 0,
+                "currentStage": {
+                    "stageIndex": 0,
+                    "targetValue": 561,
+                    "remainingValue": 561,
+                    "factors": [3, 11, 17],
+                    "remainingFactors": [3, 11, 17]
+                }
+            },
+            "steps": [
+                {
+                    "before": {
+                        "hp": 1000,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "score": 0,
+                        "clearedStages": 0,
+                        "currentStage": {
+                            "stageIndex": 0,
+                            "targetValue": 561,
+                            "remainingValue": 561,
+                            "factors": [3, 11, 17],
+                            "remainingFactors": [3, 11, 17]
+                        }
+                    },
+                    "after": {
+                        "hp": 1000,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "score": 6,
+                        "clearedStages": 0,
+                        "currentStage": {
+                            "stageIndex": 0,
+                            "targetValue": 561,
+                            "remainingValue": 187,
+                            "factors": [3, 11, 17],
+                            "remainingFactors": [11, 17]
+                        }
+                    },
+                    "prime": 3
+                },
+                {
+                    "before": {
+                        "hp": 1000,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "score": 6,
+                        "clearedStages": 0,
+                        "currentStage": {
+                            "stageIndex": 0,
+                            "targetValue": 561,
+                            "remainingValue": 187,
+                            "factors": [3, 11, 17],
+                            "remainingFactors": [11, 17]
+                        }
+                    },
+                    "after": {
+                        "hp": 1000,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "score": 28,
+                        "clearedStages": 0,
+                        "currentStage": {
+                            "stageIndex": 0,
+                            "targetValue": 561,
+                            "remainingValue": 17,
+                            "factors": [3, 11, 17],
+                            "remainingFactors": [17]
+                        }
+                    },
+                    "prime": 11
+                },
+                {
+                    "before": {
+                        "hp": 1000,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "score": 28,
+                        "clearedStages": 0,
+                        "currentStage": {
+                            "stageIndex": 0,
+                            "targetValue": 561,
+                            "remainingValue": 17,
+                            "factors": [3, 11, 17],
+                            "remainingFactors": [17]
+                        }
+                    },
+                    "after": {
+                        "hp": 1000,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 62,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 1729,
+                            "remainingValue": 1729,
+                            "factors": [7, 13, 19],
+                            "remainingFactors": [7, 13, 19]
+                        }
+                    },
+                    "prime": 17
+                },
+                {
+                    "before": {
+                        "hp": 1000,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 62,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 1729,
+                            "remainingValue": 1729,
+                            "factors": [7, 13, 19],
+                            "remainingFactors": [7, 13, 19]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 62,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 1729,
+                            "remainingValue": 1729,
+                            "factors": [7, 13, 19],
+                            "remainingFactors": [7, 13, 19]
+                        }
+                    },
+                    "prime": 2
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 62,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 1729,
+                            "remainingValue": 1729,
+                            "factors": [7, 13, 19],
+                            "remainingFactors": [7, 13, 19]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 76,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 1729,
+                            "remainingValue": 247,
+                            "factors": [7, 13, 19],
+                            "remainingFactors": [13, 19]
+                        }
+                    },
+                    "prime": 7,
+                    "options": {
+                        "resolvingQueueLength": 3
+                    }
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 76,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 1729,
+                            "remainingValue": 247,
+                            "factors": [7, 13, 19],
+                            "remainingFactors": [13, 19]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 102,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 1729,
+                            "remainingValue": 19,
+                            "factors": [7, 13, 19],
+                            "remainingFactors": [19]
+                        }
+                    },
+                    "prime": 13
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 102,
+                        "clearedStages": 1,
+                        "currentStage": {
+                            "stageIndex": 1,
+                            "targetValue": 1729,
+                            "remainingValue": 19,
+                            "factors": [7, 13, 19],
+                            "remainingFactors": [19]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 140,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 9295,
+                            "remainingValue": 9295,
+                            "factors": [5, 11, 13, 13],
+                            "remainingFactors": [5, 11, 13, 13]
+                        }
+                    },
+                    "prime": 19
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 140,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 9295,
+                            "remainingValue": 9295,
+                            "factors": [5, 11, 13, 13],
+                            "remainingFactors": [5, 11, 13, 13]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 150,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 9295,
+                            "remainingValue": 1859,
+                            "factors": [5, 11, 13, 13],
+                            "remainingFactors": [11, 13, 13]
+                        }
+                    },
+                    "prime": 5
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 150,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 9295,
+                            "remainingValue": 1859,
+                            "factors": [5, 11, 13, 13],
+                            "remainingFactors": [11, 13, 13]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 172,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 9295,
+                            "remainingValue": 169,
+                            "factors": [5, 11, 13, 13],
+                            "remainingFactors": [13, 13]
+                        }
+                    },
+                    "prime": 11
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 172,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 9295,
+                            "remainingValue": 169,
+                            "factors": [5, 11, 13, 13],
+                            "remainingFactors": [13, 13]
+                        }
+                    },
+                    "after": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 198,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 9295,
+                            "remainingValue": 13,
+                            "factors": [5, 11, 13, 13],
+                            "remainingFactors": [13]
+                        }
+                    },
+                    "prime": 13,
+                    "options": {
+                        "resolvingQueueLength": 3
+                    }
+                },
+                {
+                    "before": {
+                        "hp": 999,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 198,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 9295,
+                            "remainingValue": 13,
+                            "factors": [5, 11, 13, 13],
+                            "remainingFactors": [13]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 198,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 9295,
+                            "remainingValue": 13,
+                            "factors": [5, 11, 13, 13],
+                            "remainingFactors": [13]
+                        }
+                    },
+                    "prime": 2
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 0,
+                        "maxCombo": 1,
+                        "score": 198,
+                        "clearedStages": 2,
+                        "currentStage": {
+                            "stageIndex": 2,
+                            "targetValue": 9295,
+                            "remainingValue": 13,
+                            "factors": [5, 11, 13, 13],
+                            "remainingFactors": [13]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 224,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 76,
+                            "remainingValue": 76,
+                            "factors": [2, 2, 19],
+                            "remainingFactors": [2, 2, 19]
+                        }
+                    },
+                    "prime": 13
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 224,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 76,
+                            "remainingValue": 76,
+                            "factors": [2, 2, 19],
+                            "remainingFactors": [2, 2, 19]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 228,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 76,
+                            "remainingValue": 38,
+                            "factors": [2, 2, 19],
+                            "remainingFactors": [2, 19]
+                        }
+                    },
+                    "prime": 2
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 228,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 76,
+                            "remainingValue": 38,
+                            "factors": [2, 2, 19],
+                            "remainingFactors": [2, 19]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 232,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 76,
+                            "remainingValue": 19,
+                            "factors": [2, 2, 19],
+                            "remainingFactors": [19]
+                        }
+                    },
+                    "prime": 2
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 1,
+                        "maxCombo": 1,
+                        "score": 232,
+                        "clearedStages": 3,
+                        "currentStage": {
+                            "stageIndex": 3,
+                            "targetValue": 76,
+                            "remainingValue": 19,
+                            "factors": [2, 2, 19],
+                            "remainingFactors": [19]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 3,
+                        "maxCombo": 3,
+                        "score": 302,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 1976,
+                            "remainingValue": 1976,
+                            "factors": [2, 2, 2, 13, 19],
+                            "remainingFactors": [2, 2, 2, 13, 19]
+                        }
+                    },
+                    "prime": 19,
+                    "options": {
+                        "resolvingQueueLength": 3
+                    }
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 3,
+                        "maxCombo": 3,
+                        "score": 302,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 1976,
+                            "remainingValue": 1976,
+                            "factors": [2, 2, 2, 13, 19],
+                            "remainingFactors": [2, 2, 2, 13, 19]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 3,
+                        "maxCombo": 3,
+                        "score": 306,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 1976,
+                            "remainingValue": 988,
+                            "factors": [2, 2, 2, 13, 19],
+                            "remainingFactors": [2, 2, 13, 19]
+                        }
+                    },
+                    "prime": 2
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 3,
+                        "maxCombo": 3,
+                        "score": 306,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 1976,
+                            "remainingValue": 988,
+                            "factors": [2, 2, 2, 13, 19],
+                            "remainingFactors": [2, 2, 13, 19]
+                        }
+                    },
+                    "after": {
+                        "hp": 998,
+                        "combo": 3,
+                        "maxCombo": 3,
+                        "score": 310,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 1976,
+                            "remainingValue": 494,
+                            "factors": [2, 2, 2, 13, 19],
+                            "remainingFactors": [2, 13, 19]
+                        }
+                    },
+                    "prime": 2
+                },
+                {
+                    "before": {
+                        "hp": 998,
+                        "combo": 3,
+                        "maxCombo": 3,
+                        "score": 310,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 1976,
+                            "remainingValue": 494,
+                            "factors": [2, 2, 2, 13, 19],
+                            "remainingFactors": [2, 13, 19]
+                        }
+                    },
+                    "after": {
+                        "hp": 997,
+                        "combo": 0,
+                        "maxCombo": 3,
+                        "score": 310,
+                        "clearedStages": 4,
+                        "currentStage": {
+                            "stageIndex": 4,
+                            "targetValue": 1976,
+                            "remainingValue": 494,
+                            "factors": [2, 2, 2, 13, 19],
+                            "remainingFactors": [2, 13, 19]
+                        }
+                    },
+                    "prime": 3
+                }
+            ],
+            "finalState": {
+                "hp": 997,
+                "combo": 0,
+                "maxCombo": 3,
+                "score": 310,
+                "clearedStages": 4,
+                "currentStage": {
+                    "stageIndex": 4,
+                    "targetValue": 1976,
+                    "remainingValue": 494,
+                    "factors": [2, 2, 2, 13, 19],
+                    "remainingFactors": [2, 13, 19]
+                }
+            }
+        }
+    ]
+}
