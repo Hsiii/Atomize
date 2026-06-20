@@ -29,6 +29,14 @@ import {
     SELF_FAULT_DURATION_MS,
     SOLO_COMBO_STEP_DELAY_MS,
 } from '../../src/core/timing';
+import {
+    addPlayerToRoom,
+    applyBattlePenalty,
+    applyBattlePrimeSelection,
+    beginRoomMatch,
+    createRoomSnapshot,
+    setPlayerReady,
+} from '../../src/lib/multiplayer-room';
 
 const rootDirectory = path.resolve(import.meta.dirname, '../..');
 const outputPath = path.resolve(
@@ -98,6 +106,11 @@ type SoloRunFixture = {
     initialState: SoloState;
     steps: readonly SoloStepFixture[];
     finalState: SoloState;
+};
+
+type RoomStepFixture = {
+    label: string;
+    snapshot: ReturnType<typeof createRoomSnapshot>;
 };
 
 function createStageFixtures(): readonly StageFixture[] {
@@ -203,6 +216,68 @@ function createSoloFixtures(): readonly SoloRunFixture[] {
     });
 }
 
+function createRoomFixtures(): readonly RoomStepFixture[] {
+    let snapshot = createRoomSnapshot('duel-room', 'host', 'Host');
+    const steps: RoomStepFixture[] = [
+        {
+            label: 'created',
+            snapshot,
+        },
+    ];
+
+    const joinedSnapshot = addPlayerToRoom(snapshot, 'guest', 'Guest');
+
+    if (joinedSnapshot === undefined) {
+        throw new Error('Expected guest to join room fixture.');
+    }
+
+    snapshot = joinedSnapshot;
+    steps.push({
+        label: 'guest-joined',
+        snapshot,
+    });
+
+    snapshot = setPlayerReady(snapshot, 'host', true);
+    steps.push({
+        label: 'host-ready',
+        snapshot,
+    });
+
+    snapshot = setPlayerReady(snapshot, 'guest', true);
+    steps.push({
+        label: 'guest-ready',
+        snapshot,
+    });
+
+    snapshot = beginRoomMatch(snapshot);
+    steps.push({
+        label: 'playing',
+        snapshot,
+    });
+
+    const hostFactors = [...snapshot.players[0].stage.remainingFactors];
+
+    for (const [index, prime] of hostFactors.entries()) {
+        snapshot = applyBattlePrimeSelection(snapshot, 'host', prime, {
+            perfectSolveEligible: true,
+            resolvingQueueLength: hostFactors.length,
+            suppressAttack: index < hostFactors.length - 1,
+        });
+        steps.push({
+            label: `host-prime-${index + 1}`,
+            snapshot,
+        });
+    }
+
+    snapshot = applyBattlePenalty(snapshot, 'guest');
+    steps.push({
+        label: 'guest-penalty',
+        snapshot,
+    });
+
+    return steps;
+}
+
 function pickWrongPrime(stage: StageState): Prime {
     const wrongPrime = PRIME_POOL.find(
         (prime) => !stage.remainingFactors.includes(prime)
@@ -247,6 +322,7 @@ const fixture = {
     stages: createStageFixtures(),
     selections: createSelectionFixtures(),
     soloRuns: createSoloFixtures(),
+    roomSteps: createRoomFixtures(),
 };
 
 mkdirSync(path.dirname(outputPath), { recursive: true });

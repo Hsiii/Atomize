@@ -2979,5 +2979,456 @@
                 }
             }
         }
+    ],
+    "roomSteps": [
+        {
+            "label": "created",
+            "snapshot": {
+                "roomId": "duel-room",
+                "seed": "duel-room",
+                "maxHp": 1000,
+                "stageIndex": 0,
+                "stage": {
+                    "stageIndex": 0,
+                    "targetValue": 14,
+                    "remainingValue": 14,
+                    "factors": [2, 7],
+                    "remainingFactors": [2, 7]
+                },
+                "players": [
+                    {
+                        "id": "host",
+                        "name": "Host",
+                        "hp": 1000,
+                        "pendingFactorDamage": 0,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "stageIndex": 0,
+                        "stage": {
+                            "stageIndex": 0,
+                            "targetValue": 14,
+                            "remainingValue": 14,
+                            "factors": [2, 7],
+                            "remainingFactors": [2, 7]
+                        },
+                        "connected": true,
+                        "ready": false
+                    }
+                ],
+                "status": "waiting"
+            }
+        },
+        {
+            "label": "guest-joined",
+            "snapshot": {
+                "roomId": "duel-room",
+                "seed": "duel-room",
+                "maxHp": 1000,
+                "stageIndex": 0,
+                "stage": {
+                    "stageIndex": 0,
+                    "targetValue": 14,
+                    "remainingValue": 14,
+                    "factors": [2, 7],
+                    "remainingFactors": [2, 7]
+                },
+                "players": [
+                    {
+                        "id": "host",
+                        "name": "Host",
+                        "hp": 1000,
+                        "pendingFactorDamage": 0,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "stageIndex": 0,
+                        "stage": {
+                            "stageIndex": 0,
+                            "targetValue": 14,
+                            "remainingValue": 14,
+                            "factors": [2, 7],
+                            "remainingFactors": [2, 7]
+                        },
+                        "connected": true,
+                        "ready": false
+                    },
+                    {
+                        "id": "guest",
+                        "name": "Guest",
+                        "hp": 1000,
+                        "pendingFactorDamage": 0,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "stageIndex": 0,
+                        "stage": {
+                            "stageIndex": 0,
+                            "targetValue": 14,
+                            "remainingValue": 14,
+                            "factors": [2, 7],
+                            "remainingFactors": [2, 7]
+                        },
+                        "connected": true,
+                        "ready": false
+                    }
+                ],
+                "status": "waiting"
+            }
+        },
+        {
+            "label": "host-ready",
+            "snapshot": {
+                "roomId": "duel-room",
+                "seed": "duel-room",
+                "maxHp": 1000,
+                "stageIndex": 0,
+                "stage": {
+                    "stageIndex": 0,
+                    "targetValue": 14,
+                    "remainingValue": 14,
+                    "factors": [2, 7],
+                    "remainingFactors": [2, 7]
+                },
+                "players": [
+                    {
+                        "id": "host",
+                        "name": "Host",
+                        "hp": 1000,
+                        "pendingFactorDamage": 0,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "stageIndex": 0,
+                        "stage": {
+                            "stageIndex": 0,
+                            "targetValue": 14,
+                            "remainingValue": 14,
+                            "factors": [2, 7],
+                            "remainingFactors": [2, 7]
+                        },
+                        "connected": true,
+                        "ready": true
+                    },
+                    {
+                        "id": "guest",
+                        "name": "Guest",
+                        "hp": 1000,
+                        "pendingFactorDamage": 0,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "stageIndex": 0,
+                        "stage": {
+                            "stageIndex": 0,
+                            "targetValue": 14,
+                            "remainingValue": 14,
+                            "factors": [2, 7],
+                            "remainingFactors": [2, 7]
+                        },
+                        "connected": true,
+                        "ready": false
+                    }
+                ],
+                "status": "waiting"
+            }
+        },
+        {
+            "label": "guest-ready",
+            "snapshot": {
+                "roomId": "duel-room",
+                "seed": "duel-room",
+                "maxHp": 1000,
+                "stageIndex": 0,
+                "stage": {
+                    "stageIndex": 0,
+                    "targetValue": 14,
+                    "remainingValue": 14,
+                    "factors": [2, 7],
+                    "remainingFactors": [2, 7]
+                },
+                "players": [
+                    {
+                        "id": "host",
+                        "name": "Host",
+                        "hp": 1000,
+                        "pendingFactorDamage": 0,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "stageIndex": 0,
+                        "stage": {
+                            "stageIndex": 0,
+                            "targetValue": 14,
+                            "remainingValue": 14,
+                            "factors": [2, 7],
+                            "remainingFactors": [2, 7]
+                        },
+                        "connected": true,
+                        "ready": true
+                    },
+                    {
+                        "id": "guest",
+                        "name": "Guest",
+                        "hp": 1000,
+                        "pendingFactorDamage": 0,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "stageIndex": 0,
+                        "stage": {
+                            "stageIndex": 0,
+                            "targetValue": 14,
+                            "remainingValue": 14,
+                            "factors": [2, 7],
+                            "remainingFactors": [2, 7]
+                        },
+                        "connected": true,
+                        "ready": true
+                    }
+                ],
+                "status": "waiting"
+            }
+        },
+        {
+            "label": "playing",
+            "snapshot": {
+                "roomId": "duel-room",
+                "seed": "duel-room",
+                "maxHp": 1000,
+                "stageIndex": 0,
+                "stage": {
+                    "stageIndex": 0,
+                    "targetValue": 14,
+                    "remainingValue": 14,
+                    "factors": [2, 7],
+                    "remainingFactors": [2, 7]
+                },
+                "players": [
+                    {
+                        "id": "host",
+                        "name": "Host",
+                        "hp": 1000,
+                        "pendingFactorDamage": 0,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "stageIndex": 0,
+                        "stage": {
+                            "stageIndex": 0,
+                            "targetValue": 14,
+                            "remainingValue": 14,
+                            "factors": [2, 7],
+                            "remainingFactors": [2, 7]
+                        },
+                        "connected": true,
+                        "ready": true
+                    },
+                    {
+                        "id": "guest",
+                        "name": "Guest",
+                        "hp": 1000,
+                        "pendingFactorDamage": 0,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "stageIndex": 0,
+                        "stage": {
+                            "stageIndex": 0,
+                            "targetValue": 14,
+                            "remainingValue": 14,
+                            "factors": [2, 7],
+                            "remainingFactors": [2, 7]
+                        },
+                        "connected": true,
+                        "ready": true
+                    }
+                ],
+                "status": "playing"
+            }
+        },
+        {
+            "label": "host-prime-1",
+            "snapshot": {
+                "roomId": "duel-room",
+                "seed": "duel-room",
+                "maxHp": 1000,
+                "stageIndex": 0,
+                "stage": {
+                    "stageIndex": 0,
+                    "targetValue": 14,
+                    "remainingValue": 7,
+                    "factors": [2, 7],
+                    "remainingFactors": [7]
+                },
+                "players": [
+                    {
+                        "id": "host",
+                        "name": "Host",
+                        "hp": 1000,
+                        "pendingFactorDamage": 4,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "stageIndex": 0,
+                        "stage": {
+                            "stageIndex": 0,
+                            "targetValue": 14,
+                            "remainingValue": 7,
+                            "factors": [2, 7],
+                            "remainingFactors": [7]
+                        },
+                        "connected": true,
+                        "ready": true
+                    },
+                    {
+                        "id": "guest",
+                        "name": "Guest",
+                        "hp": 1000,
+                        "pendingFactorDamage": 0,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "stageIndex": 0,
+                        "stage": {
+                            "stageIndex": 0,
+                            "targetValue": 14,
+                            "remainingValue": 14,
+                            "factors": [2, 7],
+                            "remainingFactors": [2, 7]
+                        },
+                        "connected": true,
+                        "ready": true
+                    }
+                ],
+                "status": "playing"
+            }
+        },
+        {
+            "label": "host-prime-2",
+            "snapshot": {
+                "roomId": "duel-room",
+                "seed": "duel-room",
+                "maxHp": 1000,
+                "stageIndex": 1,
+                "stage": {
+                    "stageIndex": 1,
+                    "targetValue": 133,
+                    "remainingValue": 133,
+                    "factors": [7, 19],
+                    "remainingFactors": [7, 19]
+                },
+                "players": [
+                    {
+                        "id": "host",
+                        "name": "Host",
+                        "hp": 1000,
+                        "pendingFactorDamage": 0,
+                        "combo": 2,
+                        "maxCombo": 2,
+                        "stageIndex": 1,
+                        "stage": {
+                            "stageIndex": 1,
+                            "targetValue": 133,
+                            "remainingValue": 133,
+                            "factors": [7, 19],
+                            "remainingFactors": [7, 19]
+                        },
+                        "connected": true,
+                        "ready": true
+                    },
+                    {
+                        "id": "guest",
+                        "name": "Guest",
+                        "hp": 966,
+                        "pendingFactorDamage": 0,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "stageIndex": 0,
+                        "stage": {
+                            "stageIndex": 0,
+                            "targetValue": 14,
+                            "remainingValue": 14,
+                            "factors": [2, 7],
+                            "remainingFactors": [2, 7]
+                        },
+                        "connected": true,
+                        "ready": true
+                    }
+                ],
+                "lastEvent": {
+                    "id": 1,
+                    "type": "attack",
+                    "sourcePlayerId": "host",
+                    "targetPlayerId": "guest",
+                    "damage": 34,
+                    "regen": 0,
+                    "perfectSolve": true,
+                    "combo": 2,
+                    "sourceStageIndex": 0,
+                    "nextStageIndex": 1,
+                    "sourceHp": 1000,
+                    "targetHp": 966
+                },
+                "status": "playing"
+            }
+        },
+        {
+            "label": "guest-penalty",
+            "snapshot": {
+                "roomId": "duel-room",
+                "seed": "duel-room",
+                "maxHp": 1000,
+                "stageIndex": 0,
+                "stage": {
+                    "stageIndex": 0,
+                    "targetValue": 14,
+                    "remainingValue": 14,
+                    "factors": [2, 7],
+                    "remainingFactors": [2, 7]
+                },
+                "players": [
+                    {
+                        "id": "host",
+                        "name": "Host",
+                        "hp": 1000,
+                        "pendingFactorDamage": 0,
+                        "combo": 2,
+                        "maxCombo": 2,
+                        "stageIndex": 1,
+                        "stage": {
+                            "stageIndex": 1,
+                            "targetValue": 133,
+                            "remainingValue": 133,
+                            "factors": [7, 19],
+                            "remainingFactors": [7, 19]
+                        },
+                        "connected": true,
+                        "ready": true
+                    },
+                    {
+                        "id": "guest",
+                        "name": "Guest",
+                        "hp": 958,
+                        "pendingFactorDamage": 0,
+                        "combo": 0,
+                        "maxCombo": 0,
+                        "stageIndex": 0,
+                        "stage": {
+                            "stageIndex": 0,
+                            "targetValue": 14,
+                            "remainingValue": 14,
+                            "factors": [2, 7],
+                            "remainingFactors": [2, 7]
+                        },
+                        "connected": true,
+                        "ready": true
+                    }
+                ],
+                "lastEvent": {
+                    "id": 2,
+                    "type": "self-hit",
+                    "sourcePlayerId": "guest",
+                    "damage": 8,
+                    "combo": 0,
+                    "sourceStageIndex": 0,
+                    "nextStageIndex": 0,
+                    "sourceHp": 958,
+                    "releasedDamage": 0,
+                    "targetPlayerId": "host",
+                    "targetHp": 1000
+                },
+                "status": "playing"
+            }
+        }
     ]
 }

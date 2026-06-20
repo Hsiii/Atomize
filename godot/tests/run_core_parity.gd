@@ -52,6 +52,7 @@ func _create_actual_fixture(fixture: Dictionary) -> Dictionary:
 		"stages": _create_stage_fixtures(fixture["stages"]),
 		"selections": _create_selection_fixtures(fixture["selections"]),
 		"soloRuns": _create_solo_fixtures(fixture["soloRuns"]),
+		"roomSteps": _create_room_fixtures(),
 	}
 
 func _create_damage_fixture() -> Array:
@@ -189,6 +190,77 @@ func _create_solo_fixtures(expected_solo_runs: Array) -> Array:
 				"finalState": state,
 			}
 	)
+
+func _create_room_fixtures() -> Array:
+	var snapshot := AtomizeMultiplayerRoom.create_room_snapshot("duel-room", "host", "Host")
+	var steps := [
+		{
+			"label": "created",
+			"snapshot": snapshot,
+		}
+	]
+
+	snapshot = AtomizeMultiplayerRoom.add_player_to_room(snapshot, "guest", "Guest")
+	steps.append(
+		{
+			"label": "guest-joined",
+			"snapshot": snapshot,
+		}
+	)
+
+	snapshot = AtomizeMultiplayerRoom.set_player_ready(snapshot, "host", true)
+	steps.append(
+		{
+			"label": "host-ready",
+			"snapshot": snapshot,
+		}
+	)
+
+	snapshot = AtomizeMultiplayerRoom.set_player_ready(snapshot, "guest", true)
+	steps.append(
+		{
+			"label": "guest-ready",
+			"snapshot": snapshot,
+		}
+	)
+
+	snapshot = AtomizeMultiplayerRoom.begin_room_match(snapshot)
+	steps.append(
+		{
+			"label": "playing",
+			"snapshot": snapshot,
+		}
+	)
+
+	var host_factors: Array = snapshot["players"][0]["stage"]["remainingFactors"].duplicate()
+
+	for index in range(host_factors.size()):
+		snapshot = AtomizeMultiplayerRoom.apply_battle_prime_selection(
+			snapshot,
+			"host",
+			host_factors[index],
+			{
+				"perfectSolveEligible": true,
+				"resolvingQueueLength": host_factors.size(),
+				"suppressAttack": index < host_factors.size() - 1,
+			}
+		)
+		steps.append(
+			{
+				"label": "host-prime-%s" % [index + 1],
+				"snapshot": snapshot,
+			}
+		)
+
+	snapshot = AtomizeMultiplayerRoom.apply_battle_penalty(snapshot, "guest")
+	steps.append(
+		{
+			"label": "guest-penalty",
+			"snapshot": snapshot,
+		}
+	)
+
+	return steps
 
 func _compare_variant(actual, expected, path: String) -> void:
 	if failures.size() >= MAX_FAILURES:
