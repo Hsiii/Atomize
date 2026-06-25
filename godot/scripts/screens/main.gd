@@ -43,6 +43,16 @@ const SOLO_CONTROL_BOTTOM_MARGIN := 16.0
 const PAGE_HEADER_BOTTOM := 224.0
 const DIALOG_WIDTH := 304.0
 const DIALOG_BUTTON_HEIGHT := 48.0
+const THEME_BUTTON_PRIMARY := "AtomButtonPrimary"
+const THEME_BUTTON_SECONDARY := "AtomButtonSecondary"
+const THEME_BUTTON_SURFACE := "AtomButtonSurface"
+const THEME_BUTTON_TRANSPARENT := "AtomButtonTransparent"
+const THEME_BUTTON_KEYPAD := "AtomButtonKeypad"
+const THEME_BUTTON_KEY_ACTION := "AtomButtonKeyAction"
+const THEME_BUTTON_SMALL_PRIMARY := "AtomButtonSmallPrimary"
+const THEME_BUTTON_SMALL_SURFACE := "AtomButtonSmallSurface"
+const THEME_BUTTON_PAGE_PRIMARY := "AtomButtonPagePrimary"
+const THEME_BUTTON_PAGE_SECONDARY := "AtomButtonPageSecondary"
 const PRIME_COMPENSATION_FACTORS := {
 	2: 0.2,
 	3: 0.2,
@@ -105,6 +115,7 @@ var player_hp_bar: ProgressBar
 var player_hp_label: Label
 
 func _ready() -> void:
+	theme = _make_app_theme()
 	best_score = _load_best_score()
 	best_combo = _load_best_combo()
 	match _get_requested_screen():
@@ -520,25 +531,7 @@ func _add_battle_picker_row(
 	var action := Button.new()
 	action.text = action_text
 	action.disabled = disabled
-	action.focus_mode = Control.FOCUS_NONE
-	action.add_theme_font_size_override("font_size", 13)
-	action.add_theme_color_override("font_color", COLOR_INK if not disabled else COLOR_KEYPAD_BUTTON_TEXT)
-	action.add_theme_stylebox_override(
-		"normal",
-		_make_button_style(COLOR_PRIMARY_STRONG if not disabled else COLOR_BUTTON_DISABLED)
-	)
-	action.add_theme_stylebox_override(
-		"hover",
-		_make_button_style(COLOR_PRIMARY_STRONG if not disabled else COLOR_BUTTON_DISABLED)
-	)
-	action.add_theme_stylebox_override(
-		"pressed",
-		_make_button_style(COLOR_SURFACE if not disabled else COLOR_BUTTON_DISABLED)
-	)
-	action.add_theme_stylebox_override(
-		"disabled",
-		_make_button_style(COLOR_BUTTON_DISABLED)
-	)
+	_apply_button_theme(action, THEME_BUTTON_SMALL_PRIMARY)
 	action.position = Vector2(left + width - 82.0, top + 6.0)
 	action.size = Vector2(82, 34)
 	_wire_button_feedback(action, "start")
@@ -1234,6 +1227,90 @@ func _save_best_score(score: int, max_combo: int) -> bool:
 	file.store_string(JSON.stringify({"score": score, "maxCombo": max_combo}))
 	return true
 
+func _make_app_theme() -> Theme:
+	var app_theme := Theme.new()
+	var button_font := _make_ui_font(800)
+	var label_font := _make_ui_font(700)
+
+	app_theme.set_font("font", "Button", button_font)
+	app_theme.set_font_size("font_size", "Button", 16)
+	app_theme.set_constant("h_separation", "Button", 8)
+	app_theme.set_font("font", "Label", label_font)
+	app_theme.set_font_size("font_size", "Label", 16)
+	app_theme.set_color("font_color", "Label", COLOR_INK)
+
+	_add_button_theme(app_theme, THEME_BUTTON_PRIMARY, COLOR_PRIMARY_STRONG, COLOR_INK, 18)
+	_add_button_theme(app_theme, THEME_BUTTON_SECONDARY, COLOR_SECONDARY, COLOR_TEXT_INVERSE, 18)
+	_add_button_theme(app_theme, THEME_BUTTON_SURFACE, COLOR_SURFACE, COLOR_INK, 16, COLOR_PRIMARY_STRONG)
+	_add_button_theme(app_theme, THEME_BUTTON_KEYPAD, COLOR_KEYPAD_BUTTON_BG, COLOR_KEYPAD_BUTTON_TEXT, 32, COLOR_PRIMARY_STRONG)
+	_add_button_theme(app_theme, THEME_BUTTON_KEY_ACTION, COLOR_PRIMARY_STRONG, COLOR_INK, 28)
+	_add_button_theme(app_theme, THEME_BUTTON_SMALL_PRIMARY, COLOR_PRIMARY_STRONG, COLOR_INK, 13)
+	_add_button_theme(app_theme, THEME_BUTTON_SMALL_SURFACE, COLOR_SURFACE, COLOR_INK, 14, COLOR_PRIMARY_STRONG)
+	_add_button_theme(app_theme, THEME_BUTTON_PAGE_PRIMARY, COLOR_PRIMARY_STRONG, COLOR_INK, 16)
+	_add_button_theme(app_theme, THEME_BUTTON_PAGE_SECONDARY, COLOR_SECONDARY, COLOR_TEXT_INVERSE, 16)
+	_add_transparent_button_theme(app_theme)
+
+	return app_theme
+
+func _add_button_theme(
+	app_theme: Theme,
+	variation: String,
+	normal_color: Color,
+	text_color: Color,
+	font_size: int,
+	hover_color: Color = Color.TRANSPARENT
+) -> void:
+	var resolved_hover_color := hover_color if hover_color != Color.TRANSPARENT else normal_color
+	app_theme.set_type_variation(variation, "Button")
+	app_theme.set_font("font", variation, _make_ui_font(800))
+	app_theme.set_font_size("font_size", variation, font_size)
+	app_theme.set_stylebox("normal", variation, _make_button_style(normal_color))
+	app_theme.set_stylebox("hover", variation, _make_button_style(resolved_hover_color))
+	app_theme.set_stylebox("focus", variation, _make_button_style(normal_color))
+	app_theme.set_stylebox("pressed", variation, _make_button_style(COLOR_SURFACE))
+	app_theme.set_stylebox("hover_pressed", variation, _make_button_style(COLOR_SURFACE))
+	app_theme.set_stylebox("disabled", variation, _make_button_style(COLOR_BUTTON_DISABLED))
+	_set_button_theme_colors(app_theme, variation, text_color)
+
+func _add_transparent_button_theme(app_theme: Theme) -> void:
+	app_theme.set_type_variation(THEME_BUTTON_TRANSPARENT, "Button")
+	app_theme.set_font("font", THEME_BUTTON_TRANSPARENT, _make_ui_font(800))
+	app_theme.set_font_size("font_size", THEME_BUTTON_TRANSPARENT, 28)
+	for state in ["normal", "hover", "focus", "pressed", "hover_pressed", "disabled"]:
+		app_theme.set_stylebox(state, THEME_BUTTON_TRANSPARENT, _make_transparent_button_style())
+	_set_button_theme_colors(app_theme, THEME_BUTTON_TRANSPARENT, COLOR_TEXT_INVERSE)
+
+func _set_button_theme_colors(app_theme: Theme, variation: String, text_color: Color) -> void:
+	for color_name in [
+		"font_color",
+		"font_hover_color",
+		"font_focus_color",
+		"font_pressed_color",
+		"font_hover_pressed_color",
+		"icon_normal_color",
+		"icon_hover_color",
+		"icon_focus_color",
+		"icon_pressed_color",
+		"icon_hover_pressed_color",
+	]:
+		app_theme.set_color(color_name, variation, text_color)
+
+	app_theme.set_color("font_disabled_color", variation, COLOR_INK_SOFT)
+	app_theme.set_color("icon_disabled_color", variation, COLOR_INK_SOFT)
+
+func _make_ui_font(weight: int) -> SystemFont:
+	var font := SystemFont.new()
+	font.font_names = PackedStringArray(["Menlo", "Courier New", "Monaco"])
+	font.font_weight = weight
+	return font
+
+func _apply_button_theme(button: Button, variation: String) -> void:
+	button.theme_type_variation = variation
+	button.focus_mode = Control.FOCUS_NONE
+
+func _button_theme_for_color(color: Color, primary_theme: String, secondary_theme: String) -> String:
+	return secondary_theme if color == COLOR_SECONDARY else primary_theme
+
 func _make_label(text: String, font_size: int, alignment: HorizontalAlignment) -> Label:
 	var label := Label.new()
 	label.text = text
@@ -1249,12 +1326,7 @@ func _make_action_button(text: String, callback: Callable, color: Color) -> Butt
 	button.text = text
 	button.custom_minimum_size = Vector2(0, 56)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button.add_theme_font_size_override("font_size", 18)
-	button.add_theme_color_override("font_color", _get_button_text_color(color))
-	button.add_theme_stylebox_override("normal", _make_button_style(color))
-	button.add_theme_stylebox_override("hover", _make_button_style(color))
-	button.add_theme_stylebox_override("pressed", _make_button_style(COLOR_SURFACE))
-	button.add_theme_stylebox_override("disabled", _make_button_style(COLOR_BUTTON_DISABLED))
+	_apply_button_theme(button, _button_theme_for_color(color, THEME_BUTTON_PRIMARY, THEME_BUTTON_SECONDARY))
 	_wire_button_feedback(button, "tap")
 	button.pressed.connect(callback)
 	return button
@@ -1289,20 +1361,8 @@ func _make_home_blob_button(text: String, callback: Callable, color: Color, icon
 	var button := Button.new()
 	button.custom_minimum_size = Vector2(HOME_BLOB_SIZE, HOME_BLOB_SIZE)
 	button.size = Vector2(HOME_BLOB_SIZE, HOME_BLOB_SIZE)
-	button.focus_mode = Control.FOCUS_NONE
 	button.text = ""
-	button.add_theme_stylebox_override(
-		"normal",
-		_make_circle_style(color, HOME_BLOB_SIZE / 2.0, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER)
-	)
-	button.add_theme_stylebox_override(
-		"hover",
-		_make_circle_style(color, HOME_BLOB_SIZE / 2.0, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER)
-	)
-	button.add_theme_stylebox_override(
-		"pressed",
-		_make_circle_style(COLOR_SURFACE, HOME_BLOB_SIZE / 2.0, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER)
-	)
+	_apply_button_theme(button, _button_theme_for_color(color, THEME_BUTTON_PAGE_PRIMARY, THEME_BUTTON_PAGE_SECONDARY))
 	_wire_button_feedback(button, "start")
 	button.pressed.connect(callback)
 
@@ -1335,12 +1395,9 @@ func _make_home_menu_button() -> Button:
 	var button := Button.new()
 	button.size = Vector2(HOME_MENU_BUTTON_SIZE, HOME_MENU_BUTTON_SIZE)
 	button.custom_minimum_size = Vector2(HOME_MENU_BUTTON_SIZE, HOME_MENU_BUTTON_SIZE)
-	button.focus_mode = Control.FOCUS_NONE
 	button.text = ""
 	button.flat = true
-	button.add_theme_stylebox_override("normal", _make_transparent_button_style())
-	button.add_theme_stylebox_override("hover", _make_transparent_button_style())
-	button.add_theme_stylebox_override("pressed", _make_transparent_button_style())
+	_apply_button_theme(button, THEME_BUTTON_TRANSPARENT)
 	_wire_button_feedback(button, "tap")
 	button.pressed.connect(_toggle_home_menu)
 
@@ -1358,12 +1415,7 @@ func _make_dropdown_button(text: String, callback: Callable) -> Button:
 	var button := Button.new()
 	button.text = text
 	button.custom_minimum_size = Vector2(128, 44)
-	button.focus_mode = Control.FOCUS_NONE
-	button.add_theme_font_size_override("font_size", 14)
-	button.add_theme_color_override("font_color", COLOR_INK)
-	button.add_theme_stylebox_override("normal", _make_button_style(COLOR_SURFACE))
-	button.add_theme_stylebox_override("hover", _make_button_style(COLOR_PRIMARY_STRONG))
-	button.add_theme_stylebox_override("pressed", _make_button_style(COLOR_PRIMARY_STRONG))
+	_apply_button_theme(button, THEME_BUTTON_SMALL_SURFACE)
 	_wire_button_feedback(button, "tap")
 	button.pressed.connect(callback)
 	return button
@@ -1373,12 +1425,7 @@ func _make_header_icon_button(text: String, callback: Callable) -> Button:
 	button.text = "" if text == "←" else text
 	button.size = Vector2(44, 44)
 	button.custom_minimum_size = Vector2(44, 44)
-	button.focus_mode = Control.FOCUS_NONE
-	button.add_theme_font_size_override("font_size", 28)
-	button.add_theme_color_override("font_color", COLOR_TEXT_INVERSE)
-	button.add_theme_stylebox_override("normal", _make_transparent_button_style())
-	button.add_theme_stylebox_override("hover", _make_transparent_button_style())
-	button.add_theme_stylebox_override("pressed", _make_transparent_button_style())
+	_apply_button_theme(button, THEME_BUTTON_TRANSPARENT)
 	if text == "←":
 		_add_back_arrow_icon(button, 44, 44, COLOR_TEXT_INVERSE)
 	_wire_button_feedback(button, "back")
@@ -1389,11 +1436,8 @@ func _make_pause_icon_button() -> Button:
 	var button := Button.new()
 	button.size = Vector2(44, 44)
 	button.custom_minimum_size = Vector2(44, 44)
-	button.focus_mode = Control.FOCUS_NONE
 	button.text = ""
-	button.add_theme_stylebox_override("normal", _make_button_style(COLOR_SURFACE))
-	button.add_theme_stylebox_override("hover", _make_button_style(COLOR_PRIMARY_STRONG))
-	button.add_theme_stylebox_override("pressed", _make_button_style(COLOR_PRIMARY_STRONG))
+	_apply_button_theme(button, THEME_BUTTON_SURFACE)
 	_wire_button_feedback(button, "tap")
 
 	for x in [14.0, 24.0]:
@@ -1473,12 +1517,7 @@ func _make_wide_page_button(text: String, callback: Callable, color: Color) -> B
 	button.text = text
 	button.custom_minimum_size = Vector2(0, 56)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button.focus_mode = Control.FOCUS_NONE
-	button.add_theme_font_size_override("font_size", 16)
-	button.add_theme_color_override("font_color", _get_button_text_color(color))
-	button.add_theme_stylebox_override("normal", _make_button_style(color))
-	button.add_theme_stylebox_override("hover", _make_button_style(color))
-	button.add_theme_stylebox_override("pressed", _make_button_style(COLOR_SURFACE))
+	_apply_button_theme(button, _button_theme_for_color(color, THEME_BUTTON_PAGE_PRIMARY, THEME_BUTTON_PAGE_SECONDARY))
 	_wire_button_feedback(button, "start")
 	button.pressed.connect(callback)
 	return button
@@ -1487,13 +1526,7 @@ func _make_prime_key_button(text: String) -> Button:
 	var button := Button.new()
 	button.text = text
 	button.custom_minimum_size = Vector2(SOLO_KEY_SIZE, SOLO_KEY_SIZE)
-	button.focus_mode = Control.FOCUS_NONE
-	button.add_theme_font_size_override("font_size", 32)
-	button.add_theme_color_override("font_color", COLOR_KEYPAD_BUTTON_TEXT)
-	button.add_theme_stylebox_override("normal", _make_button_style(COLOR_KEYPAD_BUTTON_BG))
-	button.add_theme_stylebox_override("hover", _make_button_style(COLOR_PRIMARY_STRONG))
-	button.add_theme_stylebox_override("pressed", _make_button_style(COLOR_PRIMARY_STRONG))
-	button.add_theme_stylebox_override("disabled", _make_button_style(COLOR_BUTTON_DISABLED))
+	_apply_button_theme(button, THEME_BUTTON_KEYPAD)
 	_wire_button_feedback(button, "prime")
 	return button
 
@@ -1507,13 +1540,9 @@ func _make_icon_text_button(
 	var button := Button.new()
 	button.text = text
 	button.custom_minimum_size = Vector2(SOLO_KEY_SIZE, SOLO_KEY_SIZE)
-	button.focus_mode = Control.FOCUS_NONE
+	_apply_button_theme(button, THEME_BUTTON_KEY_ACTION)
 	button.add_theme_font_size_override("font_size", font_size)
 	button.add_theme_color_override("font_color", text_color)
-	button.add_theme_stylebox_override("normal", _make_button_style(background_color))
-	button.add_theme_stylebox_override("hover", _make_button_style(background_color))
-	button.add_theme_stylebox_override("pressed", _make_button_style(COLOR_SURFACE))
-	button.add_theme_stylebox_override("disabled", _make_button_style(COLOR_BUTTON_DISABLED))
 	_wire_button_feedback(button, sound_kind)
 	return button
 
@@ -1553,12 +1582,7 @@ func _make_dialog_button(text: String, callback: Callable, color: Color) -> Butt
 	var button := Button.new()
 	button.text = text
 	button.custom_minimum_size = Vector2(DIALOG_WIDTH - 24.0, DIALOG_BUTTON_HEIGHT)
-	button.focus_mode = Control.FOCUS_NONE
-	button.add_theme_font_size_override("font_size", 16)
-	button.add_theme_color_override("font_color", _get_button_text_color(color))
-	button.add_theme_stylebox_override("normal", _make_button_style(color))
-	button.add_theme_stylebox_override("hover", _make_button_style(color))
-	button.add_theme_stylebox_override("pressed", _make_button_style(COLOR_SURFACE))
+	_apply_button_theme(button, _button_theme_for_color(color, THEME_BUTTON_PAGE_PRIMARY, THEME_BUTTON_PAGE_SECONDARY))
 	_wire_button_feedback(button, "tap")
 	button.pressed.connect(callback)
 	return button
