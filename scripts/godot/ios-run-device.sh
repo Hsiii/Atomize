@@ -76,9 +76,20 @@ if [[ "${IOS_SKIP_LAUNCH:-0}" == "1" ]]; then
 fi
 
 echo "Launching $BUNDLE_ID..."
-xcrun devicectl device process launch \
-    --device "$DEVICE_ID" \
-    --terminate-existing \
-    "$BUNDLE_ID"
+launch_output="$(
+    xcrun devicectl device process launch \
+        --device "$DEVICE_ID" \
+        --terminate-existing \
+        "$BUNDLE_ID" 2>&1
+)" || {
+    if [[ "$launch_output" == *"because the device was not, or could not be, unlocked"* ]]; then
+        echo "$launch_output" >&2
+        echo "Installed $BUNDLE_ID on $DEVICE_ID. Unlock the device and tap Atomize, or rerun this command." >&2
+        exit 0
+    fi
+
+    echo "$launch_output" >&2
+    exit 1
+}
 
 echo "Updated and launched $BUNDLE_ID on $DEVICE_ID."
