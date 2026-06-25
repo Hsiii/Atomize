@@ -54,6 +54,16 @@ const THEME_BUTTON_SMALL_PRIMARY := "AtomButtonSmallPrimary"
 const THEME_BUTTON_SMALL_SURFACE := "AtomButtonSmallSurface"
 const THEME_BUTTON_PAGE_PRIMARY := "AtomButtonPagePrimary"
 const THEME_BUTTON_PAGE_SECONDARY := "AtomButtonPageSecondary"
+const THEME_PANEL_SURFACE := "AtomPanelSurface"
+const THEME_PANEL_CONTAINER_SURFACE := "AtomPanelContainerSurface"
+const THEME_PANEL_DIALOG := "AtomPanelDialog"
+const THEME_PANEL_TARGET := "AtomPanelTarget"
+const THEME_PANEL_AVATAR_PRIMARY := "AtomPanelAvatarPrimary"
+const THEME_PANEL_AVATAR_SECONDARY := "AtomPanelAvatarSecondary"
+const THEME_PANEL_BADGE_PRIMARY := "AtomPanelBadgePrimary"
+const THEME_PANEL_BADGE_SURFACE := "AtomPanelBadgeSurface"
+const THEME_PROGRESS_PRIMARY := "AtomProgressPrimary"
+const THEME_PROGRESS_SECONDARY := "AtomProgressSecondary"
 const PRIME_COMPENSATION_FACTORS := {
 	2: 0.2,
 	3: 0.2,
@@ -304,7 +314,7 @@ func _build_base_layout() -> void:
 	var panel := PanelContainer.new()
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	panel.add_theme_stylebox_override("panel", _make_panel_style(COLOR_SURFACE))
+	_apply_panel_theme(panel, THEME_PANEL_CONTAINER_SURFACE)
 	root_margin.add_child(panel)
 
 	content = VBoxContainer.new()
@@ -631,10 +641,7 @@ func _build_battle_game_layout() -> void:
 	var target_blob := Panel.new()
 	target_blob.size = Vector2(160, 160)
 	target_blob.position = Vector2((viewport_size.x - 160.0) / 2.0, 208)
-	target_blob.add_theme_stylebox_override(
-		"panel",
-		_make_circle_style(COLOR_PRIMARY_STRONG, 80, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER)
-	)
+	_apply_panel_theme(target_blob, THEME_PANEL_TARGET)
 	add_child(target_blob)
 
 	target_label = _make_absolute_label("", 48, COLOR_INK, 900)
@@ -788,8 +795,7 @@ func _build_solo_layout() -> void:
 	timer_bar.value = solo_time_left
 	timer_bar.position = Vector2(96, 28)
 	timer_bar.size = Vector2(viewport_size.x - 192.0, 8)
-	timer_bar.add_theme_stylebox_override("background", _make_bar_style(COLOR_BUTTON_DISABLED, 4))
-	timer_bar.add_theme_stylebox_override("fill", _make_bar_style(COLOR_PRIMARY_STRONG, 4))
+	_apply_progress_theme(timer_bar, THEME_PROGRESS_PRIMARY)
 	add_child(timer_bar)
 
 	score_label = _make_absolute_label("", 14, COLOR_PRIMARY, 800)
@@ -801,10 +807,7 @@ func _build_solo_layout() -> void:
 	var target_blob := Panel.new()
 	target_blob.size = Vector2(SOLO_TARGET_SIZE, SOLO_TARGET_SIZE)
 	target_blob.position = Vector2((viewport_size.x - SOLO_TARGET_SIZE) / 2.0, 120)
-	target_blob.add_theme_stylebox_override(
-		"panel",
-		_make_circle_style(COLOR_PRIMARY_STRONG, SOLO_TARGET_SIZE / 2.0, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER)
-	)
+	_apply_panel_theme(target_blob, THEME_PANEL_TARGET)
 	add_child(target_blob)
 
 	target_label = _make_absolute_label("", 72, COLOR_INK, 900)
@@ -1242,6 +1245,16 @@ func _make_app_theme() -> Theme:
 	_add_button_theme(app_theme, THEME_BUTTON_PAGE_PRIMARY, COLOR_PRIMARY_STRONG, COLOR_INK, 16)
 	_add_button_theme(app_theme, THEME_BUTTON_PAGE_SECONDARY, COLOR_SECONDARY, COLOR_TEXT_INVERSE, 16)
 	_add_transparent_button_theme(app_theme)
+	_add_panel_theme(app_theme, THEME_PANEL_SURFACE, "Panel", _make_panel_style(COLOR_SURFACE))
+	_add_panel_theme(app_theme, THEME_PANEL_CONTAINER_SURFACE, "PanelContainer", _make_panel_style(COLOR_SURFACE))
+	_add_panel_theme(app_theme, THEME_PANEL_DIALOG, "Panel", _make_dialog_panel_style())
+	_add_panel_theme(app_theme, THEME_PANEL_TARGET, "Panel", _make_pixel_box_style(COLOR_PRIMARY_STRONG, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER))
+	_add_panel_theme(app_theme, THEME_PANEL_AVATAR_PRIMARY, "Panel", _make_pixel_box_style(COLOR_PRIMARY_STRONG, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER))
+	_add_panel_theme(app_theme, THEME_PANEL_AVATAR_SECONDARY, "Panel", _make_pixel_box_style(COLOR_SECONDARY, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER))
+	_add_panel_theme(app_theme, THEME_PANEL_BADGE_PRIMARY, "Panel", _make_button_style(COLOR_PRIMARY_STRONG))
+	_add_panel_theme(app_theme, THEME_PANEL_BADGE_SURFACE, "Panel", _make_button_style(COLOR_SURFACE))
+	_add_progress_theme(app_theme, THEME_PROGRESS_PRIMARY, COLOR_PRIMARY_STRONG)
+	_add_progress_theme(app_theme, THEME_PROGRESS_SECONDARY, COLOR_SECONDARY)
 
 	return app_theme
 
@@ -1292,6 +1305,15 @@ func _set_button_theme_colors(app_theme: Theme, variation: String, text_color: C
 	app_theme.set_color("font_disabled_color", variation, COLOR_INK_SOFT)
 	app_theme.set_color("icon_disabled_color", variation, COLOR_INK_SOFT)
 
+func _add_panel_theme(app_theme: Theme, variation: String, base_type: String, style: StyleBox) -> void:
+	app_theme.set_type_variation(variation, base_type)
+	app_theme.set_stylebox("panel", variation, style)
+
+func _add_progress_theme(app_theme: Theme, variation: String, fill_color: Color) -> void:
+	app_theme.set_type_variation(variation, "ProgressBar")
+	app_theme.set_stylebox("background", variation, _make_bar_style(COLOR_BUTTON_DISABLED, 4))
+	app_theme.set_stylebox("fill", variation, _make_bar_style(fill_color, 4))
+
 func _make_ui_font(weight: int) -> SystemFont:
 	var font := SystemFont.new()
 	font.font_names = PackedStringArray(["Menlo", "Courier New", "Monaco"])
@@ -1302,18 +1324,20 @@ func _apply_button_theme(button: Button, variation: String) -> void:
 	button.theme_type_variation = variation
 	button.focus_mode = Control.FOCUS_NONE
 
+func _apply_panel_theme(panel: Control, variation: String) -> void:
+	panel.theme_type_variation = variation
+
+func _apply_progress_theme(bar: ProgressBar, variation: String) -> void:
+	bar.theme_type_variation = variation
+
 func _button_theme_for_color(color: Color, primary_theme: String, secondary_theme: String) -> String:
 	return secondary_theme if color == COLOR_SECONDARY else primary_theme
 
-func _make_label(text: String, font_size: int, alignment: HorizontalAlignment) -> Label:
-	var label := Label.new()
-	label.text = text
-	label.horizontal_alignment = alignment
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", font_size)
-	label.add_theme_color_override("font_color", COLOR_INK)
-	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	return label
+func _panel_theme_for_color(color: Color) -> String:
+	return THEME_PANEL_AVATAR_SECONDARY if color == COLOR_SECONDARY else THEME_PANEL_AVATAR_PRIMARY
+
+func _progress_theme_for_color(color: Color) -> String:
+	return THEME_PROGRESS_SECONDARY if color == COLOR_SECONDARY else THEME_PROGRESS_PRIMARY
 
 func _make_action_button(text: String, callback: Callable, color: Color) -> Button:
 	var button := Button.new()
@@ -1339,10 +1363,10 @@ func _make_home_title() -> HBoxContainer:
 	filled_o_wrap.custom_minimum_size = Vector2(32, 44)
 	title_row.add_child(filled_o_wrap)
 
-	var filled_o := Panel.new()
+	var filled_o := ColorRect.new()
 	filled_o.size = Vector2(28, 28)
 	filled_o.position = Vector2(2, 22)
-	filled_o.add_theme_stylebox_override("panel", _make_circle_style(COLOR_TEXT_INVERSE, 14, COLOR_TEXT_INVERSE, 0))
+	filled_o.color = COLOR_TEXT_INVERSE
 	filled_o_wrap.add_child(filled_o)
 
 	var tail := _make_absolute_label("MIZE", 40, COLOR_TEXT_INVERSE, 900)
@@ -1433,10 +1457,7 @@ func _make_pause_icon_button() -> Button:
 func _make_avatar_initial_circle(size: float, color: Color, text: String, font_size: int) -> Panel:
 	var avatar := Panel.new()
 	avatar.size = Vector2(size, size)
-	avatar.add_theme_stylebox_override(
-		"panel",
-		_make_circle_style(color, size / 2.0, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER)
-	)
+	_apply_panel_theme(avatar, _panel_theme_for_color(color))
 
 	var label := _make_absolute_label(text, font_size, _get_button_text_color(color), 900)
 	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -1447,10 +1468,7 @@ func _make_avatar_initial_circle(size: float, color: Color, text: String, font_s
 func _make_avatar_icon_circle(size: float, color: Color, icon_kind: String) -> Panel:
 	var avatar := Panel.new()
 	avatar.size = Vector2(size, size)
-	avatar.add_theme_stylebox_override(
-		"panel",
-		_make_circle_style(color, size / 2.0, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER)
-	)
+	_apply_panel_theme(avatar, _panel_theme_for_color(color))
 
 	var icon_slot := Control.new()
 	icon_slot.size = Vector2(size, size)
@@ -1470,8 +1488,7 @@ func _make_hp_bar(color: Color) -> ProgressBar:
 	bar.min_value = 0
 	bar.max_value = BattleRoom.STARTING_HP
 	bar.value = BattleRoom.STARTING_HP
-	bar.add_theme_stylebox_override("background", _make_bar_style(COLOR_BUTTON_DISABLED, 5))
-	bar.add_theme_stylebox_override("fill", _make_bar_style(color, 5))
+	_apply_progress_theme(bar, _progress_theme_for_color(color))
 	return bar
 
 func _add_help_rule(container: VBoxContainer, title_text: String, body_text: String) -> void:
@@ -1512,17 +1529,15 @@ func _make_prime_key_button(text: String) -> Button:
 
 func _make_icon_text_button(
 	text: String,
-	background_color: Color,
-	text_color: Color,
-	font_size: int,
+	_background_color: Color,
+	_text_color: Color,
+	_font_size: int,
 	sound_kind: String = "tap"
 ) -> Button:
 	var button := Button.new()
 	button.text = text
 	button.custom_minimum_size = Vector2(SOLO_KEY_SIZE, SOLO_KEY_SIZE)
 	_apply_button_theme(button, THEME_BUTTON_KEY_ACTION)
-	button.add_theme_font_size_override("font_size", font_size)
-	button.add_theme_color_override("font_color", text_color)
 	_wire_button_feedback(button, sound_kind)
 	return button
 
@@ -1543,7 +1558,7 @@ func _make_dialog_panel(height: float) -> Panel:
 	var panel := Panel.new()
 	panel.size = Vector2(DIALOG_WIDTH, height)
 	panel.position = Vector2((viewport_size.x - DIALOG_WIDTH) / 2.0, (viewport_size.y - height) / 2.0)
-	panel.add_theme_stylebox_override("panel", _make_dialog_panel_style())
+	_apply_panel_theme(panel, THEME_PANEL_DIALOG)
 	return panel
 
 func _add_dialog_header(panel: Panel, title: String) -> void:
@@ -1577,7 +1592,7 @@ func _make_best_score_badge() -> Panel:
 	var badge := Panel.new()
 	badge.size = Vector2(124, 28)
 	var badge_color := COLOR_PRIMARY_STRONG if did_set_new_best else COLOR_SURFACE
-	badge.add_theme_stylebox_override("panel", _make_button_style(badge_color))
+	_apply_panel_theme(badge, THEME_PANEL_BADGE_PRIMARY if did_set_new_best else THEME_PANEL_BADGE_SURFACE)
 
 	var badge_text := "NEW BEST!" if did_set_new_best else "BEST %s" % best_score
 	var text_color := _get_button_text_color(badge_color)
@@ -1936,7 +1951,10 @@ func _make_transparent_button_style() -> StyleBoxFlat:
 	style.bg_color = Color.TRANSPARENT
 	return style
 
-func _make_circle_style(color: Color, radius: float, border_color: Color, border_width: int) -> StyleBoxFlat:
+func _make_circle_style(color: Color, _radius: float, border_color: Color, border_width: int) -> StyleBoxFlat:
+	return _make_pixel_box_style(color, border_color, border_width)
+
+func _make_pixel_box_style(color: Color, border_color: Color, border_width: int) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
 	var corner_radius := PIXEL_RADIUS
