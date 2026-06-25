@@ -7,6 +7,20 @@ const COMBO_QUEUE_MAX_ITEMS := 7
 const SOLO_DURATION_SECONDS := 60.0
 const SOLO_COMBO_STEP_DELAY_SECONDS := 0.18
 const SOLO_SEED_PREFIX := "godot-mobile"
+const VERSION_LABEL := "v0.0.0"
+const COLOR_PRIMARY := Color("#184e77")
+const COLOR_PRIMARY_STRONG := Color("#168aad")
+const COLOR_SECONDARY := Color("#34a0a4")
+const COLOR_INK := Color("#223247")
+const COLOR_PAGE_BG := Color("#f4f7fb")
+const COLOR_SURFACE := Color("#ffffff")
+const COLOR_TEXT_INVERSE := Color("#ffffff")
+const COLOR_TEXT_INVERSE_SOFT := Color(1.0, 1.0, 1.0, 0.64)
+const COLOR_BORDER_INVERSE_SOFT := Color(1.0, 1.0, 1.0, 0.28)
+const COLOR_BUTTON_DISABLED := Color(0.094, 0.306, 0.467, 0.12)
+const HOME_BLOB_SIZE := 144.0
+const HOME_BLOB_GAP := 24.0
+const HOME_MENU_BUTTON_SIZE := 44.0
 const PRIME_COMPENSATION_FACTORS := {
 	2: 0.2,
 	3: 0.2,
@@ -40,6 +54,7 @@ var last_result_text := ""
 var best_score := 0
 var best_combo := 0
 var did_set_new_best := false
+var home_menu_open := false
 
 var root_margin: MarginContainer
 var content: VBoxContainer
@@ -99,42 +114,8 @@ func _start_home() -> void:
 	screen = Screen.HOME
 	prime_queue.clear()
 	resolving_queue.clear()
-	_build_base_layout()
-
-	var title := _make_label("Atomize", 44, HORIZONTAL_ALIGNMENT_CENTER)
-	title.add_theme_color_override("font_color", Color("#f8fafc"))
-	content.add_child(title)
-
-	var subtitle := _make_label(
-		"Prime factorization built for touch-speed mobile testing.",
-		18,
-		HORIZONTAL_ALIGNMENT_CENTER
-	)
-	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	content.add_child(subtitle)
-
-	var stats := _make_label(
-		"Best %s  Combo %s" % [best_score, best_combo],
-		18,
-		HORIZONTAL_ALIGNMENT_CENTER
-	)
-	stats.add_theme_color_override("font_color", Color("#fbbf24"))
-	content.add_child(stats)
-
-	content.add_spacer(false)
-	content.add_child(_make_action_button("Play Solo", _start_solo_game, Color("#22c55e")))
-	content.add_child(_make_action_button("How To Play", _start_help, Color("#38bdf8")))
-	content.add_child(_make_action_button("Reset Best", _reset_best_score, Color("#f97316")))
-	content.add_spacer(false)
-
-	var note := _make_label(
-		"Native Godot build: solo mode, scoring, combos, timer, pause, and saved best score.",
-		14,
-		HORIZONTAL_ALIGNMENT_CENTER
-	)
-	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	note.add_theme_color_override("font_color", Color("#cbd5e1"))
-	content.add_child(note)
+	home_menu_open = false
+	_build_home_layout()
 
 func _start_help() -> void:
 	screen = Screen.HELP
@@ -207,8 +188,12 @@ func _finish_game() -> void:
 	_build_game_over_layout()
 
 func _build_base_layout() -> void:
-	for child in get_children():
-		child.queue_free()
+	_clear_screen()
+
+	var background := ColorRect.new()
+	background.color = COLOR_PAGE_BG
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(background)
 
 	root_margin = MarginContainer.new()
 	root_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -221,7 +206,7 @@ func _build_base_layout() -> void:
 	var panel := PanelContainer.new()
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	panel.add_theme_stylebox_override("panel", _make_panel_style(Color("#111827")))
+	panel.add_theme_stylebox_override("panel", _make_panel_style(COLOR_SURFACE))
 	root_margin.add_child(panel)
 
 	content = VBoxContainer.new()
@@ -229,6 +214,79 @@ func _build_base_layout() -> void:
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	content.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	panel.add_child(content)
+
+func _build_home_layout() -> void:
+	_clear_screen()
+
+	var viewport_size := get_viewport_rect().size
+
+	var background := ColorRect.new()
+	background.color = COLOR_PAGE_BG
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(background)
+
+	var title_orb_diameter: float = max(viewport_size.x * 1.6, viewport_size.y * 1.3)
+	var title_orb := Panel.new()
+	title_orb.size = Vector2(title_orb_diameter, title_orb_diameter)
+	title_orb.position = Vector2(
+		(viewport_size.x - title_orb_diameter) / 2.0,
+		(viewport_size.y * 0.5) - title_orb_diameter
+	)
+	title_orb.add_theme_stylebox_override(
+		"panel",
+		_make_circle_style(COLOR_PRIMARY, title_orb_diameter / 2.0, COLOR_PRIMARY, 0)
+	)
+	add_child(title_orb)
+
+	var version_label := _make_absolute_label(VERSION_LABEL, 12, COLOR_TEXT_INVERSE_SOFT, 600)
+	version_label.position = Vector2(12, 12)
+	version_label.size = Vector2(96, 24)
+	add_child(version_label)
+
+	var menu_button := _make_home_menu_button()
+	menu_button.position = Vector2(viewport_size.x - HOME_MENU_BUTTON_SIZE - 12.0, 10.0)
+	add_child(menu_button)
+	_build_home_dropdown(menu_button.position + Vector2(-92, HOME_MENU_BUTTON_SIZE + 4))
+
+	var title_row := _make_home_title()
+	title_row.size = Vector2(min(viewport_size.x * 0.92, 320.0), 72)
+	title_row.position = Vector2(
+		(viewport_size.x - title_row.size.x) / 2.0,
+		(viewport_size.y * 0.25) - 36.0
+	)
+	add_child(title_row)
+
+	var total_blob_width := (HOME_BLOB_SIZE * 2.0) + HOME_BLOB_GAP
+	var blob_left := (viewport_size.x - total_blob_width) / 2.0
+	var blob_top := viewport_size.y * 0.63
+	var solo_button := _make_home_blob_button("SOLO", _start_solo_game, COLOR_PRIMARY_STRONG, "timer")
+	solo_button.position = Vector2(blob_left, blob_top)
+	add_child(solo_button)
+
+	var help_button := _make_home_blob_button("HELP", _start_help, COLOR_SECONDARY, "help")
+	help_button.position = Vector2(blob_left + HOME_BLOB_SIZE + HOME_BLOB_GAP, blob_top)
+	add_child(help_button)
+
+func _build_home_dropdown(position: Vector2) -> void:
+	if not home_menu_open:
+		return
+
+	var dropdown := VBoxContainer.new()
+	dropdown.position = position
+	dropdown.size = Vector2(128, 52)
+	dropdown.add_theme_constant_override("separation", 8)
+	add_child(dropdown)
+
+	var reset_button := _make_dropdown_button("Reset Best", _reset_best_score)
+	dropdown.add_child(reset_button)
+
+func _toggle_home_menu() -> void:
+	home_menu_open = not home_menu_open
+	_build_home_layout()
+
+func _clear_screen() -> void:
+	for child in get_children():
+		child.queue_free()
 
 func _build_solo_layout() -> void:
 	_build_base_layout()
@@ -251,7 +309,7 @@ func _build_solo_layout() -> void:
 	target_label = _make_label("", 64, HORIZONTAL_ALIGNMENT_CENTER)
 	target_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	target_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	target_label.add_theme_color_override("font_color", Color("#f8fafc"))
+	target_label.add_theme_color_override("font_color", COLOR_INK)
 	content.add_child(target_label)
 
 	factors_label = _make_label("", 16, HORIZONTAL_ALIGNMENT_CENTER)
@@ -259,7 +317,7 @@ func _build_solo_layout() -> void:
 	content.add_child(factors_label)
 
 	queue_label = _make_label("", 18, HORIZONTAL_ALIGNMENT_CENTER)
-	queue_label.add_theme_color_override("font_color", Color("#fbbf24"))
+	queue_label.add_theme_color_override("font_color", COLOR_PRIMARY_STRONG)
 	content.add_child(queue_label)
 
 	result_label = _make_label("", 15, HORIZONTAL_ALIGNMENT_CENTER)
@@ -280,9 +338,9 @@ func _build_solo_layout() -> void:
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		button.add_theme_font_size_override("font_size", 24)
-		button.add_theme_stylebox_override("normal", _make_button_style(Color("#1d4ed8")))
-		button.add_theme_stylebox_override("hover", _make_button_style(Color("#2563eb")))
-		button.add_theme_stylebox_override("pressed", _make_button_style(Color("#1e40af")))
+		button.add_theme_stylebox_override("normal", _make_button_style(COLOR_PRIMARY_STRONG))
+		button.add_theme_stylebox_override("hover", _make_button_style(COLOR_PRIMARY_STRONG.lightened(0.08)))
+		button.add_theme_stylebox_override("pressed", _make_button_style(COLOR_PRIMARY_STRONG.darkened(0.12)))
 		button.pressed.connect(_queue_prime.bind(int(prime)))
 		prime_grid.add_child(button)
 
@@ -290,15 +348,15 @@ func _build_solo_layout() -> void:
 	action_row.add_theme_constant_override("separation", 12)
 	content.add_child(action_row)
 
-	backspace_button = _make_action_button("Backspace", _backspace_queue, Color("#64748b"))
+	backspace_button = _make_action_button("Backspace", _backspace_queue, COLOR_PRIMARY)
 	backspace_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	action_row.add_child(backspace_button)
 
-	submit_button = _make_action_button("Submit", _submit_queue, Color("#22c55e"))
+	submit_button = _make_action_button("Submit", _submit_queue, COLOR_PRIMARY_STRONG)
 	submit_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	action_row.add_child(submit_button)
 
-	var pause_button := _make_action_button("Pause", _pause_game, Color("#f97316"))
+	var pause_button := _make_action_button("Pause", _pause_game, COLOR_SECONDARY)
 	pause_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	action_row.add_child(pause_button)
 
@@ -307,9 +365,9 @@ func _build_pause_layout() -> void:
 	content.add_spacer(false)
 	content.add_child(_make_label("Paused", 40, HORIZONTAL_ALIGNMENT_CENTER))
 	content.add_child(_make_label("Score %s" % int(solo_state["score"]), 20, HORIZONTAL_ALIGNMENT_CENTER))
-	content.add_child(_make_action_button("Resume", _resume_game, Color("#22c55e")))
-	content.add_child(_make_action_button("Restart", _start_solo_game, Color("#38bdf8")))
-	content.add_child(_make_action_button("Home", _start_home, Color("#64748b")))
+	content.add_child(_make_action_button("Resume", _resume_game, COLOR_PRIMARY_STRONG))
+	content.add_child(_make_action_button("Restart", _start_solo_game, COLOR_SECONDARY))
+	content.add_child(_make_action_button("Home", _start_home, COLOR_PRIMARY))
 	content.add_spacer(false)
 
 func _build_game_over_layout() -> void:
@@ -322,8 +380,8 @@ func _build_game_over_layout() -> void:
 	content.add_child(_make_label("Atomized %s" % int(solo_state["clearedStages"]), 20, HORIZONTAL_ALIGNMENT_CENTER))
 	content.add_child(_make_label("Max combo %s" % int(solo_state["maxCombo"]), 20, HORIZONTAL_ALIGNMENT_CENTER))
 	content.add_child(_make_label("Best %s" % best_score, 20, HORIZONTAL_ALIGNMENT_CENTER))
-	content.add_child(_make_action_button("Play Again", _start_solo_game, Color("#22c55e")))
-	content.add_child(_make_action_button("Home", _start_home, Color("#64748b")))
+	content.add_child(_make_action_button("Play Again", _start_solo_game, COLOR_PRIMARY_STRONG))
+	content.add_child(_make_action_button("Home", _start_home, COLOR_PRIMARY))
 	content.add_spacer(false)
 
 func _render_solo() -> void:
@@ -489,7 +547,7 @@ func _make_label(text: String, font_size: int, alignment: HorizontalAlignment) -
 	label.horizontal_alignment = alignment
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", font_size)
-	label.add_theme_color_override("font_color", Color("#e2e8f0"))
+	label.add_theme_color_override("font_color", COLOR_INK)
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return label
 
@@ -502,9 +560,157 @@ func _make_action_button(text: String, callback: Callable, color: Color) -> Butt
 	button.add_theme_stylebox_override("normal", _make_button_style(color))
 	button.add_theme_stylebox_override("hover", _make_button_style(color.lightened(0.08)))
 	button.add_theme_stylebox_override("pressed", _make_button_style(color.darkened(0.12)))
-	button.add_theme_stylebox_override("disabled", _make_button_style(Color("#334155")))
+	button.add_theme_stylebox_override("disabled", _make_button_style(COLOR_BUTTON_DISABLED))
 	button.pressed.connect(callback)
 	return button
+
+func _make_home_title() -> HBoxContainer:
+	var title_row := HBoxContainer.new()
+	title_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	title_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	title_row.add_theme_constant_override("separation", 2)
+
+	var lead := _make_absolute_label("AT", 40, COLOR_TEXT_INVERSE, 900)
+	lead.size_flags_horizontal = Control.SIZE_SHRINK_END
+	title_row.add_child(lead)
+
+	var filled_o_wrap := Control.new()
+	filled_o_wrap.custom_minimum_size = Vector2(32, 44)
+	title_row.add_child(filled_o_wrap)
+
+	var filled_o := Panel.new()
+	filled_o.size = Vector2(28, 28)
+	filled_o.position = Vector2(2, 22)
+	filled_o.add_theme_stylebox_override("panel", _make_circle_style(COLOR_TEXT_INVERSE, 14, COLOR_TEXT_INVERSE, 0))
+	filled_o_wrap.add_child(filled_o)
+
+	var tail := _make_absolute_label("MIZE", 40, COLOR_TEXT_INVERSE, 900)
+	tail.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	title_row.add_child(tail)
+
+	return title_row
+
+func _make_home_blob_button(text: String, callback: Callable, color: Color, icon_kind: String) -> Button:
+	var button := Button.new()
+	button.custom_minimum_size = Vector2(HOME_BLOB_SIZE, HOME_BLOB_SIZE)
+	button.size = Vector2(HOME_BLOB_SIZE, HOME_BLOB_SIZE)
+	button.focus_mode = Control.FOCUS_NONE
+	button.text = ""
+	button.add_theme_stylebox_override(
+		"normal",
+		_make_circle_style(color, HOME_BLOB_SIZE / 2.0, COLOR_BORDER_INVERSE_SOFT, 2)
+	)
+	button.add_theme_stylebox_override(
+		"hover",
+		_make_circle_style(color.lightened(0.06), HOME_BLOB_SIZE / 2.0, COLOR_BORDER_INVERSE_SOFT, 2)
+	)
+	button.add_theme_stylebox_override(
+		"pressed",
+		_make_circle_style(color.darkened(0.08), HOME_BLOB_SIZE / 2.0, COLOR_BORDER_INVERSE_SOFT, 2)
+	)
+	button.pressed.connect(callback)
+
+	var content_stack := VBoxContainer.new()
+	content_stack.alignment = BoxContainer.ALIGNMENT_CENTER
+	content_stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content_stack.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	content_stack.add_theme_constant_override("separation", 4)
+	button.add_child(content_stack)
+
+	var icon_slot := Control.new()
+	icon_slot.custom_minimum_size = Vector2(32, 28)
+	content_stack.add_child(icon_slot)
+	if icon_kind == "timer":
+		_add_timer_icon(icon_slot)
+	else:
+		_add_help_icon(icon_slot)
+
+	var label := _make_absolute_label(text, 16, COLOR_TEXT_INVERSE, 900)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.custom_minimum_size = Vector2(HOME_BLOB_SIZE, 24)
+	content_stack.add_child(label)
+
+	return button
+
+func _make_home_menu_button() -> Button:
+	var button := Button.new()
+	button.size = Vector2(HOME_MENU_BUTTON_SIZE, HOME_MENU_BUTTON_SIZE)
+	button.custom_minimum_size = Vector2(HOME_MENU_BUTTON_SIZE, HOME_MENU_BUTTON_SIZE)
+	button.focus_mode = Control.FOCUS_NONE
+	button.text = ""
+	button.flat = true
+	button.add_theme_stylebox_override("normal", _make_transparent_button_style())
+	button.add_theme_stylebox_override("hover", _make_transparent_button_style())
+	button.add_theme_stylebox_override("pressed", _make_transparent_button_style())
+	button.pressed.connect(_toggle_home_menu)
+
+	for index in range(3):
+		var line := ColorRect.new()
+		line.color = COLOR_TEXT_INVERSE_SOFT
+		line.position = Vector2(13, 14 + (index * 7))
+		line.size = Vector2(18, 2)
+		line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		button.add_child(line)
+
+	return button
+
+func _make_dropdown_button(text: String, callback: Callable) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.custom_minimum_size = Vector2(128, 44)
+	button.focus_mode = Control.FOCUS_NONE
+	button.add_theme_font_size_override("font_size", 14)
+	button.add_theme_color_override("font_color", COLOR_PRIMARY)
+	button.add_theme_stylebox_override("normal", _make_button_style(COLOR_SURFACE))
+	button.add_theme_stylebox_override("hover", _make_button_style(COLOR_SURFACE.darkened(0.03)))
+	button.add_theme_stylebox_override("pressed", _make_button_style(COLOR_SURFACE.darkened(0.06)))
+	button.pressed.connect(callback)
+	return button
+
+func _make_absolute_label(text: String, font_size: int, color: Color, weight: int) -> Label:
+	var label := Label.new()
+	label.text = text
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.label_settings = _make_label_settings(font_size, color, weight)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return label
+
+func _make_label_settings(font_size: int, color: Color, weight: int) -> LabelSettings:
+	var font := SystemFont.new()
+	font.font_names = PackedStringArray(["Avenir Next", "Helvetica Neue", "Arial"])
+	font.font_weight = weight
+
+	var settings := LabelSettings.new()
+	settings.font = font
+	settings.font_size = font_size
+	settings.font_color = color
+	return settings
+
+func _add_timer_icon(parent: Control) -> void:
+	var ring := Panel.new()
+	ring.size = Vector2(18, 18)
+	ring.position = Vector2((HOME_BLOB_SIZE - 18.0) / 2.0, 8)
+	ring.add_theme_stylebox_override("panel", _make_outline_circle_style(9, COLOR_TEXT_INVERSE, 3))
+	parent.add_child(ring)
+
+	var crown := ColorRect.new()
+	crown.color = COLOR_TEXT_INVERSE
+	crown.size = Vector2(8, 3)
+	crown.position = Vector2((HOME_BLOB_SIZE - 8.0) / 2.0, 3)
+	parent.add_child(crown)
+
+	var hand := Line2D.new()
+	hand.default_color = COLOR_TEXT_INVERSE
+	hand.width = 2.0
+	hand.points = PackedVector2Array([Vector2.ZERO, Vector2(4, -5)])
+	hand.position = Vector2(HOME_BLOB_SIZE / 2.0, 17)
+	parent.add_child(hand)
+
+func _add_help_icon(parent: Control) -> void:
+	var icon := _make_absolute_label("?", 24, COLOR_TEXT_INVERSE, 900)
+	icon.size = Vector2(HOME_BLOB_SIZE, 28)
+	parent.add_child(icon)
 
 func _make_button_style(color: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
@@ -517,6 +723,31 @@ func _make_button_style(color: Color) -> StyleBoxFlat:
 	style.content_margin_right = 12
 	style.content_margin_top = 8
 	style.content_margin_bottom = 8
+	return style
+
+func _make_transparent_button_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color.TRANSPARENT
+	return style
+
+func _make_circle_style(color: Color, radius: float, border_color: Color, border_width: int) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = color
+	var corner_radius := int(round(radius))
+	style.corner_radius_top_left = corner_radius
+	style.corner_radius_top_right = corner_radius
+	style.corner_radius_bottom_right = corner_radius
+	style.corner_radius_bottom_left = corner_radius
+	style.border_color = border_color
+	style.border_width_left = border_width
+	style.border_width_top = border_width
+	style.border_width_right = border_width
+	style.border_width_bottom = border_width
+	return style
+
+func _make_outline_circle_style(radius: float, border_color: Color, border_width: int) -> StyleBoxFlat:
+	var style := _make_circle_style(Color.TRANSPARENT, radius, border_color, border_width)
+	style.draw_center = false
 	return style
 
 func _make_panel_style(color: Color) -> StyleBoxFlat:
