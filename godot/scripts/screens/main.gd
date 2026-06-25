@@ -1,8 +1,14 @@
 extends Control
 
 const Game := preload("res://scripts/core/game.gd")
+const BattleRoom := preload("res://scripts/core/multiplayer_room.gd")
 
 const BEST_SCORE_PATH := "user://best_score.json"
+const BATTLE_BOT_ID := "atom-bot"
+const BATTLE_BOT_NAME := "AtomBot"
+const BATTLE_BOT_STEP_SECONDS := 2.6
+const BATTLE_PLAYER_ID := "guest-player"
+const BATTLE_PLAYER_NAME := "Guest"
 const COMBO_QUEUE_MAX_ITEMS := 7
 const SCREEN_ARG_PREFIX := "--atomize-screen="
 const SOLO_DURATION_SECONDS := 60.0
@@ -50,6 +56,8 @@ enum Screen {
 	HELP,
 	SOLO_PREGAME,
 	BATTLE_PICKER,
+	BATTLE_READY,
+	BATTLE_GAME,
 	SOLO,
 	PAUSED,
 	GAME_OVER,
@@ -69,6 +77,10 @@ var best_score := 0
 var best_combo := 0
 var did_set_new_best := false
 var home_menu_open := false
+var battle_snapshot: Dictionary
+var battle_prime_queue: Array[int] = []
+var battle_bot_elapsed := 0.0
+var battle_result_text := ""
 
 var root_margin: MarginContainer
 var content: VBoxContainer
@@ -83,6 +95,10 @@ var prime_grid: GridContainer
 var submit_button: Button
 var backspace_button: Button
 var timer_bar: ProgressBar
+var enemy_hp_bar: ProgressBar
+var enemy_hp_label: Label
+var player_hp_bar: ProgressBar
+var player_hp_label: Label
 
 func _ready() -> void:
 	best_score = _load_best_score()
@@ -94,6 +110,11 @@ func _ready() -> void:
 			_start_solo_pregame()
 		"battle":
 			_start_battle_picker()
+		"battle-ready":
+			_start_battle_ready()
+		"battle-game":
+			_start_battle_ready()
+			_start_battle_game()
 		_:
 			_start_home()
 
@@ -105,6 +126,13 @@ func _get_requested_screen() -> String:
 	return ""
 
 func _process(delta: float) -> void:
+	if screen == Screen.BATTLE_GAME:
+		battle_bot_elapsed += delta
+		if battle_bot_elapsed >= BATTLE_BOT_STEP_SECONDS:
+			battle_bot_elapsed = 0.0
+			_apply_atom_bot_turn()
+		return
+
 	if screen != Screen.SOLO:
 		return
 
@@ -137,7 +165,14 @@ func _unhandled_input(event: InputEvent) -> void:
 			_pause_game()
 		elif screen == Screen.PAUSED:
 			_resume_game()
-		elif screen == Screen.HELP or screen == Screen.SOLO_PREGAME or screen == Screen.BATTLE_PICKER or screen == Screen.GAME_OVER:
+		elif (
+			screen == Screen.HELP
+			or screen == Screen.SOLO_PREGAME
+			or screen == Screen.BATTLE_PICKER
+			or screen == Screen.BATTLE_READY
+			or screen == Screen.BATTLE_GAME
+			or screen == Screen.GAME_OVER
+		):
 			_start_home()
 
 func _start_home() -> void:
@@ -158,6 +193,34 @@ func _start_solo_pregame() -> void:
 func _start_battle_picker() -> void:
 	screen = Screen.BATTLE_PICKER
 	_build_battle_picker_layout()
+
+func _start_battle_ready() -> void:
+	battle_snapshot = BattleRoom.create_room_snapshot("godot-atom-bot", BATTLE_BOT_ID, BATTLE_BOT_NAME)
+	battle_snapshot = BattleRoom.add_player_to_room(
+		battle_snapshot,
+		BATTLE_PLAYER_ID,
+		BATTLE_PLAYER_NAME
+	)
+	battle_snapshot = BattleRoom.set_player_ready(battle_snapshot, BATTLE_BOT_ID, true)
+	battle_prime_queue.clear()
+	battle_bot_elapsed = 0.0
+	battle_result_text = ""
+	screen = Screen.BATTLE_READY
+	_build_battle_ready_layout()
+
+func _start_battle_game() -> void:
+	if battle_snapshot.is_empty():
+		_start_battle_ready()
+		return
+
+	battle_snapshot = BattleRoom.set_player_ready(battle_snapshot, BATTLE_PLAYER_ID, true)
+	battle_snapshot = BattleRoom.begin_room_match(battle_snapshot)
+	battle_prime_queue.clear()
+	battle_bot_elapsed = 0.0
+	battle_result_text = ""
+	screen = Screen.BATTLE_GAME
+	_build_battle_game_layout()
+	_render_battle()
 
 func _start_solo_game() -> void:
 	run_seed = "%s:%s" % [SOLO_SEED_PREFIX, Time.get_ticks_usec()]
@@ -394,26 +457,222 @@ func _build_battle_picker_layout() -> void:
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(background)
 
-	_build_page_header("BATTLE", "CHALLENGE ATOMBOT OR A PLAYER.", "battle")
+	_build_page_header("BATTLE", "OUTSMART THEM.", "battle")
 
 	var body_width: float = min(viewport_size.x - 48.0, 352.0)
 	var body_left: float = (viewport_size.x - body_width) / 2.0
 
-	var atom_bot_button := _make_wide_page_button("ATOM BOT", _start_help, COLOR_PRIMARY_STRONG)
-	atom_bot_button.position = Vector2(body_left, 430)
-	atom_bot_button.size = Vector2(body_width, 56)
-	add_child(atom_bot_button)
+	_add_battle_section_title(body_left, 262, "⚙", "CPU TRAINING")
+	_add_battle_picker_row(body_left, 300, body_width, "🤖", BATTLE_BOT_NAME, "Play", false, _start_battle_ready)
 
-	var player_button := _make_wide_page_button("ONLINE", _start_help, COLOR_SECONDARY)
-	player_button.position = Vector2(body_left, 502)
-	player_button.size = Vector2(body_width, 56)
-	add_child(player_button)
+	_add_battle_section_title(body_left, 384, "♧", "ONLINE PLAYERS")
+	_add_battle_picker_row(body_left, 422, body_width, "G", "Guest1", "In Game", true, Callable())
 
-	var hint := _make_absolute_label("Battle logic is not yet wired in this native shell.", 13, COLOR_INK_SOFT, 700)
-	hint.position = Vector2(body_left + 24.0, 590)
-	hint.size = Vector2(body_width - 48.0, 52)
-	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	add_child(hint)
+func _add_battle_section_title(left: float, top: float, icon_text: String, label_text: String) -> void:
+	var icon := _make_absolute_label(icon_text, 16, COLOR_KEYPAD_BUTTON_TEXT, 800)
+	icon.position = Vector2(left, top)
+	icon.size = Vector2(24, 24)
+	add_child(icon)
+
+	var label := _make_absolute_label(label_text, 12, COLOR_INK_SOFT, 800)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	label.position = Vector2(left + 26.0, top)
+	label.size = Vector2(220, 24)
+	add_child(label)
+
+func _add_battle_picker_row(
+	left: float,
+	top: float,
+	width: float,
+	avatar_text: String,
+	name_text: String,
+	action_text: String,
+	disabled: bool,
+	callback: Callable
+) -> void:
+	var avatar_color := COLOR_PRIMARY_STRONG if avatar_text != "G" else COLOR_SECONDARY
+	var avatar := _make_avatar_circle(44, avatar_color, avatar_text, 12)
+	avatar.position = Vector2(left, top)
+	add_child(avatar)
+
+	var name := _make_absolute_label(name_text, 16, COLOR_INK, 800)
+	name.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	name.position = Vector2(left + 54.0, top + 10.0)
+	name.size = Vector2(160, 28)
+	add_child(name)
+
+	var action := Button.new()
+	action.text = action_text
+	action.disabled = disabled
+	action.focus_mode = Control.FOCUS_NONE
+	action.add_theme_font_size_override("font_size", 13)
+	action.add_theme_color_override("font_color", COLOR_TEXT_INVERSE if not disabled else COLOR_KEYPAD_BUTTON_TEXT)
+	action.add_theme_stylebox_override(
+		"normal",
+		_make_pill_style(COLOR_PRIMARY_STRONG if not disabled else Color(0.094, 0.306, 0.467, 0.12), 16)
+	)
+	action.add_theme_stylebox_override(
+		"hover",
+		_make_pill_style(COLOR_PRIMARY_STRONG.lightened(0.06) if not disabled else Color(0.094, 0.306, 0.467, 0.12), 16)
+	)
+	action.add_theme_stylebox_override(
+		"pressed",
+		_make_pill_style(COLOR_PRIMARY_STRONG.darkened(0.08) if not disabled else Color(0.094, 0.306, 0.467, 0.12), 16)
+	)
+	action.add_theme_stylebox_override(
+		"disabled",
+		_make_pill_style(Color(0.094, 0.306, 0.467, 0.12), 16)
+	)
+	action.position = Vector2(left + width - 82.0, top + 6.0)
+	action.size = Vector2(82, 34)
+	if not disabled:
+		action.pressed.connect(callback)
+	add_child(action)
+
+func _build_battle_ready_layout() -> void:
+	_clear_screen()
+
+	var viewport_size := get_viewport_rect().size
+
+	var background := ColorRect.new()
+	background.color = COLOR_PRIMARY
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(background)
+
+	var back_button := _make_header_icon_button("←", _start_battle_picker)
+	back_button.position = Vector2(12, 18)
+	add_child(back_button)
+
+	var bot_avatar := _make_avatar_circle(80, COLOR_SECONDARY, "🤖", 24)
+	bot_avatar.position = Vector2((viewport_size.x - 80.0) / 2.0, 268)
+	add_child(bot_avatar)
+
+	var bot_label := _make_absolute_label(BATTLE_BOT_NAME, 15, COLOR_TEXT_INVERSE, 800)
+	bot_label.position = Vector2(0, 354)
+	bot_label.size = Vector2(viewport_size.x, 24)
+	add_child(bot_label)
+
+	var versus := _make_absolute_label("VS", 46, COLOR_TEXT_INVERSE, 900)
+	versus.position = Vector2(0, 394)
+	versus.size = Vector2(viewport_size.x, 56)
+	add_child(versus)
+
+	var player_avatar := _make_avatar_circle(80, COLOR_PRIMARY_STRONG, "●", 24)
+	player_avatar.position = Vector2((viewport_size.x - 80.0) / 2.0, 470)
+	add_child(player_avatar)
+
+	var player_label := _make_absolute_label(BATTLE_PLAYER_NAME, 15, COLOR_TEXT_INVERSE, 800)
+	player_label.position = Vector2(0, 558)
+	player_label.size = Vector2(viewport_size.x, 24)
+	add_child(player_label)
+
+	var ready_button := _make_wide_page_button("Ready", _start_battle_game, COLOR_PRIMARY_STRONG)
+	ready_button.position = Vector2((viewport_size.x - 258.0) / 2.0, viewport_size.y - 88.0)
+	ready_button.size = Vector2(258, 56)
+	add_child(ready_button)
+
+func _build_battle_game_layout() -> void:
+	_clear_screen()
+
+	var viewport_size := get_viewport_rect().size
+
+	var background := ColorRect.new()
+	background.color = COLOR_PAGE_BG
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(background)
+
+	var enemy_name := _make_absolute_label(BATTLE_BOT_NAME, 15, COLOR_SECONDARY, 800)
+	enemy_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	enemy_name.position = Vector2(12, 8)
+	enemy_name.size = Vector2(160, 24)
+	add_child(enemy_name)
+
+	enemy_hp_label = _make_absolute_label("", 15, COLOR_SECONDARY, 800)
+	enemy_hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	enemy_hp_label.position = Vector2(viewport_size.x - 92.0, 8)
+	enemy_hp_label.size = Vector2(80, 24)
+	add_child(enemy_hp_label)
+
+	enemy_hp_bar = _make_hp_bar(COLOR_SECONDARY)
+	enemy_hp_bar.position = Vector2(12, 34)
+	enemy_hp_bar.size = Vector2(viewport_size.x - 24.0, 10)
+	add_child(enemy_hp_bar)
+
+	var bot_avatar := _make_avatar_circle(80, COLOR_SECONDARY, "🤖", 22)
+	bot_avatar.position = Vector2((viewport_size.x - 80.0) / 2.0, 134)
+	add_child(bot_avatar)
+
+	var target_blob := Panel.new()
+	target_blob.size = Vector2(174, 174)
+	target_blob.position = Vector2((viewport_size.x - 174.0) / 2.0, 198)
+	target_blob.add_theme_stylebox_override(
+		"panel",
+		_make_circle_style(COLOR_PRIMARY_STRONG, 87, COLOR_BORDER_INVERSE_SOFT, 2)
+	)
+	add_child(target_blob)
+
+	target_label = _make_absolute_label("", 48, COLOR_TEXT_INVERSE, 900)
+	target_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	target_blob.add_child(target_label)
+
+	battle_result_text = ""
+	result_label = _make_absolute_label("", 15, Color(0.769, 0.227, 0.227, 0.55), 800)
+	result_label.position = Vector2(0, 444)
+	result_label.size = Vector2(viewport_size.x, 24)
+	add_child(result_label)
+
+	var player_name := _make_absolute_label(BATTLE_PLAYER_NAME, 15, COLOR_PRIMARY_STRONG, 800)
+	player_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	player_name.position = Vector2(12, 452)
+	player_name.size = Vector2(160, 24)
+	add_child(player_name)
+
+	player_hp_label = _make_absolute_label("", 15, COLOR_PRIMARY_STRONG, 800)
+	player_hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	player_hp_label.position = Vector2(viewport_size.x - 92.0, 452)
+	player_hp_label.size = Vector2(80, 24)
+	add_child(player_hp_label)
+
+	player_hp_bar = _make_hp_bar(COLOR_PRIMARY_STRONG)
+	player_hp_bar.position = Vector2(12, 476)
+	player_hp_bar.size = Vector2(viewport_size.x - 24.0, 10)
+	add_child(player_hp_bar)
+
+	queue_label = _make_absolute_label("", 18, COLOR_PRIMARY_STRONG, 800)
+	queue_label.position = Vector2(24, 508)
+	queue_label.size = Vector2(viewport_size.x - 48.0, 28)
+	add_child(queue_label)
+
+	prime_grid = GridContainer.new()
+	prime_grid.columns = 3
+	prime_grid.add_theme_constant_override("h_separation", int(SOLO_KEY_GAP))
+	prime_grid.add_theme_constant_override("v_separation", int(SOLO_KEY_GAP))
+	prime_grid.position = Vector2(12, viewport_size.y - (SOLO_KEY_SIZE * 3.0) - (SOLO_KEY_GAP * 2.0) - SOLO_CONTROL_BOTTOM_MARGIN)
+	prime_grid.size = Vector2((SOLO_KEY_SIZE * 3.0) + (SOLO_KEY_GAP * 2.0), (SOLO_KEY_SIZE * 3.0) + (SOLO_KEY_GAP * 2.0))
+	add_child(prime_grid)
+
+	for prime in Game.get_playable_stage_primes():
+		var button := _make_prime_key_button(str(prime))
+		button.pressed.connect(_queue_battle_prime.bind(int(prime)))
+		prime_grid.add_child(button)
+
+	var action_x := prime_grid.position.x + prime_grid.size.x + SOLO_KEY_GAP
+	backspace_button = _make_icon_text_button("⌫", COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 28)
+	backspace_button.position = Vector2(action_x, prime_grid.position.y)
+	backspace_button.size = Vector2(SOLO_KEY_SIZE, SOLO_KEY_SIZE)
+	backspace_button.add_theme_stylebox_override("disabled", _make_circle_style(COLOR_PRIMARY_STRONG, SOLO_KEY_SIZE / 2.0, Color.TRANSPARENT, 0))
+	backspace_button.pressed.connect(_backspace_battle_queue)
+	add_child(backspace_button)
+
+	submit_button = _make_icon_text_button("↟", COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 34)
+	submit_button.position = Vector2(action_x, prime_grid.position.y + SOLO_KEY_SIZE + SOLO_KEY_GAP)
+	submit_button.size = Vector2(SOLO_KEY_SIZE, (SOLO_KEY_SIZE * 2.0) + SOLO_KEY_GAP)
+	submit_button.add_theme_stylebox_override("normal", _make_pill_style(COLOR_PRIMARY_STRONG, SOLO_KEY_SIZE / 2.0))
+	submit_button.add_theme_stylebox_override("hover", _make_pill_style(COLOR_PRIMARY_STRONG.lightened(0.06), SOLO_KEY_SIZE / 2.0))
+	submit_button.add_theme_stylebox_override("pressed", _make_pill_style(COLOR_PRIMARY_STRONG.darkened(0.08), SOLO_KEY_SIZE / 2.0))
+	submit_button.add_theme_stylebox_override("disabled", _make_pill_style(COLOR_PRIMARY_STRONG, SOLO_KEY_SIZE / 2.0))
+	submit_button.pressed.connect(_submit_battle_queue)
+	add_child(submit_button)
 
 func _build_help_layout() -> void:
 	_clear_screen()
@@ -654,6 +913,150 @@ func _render_solo() -> void:
 	for child in prime_grid.get_children():
 		if child is Button:
 			child.disabled = is_busy or prime_queue.size() >= COMBO_QUEUE_MAX_ITEMS
+
+func _render_battle() -> void:
+	if screen != Screen.BATTLE_GAME or battle_snapshot.is_empty():
+		return
+
+	var player = BattleRoom.find_player(battle_snapshot["players"], BATTLE_PLAYER_ID)
+	var bot = BattleRoom.find_player(battle_snapshot["players"], BATTLE_BOT_ID)
+
+	if player == null or bot == null:
+		return
+
+	var max_hp := int(battle_snapshot["maxHp"])
+	enemy_hp_bar.max_value = max_hp
+	enemy_hp_bar.value = int(bot["hp"])
+	enemy_hp_label.text = str(int(bot["hp"]))
+	player_hp_bar.max_value = max_hp
+	player_hp_bar.value = int(player["hp"])
+	player_hp_label.text = str(int(player["hp"]))
+	target_label.text = str(player["stage"]["remainingValue"])
+	queue_label.text = _join_numbers(battle_prime_queue)
+	queue_label.visible = not battle_prime_queue.is_empty()
+	result_label.text = battle_result_text
+	result_label.visible = battle_result_text != ""
+
+	var is_finished: bool = battle_snapshot["status"] == "finished"
+	submit_button.disabled = is_finished or battle_prime_queue.is_empty()
+	backspace_button.disabled = is_finished or battle_prime_queue.is_empty()
+
+	for child in prime_grid.get_children():
+		if child is Button:
+			child.disabled = is_finished or battle_prime_queue.size() >= COMBO_QUEUE_MAX_ITEMS
+
+	if is_finished:
+		_build_battle_over_overlay()
+
+func _queue_battle_prime(prime: int) -> void:
+	if screen != Screen.BATTLE_GAME or battle_snapshot["status"] != "playing":
+		return
+
+	if battle_prime_queue.size() >= COMBO_QUEUE_MAX_ITEMS:
+		battle_result_text = "Queue full"
+		_render_battle()
+		return
+
+	battle_prime_queue.append(prime)
+	battle_result_text = ""
+	_render_battle()
+
+func _backspace_battle_queue() -> void:
+	if screen != Screen.BATTLE_GAME or battle_prime_queue.is_empty():
+		return
+
+	battle_prime_queue.pop_back()
+	battle_result_text = ""
+	_render_battle()
+
+func _submit_battle_queue() -> void:
+	if screen != Screen.BATTLE_GAME or battle_prime_queue.is_empty():
+		return
+
+	_apply_battle_queue(BATTLE_PLAYER_ID, battle_prime_queue)
+	battle_prime_queue.clear()
+	_render_battle()
+
+func _apply_atom_bot_turn() -> void:
+	if screen != Screen.BATTLE_GAME or battle_snapshot.is_empty() or battle_snapshot["status"] != "playing":
+		return
+
+	var bot = BattleRoom.find_player(battle_snapshot["players"], BATTLE_BOT_ID)
+	if bot == null:
+		return
+
+	var factors: Array = bot["stage"]["factors"]
+	if factors.is_empty():
+		return
+
+	_apply_battle_queue(BATTLE_BOT_ID, [int(factors[0])])
+	_render_battle()
+
+func _apply_battle_queue(player_id: String, queued_primes: Array) -> void:
+	var submitted_length := queued_primes.size()
+
+	for prime in queued_primes:
+		if battle_snapshot["status"] != "playing":
+			return
+
+		var acting_player = BattleRoom.find_player(battle_snapshot["players"], player_id)
+		if acting_player == null:
+			return
+
+		var stage: Dictionary = acting_player["stage"]
+		var outcome: Dictionary = Game.apply_prime_selection(stage, int(prime))
+
+		if outcome["kind"] == "wrong":
+			battle_snapshot = BattleRoom.apply_battle_penalty(battle_snapshot, player_id)
+			battle_result_text = "Miss" if player_id == BATTLE_PLAYER_ID else "-8"
+			return
+
+		var options: Dictionary = {}
+		if outcome["cleared"]:
+			options["resolvingQueueLength"] = submitted_length
+			options["perfectSolveEligible"] = submitted_length == stage["factors"].size()
+
+		battle_snapshot = BattleRoom.apply_battle_prime_selection(
+			battle_snapshot,
+			player_id,
+			int(prime),
+			options
+		)
+
+		var event: Dictionary = battle_snapshot.get("lastEvent", {})
+		if event.has("damage"):
+			battle_result_text = "-%s" % int(event["damage"])
+
+func _build_battle_over_overlay() -> void:
+	if has_node("BattleOverOverlay"):
+		return
+
+	var player = BattleRoom.find_player(battle_snapshot["players"], BATTLE_PLAYER_ID)
+	var bot = BattleRoom.find_player(battle_snapshot["players"], BATTLE_BOT_ID)
+	var did_win := player != null and bot != null and int(bot["hp"]) <= 0 and int(player["hp"]) > 0
+
+	var overlay := _make_modal_overlay()
+	overlay.name = "BattleOverOverlay"
+	add_child(overlay)
+
+	var panel := _make_dialog_panel(248)
+	overlay.add_child(panel)
+
+	_add_dialog_header(panel, "VICTORY" if did_win else "DEFEAT")
+
+	var message := _make_absolute_label("AtomBot defeated" if did_win else "AtomBot wins", 18, COLOR_INK, 800)
+	message.position = Vector2(0, 84)
+	message.size = Vector2(DIALOG_WIDTH, 32)
+	panel.add_child(message)
+
+	var actions := VBoxContainer.new()
+	actions.position = Vector2(12, 140)
+	actions.size = Vector2(DIALOG_WIDTH - 24.0, 96)
+	actions.add_theme_constant_override("separation", 8)
+	panel.add_child(actions)
+
+	actions.add_child(_make_dialog_button("Retry", _start_battle_ready, COLOR_PRIMARY_STRONG))
+	actions.add_child(_make_dialog_button("Top", _start_home, COLOR_SECONDARY))
 
 func _queue_prime(prime: int) -> void:
 	if screen != Screen.SOLO or not resolving_queue.is_empty():
@@ -947,6 +1350,30 @@ func _make_pause_icon_button() -> Button:
 		button.add_child(bar)
 
 	return button
+
+func _make_avatar_circle(size: float, color: Color, text: String, font_size: int) -> Panel:
+	var avatar := Panel.new()
+	avatar.size = Vector2(size, size)
+	avatar.add_theme_stylebox_override(
+		"panel",
+		_make_circle_style(color, size / 2.0, COLOR_BORDER_INVERSE_SOFT, 2)
+	)
+
+	var label := _make_absolute_label(text, font_size, COLOR_TEXT_INVERSE, 900)
+	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	avatar.add_child(label)
+
+	return avatar
+
+func _make_hp_bar(color: Color) -> ProgressBar:
+	var bar := ProgressBar.new()
+	bar.show_percentage = false
+	bar.min_value = 0
+	bar.max_value = BattleRoom.STARTING_HP
+	bar.value = BattleRoom.STARTING_HP
+	bar.add_theme_stylebox_override("background", _make_bar_style(Color(0.063, 0.106, 0.18, 0.12), 5))
+	bar.add_theme_stylebox_override("fill", _make_bar_style(color, 5))
+	return bar
 
 func _add_help_rule(container: VBoxContainer, title_text: String, body_text: String) -> void:
 	var rule := VBoxContainer.new()
