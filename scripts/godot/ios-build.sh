@@ -2,6 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source "$ROOT_DIR/scripts/godot/load-local-env.sh"
+
 PROJECT="${IOS_PROJECT:-$ROOT_DIR/godot/build/ios/atomize-ios.xcodeproj}"
 SCHEME="${IOS_SCHEME:-atomize-ios}"
 CONFIGURATION="${IOS_CONFIGURATION:-Debug}"
@@ -11,7 +13,7 @@ DERIVED_DATA_PATH="${IOS_DERIVED_DATA_PATH:-$ROOT_DIR/godot/build/ios/DerivedDat
 
 if [[ ! -d "$PROJECT" ]]; then
     echo "Godot iOS Xcode project not found at $PROJECT." >&2
-    echo "Run: GODOT_IOS_TEAM_ID=<team-id> bun run godot:export:ios" >&2
+    echo "Set GODOT_IOS_TEAM_ID in .env.local, then run: bun run godot:export:ios" >&2
     exit 1
 fi
 

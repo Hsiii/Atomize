@@ -3,6 +3,10 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 
+import { loadLocalEnv } from './load-local-env';
+
+loadLocalEnv();
+
 export const ROOT_DIRECTORY = path.resolve(import.meta.dirname, '../..');
 export const GODOT_DIRECTORY = path.resolve(ROOT_DIRECTORY, 'godot');
 
