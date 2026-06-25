@@ -126,31 +126,7 @@ func _start_home() -> void:
 
 func _start_help() -> void:
 	screen = Screen.HELP
-	_build_base_layout()
-
-	content.add_child(_make_label("How To Play", 34, HORIZONTAL_ALIGNMENT_CENTER))
-
-	var copy := _make_label(
-		"Break the target into prime factors. Tap primes to build a queue, then submit. Clear the full target with the exact factors to score. Wrong primes cost HP and time. Bigger primes and longer exact clears pay better.",
-		18,
-		HORIZONTAL_ALIGNMENT_CENTER
-	)
-	copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	copy.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	content.add_child(copy)
-
-	var examples := _make_label(
-		"Example: 66 = 2 x 3 x 11. Queue 2, 3, 11 and submit.",
-		18,
-		HORIZONTAL_ALIGNMENT_CENTER
-	)
-	examples.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	examples.add_theme_color_override("font_color", Color("#fbbf24"))
-	content.add_child(examples)
-
-	content.add_spacer(false)
-	content.add_child(_make_action_button("Start Solo", _start_solo_game, Color("#22c55e")))
-	content.add_child(_make_action_button("Back", _start_home, Color("#64748b")))
+	_build_help_layout()
 
 func _start_solo_game() -> void:
 	run_seed = "%s:%s" % [SOLO_SEED_PREFIX, Time.get_ticks_usec()]
@@ -291,6 +267,69 @@ func _build_home_dropdown(position: Vector2) -> void:
 func _toggle_home_menu() -> void:
 	home_menu_open = not home_menu_open
 	_build_home_layout()
+
+func _build_help_layout() -> void:
+	_clear_screen()
+
+	var viewport_size := get_viewport_rect().size
+
+	var background := ColorRect.new()
+	background.color = COLOR_PAGE_BG
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(background)
+
+	var header_bottom := 200.0
+	var header_diameter: float = max(viewport_size.x * 1.6, viewport_size.y)
+	var header_orb := Panel.new()
+	header_orb.size = Vector2(header_diameter, header_diameter)
+	header_orb.position = Vector2((viewport_size.x - header_diameter) / 2.0, header_bottom - header_diameter)
+	header_orb.add_theme_stylebox_override(
+		"panel",
+		_make_circle_style(COLOR_PRIMARY, header_diameter / 2.0, COLOR_PRIMARY, 0)
+	)
+	add_child(header_orb)
+
+	var back_button := _make_header_icon_button("←", _start_home)
+	back_button.position = Vector2(12, 24)
+	add_child(back_button)
+
+	var title := _make_absolute_label("HELP", 16, COLOR_TEXT_INVERSE, 900)
+	title.position = Vector2(0, 28)
+	title.size = Vector2(viewport_size.x, 36)
+	add_child(title)
+
+	var icon := _make_absolute_label("?", 64, COLOR_TEXT_INVERSE, 900)
+	icon.position = Vector2(0, 82)
+	icon.size = Vector2(viewport_size.x, 72)
+	add_child(icon)
+
+	var tagline := _make_absolute_label("BREAK NUMBERS INTO PRIMES.", 12, COLOR_TEXT_INVERSE_SOFT, 800)
+	tagline.position = Vector2(0, 168)
+	tagline.size = Vector2(viewport_size.x, 24)
+	add_child(tagline)
+
+	var body := VBoxContainer.new()
+	body.position = Vector2((viewport_size.x - 320.0) / 2.0, 344)
+	body.size = Vector2(320, 256)
+	body.add_theme_constant_override("separation", 12)
+	add_child(body)
+
+	_add_help_rule(body, "Queue prime factors", "Tap primes to build a combo queue.")
+	_add_help_rule(body, "Submit exact clears", "Send the full factorization to atomize the target.")
+	_add_help_rule(body, "Avoid wrong primes", "Mistakes cost HP and time, and break your combo.")
+
+	var example := _make_absolute_label("66 = 2 x 3 x 11", 16, COLOR_PRIMARY, 900)
+	example.custom_minimum_size = Vector2(320, 40)
+	body.add_child(example)
+
+	var actions := VBoxContainer.new()
+	actions.position = Vector2(48, viewport_size.y - 180.0)
+	actions.size = Vector2(viewport_size.x - 96.0, 112)
+	actions.add_theme_constant_override("separation", 12)
+	add_child(actions)
+
+	actions.add_child(_make_wide_page_button("GO", _start_solo_game, COLOR_PRIMARY_STRONG))
+	actions.add_child(_make_wide_page_button("TOP", _start_home, COLOR_SECONDARY))
 
 func _clear_screen() -> void:
 	for child in get_children():
@@ -728,6 +767,50 @@ func _make_dropdown_button(text: String, callback: Callable) -> Button:
 	button.add_theme_stylebox_override("normal", _make_button_style(COLOR_SURFACE))
 	button.add_theme_stylebox_override("hover", _make_button_style(COLOR_SURFACE.darkened(0.03)))
 	button.add_theme_stylebox_override("pressed", _make_button_style(COLOR_SURFACE.darkened(0.06)))
+	button.pressed.connect(callback)
+	return button
+
+func _make_header_icon_button(text: String, callback: Callable) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.size = Vector2(44, 44)
+	button.custom_minimum_size = Vector2(44, 44)
+	button.focus_mode = Control.FOCUS_NONE
+	button.add_theme_font_size_override("font_size", 28)
+	button.add_theme_color_override("font_color", COLOR_TEXT_INVERSE)
+	button.add_theme_stylebox_override("normal", _make_circle_style(Color.TRANSPARENT, 22, Color.TRANSPARENT, 0))
+	button.add_theme_stylebox_override("hover", _make_circle_style(Color(1.0, 1.0, 1.0, 0.08), 22, Color.TRANSPARENT, 0))
+	button.add_theme_stylebox_override("pressed", _make_circle_style(Color(1.0, 1.0, 1.0, 0.14), 22, Color.TRANSPARENT, 0))
+	button.pressed.connect(callback)
+	return button
+
+func _add_help_rule(container: VBoxContainer, title_text: String, body_text: String) -> void:
+	var rule := VBoxContainer.new()
+	rule.custom_minimum_size = Vector2(320, 52)
+	rule.add_theme_constant_override("separation", 4)
+	container.add_child(rule)
+
+	var title := _make_absolute_label(title_text, 16, COLOR_INK, 800)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	title.custom_minimum_size = Vector2(320, 20)
+	rule.add_child(title)
+
+	var body := _make_absolute_label(body_text, 13, Color(0.063, 0.106, 0.18, 0.72), 700)
+	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	body.custom_minimum_size = Vector2(320, 24)
+	rule.add_child(body)
+
+func _make_wide_page_button(text: String, callback: Callable, color: Color) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.custom_minimum_size = Vector2(0, 56)
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.focus_mode = Control.FOCUS_NONE
+	button.add_theme_font_size_override("font_size", 16)
+	button.add_theme_color_override("font_color", COLOR_TEXT_INVERSE)
+	button.add_theme_stylebox_override("normal", _make_pill_style(color, 28))
+	button.add_theme_stylebox_override("hover", _make_pill_style(color.lightened(0.06), 28))
+	button.add_theme_stylebox_override("pressed", _make_pill_style(color.darkened(0.08), 28))
 	button.pressed.connect(callback)
 	return button
 
