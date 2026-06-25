@@ -27,6 +27,9 @@ if (target !== 'android' && target !== 'ios') {
 
 const exportConfig = exportsByTarget[target];
 mkdirSync(path.dirname(exportConfig.outputPath), { recursive: true });
+const buildDirectory = path.resolve(GODOT_DIRECTORY, 'build');
+mkdirSync(buildDirectory, { recursive: true });
+writeFileSync(path.join(buildDirectory, '.gdignore'), '');
 
 const exportPresetsPath = path.join(GODOT_DIRECTORY, 'export_presets.cfg');
 const originalExportPresets = readFileSync(exportPresetsPath, 'utf8');
