@@ -108,6 +108,8 @@ func _ready() -> void:
 	best_score = _load_best_score()
 	best_combo = _load_best_combo()
 	match _get_requested_screen():
+		"help":
+			_start_help()
 		"solo":
 			_start_solo_game()
 		"solo-pregame":
@@ -749,7 +751,7 @@ func _build_help_layout() -> void:
 
 	var body := VBoxContainer.new()
 	body.position = Vector2((viewport_size.x - 320.0) / 2.0, 256)
-	body.size = Vector2(320, 256)
+	body.size = Vector2(320, 272)
 	body.add_theme_constant_override("separation", 12)
 	add_child(body)
 
@@ -1450,7 +1452,7 @@ func _make_hp_bar(color: Color) -> ProgressBar:
 
 func _add_help_rule(container: VBoxContainer, title_text: String, body_text: String) -> void:
 	var rule := VBoxContainer.new()
-	rule.custom_minimum_size = Vector2(320, 52)
+	rule.custom_minimum_size = Vector2(320, 64)
 	rule.add_theme_constant_override("separation", 4)
 	container.add_child(rule)
 
@@ -1461,7 +1463,9 @@ func _add_help_rule(container: VBoxContainer, title_text: String, body_text: Str
 
 	var body := _make_absolute_label(body_text, 13, COLOR_INK_SOFT, 700)
 	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	body.custom_minimum_size = Vector2(320, 24)
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.custom_minimum_size = Vector2(320, 36)
+	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	rule.add_child(body)
 
 func _make_wide_page_button(text: String, callback: Callable, color: Color) -> Button:
