@@ -4,6 +4,7 @@ const Game := preload("res://scripts/core/game.gd")
 
 const BEST_SCORE_PATH := "user://best_score.json"
 const COMBO_QUEUE_MAX_ITEMS := 7
+const SCREEN_ARG_PREFIX := "--atomize-screen="
 const SOLO_DURATION_SECONDS := 60.0
 const SOLO_COMBO_STEP_DELAY_SECONDS := 0.18
 const SOLO_SEED_PREFIX := "godot-mobile"
@@ -14,6 +15,10 @@ const COLOR_SECONDARY := Color("#34a0a4")
 const COLOR_INK := Color("#223247")
 const COLOR_PAGE_BG := Color("#f4f7fb")
 const COLOR_SURFACE := Color("#ffffff")
+const COLOR_INK_SOFT := Color(0.063, 0.106, 0.18, 0.72)
+const COLOR_KEYPAD_BUTTON_BG := Color(0.094, 0.306, 0.467, 0.12)
+const COLOR_KEYPAD_BUTTON_TEXT := Color(0.063, 0.106, 0.18, 0.54)
+const COLOR_OUTLINE_STRONG := Color(0.094, 0.306, 0.467, 0.44)
 const COLOR_TEXT_INVERSE := Color("#ffffff")
 const COLOR_TEXT_INVERSE_SOFT := Color(1.0, 1.0, 1.0, 0.64)
 const COLOR_BORDER_INVERSE_SOFT := Color(1.0, 1.0, 1.0, 0.28)
@@ -25,6 +30,7 @@ const SOLO_TARGET_SIZE := 296.0
 const SOLO_KEY_SIZE := 88.0
 const SOLO_KEY_GAP := 4.0
 const SOLO_CONTROL_BOTTOM_MARGIN := 12.0
+const PAGE_HEADER_BOTTOM := 248.0
 const DIALOG_WIDTH := 288.0
 const DIALOG_BUTTON_HEIGHT := 44.0
 const PRIME_COMPENSATION_FACTORS := {
@@ -42,6 +48,8 @@ const PRIME_COMPENSATION_FACTORS := {
 enum Screen {
 	HOME,
 	HELP,
+	SOLO_PREGAME,
+	BATTLE_PICKER,
 	SOLO,
 	PAUSED,
 	GAME_OVER,
@@ -79,7 +87,22 @@ var timer_bar: ProgressBar
 func _ready() -> void:
 	best_score = _load_best_score()
 	best_combo = _load_best_combo()
-	_start_home()
+	match _get_requested_screen():
+		"solo":
+			_start_solo_game()
+		"solo-pregame":
+			_start_solo_pregame()
+		"battle":
+			_start_battle_picker()
+		_:
+			_start_home()
+
+func _get_requested_screen() -> String:
+	for argument in OS.get_cmdline_user_args():
+		if argument.begins_with(SCREEN_ARG_PREFIX):
+			return argument.trim_prefix(SCREEN_ARG_PREFIX)
+
+	return ""
 
 func _process(delta: float) -> void:
 	if screen != Screen.SOLO:
@@ -114,7 +137,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_pause_game()
 		elif screen == Screen.PAUSED:
 			_resume_game()
-		elif screen == Screen.HELP or screen == Screen.GAME_OVER:
+		elif screen == Screen.HELP or screen == Screen.SOLO_PREGAME or screen == Screen.BATTLE_PICKER or screen == Screen.GAME_OVER:
 			_start_home()
 
 func _start_home() -> void:
@@ -127,6 +150,14 @@ func _start_home() -> void:
 func _start_help() -> void:
 	screen = Screen.HELP
 	_build_help_layout()
+
+func _start_solo_pregame() -> void:
+	screen = Screen.SOLO_PREGAME
+	_build_solo_pregame_layout()
+
+func _start_battle_picker() -> void:
+	screen = Screen.BATTLE_PICKER
+	_build_battle_picker_layout()
 
 func _start_solo_game() -> void:
 	run_seed = "%s:%s" % [SOLO_SEED_PREFIX, Time.get_ticks_usec()]
@@ -210,17 +241,15 @@ func _build_home_layout() -> void:
 	add_child(background)
 
 	var title_orb_diameter: float = max(viewport_size.x * 1.6, viewport_size.y * 1.3)
-	var title_orb := Panel.new()
-	title_orb.size = Vector2(title_orb_diameter, title_orb_diameter)
-	title_orb.position = Vector2(
-		(viewport_size.x - title_orb_diameter) / 2.0,
-		(viewport_size.y * 0.5) - title_orb_diameter
+	add_child(
+		_make_circle_shape(
+			title_orb_diameter,
+			Vector2(viewport_size.x / 2.0, (viewport_size.y * 0.5) - (title_orb_diameter / 2.0)),
+			COLOR_PRIMARY,
+			COLOR_OUTLINE_STRONG,
+			3.0
+		)
 	)
-	title_orb.add_theme_stylebox_override(
-		"panel",
-		_make_circle_style(COLOR_PRIMARY, title_orb_diameter / 2.0, COLOR_PRIMARY, 0)
-	)
-	add_child(title_orb)
 
 	var version_label := _make_absolute_label(VERSION_LABEL, 12, COLOR_TEXT_INVERSE_SOFT, 600)
 	version_label.position = Vector2(12, 12)
@@ -243,13 +272,13 @@ func _build_home_layout() -> void:
 	var total_blob_width := (HOME_BLOB_SIZE * 2.0) + HOME_BLOB_GAP
 	var blob_left := (viewport_size.x - total_blob_width) / 2.0
 	var blob_top := viewport_size.y * 0.63
-	var solo_button := _make_home_blob_button("SOLO", _start_solo_game, COLOR_PRIMARY_STRONG, "timer")
+	var solo_button := _make_home_blob_button("SOLO", _start_solo_pregame, COLOR_PRIMARY_STRONG, "timer")
 	solo_button.position = Vector2(blob_left, blob_top)
 	add_child(solo_button)
 
-	var help_button := _make_home_blob_button("HELP", _start_help, COLOR_SECONDARY, "help")
-	help_button.position = Vector2(blob_left + HOME_BLOB_SIZE + HOME_BLOB_GAP, blob_top)
-	add_child(help_button)
+	var battle_button := _make_home_blob_button("BATTLE", _start_battle_picker, COLOR_SECONDARY, "battle")
+	battle_button.position = Vector2(blob_left + HOME_BLOB_SIZE + HOME_BLOB_GAP, blob_top)
+	add_child(battle_button)
 
 func _build_home_dropdown(position: Vector2) -> void:
 	if not home_menu_open:
@@ -267,6 +296,124 @@ func _build_home_dropdown(position: Vector2) -> void:
 func _toggle_home_menu() -> void:
 	home_menu_open = not home_menu_open
 	_build_home_layout()
+
+func _build_page_header(title_text: String, tagline_text: String, icon_kind: String) -> void:
+	var viewport_size := get_viewport_rect().size
+	var header_diameter: float = max(viewport_size.x * 1.6, viewport_size.y)
+	add_child(
+		_make_circle_shape(
+			header_diameter,
+			Vector2(viewport_size.x / 2.0, PAGE_HEADER_BOTTOM - (header_diameter / 2.0)),
+			COLOR_PRIMARY,
+			Color.TRANSPARENT,
+			0.0
+		)
+	)
+
+	var back_button := _make_header_icon_button("←", _start_home)
+	back_button.position = Vector2(12, 24)
+	add_child(back_button)
+
+	var title := _make_absolute_label(title_text, 16, COLOR_TEXT_INVERSE, 900)
+	title.position = Vector2(0, 28)
+	title.size = Vector2(viewport_size.x, 36)
+	add_child(title)
+
+	var icon_slot := Control.new()
+	icon_slot.position = Vector2((viewport_size.x - 84.0) / 2.0, 94)
+	icon_slot.size = Vector2(84, 72)
+	add_child(icon_slot)
+
+	if icon_kind == "timer":
+		_add_page_timer_icon(icon_slot)
+	else:
+		_add_page_battle_icon(icon_slot)
+
+	var tagline := _make_absolute_label(tagline_text, 12, COLOR_TEXT_INVERSE_SOFT, 800)
+	tagline.position = Vector2(0, 176)
+	tagline.size = Vector2(viewport_size.x, 24)
+	add_child(tagline)
+
+func _build_solo_pregame_layout() -> void:
+	_clear_screen()
+
+	var viewport_size := get_viewport_rect().size
+
+	var background := ColorRect.new()
+	background.color = COLOR_PAGE_BG
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(background)
+
+	_build_page_header("SOLO", "BEAT THE CLOCK.", "timer")
+
+	var body_width: float = min(viewport_size.x - 48.0, 352.0)
+	var body_left: float = (viewport_size.x - body_width) / 2.0
+	var stat_width: float = min(body_width, 224.0)
+	var stat_left: float = (viewport_size.x - stat_width) / 2.0
+	var button_width: float = min(body_width, viewport_size.x * 0.75)
+	var button_left: float = (viewport_size.x - button_width) / 2.0
+
+	var pb_title := _make_absolute_label("PERSONAL BEST", 12, COLOR_INK_SOFT, 700)
+	pb_title.position = Vector2(stat_left, 394)
+	pb_title.size = Vector2(stat_width, 24)
+	add_child(pb_title)
+
+	_add_pregame_stat_row(stat_left, 450, stat_width, "Score", best_score)
+	_add_pregame_stat_row(stat_left, 498, stat_width, "Max Combo", best_combo)
+
+	var start_button := _make_wide_page_button("GO", _start_solo_game, COLOR_PRIMARY_STRONG)
+	start_button.position = Vector2(button_left, 576)
+	start_button.size = Vector2(button_width, 56)
+	add_child(start_button)
+
+func _add_pregame_stat_row(left: float, top: float, width: float, label_text: String, value: int) -> void:
+	var row := Control.new()
+	row.position = Vector2(left, top)
+	row.size = Vector2(width, 32)
+	add_child(row)
+
+	var label := _make_absolute_label(label_text, 16, COLOR_INK, 800)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	label.position = Vector2.ZERO
+	label.size = Vector2(width / 2.0, 32)
+	row.add_child(label)
+
+	var value_label := _make_absolute_label(str(value), 16, COLOR_PRIMARY, 800)
+	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	value_label.position = Vector2(width / 2.0, 0)
+	value_label.size = Vector2(width / 2.0, 32)
+	row.add_child(value_label)
+
+func _build_battle_picker_layout() -> void:
+	_clear_screen()
+
+	var viewport_size := get_viewport_rect().size
+
+	var background := ColorRect.new()
+	background.color = COLOR_PAGE_BG
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(background)
+
+	_build_page_header("BATTLE", "CHALLENGE ATOMBOT OR A PLAYER.", "battle")
+
+	var body_width: float = min(viewport_size.x - 48.0, 352.0)
+	var body_left: float = (viewport_size.x - body_width) / 2.0
+
+	var atom_bot_button := _make_wide_page_button("ATOM BOT", _start_help, COLOR_PRIMARY_STRONG)
+	atom_bot_button.position = Vector2(body_left, 430)
+	atom_bot_button.size = Vector2(body_width, 56)
+	add_child(atom_bot_button)
+
+	var player_button := _make_wide_page_button("ONLINE", _start_help, COLOR_SECONDARY)
+	player_button.position = Vector2(body_left, 502)
+	player_button.size = Vector2(body_width, 56)
+	add_child(player_button)
+
+	var hint := _make_absolute_label("Battle logic is not yet wired in this native shell.", 13, COLOR_INK_SOFT, 700)
+	hint.position = Vector2(body_left + 24.0, 590)
+	hint.size = Vector2(body_width - 48.0, 52)
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	add_child(hint)
 
 func _build_help_layout() -> void:
 	_clear_screen()
@@ -345,13 +492,8 @@ func _build_solo_layout() -> void:
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(background)
 
-	var pause_button := _make_icon_text_button("II", COLOR_PAGE_BG, COLOR_PRIMARY_STRONG, 24)
-	pause_button.custom_minimum_size = Vector2(44, 44)
+	var pause_button := _make_pause_icon_button()
 	pause_button.position = Vector2(12, 12)
-	pause_button.size = Vector2(44, 44)
-	pause_button.add_theme_stylebox_override("normal", _make_circle_style(Color.TRANSPARENT, 22, Color.TRANSPARENT, 0))
-	pause_button.add_theme_stylebox_override("hover", _make_circle_style(Color(0.086, 0.541, 0.678, 0.08), 22, Color.TRANSPARENT, 0))
-	pause_button.add_theme_stylebox_override("pressed", _make_circle_style(Color(0.086, 0.541, 0.678, 0.14), 22, Color.TRANSPARENT, 0))
 	pause_button.pressed.connect(_pause_game)
 	add_child(pause_button)
 
@@ -725,6 +867,8 @@ func _make_home_blob_button(text: String, callback: Callable, color: Color, icon
 	content_stack.add_child(icon_slot)
 	if icon_kind == "timer":
 		_add_timer_icon(icon_slot)
+	elif icon_kind == "battle":
+		_add_battle_icon(icon_slot)
 	else:
 		_add_help_icon(icon_slot)
 
@@ -784,6 +928,26 @@ func _make_header_icon_button(text: String, callback: Callable) -> Button:
 	button.pressed.connect(callback)
 	return button
 
+func _make_pause_icon_button() -> Button:
+	var button := Button.new()
+	button.size = Vector2(44, 44)
+	button.custom_minimum_size = Vector2(44, 44)
+	button.focus_mode = Control.FOCUS_NONE
+	button.text = ""
+	button.add_theme_stylebox_override("normal", _make_circle_style(Color.TRANSPARENT, 22, Color.TRANSPARENT, 0))
+	button.add_theme_stylebox_override("hover", _make_circle_style(Color(0.086, 0.541, 0.678, 0.08), 22, Color.TRANSPARENT, 0))
+	button.add_theme_stylebox_override("pressed", _make_circle_style(Color(0.086, 0.541, 0.678, 0.14), 22, Color.TRANSPARENT, 0))
+
+	for x in [14.0, 24.0]:
+		var bar := ColorRect.new()
+		bar.color = COLOR_PRIMARY_STRONG
+		bar.position = Vector2(x, 12)
+		bar.size = Vector2(4, 20)
+		bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		button.add_child(bar)
+
+	return button
+
 func _add_help_rule(container: VBoxContainer, title_text: String, body_text: String) -> void:
 	var rule := VBoxContainer.new()
 	rule.custom_minimum_size = Vector2(320, 52)
@@ -820,10 +984,10 @@ func _make_prime_key_button(text: String) -> Button:
 	button.custom_minimum_size = Vector2(SOLO_KEY_SIZE, SOLO_KEY_SIZE)
 	button.focus_mode = Control.FOCUS_NONE
 	button.add_theme_font_size_override("font_size", 32)
-	button.add_theme_color_override("font_color", Color(0.38, 0.43, 0.49, 1.0))
-	button.add_theme_stylebox_override("normal", _make_circle_style(Color(0.875, 0.898, 0.929, 1.0), SOLO_KEY_SIZE / 2.0, Color.TRANSPARENT, 0))
-	button.add_theme_stylebox_override("hover", _make_circle_style(Color(0.835, 0.867, 0.906, 1.0), SOLO_KEY_SIZE / 2.0, Color.TRANSPARENT, 0))
-	button.add_theme_stylebox_override("pressed", _make_circle_style(Color(0.792, 0.831, 0.875, 1.0), SOLO_KEY_SIZE / 2.0, Color.TRANSPARENT, 0))
+	button.add_theme_color_override("font_color", COLOR_KEYPAD_BUTTON_TEXT)
+	button.add_theme_stylebox_override("normal", _make_circle_style(COLOR_KEYPAD_BUTTON_BG, SOLO_KEY_SIZE / 2.0, Color.TRANSPARENT, 0))
+	button.add_theme_stylebox_override("hover", _make_circle_style(Color(0.063, 0.106, 0.18, 0.14), SOLO_KEY_SIZE / 2.0, Color.TRANSPARENT, 0))
+	button.add_theme_stylebox_override("pressed", _make_circle_style(Color(0.063, 0.106, 0.18, 0.18), SOLO_KEY_SIZE / 2.0, Color.TRANSPARENT, 0))
 	button.add_theme_stylebox_override("disabled", _make_circle_style(COLOR_BUTTON_DISABLED, SOLO_KEY_SIZE / 2.0, Color.TRANSPARENT, 0))
 	return button
 
@@ -960,10 +1124,110 @@ func _add_timer_icon(parent: Control) -> void:
 	hand.position = Vector2(HOME_BLOB_SIZE / 2.0, 17)
 	parent.add_child(hand)
 
+func _add_battle_icon(parent: Control) -> void:
+	var first := Line2D.new()
+	first.default_color = COLOR_TEXT_INVERSE
+	first.width = 2.4
+	first.points = PackedVector2Array([Vector2(60, 9), Vector2(76, 25)])
+	parent.add_child(first)
+
+	var second := Line2D.new()
+	second.default_color = COLOR_TEXT_INVERSE
+	second.width = 2.4
+	second.points = PackedVector2Array([Vector2(76, 9), Vector2(60, 25)])
+	parent.add_child(second)
+
+	for point in [Vector2(56, 5), Vector2(80, 5)]:
+		var hilt := ColorRect.new()
+		hilt.color = COLOR_TEXT_INVERSE
+		hilt.position = point
+		hilt.size = Vector2(8, 3)
+		parent.add_child(hilt)
+
 func _add_help_icon(parent: Control) -> void:
 	var icon := _make_absolute_label("?", 24, COLOR_TEXT_INVERSE, 900)
 	icon.size = Vector2(HOME_BLOB_SIZE, 28)
 	parent.add_child(icon)
+
+func _add_page_timer_icon(parent: Control) -> void:
+	var ring := Panel.new()
+	ring.size = Vector2(56, 56)
+	ring.position = Vector2(14, 8)
+	ring.add_theme_stylebox_override("panel", _make_outline_circle_style(28, COLOR_TEXT_INVERSE, 6))
+	parent.add_child(ring)
+
+	var crown := ColorRect.new()
+	crown.color = COLOR_TEXT_INVERSE
+	crown.size = Vector2(18, 6)
+	crown.position = Vector2(33, 0)
+	parent.add_child(crown)
+
+	var hand := Line2D.new()
+	hand.default_color = COLOR_TEXT_INVERSE
+	hand.width = 6.0
+	hand.points = PackedVector2Array([Vector2.ZERO, Vector2(12, -14)])
+	hand.position = Vector2(42, 36)
+	parent.add_child(hand)
+
+func _add_page_battle_icon(parent: Control) -> void:
+	var first := Line2D.new()
+	first.default_color = COLOR_TEXT_INVERSE
+	first.width = 5.0
+	first.points = PackedVector2Array([Vector2(22, 16), Vector2(62, 56)])
+	parent.add_child(first)
+
+	var second := Line2D.new()
+	second.default_color = COLOR_TEXT_INVERSE
+	second.width = 5.0
+	second.points = PackedVector2Array([Vector2(62, 16), Vector2(22, 56)])
+	parent.add_child(second)
+
+	var left_hilt := ColorRect.new()
+	left_hilt.color = COLOR_TEXT_INVERSE
+	left_hilt.position = Vector2(16, 10)
+	left_hilt.size = Vector2(18, 6)
+	parent.add_child(left_hilt)
+
+	var right_hilt := ColorRect.new()
+	right_hilt.color = COLOR_TEXT_INVERSE
+	right_hilt.position = Vector2(50, 10)
+	right_hilt.size = Vector2(18, 6)
+	parent.add_child(right_hilt)
+
+func _make_circle_shape(
+	diameter: float,
+	center: Vector2,
+	color: Color,
+	border_color: Color,
+	border_width: float
+) -> Node2D:
+	var shape := Node2D.new()
+	var radius := diameter / 2.0
+
+	var fill := Polygon2D.new()
+	fill.color = color
+	fill.polygon = _make_circle_points(radius, 128)
+	shape.add_child(fill)
+
+	if border_width > 0.0:
+		var outline := Line2D.new()
+		outline.default_color = border_color
+		outline.width = border_width
+		outline.closed = true
+		outline.points = _make_circle_points(radius, 128)
+		shape.add_child(outline)
+
+	shape.position = center
+	return shape
+
+func _make_circle_points(radius: float, point_count: int) -> PackedVector2Array:
+	var points := PackedVector2Array()
+
+	for index in range(point_count):
+		var angle := (TAU * float(index)) / float(point_count)
+		points.append(Vector2(cos(angle) * radius, sin(angle) * radius))
+
+	return points
 
 func _make_button_style(color: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
