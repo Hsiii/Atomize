@@ -462,17 +462,23 @@ func _build_battle_picker_layout() -> void:
 	var body_width: float = min(viewport_size.x - 48.0, 352.0)
 	var body_left: float = (viewport_size.x - body_width) / 2.0
 
-	_add_battle_section_title(body_left, 262, "⚙", "CPU TRAINING")
-	_add_battle_picker_row(body_left, 300, body_width, "🤖", BATTLE_BOT_NAME, "Play", false, _start_battle_ready)
+	_add_battle_section_title(body_left, 262, "cpu", "CPU TRAINING")
+	_add_battle_picker_row(body_left, 300, body_width, "bot", BATTLE_BOT_NAME, "Play", false, _start_battle_ready)
 
-	_add_battle_section_title(body_left, 384, "♧", "ONLINE PLAYERS")
-	_add_battle_picker_row(body_left, 422, body_width, "G", "Guest1", "In Game", true, Callable())
+	_add_battle_section_title(body_left, 384, "users", "ONLINE PLAYERS")
+	_add_battle_empty_state(body_left, 422, body_width)
 
-func _add_battle_section_title(left: float, top: float, icon_text: String, label_text: String) -> void:
-	var icon := _make_absolute_label(icon_text, 16, COLOR_KEYPAD_BUTTON_TEXT, 800)
-	icon.position = Vector2(left, top)
-	icon.size = Vector2(24, 24)
-	add_child(icon)
+func _add_battle_section_title(left: float, top: float, icon_kind: String, label_text: String) -> void:
+	var icon_slot := Control.new()
+	icon_slot.position = Vector2(left, top + 2.0)
+	icon_slot.size = Vector2(20, 20)
+	icon_slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(icon_slot)
+
+	if icon_kind == "cpu":
+		_add_cpu_icon(icon_slot, 20, COLOR_KEYPAD_BUTTON_TEXT)
+	else:
+		_add_users_icon(icon_slot, 20, COLOR_KEYPAD_BUTTON_TEXT)
 
 	var label := _make_absolute_label(label_text, 12, COLOR_INK_SOFT, 800)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -484,14 +490,14 @@ func _add_battle_picker_row(
 	left: float,
 	top: float,
 	width: float,
-	avatar_text: String,
+	avatar_kind: String,
 	name_text: String,
 	action_text: String,
 	disabled: bool,
 	callback: Callable
 ) -> void:
-	var avatar_color := COLOR_PRIMARY_STRONG if avatar_text != "G" else COLOR_SECONDARY
-	var avatar := _make_avatar_circle(44, avatar_color, avatar_text, 12)
+	var avatar_color := COLOR_SECONDARY if avatar_kind == "bot" else COLOR_PRIMARY_STRONG
+	var avatar := _make_avatar_icon_circle(44, avatar_color, avatar_kind)
 	avatar.position = Vector2(left, top)
 	add_child(avatar)
 
@@ -529,6 +535,20 @@ func _add_battle_picker_row(
 		action.pressed.connect(callback)
 	add_child(action)
 
+func _add_battle_empty_state(left: float, top: float, width: float) -> void:
+	var empty := _make_absolute_label("No players online", 13, COLOR_INK_SOFT, 700)
+	empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	empty.position = Vector2(left, top + 8.0)
+	empty.size = Vector2(width, 24)
+	add_child(empty)
+
+	var hint := _make_absolute_label("Players will appear here when they join.", 13, COLOR_INK_SOFT, 600)
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	hint.position = Vector2(left, top + 32.0)
+	hint.size = Vector2(width, 24)
+	hint.modulate.a = 0.72
+	add_child(hint)
+
 func _build_battle_ready_layout() -> void:
 	_clear_screen()
 
@@ -543,7 +563,7 @@ func _build_battle_ready_layout() -> void:
 	back_button.position = Vector2(12, 18)
 	add_child(back_button)
 
-	var bot_avatar := _make_avatar_circle(80, COLOR_SECONDARY, "🤖", 24)
+	var bot_avatar := _make_avatar_icon_circle(80, COLOR_SECONDARY, "bot")
 	bot_avatar.position = Vector2((viewport_size.x - 80.0) / 2.0, 268)
 	add_child(bot_avatar)
 
@@ -557,7 +577,7 @@ func _build_battle_ready_layout() -> void:
 	versus.size = Vector2(viewport_size.x, 56)
 	add_child(versus)
 
-	var player_avatar := _make_avatar_circle(80, COLOR_PRIMARY_STRONG, "●", 24)
+	var player_avatar := _make_avatar_initial_circle(80, COLOR_PRIMARY_STRONG, "G", 20)
 	player_avatar.position = Vector2((viewport_size.x - 80.0) / 2.0, 470)
 	add_child(player_avatar)
 
@@ -598,7 +618,7 @@ func _build_battle_game_layout() -> void:
 	enemy_hp_bar.size = Vector2(viewport_size.x - 24.0, 10)
 	add_child(enemy_hp_bar)
 
-	var bot_avatar := _make_avatar_circle(80, COLOR_SECONDARY, "🤖", 22)
+	var bot_avatar := _make_avatar_icon_circle(80, COLOR_SECONDARY, "bot")
 	bot_avatar.position = Vector2((viewport_size.x - 80.0) / 2.0, 134)
 	add_child(bot_avatar)
 
@@ -657,20 +677,22 @@ func _build_battle_game_layout() -> void:
 		prime_grid.add_child(button)
 
 	var action_x := prime_grid.position.x + prime_grid.size.x + SOLO_KEY_GAP
-	backspace_button = _make_icon_text_button("⌫", COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 28)
+	backspace_button = _make_icon_text_button("", COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 28)
 	backspace_button.position = Vector2(action_x, prime_grid.position.y)
 	backspace_button.size = Vector2(SOLO_KEY_SIZE, SOLO_KEY_SIZE)
 	backspace_button.add_theme_stylebox_override("disabled", _make_circle_style(COLOR_PRIMARY_STRONG, SOLO_KEY_SIZE / 2.0, Color.TRANSPARENT, 0))
+	_add_delete_icon(backspace_button, SOLO_KEY_SIZE, SOLO_KEY_SIZE, COLOR_TEXT_INVERSE)
 	backspace_button.pressed.connect(_backspace_battle_queue)
 	add_child(backspace_button)
 
-	submit_button = _make_icon_text_button("↟", COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 34)
+	submit_button = _make_icon_text_button("", COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 34)
 	submit_button.position = Vector2(action_x, prime_grid.position.y + SOLO_KEY_SIZE + SOLO_KEY_GAP)
 	submit_button.size = Vector2(SOLO_KEY_SIZE, (SOLO_KEY_SIZE * 2.0) + SOLO_KEY_GAP)
 	submit_button.add_theme_stylebox_override("normal", _make_pill_style(COLOR_PRIMARY_STRONG, SOLO_KEY_SIZE / 2.0))
 	submit_button.add_theme_stylebox_override("hover", _make_pill_style(COLOR_PRIMARY_STRONG.lightened(0.06), SOLO_KEY_SIZE / 2.0))
 	submit_button.add_theme_stylebox_override("pressed", _make_pill_style(COLOR_PRIMARY_STRONG.darkened(0.08), SOLO_KEY_SIZE / 2.0))
 	submit_button.add_theme_stylebox_override("disabled", _make_pill_style(COLOR_PRIMARY_STRONG, SOLO_KEY_SIZE / 2.0))
+	_add_submit_icon(submit_button, SOLO_KEY_SIZE, (SOLO_KEY_SIZE * 2.0) + SOLO_KEY_GAP, COLOR_TEXT_INVERSE)
 	submit_button.pressed.connect(_submit_battle_queue)
 	add_child(submit_button)
 
@@ -815,20 +837,22 @@ func _build_solo_layout() -> void:
 		prime_grid.add_child(button)
 
 	var action_x := prime_grid.position.x + prime_grid.size.x + SOLO_KEY_GAP
-	backspace_button = _make_icon_text_button("⌫", COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 28)
+	backspace_button = _make_icon_text_button("", COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 28)
 	backspace_button.position = Vector2(action_x, prime_grid.position.y)
 	backspace_button.size = Vector2(SOLO_KEY_SIZE, SOLO_KEY_SIZE)
 	backspace_button.add_theme_stylebox_override("disabled", _make_circle_style(COLOR_PRIMARY_STRONG, SOLO_KEY_SIZE / 2.0, Color.TRANSPARENT, 0))
+	_add_delete_icon(backspace_button, SOLO_KEY_SIZE, SOLO_KEY_SIZE, COLOR_TEXT_INVERSE)
 	backspace_button.pressed.connect(_backspace_queue)
 	add_child(backspace_button)
 
-	submit_button = _make_icon_text_button("↵", COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 34)
+	submit_button = _make_icon_text_button("", COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 34)
 	submit_button.position = Vector2(action_x, prime_grid.position.y + SOLO_KEY_SIZE + SOLO_KEY_GAP)
 	submit_button.size = Vector2(SOLO_KEY_SIZE, (SOLO_KEY_SIZE * 2.0) + SOLO_KEY_GAP)
 	submit_button.add_theme_stylebox_override("normal", _make_pill_style(COLOR_PRIMARY_STRONG, SOLO_KEY_SIZE / 2.0))
 	submit_button.add_theme_stylebox_override("hover", _make_pill_style(COLOR_PRIMARY_STRONG.lightened(0.06), SOLO_KEY_SIZE / 2.0))
 	submit_button.add_theme_stylebox_override("pressed", _make_pill_style(COLOR_PRIMARY_STRONG.darkened(0.08), SOLO_KEY_SIZE / 2.0))
 	submit_button.add_theme_stylebox_override("disabled", _make_pill_style(COLOR_PRIMARY_STRONG, SOLO_KEY_SIZE / 2.0))
+	_add_submit_icon(submit_button, SOLO_KEY_SIZE, (SOLO_KEY_SIZE * 2.0) + SOLO_KEY_GAP, COLOR_TEXT_INVERSE)
 	submit_button.pressed.connect(_submit_queue)
 	add_child(submit_button)
 
@@ -1319,7 +1343,7 @@ func _make_dropdown_button(text: String, callback: Callable) -> Button:
 
 func _make_header_icon_button(text: String, callback: Callable) -> Button:
 	var button := Button.new()
-	button.text = text
+	button.text = "" if text == "←" else text
 	button.size = Vector2(44, 44)
 	button.custom_minimum_size = Vector2(44, 44)
 	button.focus_mode = Control.FOCUS_NONE
@@ -1328,6 +1352,8 @@ func _make_header_icon_button(text: String, callback: Callable) -> Button:
 	button.add_theme_stylebox_override("normal", _make_circle_style(Color.TRANSPARENT, 22, Color.TRANSPARENT, 0))
 	button.add_theme_stylebox_override("hover", _make_circle_style(Color(1.0, 1.0, 1.0, 0.08), 22, Color.TRANSPARENT, 0))
 	button.add_theme_stylebox_override("pressed", _make_circle_style(Color(1.0, 1.0, 1.0, 0.14), 22, Color.TRANSPARENT, 0))
+	if text == "←":
+		_add_back_arrow_icon(button, 44, 44, COLOR_TEXT_INVERSE)
 	button.pressed.connect(callback)
 	return button
 
@@ -1351,7 +1377,7 @@ func _make_pause_icon_button() -> Button:
 
 	return button
 
-func _make_avatar_circle(size: float, color: Color, text: String, font_size: int) -> Panel:
+func _make_avatar_initial_circle(size: float, color: Color, text: String, font_size: int) -> Panel:
 	var avatar := Panel.new()
 	avatar.size = Vector2(size, size)
 	avatar.add_theme_stylebox_override(
@@ -1362,6 +1388,26 @@ func _make_avatar_circle(size: float, color: Color, text: String, font_size: int
 	var label := _make_absolute_label(text, font_size, COLOR_TEXT_INVERSE, 900)
 	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	avatar.add_child(label)
+
+	return avatar
+
+func _make_avatar_icon_circle(size: float, color: Color, icon_kind: String) -> Panel:
+	var avatar := Panel.new()
+	avatar.size = Vector2(size, size)
+	avatar.add_theme_stylebox_override(
+		"panel",
+		_make_circle_style(color, size / 2.0, COLOR_BORDER_INVERSE_SOFT, 2)
+	)
+
+	var icon_slot := Control.new()
+	icon_slot.size = Vector2(size, size)
+	icon_slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	avatar.add_child(icon_slot)
+
+	if icon_kind == "bot":
+		_add_bot_avatar_icon(icon_slot, size, COLOR_TEXT_INVERSE)
+	else:
+		_add_guest_avatar_icon(icon_slot, size, COLOR_TEXT_INVERSE)
 
 	return avatar
 
@@ -1530,6 +1576,205 @@ func _make_label_settings(font_size: int, color: Color, weight: int) -> LabelSet
 	settings.font_size = font_size
 	settings.font_color = color
 	return settings
+
+func _add_back_arrow_icon(parent: Control, width: float, height: float, color: Color) -> void:
+	var center := Vector2(width / 2.0, height / 2.0)
+	_add_icon_line(
+		parent,
+		PackedVector2Array([
+			Vector2(center.x + 8.0, center.y),
+			Vector2(center.x - 8.0, center.y),
+			Vector2(center.x - 1.0, center.y - 7.0),
+			Vector2(center.x - 8.0, center.y),
+			Vector2(center.x - 1.0, center.y + 7.0),
+		]),
+		color,
+		2.4
+	)
+
+func _add_delete_icon(parent: Control, width: float, height: float, color: Color) -> void:
+	var icon_width := 34.0
+	var icon_height := 26.0
+	var left := (width - icon_width) / 2.0
+	var top := (height - icon_height) / 2.0
+	var notch := 8.0
+
+	_add_icon_line(
+		parent,
+		PackedVector2Array([
+			Vector2(left + notch, top),
+			Vector2(left + icon_width, top),
+			Vector2(left + icon_width, top + icon_height),
+			Vector2(left + notch, top + icon_height),
+			Vector2(left, top + (icon_height / 2.0)),
+			Vector2(left + notch, top),
+		]),
+		color,
+		2.4,
+		true
+	)
+	_add_icon_line(
+		parent,
+		PackedVector2Array([
+			Vector2(left + 18.0, top + 8.0),
+			Vector2(left + 27.0, top + 17.0),
+		]),
+		color,
+		2.2
+	)
+	_add_icon_line(
+		parent,
+		PackedVector2Array([
+			Vector2(left + 27.0, top + 8.0),
+			Vector2(left + 18.0, top + 17.0),
+		]),
+		color,
+		2.2
+	)
+
+func _add_submit_icon(parent: Control, width: float, height: float, color: Color) -> void:
+	var center := Vector2(width / 2.0, height / 2.0)
+	_add_outline_circle(parent, center, 32.0, color, 2)
+	_add_icon_line(
+		parent,
+		PackedVector2Array([
+			Vector2(center.x, center.y + 9.0),
+			Vector2(center.x, center.y - 8.0),
+			Vector2(center.x - 7.0, center.y - 1.0),
+			Vector2(center.x, center.y - 8.0),
+			Vector2(center.x + 7.0, center.y - 1.0),
+		]),
+		color,
+		2.4
+	)
+
+func _add_cpu_icon(parent: Control, size: float, color: Color) -> void:
+	var chip_size := 12.0
+	var chip_left := (size - chip_size) / 2.0
+	var chip_top := (size - chip_size) / 2.0
+	var chip := Panel.new()
+	chip.position = Vector2(chip_left, chip_top)
+	chip.size = Vector2(chip_size, chip_size)
+	chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	chip.add_theme_stylebox_override("panel", _make_circle_style(Color.TRANSPARENT, 3, color, 2))
+	parent.add_child(chip)
+
+	for y in [5.0, 10.0, 15.0]:
+		_add_icon_line(parent, PackedVector2Array([Vector2(2.0, y), Vector2(5.0, y)]), color, 1.8)
+		_add_icon_line(parent, PackedVector2Array([Vector2(15.0, y), Vector2(18.0, y)]), color, 1.8)
+
+	for x in [5.0, 10.0, 15.0]:
+		_add_icon_line(parent, PackedVector2Array([Vector2(x, 2.0), Vector2(x, 5.0)]), color, 1.8)
+		_add_icon_line(parent, PackedVector2Array([Vector2(x, 15.0), Vector2(x, 18.0)]), color, 1.8)
+
+func _add_users_icon(parent: Control, size: float, color: Color) -> void:
+	_add_outline_circle(parent, Vector2(size * 0.42, size * 0.38), 7.0, color, 2)
+	_add_outline_circle(parent, Vector2(size * 0.66, size * 0.44), 6.0, color, 2)
+	_add_icon_line(
+		parent,
+		PackedVector2Array([
+			Vector2(size * 0.18, size * 0.76),
+			Vector2(size * 0.26, size * 0.64),
+			Vector2(size * 0.56, size * 0.64),
+			Vector2(size * 0.64, size * 0.76),
+		]),
+		color,
+		2.0
+	)
+	_add_icon_line(
+		parent,
+		PackedVector2Array([
+			Vector2(size * 0.56, size * 0.68),
+			Vector2(size * 0.78, size * 0.68),
+			Vector2(size * 0.86, size * 0.78),
+		]),
+		color,
+		2.0
+	)
+
+func _add_bot_avatar_icon(parent: Control, size: float, color: Color) -> void:
+	var stroke: float = max(2.0, size * 0.026)
+	var head_width := size * 0.42
+	var head_height := size * 0.34
+	var head_left := (size - head_width) / 2.0
+	var head_top := size * 0.38
+
+	var antenna_top := head_top - (size * 0.14)
+	_add_icon_line(
+		parent,
+		PackedVector2Array([
+			Vector2(size / 2.0, head_top),
+			Vector2(size / 2.0, antenna_top),
+		]),
+		color,
+		stroke
+	)
+	_add_filled_circle(parent, Vector2(size / 2.0, antenna_top - (size * 0.035)), max(4.0, size * 0.09), color)
+
+	var head := Panel.new()
+	head.position = Vector2(head_left, head_top)
+	head.size = Vector2(head_width, head_height)
+	head.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	head.add_theme_stylebox_override("panel", _make_circle_style(Color.TRANSPARENT, max(4.0, size * 0.075), color, int(stroke)))
+	parent.add_child(head)
+
+	var eye_size: float = max(3.0, size * 0.07)
+	_add_filled_circle(parent, Vector2(head_left + (head_width * 0.34), head_top + (head_height * 0.42)), eye_size, color)
+	_add_filled_circle(parent, Vector2(head_left + (head_width * 0.66), head_top + (head_height * 0.42)), eye_size, color)
+	_add_icon_line(
+		parent,
+		PackedVector2Array([
+			Vector2(head_left + (head_width * 0.34), head_top + (head_height * 0.68)),
+			Vector2(head_left + (head_width * 0.66), head_top + (head_height * 0.68)),
+		]),
+		color,
+		stroke
+	)
+
+func _add_guest_avatar_icon(parent: Control, size: float, color: Color) -> void:
+	var head_center := Vector2(size / 2.0, size * 0.38)
+	_add_outline_circle(parent, head_center, size * 0.22, color, int(max(2.0, size * 0.026)))
+	_add_icon_line(
+		parent,
+		PackedVector2Array([
+			Vector2(size * 0.28, size * 0.72),
+			Vector2(size * 0.36, size * 0.60),
+			Vector2(size * 0.64, size * 0.60),
+			Vector2(size * 0.72, size * 0.72),
+		]),
+		color,
+		max(2.0, size * 0.026)
+	)
+
+func _add_outline_circle(parent: Control, center: Vector2, diameter: float, color: Color, border_width: int) -> void:
+	var ring := Panel.new()
+	ring.size = Vector2(diameter, diameter)
+	ring.position = center - Vector2(diameter / 2.0, diameter / 2.0)
+	ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ring.add_theme_stylebox_override("panel", _make_outline_circle_style(diameter / 2.0, color, border_width))
+	parent.add_child(ring)
+
+func _add_filled_circle(parent: Control, center: Vector2, diameter: float, color: Color) -> void:
+	var circle := Panel.new()
+	circle.size = Vector2(diameter, diameter)
+	circle.position = center - Vector2(diameter / 2.0, diameter / 2.0)
+	circle.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	circle.add_theme_stylebox_override("panel", _make_circle_style(color, diameter / 2.0, color, 0))
+	parent.add_child(circle)
+
+func _add_icon_line(
+	parent: Control,
+	points: PackedVector2Array,
+	color: Color,
+	width: float,
+	closed: bool = false
+) -> void:
+	var line := Line2D.new()
+	line.default_color = color
+	line.width = width
+	line.closed = closed
+	line.points = points
+	parent.add_child(line)
 
 func _add_timer_icon(parent: Control) -> void:
 	var ring := Panel.new()
