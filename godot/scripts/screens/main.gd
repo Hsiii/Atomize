@@ -25,6 +25,8 @@ const SOLO_TARGET_SIZE := 296.0
 const SOLO_KEY_SIZE := 88.0
 const SOLO_KEY_GAP := 4.0
 const SOLO_CONTROL_BOTTOM_MARGIN := 12.0
+const DIALOG_WIDTH := 288.0
+const DIALOG_BUTTON_HEIGHT := 44.0
 const PRIME_COMPENSATION_FACTORS := {
 	2: 0.2,
 	3: 0.2,
@@ -390,14 +392,23 @@ func _build_solo_layout() -> void:
 	add_child(submit_button)
 
 func _build_pause_layout() -> void:
-	_build_base_layout()
-	content.add_spacer(false)
-	content.add_child(_make_label("Paused", 40, HORIZONTAL_ALIGNMENT_CENTER))
-	content.add_child(_make_label("Score %s" % int(solo_state["score"]), 20, HORIZONTAL_ALIGNMENT_CENTER))
-	content.add_child(_make_action_button("Resume", _resume_game, COLOR_PRIMARY_STRONG))
-	content.add_child(_make_action_button("Restart", _start_solo_game, COLOR_SECONDARY))
-	content.add_child(_make_action_button("Home", _start_home, COLOR_PRIMARY))
-	content.add_spacer(false)
+	var overlay := _make_modal_overlay()
+	add_child(overlay)
+
+	var panel := _make_dialog_panel(228)
+	overlay.add_child(panel)
+
+	_add_dialog_header(panel, "PAUSED")
+
+	var actions := VBoxContainer.new()
+	actions.position = Vector2(12, 68)
+	actions.size = Vector2(DIALOG_WIDTH - 24.0, 144)
+	actions.add_theme_constant_override("separation", 8)
+	panel.add_child(actions)
+
+	actions.add_child(_make_dialog_button("Resume", _resume_game, COLOR_PRIMARY_STRONG))
+	actions.add_child(_make_dialog_button("Retry", _start_solo_game, COLOR_SECONDARY))
+	actions.add_child(_make_dialog_button("Top", _start_home, COLOR_SECONDARY))
 
 func _build_game_over_layout() -> void:
 	_build_base_layout()
@@ -718,6 +729,51 @@ func _make_icon_text_button(text: String, background_color: Color, text_color: C
 	button.add_theme_stylebox_override("disabled", _make_circle_style(COLOR_BUTTON_DISABLED, SOLO_KEY_SIZE / 2.0, Color.TRANSPARENT, 0))
 	return button
 
+func _make_modal_overlay() -> Control:
+	var overlay := Control.new()
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	var scrim := ColorRect.new()
+	scrim.color = Color(0.063, 0.106, 0.18, 0.26)
+	scrim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(scrim)
+
+	return overlay
+
+func _make_dialog_panel(height: float) -> Panel:
+	var viewport_size := get_viewport_rect().size
+	var panel := Panel.new()
+	panel.size = Vector2(DIALOG_WIDTH, height)
+	panel.position = Vector2((viewport_size.x - DIALOG_WIDTH) / 2.0, (viewport_size.y - height) / 2.0)
+	panel.add_theme_stylebox_override("panel", _make_dialog_panel_style())
+	return panel
+
+func _add_dialog_header(panel: Panel, title: String) -> void:
+	var header := ColorRect.new()
+	header.color = COLOR_PRIMARY
+	header.position = Vector2.ZERO
+	header.size = Vector2(DIALOG_WIDTH, 56)
+	panel.add_child(header)
+
+	var title_label := _make_absolute_label(title, 30, COLOR_TEXT_INVERSE, 900)
+	title_label.position = Vector2.ZERO
+	title_label.size = Vector2(DIALOG_WIDTH, 56)
+	panel.add_child(title_label)
+
+func _make_dialog_button(text: String, callback: Callable, color: Color) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.custom_minimum_size = Vector2(DIALOG_WIDTH - 24.0, DIALOG_BUTTON_HEIGHT)
+	button.focus_mode = Control.FOCUS_NONE
+	button.add_theme_font_size_override("font_size", 16)
+	button.add_theme_color_override("font_color", COLOR_TEXT_INVERSE)
+	button.add_theme_stylebox_override("normal", _make_pill_style(color, DIALOG_BUTTON_HEIGHT / 2.0))
+	button.add_theme_stylebox_override("hover", _make_pill_style(color.lightened(0.06), DIALOG_BUTTON_HEIGHT / 2.0))
+	button.add_theme_stylebox_override("pressed", _make_pill_style(color.darkened(0.08), DIALOG_BUTTON_HEIGHT / 2.0))
+	button.pressed.connect(callback)
+	return button
+
 func _make_absolute_label(text: String, font_size: int, color: Color, weight: int) -> Label:
 	var label := Label.new()
 	label.text = text
@@ -787,6 +843,20 @@ func _make_bar_style(color: Color, radius: int) -> StyleBoxFlat:
 
 func _make_pill_style(color: Color, radius: float) -> StyleBoxFlat:
 	return _make_circle_style(color, radius, Color.TRANSPARENT, 0)
+
+func _make_dialog_panel_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(1.0, 1.0, 1.0, 0.94)
+	style.border_color = COLOR_PRIMARY
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.corner_radius_top_left = 24
+	style.corner_radius_top_right = 24
+	style.corner_radius_bottom_right = 24
+	style.corner_radius_bottom_left = 24
+	return style
 
 func _make_transparent_button_style() -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
