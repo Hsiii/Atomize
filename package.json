@@ -8,6 +8,8 @@
         "godot:export:android": "bun run scripts/godot/export-mobile.ts android",
         "godot:export:ios": "bun run scripts/godot/export-mobile.ts ios",
         "godot:fixtures": "bun run scripts/godot/generate-core-fixtures.ts",
+        "godot:ios:build": "scripts/godot/ios-build.sh",
+        "godot:ios:run": "scripts/godot/ios-run-device.sh",
         "godot:open": "bun run scripts/godot/open-project.ts",
         "godot:test": "bun run godot:fixtures && bun run scripts/godot/run-core-parity.ts",
         "prebuild": "tsc -p tsconfig.json --noEmit",
