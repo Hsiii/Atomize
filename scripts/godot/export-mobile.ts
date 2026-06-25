@@ -40,7 +40,7 @@ if (target === 'ios') {
 
     if (!iosTeamId) {
         console.error(
-            '[Error] Set GODOT_IOS_TEAM_ID before exporting iOS builds.'
+            '[Error] Set GODOT_IOS_TEAM_ID in .env.local before exporting iOS builds.'
         );
         process.exit(1);
     }

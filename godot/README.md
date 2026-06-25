@@ -75,3 +75,18 @@ godot/build/ios/atomize-ios.zip
 
 Open the exported Xcode project/package, set signing, select a connected iPhone,
 and run from Xcode for device testing.
+
+For local CLI installs, put signing values in the git-ignored root `.env.local`
+file so commands do not need inline secrets:
+
+```bash
+GODOT_IOS_TEAM_ID=your-apple-team-id
+APPLE_TEAM_ID=your-apple-team-id
+```
+
+Then export and sync to a connected, unlocked iPhone:
+
+```bash
+bun run godot:export:ios
+bun run godot:ios:run
+```

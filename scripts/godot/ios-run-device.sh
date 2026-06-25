@@ -2,6 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source "$ROOT_DIR/scripts/godot/load-local-env.sh"
+
 PROJECT="${IOS_PROJECT:-$ROOT_DIR/godot/build/ios/atomize-ios.xcodeproj}"
 SCHEME="${IOS_SCHEME:-atomize-ios}"
 CONFIGURATION="${IOS_CONFIGURATION:-Debug}"
@@ -27,6 +29,7 @@ detect_device_id() {
     [[ -n "$device_id" ]] && printf '%s\n' "$device_id"
 }
 
+echo "Detecting connected iOS device..."
 DEVICE_ID="${IOS_DEVICE_ID:-$(detect_device_id)}"
 if [[ -z "$DEVICE_ID" ]]; then
     echo "No connected iOS device found. Connect one, or set IOS_DEVICE_ID." >&2
@@ -35,7 +38,7 @@ fi
 
 if [[ ! -d "$PROJECT" ]]; then
     echo "Godot iOS Xcode project not found at $PROJECT." >&2
-    echo "Run: GODOT_IOS_TEAM_ID=<team-id> bun run godot:export:ios" >&2
+    echo "Set GODOT_IOS_TEAM_ID in .env.local, then run: bun run godot:export:ios" >&2
     exit 1
 fi
 
@@ -49,17 +52,27 @@ if [[ -n "${APPLE_TEAM_ID:-}" ]]; then
     TEAM_ARGS=(DEVELOPMENT_TEAM="$APPLE_TEAM_ID")
 fi
 
+XCODEBUILD_ARGS=(
+    -project "$PROJECT"
+    -scheme "$SCHEME"
+    -configuration "$CONFIGURATION"
+    -sdk iphoneos
+    -destination "id=$DEVICE_ID"
+    -derivedDataPath "$DERIVED_DATA_PATH"
+)
+
+if [[ ${#PROVISIONING_ARGS[@]} -gt 0 ]]; then
+    XCODEBUILD_ARGS+=("${PROVISIONING_ARGS[@]}")
+fi
+
+if [[ ${#TEAM_ARGS[@]} -gt 0 ]]; then
+    XCODEBUILD_ARGS+=("${TEAM_ARGS[@]}")
+fi
+
+XCODEBUILD_ARGS+=(build)
+
 echo "Building $SCHEME for device $DEVICE_ID..."
-xcodebuild \
-    -project "$PROJECT" \
-    -scheme "$SCHEME" \
-    -configuration "$CONFIGURATION" \
-    -sdk iphoneos \
-    -destination "id=$DEVICE_ID" \
-    -derivedDataPath "$DERIVED_DATA_PATH" \
-    "${PROVISIONING_ARGS[@]}" \
-    "${TEAM_ARGS[@]}" \
-    build
+xcodebuild "${XCODEBUILD_ARGS[@]}"
 
 if [[ ! -d "$APP_PATH" ]]; then
     echo "Built app not found at $APP_PATH." >&2
