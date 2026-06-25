@@ -31,6 +31,8 @@ const COLOR_BUTTON_DISABLED := Color(0.973, 0.957, 0.875, 0.36)
 const PIXEL_BORDER := 4
 const PIXEL_RADIUS := 0
 const ICON_STROKE := 4.0
+const FEEDBACK_TWEEN_SECONDS := 0.1
+const SFX_SAMPLE_RATE := 22050
 const HOME_BLOB_SIZE := 144.0
 const HOME_BLOB_GAP := 16.0
 const HOME_MENU_BUTTON_SIZE := 48.0
@@ -255,6 +257,7 @@ func _resume_game() -> void:
 	_render_solo()
 
 func _finish_game() -> void:
+	_play_sfx("fail")
 	solo_time_left = 0.0
 	resolving_queue.clear()
 	prime_queue.clear()
@@ -536,6 +539,7 @@ func _add_battle_picker_row(
 	)
 	action.position = Vector2(left + width - 82.0, top + 6.0)
 	action.size = Vector2(82, 34)
+	_wire_button_feedback(action, "start")
 	if not disabled:
 		action.pressed.connect(callback)
 	add_child(action)
@@ -682,7 +686,7 @@ func _build_battle_game_layout() -> void:
 		prime_grid.add_child(button)
 
 	var action_x := prime_grid.position.x + prime_grid.size.x + SOLO_KEY_GAP
-	backspace_button = _make_icon_text_button("", COLOR_PRIMARY_STRONG, COLOR_INK, 28)
+	backspace_button = _make_icon_text_button("", COLOR_PRIMARY_STRONG, COLOR_INK, 28, "backspace")
 	backspace_button.position = Vector2(action_x, prime_grid.position.y)
 	backspace_button.size = Vector2(SOLO_KEY_SIZE, SOLO_KEY_SIZE)
 	backspace_button.add_theme_stylebox_override("disabled", _make_button_style(COLOR_BUTTON_DISABLED))
@@ -690,7 +694,7 @@ func _build_battle_game_layout() -> void:
 	backspace_button.pressed.connect(_backspace_battle_queue)
 	add_child(backspace_button)
 
-	submit_button = _make_icon_text_button("", COLOR_PRIMARY_STRONG, COLOR_INK, 34)
+	submit_button = _make_icon_text_button("", COLOR_PRIMARY_STRONG, COLOR_INK, 34, "submit")
 	submit_button.position = Vector2(action_x, prime_grid.position.y + SOLO_KEY_SIZE + SOLO_KEY_GAP)
 	submit_button.size = Vector2(SOLO_KEY_SIZE, (SOLO_KEY_SIZE * 2.0) + SOLO_KEY_GAP)
 	submit_button.add_theme_stylebox_override("normal", _make_button_style(COLOR_PRIMARY_STRONG))
@@ -844,7 +848,7 @@ func _build_solo_layout() -> void:
 		prime_grid.add_child(button)
 
 	var action_x := prime_grid.position.x + prime_grid.size.x + SOLO_KEY_GAP
-	backspace_button = _make_icon_text_button("", COLOR_PRIMARY_STRONG, COLOR_INK, 28)
+	backspace_button = _make_icon_text_button("", COLOR_PRIMARY_STRONG, COLOR_INK, 28, "backspace")
 	backspace_button.position = Vector2(action_x, prime_grid.position.y)
 	backspace_button.size = Vector2(SOLO_KEY_SIZE, SOLO_KEY_SIZE)
 	backspace_button.add_theme_stylebox_override("disabled", _make_button_style(COLOR_BUTTON_DISABLED))
@@ -852,7 +856,7 @@ func _build_solo_layout() -> void:
 	backspace_button.pressed.connect(_backspace_queue)
 	add_child(backspace_button)
 
-	submit_button = _make_icon_text_button("", COLOR_PRIMARY_STRONG, COLOR_INK, 34)
+	submit_button = _make_icon_text_button("", COLOR_PRIMARY_STRONG, COLOR_INK, 34, "submit")
 	submit_button.position = Vector2(action_x, prime_grid.position.y + SOLO_KEY_SIZE + SOLO_KEY_GAP)
 	submit_button.size = Vector2(SOLO_KEY_SIZE, (SOLO_KEY_SIZE * 2.0) + SOLO_KEY_GAP)
 	submit_button.add_theme_stylebox_override("normal", _make_button_style(COLOR_PRIMARY_STRONG))
@@ -984,6 +988,7 @@ func _queue_battle_prime(prime: int) -> void:
 		return
 
 	if battle_prime_queue.size() >= COMBO_QUEUE_MAX_ITEMS:
+		_play_sfx("fail")
 		battle_result_text = "Queue full"
 		_render_battle()
 		return
@@ -1040,6 +1045,7 @@ func _apply_battle_queue(player_id: String, queued_primes: Array) -> void:
 		if outcome["kind"] == "wrong":
 			battle_snapshot = BattleRoom.apply_battle_penalty(battle_snapshot, player_id)
 			battle_result_text = "Miss" if player_id == BATTLE_PLAYER_ID else "-8"
+			_play_sfx("fail")
 			return
 
 		var options: Dictionary = {}
@@ -1057,6 +1063,7 @@ func _apply_battle_queue(player_id: String, queued_primes: Array) -> void:
 		var event: Dictionary = battle_snapshot.get("lastEvent", {})
 		if event.has("damage"):
 			battle_result_text = "-%s" % int(event["damage"])
+			_play_sfx("success" if player_id == BATTLE_PLAYER_ID else "fail")
 
 func _build_battle_over_overlay() -> void:
 	if has_node("BattleOverOverlay"):
@@ -1065,6 +1072,7 @@ func _build_battle_over_overlay() -> void:
 	var player = BattleRoom.find_player(battle_snapshot["players"], BATTLE_PLAYER_ID)
 	var bot = BattleRoom.find_player(battle_snapshot["players"], BATTLE_BOT_ID)
 	var did_win := player != null and bot != null and int(bot["hp"]) <= 0 and int(player["hp"]) > 0
+	_play_sfx("success" if did_win else "fail")
 
 	var overlay := _make_modal_overlay()
 	overlay.name = "BattleOverOverlay"
@@ -1094,6 +1102,7 @@ func _queue_prime(prime: int) -> void:
 		return
 
 	if prime_queue.size() >= COMBO_QUEUE_MAX_ITEMS:
+		_play_sfx("fail")
 		last_result_text = "Queue full"
 		_render_solo()
 		return
@@ -1134,6 +1143,7 @@ func _resolve_next_queued_prime() -> void:
 		solo_time_left = max(0.0, solo_time_left - 1.0)
 		resolving_queue.clear()
 		last_result_text = "Miss: -1 HP and -1s"
+		_play_sfx("fail")
 		_render_solo()
 		return
 
@@ -1152,9 +1162,11 @@ func _resolve_next_queued_prime() -> void:
 		solo_time_left = max(0.0, solo_time_left - 1.0)
 		resolving_queue.clear()
 		last_result_text = "Overrun: target cleared before queue ended"
+		_play_sfx("fail")
 	else:
 		solo_state = next_state
 		last_result_text = "Cleared" if outcome["cleared"] else "Hit +%s" % Game.compute_battle_factor_damage(next_prime)
+		_play_sfx("success" if outcome["cleared"] else "prime")
 
 	if resolving_queue.is_empty():
 		submitted_queue_length = 0
@@ -1241,6 +1253,7 @@ func _make_action_button(text: String, callback: Callable, color: Color) -> Butt
 	button.add_theme_stylebox_override("hover", _make_button_style(color))
 	button.add_theme_stylebox_override("pressed", _make_button_style(COLOR_SURFACE))
 	button.add_theme_stylebox_override("disabled", _make_button_style(COLOR_BUTTON_DISABLED))
+	_wire_button_feedback(button, "tap")
 	button.pressed.connect(callback)
 	return button
 
@@ -1288,6 +1301,7 @@ func _make_home_blob_button(text: String, callback: Callable, color: Color, icon
 		"pressed",
 		_make_circle_style(COLOR_SURFACE, HOME_BLOB_SIZE / 2.0, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER)
 	)
+	_wire_button_feedback(button, "start")
 	button.pressed.connect(callback)
 
 	var content_stack := VBoxContainer.new()
@@ -1325,6 +1339,7 @@ func _make_home_menu_button() -> Button:
 	button.add_theme_stylebox_override("normal", _make_transparent_button_style())
 	button.add_theme_stylebox_override("hover", _make_transparent_button_style())
 	button.add_theme_stylebox_override("pressed", _make_transparent_button_style())
+	_wire_button_feedback(button, "tap")
 	button.pressed.connect(_toggle_home_menu)
 
 	for index in range(3):
@@ -1347,6 +1362,7 @@ func _make_dropdown_button(text: String, callback: Callable) -> Button:
 	button.add_theme_stylebox_override("normal", _make_button_style(COLOR_SURFACE))
 	button.add_theme_stylebox_override("hover", _make_button_style(COLOR_PRIMARY_STRONG))
 	button.add_theme_stylebox_override("pressed", _make_button_style(COLOR_PRIMARY_STRONG))
+	_wire_button_feedback(button, "tap")
 	button.pressed.connect(callback)
 	return button
 
@@ -1363,6 +1379,7 @@ func _make_header_icon_button(text: String, callback: Callable) -> Button:
 	button.add_theme_stylebox_override("pressed", _make_transparent_button_style())
 	if text == "←":
 		_add_back_arrow_icon(button, 44, 44, COLOR_TEXT_INVERSE)
+	_wire_button_feedback(button, "back")
 	button.pressed.connect(callback)
 	return button
 
@@ -1375,6 +1392,7 @@ func _make_pause_icon_button() -> Button:
 	button.add_theme_stylebox_override("normal", _make_button_style(COLOR_SURFACE))
 	button.add_theme_stylebox_override("hover", _make_button_style(COLOR_PRIMARY_STRONG))
 	button.add_theme_stylebox_override("pressed", _make_button_style(COLOR_PRIMARY_STRONG))
+	_wire_button_feedback(button, "tap")
 
 	for x in [14.0, 24.0]:
 		var bar := ColorRect.new()
@@ -1457,6 +1475,7 @@ func _make_wide_page_button(text: String, callback: Callable, color: Color) -> B
 	button.add_theme_stylebox_override("normal", _make_button_style(color))
 	button.add_theme_stylebox_override("hover", _make_button_style(color))
 	button.add_theme_stylebox_override("pressed", _make_button_style(COLOR_SURFACE))
+	_wire_button_feedback(button, "start")
 	button.pressed.connect(callback)
 	return button
 
@@ -1471,9 +1490,16 @@ func _make_prime_key_button(text: String) -> Button:
 	button.add_theme_stylebox_override("hover", _make_button_style(COLOR_PRIMARY_STRONG))
 	button.add_theme_stylebox_override("pressed", _make_button_style(COLOR_PRIMARY_STRONG))
 	button.add_theme_stylebox_override("disabled", _make_button_style(COLOR_BUTTON_DISABLED))
+	_wire_button_feedback(button, "prime")
 	return button
 
-func _make_icon_text_button(text: String, background_color: Color, text_color: Color, font_size: int) -> Button:
+func _make_icon_text_button(
+	text: String,
+	background_color: Color,
+	text_color: Color,
+	font_size: int,
+	sound_kind: String = "tap"
+) -> Button:
 	var button := Button.new()
 	button.text = text
 	button.custom_minimum_size = Vector2(SOLO_KEY_SIZE, SOLO_KEY_SIZE)
@@ -1484,6 +1510,7 @@ func _make_icon_text_button(text: String, background_color: Color, text_color: C
 	button.add_theme_stylebox_override("hover", _make_button_style(background_color))
 	button.add_theme_stylebox_override("pressed", _make_button_style(COLOR_SURFACE))
 	button.add_theme_stylebox_override("disabled", _make_button_style(COLOR_BUTTON_DISABLED))
+	_wire_button_feedback(button, sound_kind)
 	return button
 
 func _make_modal_overlay() -> Control:
@@ -1528,6 +1555,7 @@ func _make_dialog_button(text: String, callback: Callable, color: Color) -> Butt
 	button.add_theme_stylebox_override("normal", _make_button_style(color))
 	button.add_theme_stylebox_override("hover", _make_button_style(color))
 	button.add_theme_stylebox_override("pressed", _make_button_style(COLOR_SURFACE))
+	_wire_button_feedback(button, "tap")
 	button.pressed.connect(callback)
 	return button
 
@@ -1588,6 +1616,91 @@ func _make_label_settings(font_size: int, color: Color, weight: int) -> LabelSet
 
 func _get_button_text_color(color: Color) -> Color:
 	return COLOR_TEXT_INVERSE if color == COLOR_SECONDARY or color == COLOR_PRIMARY else COLOR_INK
+
+func _wire_button_feedback(button: Button, sound_kind: String) -> void:
+	button.button_down.connect(_press_button_feedback.bind(button, sound_kind))
+	button.button_up.connect(_release_button_feedback.bind(button))
+	button.mouse_exited.connect(_release_button_feedback.bind(button))
+
+func _press_button_feedback(button: Button, sound_kind: String) -> void:
+	if not is_instance_valid(button) or button.disabled:
+		return
+
+	button.pivot_offset = button.size / 2.0
+	_play_sfx(sound_kind)
+	var tween := button.create_tween()
+	tween.set_trans(Tween.TRANS_SINE)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property(button, "scale", Vector2(0.96, 0.96), FEEDBACK_TWEEN_SECONDS)
+
+func _release_button_feedback(button: Button) -> void:
+	if not is_instance_valid(button):
+		return
+
+	button.pivot_offset = button.size / 2.0
+	var tween := button.create_tween()
+	tween.set_trans(Tween.TRANS_SINE)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property(button, "scale", Vector2.ONE, FEEDBACK_TWEEN_SECONDS)
+
+func _play_sfx(kind: String) -> void:
+	var tones: Array = [[150.0, 0.035, 0.16]]
+
+	match kind:
+		"prime":
+			tones = [[220.0, 0.025, 0.18], [330.0, 0.025, 0.16]]
+		"backspace":
+			tones = [[130.0, 0.045, 0.18]]
+		"submit":
+			tones = [[180.0, 0.035, 0.18], [360.0, 0.045, 0.16]]
+		"start":
+			tones = [[170.0, 0.035, 0.16], [260.0, 0.045, 0.18]]
+		"success":
+			tones = [[330.0, 0.045, 0.17], [520.0, 0.055, 0.16]]
+		"fail":
+			tones = [[110.0, 0.075, 0.2]]
+		"back":
+			tones = [[140.0, 0.035, 0.15]]
+
+	var player := AudioStreamPlayer.new()
+	var stream := AudioStreamGenerator.new()
+	stream.mix_rate = SFX_SAMPLE_RATE
+	stream.buffer_length = 0.25
+	player.stream = stream
+	player.volume_db = -8.0
+	add_child(player)
+	player.play()
+
+	var playback := player.get_stream_playback()
+	if playback == null:
+		player.queue_free()
+		return
+
+	var duration := 0.0
+	for tone in tones:
+		var frequency := float(tone[0])
+		var seconds := float(tone[1])
+		var volume := float(tone[2])
+		duration += seconds
+		_push_square_tone(playback, frequency, seconds, volume)
+		_push_square_tone(playback, 0.0, 0.006, 0.0)
+		duration += 0.006
+
+	get_tree().create_timer(duration + 0.1).timeout.connect(player.queue_free)
+
+func _push_square_tone(
+	playback: AudioStreamGeneratorPlayback,
+	frequency: float,
+	seconds: float,
+	volume: float
+) -> void:
+	var frame_count := int(SFX_SAMPLE_RATE * seconds)
+	for index in range(frame_count):
+		var sample := 0.0
+		if frequency > 0.0:
+			var phase := fmod((float(index) * frequency) / float(SFX_SAMPLE_RATE), 1.0)
+			sample = volume if phase < 0.5 else -volume
+		playback.push_frame(Vector2(sample, sample))
 
 func _add_back_arrow_icon(parent: Control, width: float, height: float, color: Color) -> void:
 	var center := Vector2(width / 2.0, height / 2.0)
