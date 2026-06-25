@@ -15,21 +15,31 @@ const SOLO_DURATION_SECONDS := 60.0
 const SOLO_COMBO_STEP_DELAY_SECONDS := 0.18
 const SOLO_SEED_PREFIX := "godot-mobile"
 const VERSION_LABEL := "v0.0.0"
-const COLOR_PRIMARY := Color("#10121f")
-const COLOR_PRIMARY_STRONG := Color("#f7d51d")
-const COLOR_SECONDARY := Color("#ef476f")
-const COLOR_INK := Color("#10121f")
-const COLOR_PAGE_BG := Color("#f8f4df")
-const COLOR_SURFACE := Color("#f8f4df")
-const COLOR_INK_SOFT := Color(0.063, 0.071, 0.122, 0.72)
-const COLOR_KEYPAD_BUTTON_BG := Color("#f8f4df")
-const COLOR_KEYPAD_BUTTON_TEXT := Color("#10121f")
-const COLOR_TEXT_INVERSE := Color("#f8f4df")
-const COLOR_TEXT_INVERSE_SOFT := Color(0.973, 0.957, 0.875, 0.72)
-const COLOR_BORDER_INVERSE_SOFT := Color("#10121f")
-const COLOR_BUTTON_DISABLED := Color(0.973, 0.957, 0.875, 0.36)
-const PIXEL_BORDER := 4
-const PIXEL_RADIUS := 0
+const COLOR_PRIMARY := Color("#184e77")
+const COLOR_PRIMARY_STRONG := Color("#168aad")
+const COLOR_SECONDARY := Color("#34a0a4")
+const COLOR_INK := Color("#223247")
+const COLOR_PAGE_BG := Color("#f4f7fb")
+const COLOR_SURFACE := Color("#ffffff")
+const COLOR_INK_SOFT := Color(0.063, 0.106, 0.180, 0.72)
+const COLOR_KEYPAD_BUTTON_BG := Color(0.094, 0.306, 0.467, 0.12)
+const COLOR_KEYPAD_BUTTON_ACTIVE_BG := Color(0.063, 0.106, 0.180, 0.14)
+const COLOR_KEYPAD_BUTTON_TEXT := Color(0.063, 0.106, 0.180, 0.54)
+const COLOR_TEXT_INVERSE := Color("#ffffff")
+const COLOR_TEXT_INVERSE_SOFT := Color(1.0, 1.0, 1.0, 0.64)
+const COLOR_BORDER_SOFT := Color(0.094, 0.306, 0.467, 0.20)
+const COLOR_BORDER_CONTRAST := Color(1.0, 1.0, 1.0, 0.26)
+const COLOR_BORDER_INVERSE_SOFT := Color(1.0, 1.0, 1.0, 0.28)
+const COLOR_OUTLINE_STRONG := Color(0.094, 0.306, 0.467, 0.44)
+const COLOR_BUTTON_DISABLED := Color(0.094, 0.306, 0.467, 0.12)
+const COLOR_DANGER := Color("#c43a3a")
+const COLOR_GOLD := Color("#d4a017")
+const COLOR_TRACK := Color(0.063, 0.106, 0.180, 0.12)
+const COLOR_BLOB_SHADOW := Color(0.063, 0.106, 0.180, 0.08)
+const PIXEL_BORDER := 2
+const RADIUS_BUTTON := 16
+const RADIUS_PANEL := 24
+const RADIUS_PILL := 2048
 const ICON_STROKE := 4.0
 const FEEDBACK_TWEEN_SECONDS := 0.1
 const SFX_SAMPLE_RATE := 22050
@@ -54,6 +64,10 @@ const THEME_BUTTON_SMALL_PRIMARY := "AtomButtonSmallPrimary"
 const THEME_BUTTON_SMALL_SURFACE := "AtomButtonSmallSurface"
 const THEME_BUTTON_PAGE_PRIMARY := "AtomButtonPagePrimary"
 const THEME_BUTTON_PAGE_SECONDARY := "AtomButtonPageSecondary"
+const THEME_BUTTON_BLOB_PRIMARY := "AtomButtonBlobPrimary"
+const THEME_BUTTON_BLOB_SECONDARY := "AtomButtonBlobSecondary"
+const THEME_PANEL_HERO_ORB := "AtomPanelHeroOrb"
+const THEME_PANEL_LOGO_DOT := "AtomPanelLogoDot"
 const THEME_PANEL_SURFACE := "AtomPanelSurface"
 const THEME_PANEL_CONTAINER_SURFACE := "AtomPanelContainerSurface"
 const THEME_PANEL_DIALOG := "AtomPanelDialog"
@@ -334,17 +348,12 @@ func _build_home_layout() -> void:
 	add_child(background)
 
 	var hero_height: float = min(384.0, viewport_size.y * 0.48)
-	var hero := ColorRect.new()
-	hero.color = COLOR_PRIMARY
-	hero.position = Vector2.ZERO
-	hero.size = Vector2(viewport_size.x, hero_height)
+	var hero_diameter: float = max(viewport_size.x * 1.6, viewport_size.y * 1.3)
+	var hero := Panel.new()
+	hero.position = Vector2((viewport_size.x - hero_diameter) / 2.0, (viewport_size.y * 0.5) - hero_diameter)
+	hero.size = Vector2(hero_diameter, hero_diameter)
+	_apply_panel_theme(hero, THEME_PANEL_HERO_ORB)
 	add_child(hero)
-
-	var hero_rule := ColorRect.new()
-	hero_rule.color = COLOR_PRIMARY_STRONG
-	hero_rule.position = Vector2(0, hero_height - PIXEL_BORDER)
-	hero_rule.size = Vector2(viewport_size.x, PIXEL_BORDER)
-	add_child(hero_rule)
 
 	var version_label := _make_absolute_label(VERSION_LABEL, 12, COLOR_TEXT_INVERSE_SOFT, 600)
 	version_label.position = Vector2(12, 12)
@@ -360,7 +369,7 @@ func _build_home_layout() -> void:
 	title_row.size = Vector2(min(viewport_size.x * 0.92, 320.0), 72)
 	title_row.position = Vector2(
 		(viewport_size.x - title_row.size.x) / 2.0,
-		(hero_height / 2.0) - 36.0
+		(viewport_size.y * 0.25) - 36.0
 	)
 	add_child(title_row)
 
@@ -693,14 +702,14 @@ func _build_battle_game_layout() -> void:
 	backspace_button = _make_icon_text_button("", COLOR_PRIMARY_STRONG, COLOR_INK, 28, "backspace")
 	backspace_button.position = Vector2(action_x, prime_grid.position.y)
 	backspace_button.size = Vector2(SOLO_KEY_SIZE, SOLO_KEY_SIZE)
-	_add_delete_icon(backspace_button, SOLO_KEY_SIZE, SOLO_KEY_SIZE, COLOR_INK)
+	_add_delete_icon(backspace_button, SOLO_KEY_SIZE, SOLO_KEY_SIZE, _get_button_text_color(COLOR_PRIMARY_STRONG))
 	backspace_button.pressed.connect(_backspace_battle_queue)
 	add_child(backspace_button)
 
 	submit_button = _make_icon_text_button("", COLOR_PRIMARY_STRONG, COLOR_INK, 34, "submit")
 	submit_button.position = Vector2(action_x, prime_grid.position.y + SOLO_KEY_SIZE + SOLO_KEY_GAP)
 	submit_button.size = Vector2(SOLO_KEY_SIZE, (SOLO_KEY_SIZE * 2.0) + SOLO_KEY_GAP)
-	_add_submit_icon(submit_button, SOLO_KEY_SIZE, (SOLO_KEY_SIZE * 2.0) + SOLO_KEY_GAP, COLOR_INK)
+	_add_submit_icon(submit_button, SOLO_KEY_SIZE, (SOLO_KEY_SIZE * 2.0) + SOLO_KEY_GAP, _get_button_text_color(COLOR_PRIMARY_STRONG))
 	submit_button.pressed.connect(_submit_battle_queue)
 	add_child(submit_button)
 
@@ -846,14 +855,14 @@ func _build_solo_layout() -> void:
 	backspace_button = _make_icon_text_button("", COLOR_PRIMARY_STRONG, COLOR_INK, 28, "backspace")
 	backspace_button.position = Vector2(action_x, prime_grid.position.y)
 	backspace_button.size = Vector2(SOLO_KEY_SIZE, SOLO_KEY_SIZE)
-	_add_delete_icon(backspace_button, SOLO_KEY_SIZE, SOLO_KEY_SIZE, COLOR_INK)
+	_add_delete_icon(backspace_button, SOLO_KEY_SIZE, SOLO_KEY_SIZE, _get_button_text_color(COLOR_PRIMARY_STRONG))
 	backspace_button.pressed.connect(_backspace_queue)
 	add_child(backspace_button)
 
 	submit_button = _make_icon_text_button("", COLOR_PRIMARY_STRONG, COLOR_INK, 34, "submit")
 	submit_button.position = Vector2(action_x, prime_grid.position.y + SOLO_KEY_SIZE + SOLO_KEY_GAP)
 	submit_button.size = Vector2(SOLO_KEY_SIZE, (SOLO_KEY_SIZE * 2.0) + SOLO_KEY_GAP)
-	_add_submit_icon(submit_button, SOLO_KEY_SIZE, (SOLO_KEY_SIZE * 2.0) + SOLO_KEY_GAP, COLOR_INK)
+	_add_submit_icon(submit_button, SOLO_KEY_SIZE, (SOLO_KEY_SIZE * 2.0) + SOLO_KEY_GAP, _get_button_text_color(COLOR_PRIMARY_STRONG))
 	submit_button.pressed.connect(_submit_queue)
 	add_child(submit_button)
 
@@ -1234,23 +1243,27 @@ func _make_app_theme() -> Theme:
 	app_theme.set_font_size("font_size", "Label", 16)
 	app_theme.set_color("font_color", "Label", COLOR_INK)
 
-	_add_button_theme(app_theme, THEME_BUTTON_PRIMARY, COLOR_PRIMARY_STRONG, COLOR_INK, 18)
+	_add_button_theme(app_theme, THEME_BUTTON_PRIMARY, COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 18)
 	_add_button_theme(app_theme, THEME_BUTTON_SECONDARY, COLOR_SECONDARY, COLOR_TEXT_INVERSE, 18)
-	_add_button_theme(app_theme, THEME_BUTTON_SURFACE, COLOR_SURFACE, COLOR_INK, 16, COLOR_PRIMARY_STRONG)
-	_add_button_theme(app_theme, THEME_BUTTON_KEYPAD, COLOR_KEYPAD_BUTTON_BG, COLOR_KEYPAD_BUTTON_TEXT, 32, COLOR_PRIMARY_STRONG)
-	_add_button_theme(app_theme, THEME_BUTTON_KEY_ACTION, COLOR_PRIMARY_STRONG, COLOR_INK, 28, Color.TRANSPARENT, 0)
-	_add_button_theme(app_theme, THEME_BUTTON_ICON_SURFACE, COLOR_SURFACE, COLOR_INK, 16, COLOR_PRIMARY_STRONG, 0)
-	_add_button_theme(app_theme, THEME_BUTTON_SMALL_PRIMARY, COLOR_PRIMARY_STRONG, COLOR_INK, 13)
-	_add_button_theme(app_theme, THEME_BUTTON_SMALL_SURFACE, COLOR_SURFACE, COLOR_INK, 14, COLOR_PRIMARY_STRONG)
-	_add_button_theme(app_theme, THEME_BUTTON_PAGE_PRIMARY, COLOR_PRIMARY_STRONG, COLOR_INK, 16)
+	_add_button_theme(app_theme, THEME_BUTTON_SURFACE, COLOR_SURFACE, COLOR_PRIMARY, 16, COLOR_KEYPAD_BUTTON_BG, 16, RADIUS_BUTTON, COLOR_BORDER_SOFT)
+	_add_button_theme(app_theme, THEME_BUTTON_KEYPAD, COLOR_KEYPAD_BUTTON_BG, COLOR_KEYPAD_BUTTON_TEXT, 32, COLOR_KEYPAD_BUTTON_ACTIVE_BG, 0, RADIUS_PILL, Color.TRANSPARENT, 0)
+	_add_button_theme(app_theme, THEME_BUTTON_KEY_ACTION, COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 28, COLOR_PRIMARY, 0, RADIUS_BUTTON, COLOR_BORDER_CONTRAST)
+	_add_button_theme(app_theme, THEME_BUTTON_ICON_SURFACE, COLOR_SURFACE, COLOR_PRIMARY, 16, COLOR_KEYPAD_BUTTON_BG, 0, RADIUS_PILL, COLOR_BORDER_SOFT)
+	_add_button_theme(app_theme, THEME_BUTTON_SMALL_PRIMARY, COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 13)
+	_add_button_theme(app_theme, THEME_BUTTON_SMALL_SURFACE, COLOR_SURFACE, COLOR_PRIMARY, 14, COLOR_KEYPAD_BUTTON_BG, 16, RADIUS_BUTTON, COLOR_BORDER_SOFT)
+	_add_button_theme(app_theme, THEME_BUTTON_PAGE_PRIMARY, COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 16)
 	_add_button_theme(app_theme, THEME_BUTTON_PAGE_SECONDARY, COLOR_SECONDARY, COLOR_TEXT_INVERSE, 16)
+	_add_button_theme(app_theme, THEME_BUTTON_BLOB_PRIMARY, COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 16, COLOR_PRIMARY_STRONG, 16, RADIUS_PILL, COLOR_BORDER_INVERSE_SOFT)
+	_add_button_theme(app_theme, THEME_BUTTON_BLOB_SECONDARY, COLOR_SECONDARY, COLOR_TEXT_INVERSE, 16, COLOR_SECONDARY, 16, RADIUS_PILL, COLOR_BORDER_INVERSE_SOFT)
 	_add_transparent_button_theme(app_theme)
+	_add_panel_theme(app_theme, THEME_PANEL_HERO_ORB, "Panel", _make_pixel_box_style(COLOR_PRIMARY, COLOR_OUTLINE_STRONG, PIXEL_BORDER, RADIUS_PILL, true))
+	_add_panel_theme(app_theme, THEME_PANEL_LOGO_DOT, "Panel", _make_pixel_box_style(COLOR_TEXT_INVERSE, Color.TRANSPARENT, 0, RADIUS_PILL))
 	_add_panel_theme(app_theme, THEME_PANEL_SURFACE, "Panel", _make_panel_style(COLOR_SURFACE))
 	_add_panel_theme(app_theme, THEME_PANEL_CONTAINER_SURFACE, "PanelContainer", _make_panel_style(COLOR_SURFACE))
 	_add_panel_theme(app_theme, THEME_PANEL_DIALOG, "Panel", _make_dialog_panel_style())
-	_add_panel_theme(app_theme, THEME_PANEL_TARGET, "Panel", _make_pixel_box_style(COLOR_PRIMARY_STRONG, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER))
-	_add_panel_theme(app_theme, THEME_PANEL_AVATAR_PRIMARY, "Panel", _make_pixel_box_style(COLOR_PRIMARY_STRONG, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER))
-	_add_panel_theme(app_theme, THEME_PANEL_AVATAR_SECONDARY, "Panel", _make_pixel_box_style(COLOR_SECONDARY, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER))
+	_add_panel_theme(app_theme, THEME_PANEL_TARGET, "Panel", _make_pixel_box_style(COLOR_PRIMARY_STRONG, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER, RADIUS_PILL, true))
+	_add_panel_theme(app_theme, THEME_PANEL_AVATAR_PRIMARY, "Panel", _make_pixel_box_style(COLOR_PRIMARY_STRONG, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER, RADIUS_PILL, true))
+	_add_panel_theme(app_theme, THEME_PANEL_AVATAR_SECONDARY, "Panel", _make_pixel_box_style(COLOR_SECONDARY, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER, RADIUS_PILL, true))
 	_add_panel_theme(app_theme, THEME_PANEL_BADGE_PRIMARY, "Panel", _make_button_style(COLOR_PRIMARY_STRONG))
 	_add_panel_theme(app_theme, THEME_PANEL_BADGE_SURFACE, "Panel", _make_button_style(COLOR_SURFACE))
 	_add_progress_theme(app_theme, THEME_PROGRESS_PRIMARY, COLOR_PRIMARY_STRONG)
@@ -1265,18 +1278,23 @@ func _add_button_theme(
 	text_color: Color,
 	font_size: int,
 	hover_color: Color = Color.TRANSPARENT,
-	content_margin: int = 16
+	content_margin: int = 16,
+	radius: int = RADIUS_BUTTON,
+	border_color: Color = COLOR_BORDER_CONTRAST,
+	border_width: int = PIXEL_BORDER
 ) -> void:
 	var resolved_hover_color := hover_color if hover_color != Color.TRANSPARENT else normal_color
+	var pressed_color := normal_color.lerp(COLOR_INK, 0.08)
 	app_theme.set_type_variation(variation, "Button")
 	app_theme.set_font("font", variation, _make_ui_font(800))
 	app_theme.set_font_size("font_size", variation, font_size)
-	app_theme.set_stylebox("normal", variation, _make_button_style(normal_color, content_margin))
-	app_theme.set_stylebox("hover", variation, _make_button_style(resolved_hover_color, content_margin))
-	app_theme.set_stylebox("focus", variation, _make_button_style(normal_color, content_margin))
-	app_theme.set_stylebox("pressed", variation, _make_button_style(COLOR_SURFACE, content_margin))
-	app_theme.set_stylebox("hover_pressed", variation, _make_button_style(COLOR_SURFACE, content_margin))
-	app_theme.set_stylebox("disabled", variation, _make_button_style(COLOR_BUTTON_DISABLED, content_margin))
+	app_theme.set_stylebox("normal", variation, _make_button_style(normal_color, content_margin, radius, border_color, border_width))
+	app_theme.set_stylebox("hover", variation, _make_button_style(resolved_hover_color, content_margin, radius, border_color, border_width))
+	app_theme.set_stylebox("focus", variation, _make_button_style(normal_color, content_margin, radius, border_color, border_width))
+	app_theme.set_stylebox("pressed", variation, _make_button_style(pressed_color, content_margin, radius, border_color, border_width))
+	app_theme.set_stylebox("hover_pressed", variation, _make_button_style(pressed_color, content_margin, radius, border_color, border_width))
+	var disabled_color := Color(normal_color.r, normal_color.g, normal_color.b, max(0.18, normal_color.a * 0.38))
+	app_theme.set_stylebox("disabled", variation, _make_button_style(disabled_color, content_margin, radius, Color.TRANSPARENT, 0))
 	_set_button_theme_colors(app_theme, variation, text_color)
 
 func _add_transparent_button_theme(app_theme: Theme) -> void:
@@ -1302,8 +1320,9 @@ func _set_button_theme_colors(app_theme: Theme, variation: String, text_color: C
 	]:
 		app_theme.set_color(color_name, variation, text_color)
 
-	app_theme.set_color("font_disabled_color", variation, COLOR_INK_SOFT)
-	app_theme.set_color("icon_disabled_color", variation, COLOR_INK_SOFT)
+	var disabled_text_color := Color(text_color.r, text_color.g, text_color.b, max(0.38, text_color.a * 0.38))
+	app_theme.set_color("font_disabled_color", variation, disabled_text_color)
+	app_theme.set_color("icon_disabled_color", variation, disabled_text_color)
 
 func _add_panel_theme(app_theme: Theme, variation: String, base_type: String, style: StyleBox) -> void:
 	app_theme.set_type_variation(variation, base_type)
@@ -1311,8 +1330,8 @@ func _add_panel_theme(app_theme: Theme, variation: String, base_type: String, st
 
 func _add_progress_theme(app_theme: Theme, variation: String, fill_color: Color) -> void:
 	app_theme.set_type_variation(variation, "ProgressBar")
-	app_theme.set_stylebox("background", variation, _make_bar_style(COLOR_BUTTON_DISABLED, 4))
-	app_theme.set_stylebox("fill", variation, _make_bar_style(fill_color, 4))
+	app_theme.set_stylebox("background", variation, _make_bar_style(COLOR_TRACK, 8))
+	app_theme.set_stylebox("fill", variation, _make_bar_style(fill_color, 8))
 
 func _make_ui_font(weight: int) -> SystemFont:
 	var font := SystemFont.new()
@@ -1363,10 +1382,10 @@ func _make_home_title() -> HBoxContainer:
 	filled_o_wrap.custom_minimum_size = Vector2(32, 44)
 	title_row.add_child(filled_o_wrap)
 
-	var filled_o := ColorRect.new()
+	var filled_o := Panel.new()
 	filled_o.size = Vector2(28, 28)
 	filled_o.position = Vector2(2, 22)
-	filled_o.color = COLOR_TEXT_INVERSE
+	_apply_panel_theme(filled_o, THEME_PANEL_LOGO_DOT)
 	filled_o_wrap.add_child(filled_o)
 
 	var tail := _make_absolute_label("MIZE", 40, COLOR_TEXT_INVERSE, 900)
@@ -1380,7 +1399,7 @@ func _make_home_blob_button(text: String, callback: Callable, color: Color, icon
 	button.custom_minimum_size = Vector2(HOME_BLOB_SIZE, HOME_BLOB_SIZE)
 	button.size = Vector2(HOME_BLOB_SIZE, HOME_BLOB_SIZE)
 	button.text = ""
-	_apply_button_theme(button, _button_theme_for_color(color, THEME_BUTTON_PAGE_PRIMARY, THEME_BUTTON_PAGE_SECONDARY))
+	_apply_button_theme(button, _button_theme_for_color(color, THEME_BUTTON_BLOB_PRIMARY, THEME_BUTTON_BLOB_SECONDARY))
 	_wire_button_feedback(button, "start")
 	button.pressed.connect(callback)
 
@@ -1638,7 +1657,7 @@ func _make_label_settings(font_size: int, color: Color, weight: int) -> LabelSet
 	return settings
 
 func _get_button_text_color(color: Color) -> Color:
-	return COLOR_TEXT_INVERSE if color == COLOR_SECONDARY or color == COLOR_PRIMARY else COLOR_INK
+	return COLOR_TEXT_INVERSE if color in [COLOR_PRIMARY, COLOR_PRIMARY_STRONG, COLOR_SECONDARY, COLOR_DANGER] else COLOR_PRIMARY
 
 func _wire_button_feedback(button: Button, sound_kind: String) -> void:
 	button.button_down.connect(_press_button_feedback.bind(button, sound_kind))
@@ -1905,18 +1924,25 @@ func _draw_icon_rect(image: Image, rect: Rect2i, color: Color) -> void:
 		for x in range(x_start, x_end):
 			image.set_pixel(x, y, color)
 
-func _make_button_style(color: Color, content_margin: int = 16) -> StyleBoxFlat:
+func _make_button_style(
+	color: Color,
+	content_margin: int = 16,
+	radius: int = RADIUS_BUTTON,
+	border_color: Color = COLOR_BORDER_CONTRAST,
+	border_width: int = PIXEL_BORDER
+) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
-	style.corner_radius_top_left = PIXEL_RADIUS
-	style.corner_radius_top_right = PIXEL_RADIUS
-	style.corner_radius_bottom_right = PIXEL_RADIUS
-	style.corner_radius_bottom_left = PIXEL_RADIUS
-	style.border_color = COLOR_INK
-	style.border_width_left = PIXEL_BORDER
-	style.border_width_top = PIXEL_BORDER
-	style.border_width_right = PIXEL_BORDER
-	style.border_width_bottom = PIXEL_BORDER
+	style.anti_aliasing = false
+	style.corner_radius_top_left = radius
+	style.corner_radius_top_right = radius
+	style.corner_radius_bottom_right = radius
+	style.corner_radius_bottom_left = radius
+	style.border_color = border_color
+	style.border_width_left = border_width
+	style.border_width_top = border_width
+	style.border_width_right = border_width
+	style.border_width_bottom = border_width
 	style.content_margin_left = content_margin
 	style.content_margin_right = content_margin
 	style.content_margin_top = max(0, content_margin / 2)
@@ -1926,24 +1952,26 @@ func _make_button_style(color: Color, content_margin: int = 16) -> StyleBoxFlat:
 func _make_bar_style(color: Color, radius: int) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
-	style.corner_radius_top_left = PIXEL_RADIUS
-	style.corner_radius_top_right = PIXEL_RADIUS
-	style.corner_radius_bottom_right = PIXEL_RADIUS
-	style.corner_radius_bottom_left = PIXEL_RADIUS
+	style.anti_aliasing = false
+	style.corner_radius_top_left = radius
+	style.corner_radius_top_right = radius
+	style.corner_radius_bottom_right = radius
+	style.corner_radius_bottom_left = radius
 	return style
 
 func _make_dialog_panel_style() -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = COLOR_SURFACE
-	style.border_color = COLOR_INK
+	style.anti_aliasing = false
+	style.border_color = COLOR_PRIMARY
 	style.border_width_left = PIXEL_BORDER
 	style.border_width_top = PIXEL_BORDER
 	style.border_width_right = PIXEL_BORDER
 	style.border_width_bottom = PIXEL_BORDER
-	style.corner_radius_top_left = PIXEL_RADIUS
-	style.corner_radius_top_right = PIXEL_RADIUS
-	style.corner_radius_bottom_right = PIXEL_RADIUS
-	style.corner_radius_bottom_left = PIXEL_RADIUS
+	style.corner_radius_top_left = RADIUS_PANEL
+	style.corner_radius_top_right = RADIUS_PANEL
+	style.corner_radius_bottom_right = RADIUS_PANEL
+	style.corner_radius_bottom_left = RADIUS_PANEL
 	return style
 
 func _make_transparent_button_style() -> StyleBoxFlat:
@@ -1951,22 +1979,32 @@ func _make_transparent_button_style() -> StyleBoxFlat:
 	style.bg_color = Color.TRANSPARENT
 	return style
 
-func _make_circle_style(color: Color, _radius: float, border_color: Color, border_width: int) -> StyleBoxFlat:
-	return _make_pixel_box_style(color, border_color, border_width)
+func _make_circle_style(color: Color, radius: float, border_color: Color, border_width: int) -> StyleBoxFlat:
+	return _make_pixel_box_style(color, border_color, border_width, int(radius), true)
 
-func _make_pixel_box_style(color: Color, border_color: Color, border_width: int) -> StyleBoxFlat:
+func _make_pixel_box_style(
+	color: Color,
+	border_color: Color,
+	border_width: int,
+	radius: int = RADIUS_BUTTON,
+	with_shadow: bool = false
+) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
-	var corner_radius := PIXEL_RADIUS
-	style.corner_radius_top_left = corner_radius
-	style.corner_radius_top_right = corner_radius
-	style.corner_radius_bottom_right = corner_radius
-	style.corner_radius_bottom_left = corner_radius
+	style.anti_aliasing = false
+	style.corner_radius_top_left = radius
+	style.corner_radius_top_right = radius
+	style.corner_radius_bottom_right = radius
+	style.corner_radius_bottom_left = radius
 	style.border_color = border_color
 	style.border_width_left = border_width
 	style.border_width_top = border_width
 	style.border_width_right = border_width
 	style.border_width_bottom = border_width
+	if with_shadow:
+		style.shadow_color = COLOR_BLOB_SHADOW
+		style.shadow_size = 12
+		style.shadow_offset = Vector2(0, 8)
 	return style
 
 func _make_outline_circle_style(radius: float, border_color: Color, border_width: int) -> StyleBoxFlat:
@@ -1977,15 +2015,19 @@ func _make_outline_circle_style(radius: float, border_color: Color, border_width
 func _make_panel_style(color: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
-	style.corner_radius_top_left = PIXEL_RADIUS
-	style.corner_radius_top_right = PIXEL_RADIUS
-	style.corner_radius_bottom_right = PIXEL_RADIUS
-	style.corner_radius_bottom_left = PIXEL_RADIUS
-	style.border_color = COLOR_INK
+	style.anti_aliasing = false
+	style.corner_radius_top_left = RADIUS_PANEL
+	style.corner_radius_top_right = RADIUS_PANEL
+	style.corner_radius_bottom_right = RADIUS_PANEL
+	style.corner_radius_bottom_left = RADIUS_PANEL
+	style.border_color = COLOR_BORDER_SOFT
 	style.border_width_left = PIXEL_BORDER
 	style.border_width_top = PIXEL_BORDER
 	style.border_width_right = PIXEL_BORDER
 	style.border_width_bottom = PIXEL_BORDER
+	style.shadow_color = COLOR_BLOB_SHADOW
+	style.shadow_size = 12
+	style.shadow_offset = Vector2(0, 8)
 	style.content_margin_left = 20
 	style.content_margin_right = 20
 	style.content_margin_top = 20
