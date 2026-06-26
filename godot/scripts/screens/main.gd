@@ -18,6 +18,9 @@ const SOLO_SEED_PREFIX := "godot-mobile"
 const SOLO_SCORE_REDESIGN_AT := "2026-04-07T10:48:36.000Z"
 const HISTORIC_SOLO_SCORE_FACTOR := 0.5
 const HISTORIC_SOLO_SCORE_CAP := 600
+const REALTIME_LOBBY_TOPIC := "realtime:atomize:lobby"
+const REALTIME_HEARTBEAT_SECONDS := 25.0
+const REALTIME_RECONNECT_SECONDS := 6.0
 const COLOR_PRIMARY := Color("#184e77")
 const COLOR_PRIMARY_STRONG := Color("#168aad")
 const COLOR_SECONDARY := Color("#34a0a4")
@@ -160,6 +163,18 @@ var battle_result_text := ""
 var leaderboard_entries: Array[Dictionary] = []
 var leaderboard_status_text := ""
 var supabase_client: SupabaseClient
+var realtime_socket := WebSocketPeer.new()
+var realtime_player_id := ""
+var realtime_ref_counter := 0
+var realtime_join_ref := ""
+var realtime_has_opened := false
+var realtime_joined := false
+var realtime_should_reconnect := false
+var realtime_heartbeat_elapsed := 0.0
+var realtime_reconnect_elapsed := 0.0
+var realtime_status_text := ""
+var realtime_presence_state: Dictionary = {}
+var realtime_online_players: Array[Dictionary] = []
 var icon_texture_cache: Dictionary = {}
 var pixel_circle_texture_cache: Dictionary = {}
 var active_control_tweens: Dictionary = {}
@@ -180,6 +195,8 @@ var queue_label: Label
 var result_label: Label
 var leaderboard_rows_root: VBoxContainer
 var leaderboard_status_label: Label
+var battle_online_rows_root: VBoxContainer
+var battle_online_status_label: Label
 var prime_grid: GridContainer
 var submit_button: Button
 var backspace_button: Button
@@ -195,6 +212,7 @@ func _ready() -> void:
 	_ensure_audio_buses()
 	_build_sfx_pool()
 	supabase_client = SupabaseClient.new()
+	realtime_player_id = "godot-%s" % Time.get_ticks_usec()
 	_build_network_nodes()
 	theme = _make_app_theme()
 	best_score = _load_best_score()
@@ -235,7 +253,253 @@ func _build_network_nodes() -> void:
 	leaderboard_request.request_completed.connect(_on_leaderboard_request_completed)
 	network_root.add_child(leaderboard_request)
 
+func _connect_realtime_lobby() -> void:
+	supabase_client.reload()
+
+	if not supabase_client.is_configured():
+		realtime_status_text = "Supabase realtime not configured"
+		realtime_should_reconnect = false
+		_render_battle_online_players()
+		return
+
+	var state := realtime_socket.get_ready_state()
+	if state == WebSocketPeer.STATE_OPEN or state == WebSocketPeer.STATE_CONNECTING:
+		realtime_should_reconnect = true
+		_track_realtime_presence()
+		_render_battle_online_players()
+		return
+
+	realtime_socket = WebSocketPeer.new()
+	realtime_has_opened = false
+	realtime_joined = false
+	realtime_join_ref = ""
+	realtime_heartbeat_elapsed = 0.0
+	realtime_reconnect_elapsed = 0.0
+	realtime_status_text = "Connecting realtime..."
+	realtime_should_reconnect = true
+
+	var error := realtime_socket.connect_to_url(supabase_client.realtime_websocket_url())
+	if error != OK:
+		realtime_status_text = "Realtime unavailable"
+		realtime_should_reconnect = false
+
+	_render_battle_online_players()
+
+func _close_realtime_lobby() -> void:
+	realtime_should_reconnect = false
+	realtime_has_opened = false
+	realtime_joined = false
+	realtime_join_ref = ""
+	realtime_heartbeat_elapsed = 0.0
+	realtime_reconnect_elapsed = 0.0
+	realtime_status_text = ""
+	realtime_presence_state.clear()
+	realtime_online_players.clear()
+
+	var state := realtime_socket.get_ready_state()
+	if state == WebSocketPeer.STATE_OPEN or state == WebSocketPeer.STATE_CONNECTING:
+		realtime_socket.close()
+
+func _poll_realtime_lobby(delta: float) -> void:
+	var state := realtime_socket.get_ready_state()
+	if state == WebSocketPeer.STATE_CONNECTING or state == WebSocketPeer.STATE_OPEN:
+		realtime_socket.poll()
+		state = realtime_socket.get_ready_state()
+
+	if state == WebSocketPeer.STATE_OPEN:
+		if not realtime_has_opened:
+			realtime_has_opened = true
+			realtime_status_text = "Joining realtime..."
+			_send_realtime_join()
+			_render_battle_online_players()
+
+		realtime_heartbeat_elapsed += delta
+		if realtime_heartbeat_elapsed >= REALTIME_HEARTBEAT_SECONDS:
+			realtime_heartbeat_elapsed = 0.0
+			_send_realtime_message("phoenix", "heartbeat", {}, _next_realtime_ref())
+
+		while realtime_socket.get_available_packet_count() > 0:
+			_handle_realtime_packet(realtime_socket.get_packet().get_string_from_utf8())
+
+		return
+
+	if not realtime_should_reconnect:
+		return
+
+	realtime_reconnect_elapsed += delta
+	if realtime_reconnect_elapsed < REALTIME_RECONNECT_SECONDS:
+		return
+
+	realtime_reconnect_elapsed = 0.0
+	_connect_realtime_lobby()
+
+func _send_realtime_join() -> void:
+	realtime_join_ref = _next_realtime_ref()
+	_send_realtime_message(
+		REALTIME_LOBBY_TOPIC,
+		"phx_join",
+		{
+			"config": {
+				"broadcast": {
+					"ack": false,
+					"self": false,
+				},
+				"presence": {
+					"enabled": true,
+					"key": realtime_player_id,
+				},
+				"postgres_changes": [],
+				"private": false,
+			},
+			"access_token": supabase_client.anon_key,
+		},
+		realtime_join_ref,
+		realtime_join_ref
+	)
+
+func _track_realtime_presence() -> void:
+	if not realtime_joined or realtime_socket.get_ready_state() != WebSocketPeer.STATE_OPEN:
+		return
+
+	_send_realtime_message(
+		REALTIME_LOBBY_TOPIC,
+		"presence",
+		{
+			"type": "presence",
+			"event": "track",
+			"payload": {
+				"playerId": realtime_player_id,
+				"name": BATTLE_PLAYER_NAME,
+				"status": _realtime_presence_status(),
+				"platform": "godot",
+				"updatedAt": Time.get_unix_time_from_system(),
+			},
+		},
+		_next_realtime_ref(),
+		realtime_join_ref
+	)
+
+func _send_realtime_message(
+	topic: String,
+	event_name: String,
+	payload: Dictionary,
+	ref: String = "",
+	join_ref: String = ""
+) -> void:
+	if realtime_socket.get_ready_state() != WebSocketPeer.STATE_OPEN:
+		return
+
+	var message := {
+		"topic": topic,
+		"event": event_name,
+		"payload": payload,
+		"ref": ref,
+	}
+	if not join_ref.is_empty():
+		message["join_ref"] = join_ref
+
+	realtime_socket.send_text(JSON.stringify(message))
+
+func _handle_realtime_packet(text: String) -> void:
+	var parsed = JSON.parse_string(text)
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return
+
+	var event_name := str(parsed.get("event", ""))
+	var payload = parsed.get("payload", {})
+	if event_name == "phx_reply":
+		_handle_realtime_reply(parsed, payload)
+		return
+
+	if event_name == "presence_state" and typeof(payload) == TYPE_DICTIONARY:
+		realtime_presence_state = payload
+		_rebuild_realtime_online_players()
+		return
+
+	if event_name == "presence_diff" and typeof(payload) == TYPE_DICTIONARY:
+		_apply_realtime_presence_diff(payload)
+		_rebuild_realtime_online_players()
+		return
+
+	if event_name == "phx_error" or event_name == "phx_close":
+		realtime_joined = false
+		realtime_status_text = "Realtime reconnecting..."
+		_render_battle_online_players()
+
+func _handle_realtime_reply(message: Dictionary, payload) -> void:
+	var ref := str(message.get("ref", ""))
+	if ref != realtime_join_ref or typeof(payload) != TYPE_DICTIONARY:
+		return
+
+	if str(payload.get("status", "")) == "ok":
+		realtime_joined = true
+		realtime_status_text = "No players online"
+		_track_realtime_presence()
+	else:
+		realtime_joined = false
+		realtime_status_text = "Realtime unavailable"
+
+	_render_battle_online_players()
+
+func _apply_realtime_presence_diff(payload: Dictionary) -> void:
+	var joins = payload.get("joins", {})
+	if typeof(joins) == TYPE_DICTIONARY:
+		for key in joins.keys():
+			realtime_presence_state[key] = joins[key]
+
+	var leaves = payload.get("leaves", {})
+	if typeof(leaves) == TYPE_DICTIONARY:
+		for key in leaves.keys():
+			realtime_presence_state.erase(key)
+
+func _rebuild_realtime_online_players() -> void:
+	var players: Array[Dictionary] = []
+
+	for key in realtime_presence_state.keys():
+		var presence = realtime_presence_state[key]
+		if typeof(presence) != TYPE_DICTIONARY:
+			continue
+
+		var metas = presence.get("metas", [])
+		if typeof(metas) != TYPE_ARRAY or metas.is_empty():
+			continue
+
+		var meta = metas[metas.size() - 1]
+		if typeof(meta) != TYPE_DICTIONARY:
+			continue
+
+		var player_id := str(meta.get("playerId", key))
+		if player_id == realtime_player_id:
+			continue
+
+		var player_name := str(meta.get("name", "Guest")).strip_edges()
+		if player_name.is_empty():
+			player_name = "Guest"
+
+		players.append({
+			"player_id": player_id,
+			"name": player_name,
+			"status": str(meta.get("status", "lobby")),
+			"platform": str(meta.get("platform", "web")),
+		})
+
+	realtime_online_players = players
+	realtime_status_text = "" if not realtime_online_players.is_empty() else "No players online"
+	_render_battle_online_players()
+
+func _next_realtime_ref() -> String:
+	realtime_ref_counter += 1
+	return str(realtime_ref_counter)
+
+func _realtime_presence_status() -> String:
+	if screen == Screen.BATTLE_READY or screen == Screen.BATTLE_GAME:
+		return "in-game"
+
+	return "lobby"
+
 func _process(delta: float) -> void:
+	_poll_realtime_lobby(delta)
+
 	if screen == Screen.BATTLE_GAME:
 		battle_bot_elapsed += delta
 		if battle_bot_elapsed >= BATTLE_BOT_STEP_SECONDS:
@@ -287,6 +551,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_start_home()
 
 func _start_home() -> void:
+	_close_realtime_lobby()
 	screen = Screen.HOME
 	prime_queue.clear()
 	resolving_queue.clear()
@@ -298,6 +563,7 @@ func _start_help() -> void:
 	_build_help_layout()
 
 func _start_leaderboard() -> void:
+	_close_realtime_lobby()
 	screen = Screen.LEADERBOARD
 	leaderboard_entries.clear()
 	leaderboard_status_text = "Loading scores..."
@@ -311,6 +577,7 @@ func _start_solo_pregame() -> void:
 func _start_battle_picker() -> void:
 	screen = Screen.BATTLE_PICKER
 	_build_battle_picker_layout()
+	_connect_realtime_lobby()
 
 func _start_battle_ready() -> void:
 	battle_snapshot = BattleRoom.create_room_snapshot("godot-atom-bot", BATTLE_BOT_ID, BATTLE_BOT_NAME)
@@ -325,6 +592,7 @@ func _start_battle_ready() -> void:
 	battle_result_text = ""
 	screen = Screen.BATTLE_READY
 	_build_battle_ready_layout()
+	_track_realtime_presence()
 
 func _start_battle_game() -> void:
 	if battle_snapshot.is_empty():
@@ -339,6 +607,7 @@ func _start_battle_game() -> void:
 	screen = Screen.BATTLE_GAME
 	_build_battle_game_layout()
 	_render_battle()
+	_track_realtime_presence()
 
 func _start_solo_game() -> void:
 	run_seed = "%s:%s" % [SOLO_SEED_PREFIX, Time.get_ticks_usec()]
@@ -758,7 +1027,7 @@ func _build_battle_picker_layout() -> void:
 	_add_battle_picker_row(body_left, 300, body_width, "bot", BATTLE_BOT_NAME, "Play", false, _start_battle_ready)
 
 	_add_battle_section_title(body_left, 384, "users", "ONLINE PLAYERS")
-	_add_battle_empty_state(body_left, 422, body_width)
+	_add_battle_online_state(body_left, 422, body_width)
 
 func _add_battle_section_title(left: float, top: float, icon_kind: String, label_text: String) -> void:
 	var icon_slot := Control.new()
@@ -810,19 +1079,72 @@ func _add_battle_picker_row(
 		action.pressed.connect(callback)
 	add_child(action)
 
-func _add_battle_empty_state(left: float, top: float, width: float) -> void:
-	var empty := _make_absolute_label("No players online", 13, COLOR_INK_SOFT, 700)
-	empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	empty.position = Vector2(left, top + 8.0)
-	empty.size = Vector2(width, 24)
-	add_child(empty)
+func _add_battle_online_state(left: float, top: float, width: float) -> void:
+	battle_online_status_label = _make_absolute_label("", 13, COLOR_INK_SOFT, 700)
+	battle_online_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	battle_online_status_label.position = Vector2(left, top + 8.0)
+	battle_online_status_label.size = Vector2(width, 24)
+	add_child(battle_online_status_label)
 
-	var hint := _make_absolute_label("Players will appear here when they join.", 13, COLOR_INK_SOFT, 600)
-	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	hint.position = Vector2(left, top + 32.0)
-	hint.size = Vector2(width, 24)
-	hint.modulate.a = 0.72
-	add_child(hint)
+	battle_online_rows_root = VBoxContainer.new()
+	battle_online_rows_root.position = Vector2(left, top)
+	battle_online_rows_root.size = Vector2(width, 196)
+	battle_online_rows_root.add_theme_constant_override("separation", 8)
+	add_child(battle_online_rows_root)
+
+	_render_battle_online_players()
+
+func _render_battle_online_players() -> void:
+	if not is_instance_valid(battle_online_status_label) or not is_instance_valid(battle_online_rows_root):
+		return
+
+	for child in battle_online_rows_root.get_children():
+		child.queue_free()
+
+	if realtime_online_players.is_empty():
+		battle_online_rows_root.visible = false
+		battle_online_status_label.visible = true
+		battle_online_status_label.text = realtime_status_text if not realtime_status_text.is_empty() else "No players online"
+		return
+
+	battle_online_rows_root.visible = true
+	battle_online_status_label.visible = false
+
+	for index in range(min(3, realtime_online_players.size())):
+		_add_battle_online_row(battle_online_rows_root, realtime_online_players[index], battle_online_rows_root.size.x)
+
+func _add_battle_online_row(parent: VBoxContainer, player: Dictionary, width: float) -> void:
+	var row := Control.new()
+	row.custom_minimum_size = Vector2(width, 44)
+	parent.add_child(row)
+
+	var avatar := _make_avatar_icon_circle(44, COLOR_PRIMARY_STRONG, "guest")
+	avatar.position = Vector2.ZERO
+	row.add_child(avatar)
+
+	var name := _make_absolute_label(str(player.get("name", "Guest")), 16, COLOR_INK, 800)
+	name.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	name.clip_text = true
+	name.position = Vector2(54.0, 10.0)
+	name.size = Vector2(max(112.0, width - 148.0), 28)
+	row.add_child(name)
+
+	var status := Button.new()
+	status.text = _format_realtime_status(str(player.get("status", "lobby")))
+	status.disabled = true
+	_apply_button_theme(status, THEME_BUTTON_SMALL_SURFACE)
+	status.position = Vector2(width - 82.0, 6.0)
+	status.size = Vector2(82, 34)
+	row.add_child(status)
+
+func _format_realtime_status(status: String) -> String:
+	match status:
+		"in-game":
+			return "In game"
+		"in-team":
+			return "In team"
+		_:
+			return "Lobby"
 
 func _build_battle_ready_layout() -> void:
 	_clear_screen()
