@@ -89,6 +89,8 @@ const THEME_PANEL_PARTICLE_RING_PRIMARY := "AtomPanelParticleRingPrimary"
 const THEME_PANEL_PARTICLE_RING_SECONDARY := "AtomPanelParticleRingSecondary"
 const THEME_PROGRESS_PRIMARY := "AtomProgressPrimary"
 const THEME_PROGRESS_SECONDARY := "AtomProgressSecondary"
+const THEME_PROGRESS_DANGER := "AtomProgressDanger"
+const THEME_PROGRESS_GOLD := "AtomProgressGold"
 const PRIME_COMPENSATION_FACTORS := {
 	2: 0.2,
 	3: 0.2,
@@ -670,13 +672,20 @@ func _build_battle_game_layout() -> void:
 	add_child(target_blob)
 	target_blob_panel = target_blob
 
+	_add_target_atom_art(target_blob, 124)
+
 	target_label = _make_absolute_label("", 48, COLOR_INK, 900)
 	target_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	target_blob.add_child(target_label)
 
+	stage_label = _make_absolute_label("", 12, COLOR_INK_SOFT, 800)
+	stage_label.position = Vector2(24, 382)
+	stage_label.size = Vector2(viewport_size.x - 48.0, 24)
+	add_child(stage_label)
+
 	battle_result_text = ""
 	result_label = _make_absolute_label("", 15, COLOR_SECONDARY, 800)
-	result_label.position = Vector2(0, 444)
+	result_label.position = Vector2(0, 412)
 	result_label.size = Vector2(viewport_size.x, 24)
 	add_child(result_label)
 
@@ -826,11 +835,21 @@ func _build_solo_layout() -> void:
 	_apply_progress_theme(timer_bar, THEME_PROGRESS_PRIMARY)
 	add_child(timer_bar)
 
+	timer_label = _make_absolute_label("", 14, COLOR_PRIMARY, 800)
+	timer_label.position = Vector2((viewport_size.x - 72.0) / 2.0, 6)
+	timer_label.size = Vector2(72, 20)
+	add_child(timer_label)
+
 	score_label = _make_absolute_label("", 14, COLOR_PRIMARY, 800)
 	score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	score_label.position = Vector2(viewport_size.x - 84.0, 16)
-	score_label.size = Vector2(68, 24)
+	score_label.position = Vector2(viewport_size.x - 112.0, 16)
+	score_label.size = Vector2(96, 24)
 	add_child(score_label)
+
+	stage_label = _make_absolute_label("", 12, COLOR_INK_SOFT, 800)
+	stage_label.position = Vector2(24, 92)
+	stage_label.size = Vector2(viewport_size.x - 48.0, 24)
+	add_child(stage_label)
 
 	var target_blob := Panel.new()
 	target_blob.size = Vector2(SOLO_TARGET_SIZE, SOLO_TARGET_SIZE)
@@ -838,6 +857,8 @@ func _build_solo_layout() -> void:
 	_apply_panel_theme(target_blob, THEME_PANEL_TARGET)
 	add_child(target_blob)
 	target_blob_panel = target_blob
+
+	_add_target_atom_art(target_blob, 192)
 
 	target_label = _make_absolute_label("", 72, COLOR_INK, 900)
 	target_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -952,13 +973,20 @@ func _render_solo() -> void:
 
 	var stage: Dictionary = solo_state["currentStage"]
 	timer_bar.value = solo_time_left
+	_apply_progress_theme(timer_bar, _timer_progress_theme())
+	timer_label.text = "%02d" % ceili(solo_time_left)
+	_set_label_color(timer_label, _timer_text_color())
 	score_label.text = "%s pt" % int(solo_state["score"])
+	stage_label.text = "STAGE %s" % [int(solo_state["clearedStages"]) + 1]
 	target_label.text = str(stage["remainingValue"])
-	factors_label.visible = false
-	queue_label.text = _join_numbers(prime_queue)
-	queue_label.visible = not prime_queue.is_empty()
+	factors_label.text = "%s FACTORS LEFT" % stage["remainingFactors"].size()
+	factors_label.visible = true
+	queue_label.text = _join_numbers(prime_queue) if not prime_queue.is_empty() else "Queue primes"
+	queue_label.modulate.a = 1.0 if not prime_queue.is_empty() else 0.46
+	queue_label.visible = true
 	result_label.text = last_result_text
 	result_label.visible = last_result_text != ""
+	_set_label_color(result_label, _feedback_text_color(last_result_text, COLOR_PRIMARY))
 
 	var is_busy := not resolving_queue.is_empty()
 	submit_button.disabled = is_busy or prime_queue.is_empty()
@@ -985,11 +1013,14 @@ func _render_battle() -> void:
 	player_hp_bar.max_value = max_hp
 	player_hp_bar.value = int(player["hp"])
 	player_hp_label.text = str(int(player["hp"]))
+	stage_label.text = "STAGE %s" % [int(player["stageIndex"]) + 1]
 	target_label.text = str(player["stage"]["remainingValue"])
-	queue_label.text = _join_numbers(battle_prime_queue)
-	queue_label.visible = not battle_prime_queue.is_empty()
+	queue_label.text = _join_numbers(battle_prime_queue) if not battle_prime_queue.is_empty() else "Queue attacks"
+	queue_label.modulate.a = 1.0 if not battle_prime_queue.is_empty() else 0.46
+	queue_label.visible = true
 	result_label.text = battle_result_text
 	result_label.visible = battle_result_text != ""
+	_set_label_color(result_label, _feedback_text_color(battle_result_text, COLOR_SECONDARY))
 
 	var is_finished: bool = battle_snapshot["status"] == "finished"
 	submit_button.disabled = is_finished or battle_prime_queue.is_empty()
@@ -1311,6 +1342,8 @@ func _make_app_theme() -> Theme:
 	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_RING_SECONDARY, "Panel", _make_outline_circle_style(RADIUS_PILL, COLOR_SECONDARY, PIXEL_BORDER))
 	_add_progress_theme(app_theme, THEME_PROGRESS_PRIMARY, COLOR_PRIMARY_STRONG)
 	_add_progress_theme(app_theme, THEME_PROGRESS_SECONDARY, COLOR_SECONDARY)
+	_add_progress_theme(app_theme, THEME_PROGRESS_DANGER, COLOR_DANGER)
+	_add_progress_theme(app_theme, THEME_PROGRESS_GOLD, COLOR_GOLD)
 
 	return app_theme
 
@@ -1701,6 +1734,52 @@ func _make_label_settings(font_size: int, color: Color, weight: int) -> LabelSet
 
 func _get_button_text_color(color: Color) -> Color:
 	return COLOR_TEXT_INVERSE if color in [COLOR_PRIMARY, COLOR_PRIMARY_STRONG, COLOR_SECONDARY, COLOR_DANGER] else COLOR_PRIMARY
+
+func _timer_progress_theme() -> String:
+	if solo_time_left <= 10.0:
+		return THEME_PROGRESS_DANGER
+
+	if solo_time_left <= 20.0:
+		return THEME_PROGRESS_GOLD
+
+	return THEME_PROGRESS_PRIMARY
+
+func _timer_text_color() -> Color:
+	if solo_time_left <= 10.0:
+		return COLOR_DANGER
+
+	if solo_time_left <= 20.0:
+		return COLOR_GOLD
+
+	return COLOR_PRIMARY
+
+func _feedback_text_color(text: String, fallback: Color) -> Color:
+	if text == "":
+		return fallback
+
+	if text.begins_with("Miss") or text.begins_with("Overrun") or text.begins_with("-") or text == "Queue full":
+		return COLOR_DANGER
+
+	if text.begins_with("Cleared"):
+		return COLOR_GOLD
+
+	return fallback
+
+func _set_label_color(label: Label, color: Color) -> void:
+	if not is_instance_valid(label) or label.label_settings == null:
+		return
+
+	label.label_settings.font_color = color
+
+func _add_target_atom_art(parent: Control, icon_size: int) -> void:
+	var atom_art := TextureRect.new()
+	atom_art.texture = _get_icon_texture("atom", Color(1.0, 1.0, 1.0, 0.26), icon_size)
+	atom_art.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	atom_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	atom_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	atom_art.size = Vector2(icon_size, icon_size)
+	atom_art.position = (parent.size - atom_art.size) / 2.0
+	parent.add_child(atom_art)
 
 func _play_target_impact() -> void:
 	if not is_instance_valid(target_blob_panel):
@@ -2149,6 +2228,13 @@ func _get_icon_texture(kind: String, color: Color, size: int) -> Texture2D:
 		"guest":
 			_draw_icon_rect_outline(image, Rect2i(int(size * 0.32), int(size * 0.18), int(size * 0.36), int(size * 0.36)), color, stroke)
 			_draw_icon_polyline(image, [Vector2(size * 0.24, size * 0.82), Vector2(size * 0.36, size * 0.62), Vector2(size * 0.64, size * 0.62), Vector2(size * 0.76, size * 0.82)], color, stroke)
+		"atom":
+			var center := Vector2(size * 0.5, size * 0.5)
+			var ring_stroke: int = max(1, stroke - 1)
+			_draw_icon_ellipse(image, center, size * 0.36, size * 0.14, 0.0, color, ring_stroke)
+			_draw_icon_ellipse(image, center, size * 0.36, size * 0.14, TAU / 3.0, color, ring_stroke)
+			_draw_icon_ellipse(image, center, size * 0.36, size * 0.14, -TAU / 3.0, color, ring_stroke)
+			_draw_icon_rect(image, Rect2i(int(size * 0.47), int(size * 0.47), max(2, stroke), max(2, stroke)), color)
 		"help":
 			_draw_question_mark_icon(image, color)
 
@@ -2174,6 +2260,24 @@ func _draw_question_mark_icon(image: Image, color: Color) -> void:
 func _draw_icon_polyline(image: Image, points: Array, color: Color, thickness: int) -> void:
 	for index in range(points.size() - 1):
 		_draw_icon_line(image, points[index], points[index + 1], color, thickness)
+
+func _draw_icon_ellipse(
+	image: Image,
+	center: Vector2,
+	radius_x: float,
+	radius_y: float,
+	rotation: float,
+	color: Color,
+	thickness: int
+) -> void:
+	var points: Array[Vector2] = []
+
+	for index in range(33):
+		var angle := (TAU * float(index)) / 32.0
+		var local := Vector2(cos(angle) * radius_x, sin(angle) * radius_y)
+		points.append(center + local.rotated(rotation))
+
+	_draw_icon_polyline(image, points, color, thickness)
 
 func _draw_icon_line(image: Image, from_point: Vector2, to_point: Vector2, color: Color, thickness: int) -> void:
 	var steps := int(max(abs(to_point.x - from_point.x), abs(to_point.y - from_point.y)))
