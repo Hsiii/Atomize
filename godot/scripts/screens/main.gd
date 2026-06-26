@@ -42,6 +42,9 @@ const RADIUS_PANEL := 24
 const RADIUS_PILL := 2048
 const ICON_STROKE := 4.0
 const FEEDBACK_TWEEN_SECONDS := 0.1
+const HAPTIC_TAP_MS := 8
+const HAPTIC_SUCCESS_MS := 22
+const HAPTIC_FAIL_MS := 36
 const ATTACK_PARTICLE_COUNT := 9
 const DAMAGE_POP_SECONDS := 0.7
 const SFX_SAMPLE_RATE := 22050
@@ -129,6 +132,7 @@ var battle_prime_queue: Array[int] = []
 var battle_bot_elapsed := 0.0
 var battle_result_text := ""
 var icon_texture_cache: Dictionary = {}
+var active_control_tweens: Dictionary = {}
 
 var root_margin: MarginContainer
 var content: VBoxContainer
@@ -399,9 +403,12 @@ func _build_home_dropdown(position: Vector2) -> void:
 
 	var dropdown := VBoxContainer.new()
 	dropdown.position = position
-	dropdown.size = Vector2(128, 52)
+	dropdown.size = Vector2(128, 104)
 	dropdown.add_theme_constant_override("separation", 8)
 	add_child(dropdown)
+
+	var help_button := _make_dropdown_button("Help", _start_help)
+	dropdown.add_child(help_button)
 
 	var reset_button := _make_dropdown_button("Reset Best", _reset_best_score)
 	dropdown.add_child(reset_button)
@@ -789,6 +796,7 @@ func _build_help_layout() -> void:
 	actions.add_child(_make_wide_page_button("TOP", _start_home, COLOR_SECONDARY))
 
 func _clear_screen() -> void:
+	_clear_control_tweens()
 	for child in get_children():
 		child.queue_free()
 	target_blob_panel = null
@@ -1002,6 +1010,7 @@ func _queue_battle_prime(prime: int) -> void:
 		_play_sfx("fail")
 		battle_result_text = "Queue full"
 		_render_battle()
+		_play_queue_limit_feedback()
 		return
 
 	battle_prime_queue.append(prime)
@@ -1118,6 +1127,7 @@ func _queue_prime(prime: int) -> void:
 		_play_sfx("fail")
 		last_result_text = "Queue full"
 		_render_solo()
+		_play_queue_limit_feedback()
 		return
 
 	prime_queue.append(prime)
@@ -1697,7 +1707,7 @@ func _play_target_impact() -> void:
 		return
 
 	target_blob_panel.pivot_offset = target_blob_panel.size / 2.0
-	var tween := target_blob_panel.create_tween()
+	var tween := _make_control_tween(target_blob_panel, "target-impact")
 	tween.set_trans(Tween.TRANS_SINE)
 	tween.set_ease(Tween.EASE_OUT)
 	tween.tween_property(target_blob_panel, "scale", Vector2(0.94, 0.94), 0.04)
@@ -1745,7 +1755,7 @@ func _shake_control(control: Control, distance: float) -> void:
 		return
 
 	var origin := control.position
-	var tween := control.create_tween()
+	var tween := _make_control_tween(control, "shake")
 	tween.set_trans(Tween.TRANS_SINE)
 	tween.set_ease(Tween.EASE_OUT)
 	tween.tween_property(control, "position", origin + Vector2(-distance, 0), 0.02)
@@ -1886,6 +1896,37 @@ func _particle_fill_theme_for_player(player_id: String) -> String:
 func _particle_ring_theme_for_player(player_id: String) -> String:
 	return THEME_PANEL_PARTICLE_RING_SECONDARY if player_id == BATTLE_BOT_ID else THEME_PANEL_PARTICLE_RING_PRIMARY
 
+func _make_control_tween(control: Control, channel: String) -> Tween:
+	var key := "%s:%s" % [control.get_instance_id(), channel]
+	var previous = active_control_tweens.get(key)
+	if previous is Tween and previous.is_valid():
+		previous.kill()
+
+	var tween := control.create_tween()
+	active_control_tweens[key] = tween
+	tween.finished.connect(_forget_control_tween.bind(key, tween), CONNECT_ONE_SHOT)
+	return tween
+
+func _forget_control_tween(key: String, tween: Tween) -> void:
+	if active_control_tweens.get(key) == tween:
+		active_control_tweens.erase(key)
+
+func _clear_control_tweens() -> void:
+	for tween in active_control_tweens.values():
+		if tween is Tween and tween.is_valid():
+			tween.kill()
+
+	active_control_tweens.clear()
+
+func _play_queue_limit_feedback() -> void:
+	if is_instance_valid(queue_label):
+		_shake_control(queue_label, 8.0)
+		_flash_control(queue_label, COLOR_DANGER, 0.24)
+		return
+
+	if is_instance_valid(target_blob_panel):
+		_play_target_fault()
+
 func _wire_button_feedback(button: Button, sound_kind: String) -> void:
 	button.button_down.connect(_press_button_feedback.bind(button, sound_kind))
 	button.button_up.connect(_release_button_feedback.bind(button))
@@ -1897,7 +1938,7 @@ func _press_button_feedback(button: Button, sound_kind: String) -> void:
 
 	button.pivot_offset = button.size / 2.0
 	_play_sfx(sound_kind)
-	var tween := button.create_tween()
+	var tween := _make_control_tween(button, "press")
 	tween.set_trans(Tween.TRANS_SINE)
 	tween.set_ease(Tween.EASE_OUT)
 	tween.tween_property(button, "scale", Vector2(0.96, 0.96), FEEDBACK_TWEEN_SECONDS)
@@ -1907,12 +1948,13 @@ func _release_button_feedback(button: Button) -> void:
 		return
 
 	button.pivot_offset = button.size / 2.0
-	var tween := button.create_tween()
+	var tween := _make_control_tween(button, "press")
 	tween.set_trans(Tween.TRANS_SINE)
 	tween.set_ease(Tween.EASE_OUT)
 	tween.tween_property(button, "scale", Vector2.ONE, FEEDBACK_TWEEN_SECONDS)
 
 func _play_sfx(kind: String) -> void:
+	_play_haptic(kind)
 	var tones: Array = [[150.0, 0.035, 0.16]]
 
 	match kind:
@@ -1956,6 +1998,18 @@ func _play_sfx(kind: String) -> void:
 		duration += 0.006
 
 	get_tree().create_timer(duration + 0.1).timeout.connect(player.queue_free)
+
+func _play_haptic(kind: String) -> void:
+	var duration := HAPTIC_TAP_MS
+	match kind:
+		"success":
+			duration = HAPTIC_SUCCESS_MS
+		"fail":
+			duration = HAPTIC_FAIL_MS
+		"submit", "start":
+			duration = HAPTIC_SUCCESS_MS
+
+	Input.vibrate_handheld(duration)
 
 func _push_square_tone(
 	playback: AudioStreamGeneratorPlayback,
