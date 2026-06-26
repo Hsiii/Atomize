@@ -2,6 +2,7 @@ extends Control
 
 const Game := preload("res://scripts/core/game.gd")
 const BattleRoom := preload("res://scripts/core/multiplayer_room.gd")
+const SupabaseClient := preload("res://scripts/core/supabase_client.gd")
 
 const BEST_SCORE_PATH := "user://best_score.json"
 const BATTLE_BOT_ID := "atom-bot"
@@ -14,6 +15,9 @@ const SCREEN_ARG_PREFIX := "--atomize-screen="
 const SOLO_DURATION_SECONDS := 60.0
 const SOLO_COMBO_STEP_DELAY_SECONDS := 0.18
 const SOLO_SEED_PREFIX := "godot-mobile"
+const SOLO_SCORE_REDESIGN_AT := "2026-04-07T10:48:36.000Z"
+const HISTORIC_SOLO_SCORE_FACTOR := 0.5
+const HISTORIC_SOLO_SCORE_CAP := 600
 const COLOR_PRIMARY := Color("#184e77")
 const COLOR_PRIMARY_STRONG := Color("#168aad")
 const COLOR_SECONDARY := Color("#34a0a4")
@@ -125,6 +129,7 @@ const ICON_PATHS := {
 enum Screen {
 	HOME,
 	HELP,
+	LEADERBOARD,
 	SOLO_PREGAME,
 	BATTLE_PICKER,
 	BATTLE_READY,
@@ -152,12 +157,17 @@ var battle_snapshot: Dictionary
 var battle_prime_queue: Array[int] = []
 var battle_bot_elapsed := 0.0
 var battle_result_text := ""
+var leaderboard_entries: Array[Dictionary] = []
+var leaderboard_status_text := ""
+var supabase_client: SupabaseClient
 var icon_texture_cache: Dictionary = {}
 var pixel_circle_texture_cache: Dictionary = {}
 var active_control_tweens: Dictionary = {}
 var sfx_pool_root: Node
 var sfx_players: Array[AudioStreamPlayer] = []
 var sfx_pool_index := 0
+var network_root: Node
+var leaderboard_request: HTTPRequest
 
 var root_margin: MarginContainer
 var content: VBoxContainer
@@ -168,6 +178,8 @@ var target_label: Label
 var factors_label: Label
 var queue_label: Label
 var result_label: Label
+var leaderboard_rows_root: VBoxContainer
+var leaderboard_status_label: Label
 var prime_grid: GridContainer
 var submit_button: Button
 var backspace_button: Button
@@ -182,12 +194,16 @@ var player_hp_label: Label
 func _ready() -> void:
 	_ensure_audio_buses()
 	_build_sfx_pool()
+	supabase_client = SupabaseClient.new()
+	_build_network_nodes()
 	theme = _make_app_theme()
 	best_score = _load_best_score()
 	best_combo = _load_best_combo()
 	match _get_requested_screen():
 		"help":
 			_start_help()
+		"leaderboard":
+			_start_leaderboard()
 		"solo":
 			_start_solo_game()
 		"solo-pregame":
@@ -208,6 +224,16 @@ func _get_requested_screen() -> String:
 			return argument.trim_prefix(SCREEN_ARG_PREFIX)
 
 	return ""
+
+func _build_network_nodes() -> void:
+	network_root = Node.new()
+	network_root.name = "Network"
+	add_child(network_root)
+
+	leaderboard_request = HTTPRequest.new()
+	leaderboard_request.name = "LeaderboardRequest"
+	leaderboard_request.request_completed.connect(_on_leaderboard_request_completed)
+	network_root.add_child(leaderboard_request)
 
 func _process(delta: float) -> void:
 	if screen == Screen.BATTLE_GAME:
@@ -251,6 +277,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_resume_game()
 		elif (
 			screen == Screen.HELP
+			or screen == Screen.LEADERBOARD
 			or screen == Screen.SOLO_PREGAME
 			or screen == Screen.BATTLE_PICKER
 			or screen == Screen.BATTLE_READY
@@ -269,6 +296,13 @@ func _start_home() -> void:
 func _start_help() -> void:
 	screen = Screen.HELP
 	_build_help_layout()
+
+func _start_leaderboard() -> void:
+	screen = Screen.LEADERBOARD
+	leaderboard_entries.clear()
+	leaderboard_status_text = "Loading scores..."
+	_build_leaderboard_layout()
+	_request_leaderboard()
 
 func _start_solo_pregame() -> void:
 	screen = Screen.SOLO_PREGAME
@@ -426,15 +460,189 @@ func _build_home_dropdown(position: Vector2) -> void:
 
 	var dropdown := VBoxContainer.new()
 	dropdown.position = position
-	dropdown.size = Vector2(128, 104)
+	dropdown.size = Vector2(128, 156)
 	dropdown.add_theme_constant_override("separation", 8)
 	add_child(dropdown)
+
+	var leaderboard_button := _make_dropdown_button("Leaderboard", _start_leaderboard)
+	dropdown.add_child(leaderboard_button)
 
 	var help_button := _make_dropdown_button("Help", _start_help)
 	dropdown.add_child(help_button)
 
 	var reset_button := _make_dropdown_button("Reset Best", _reset_best_score)
 	dropdown.add_child(reset_button)
+
+func _build_leaderboard_layout() -> void:
+	_clear_screen()
+
+	var viewport_size := get_viewport_rect().size
+
+	var background := ColorRect.new()
+	background.color = COLOR_PAGE_BG
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(background)
+
+	_build_page_header("LEADERBOARD", "CHASE THE TOP SCORE.", "trophy")
+
+	var body_width: float = min(viewport_size.x - 48.0, 352.0)
+	var body_left: float = (viewport_size.x - body_width) / 2.0
+
+	leaderboard_status_label = _make_absolute_label("", 13, COLOR_INK_SOFT, 700)
+	leaderboard_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	leaderboard_status_label.position = Vector2(body_left, 262)
+	leaderboard_status_label.size = Vector2(body_width, 24)
+	add_child(leaderboard_status_label)
+
+	leaderboard_rows_root = VBoxContainer.new()
+	leaderboard_rows_root.position = Vector2(body_left, 304)
+	leaderboard_rows_root.size = Vector2(body_width, 480)
+	leaderboard_rows_root.add_theme_constant_override("separation", 8)
+	add_child(leaderboard_rows_root)
+
+	_render_leaderboard()
+
+func _request_leaderboard() -> void:
+	supabase_client.reload()
+
+	if not supabase_client.is_configured():
+		_use_local_leaderboard_fallback("Supabase not configured")
+		return
+
+	if leaderboard_request.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
+		leaderboard_request.cancel_request()
+
+	var error := leaderboard_request.request(
+		supabase_client.leaderboard_url(),
+		supabase_client.rest_headers(),
+		HTTPClient.METHOD_GET
+	)
+	if error != OK:
+		_use_local_leaderboard_fallback("Leaderboard unavailable")
+
+func _on_leaderboard_request_completed(
+	result: int,
+	response_code: int,
+	_headers: PackedStringArray,
+	body: PackedByteArray
+) -> void:
+	if screen != Screen.LEADERBOARD:
+		return
+
+	if result != HTTPRequest.RESULT_SUCCESS or response_code < 200 or response_code >= 300:
+		_use_local_leaderboard_fallback("Leaderboard unavailable")
+		return
+
+	var parsed = JSON.parse_string(body.get_string_from_utf8())
+	if typeof(parsed) != TYPE_ARRAY:
+		_use_local_leaderboard_fallback("Leaderboard unavailable")
+		return
+
+	leaderboard_entries = _top_leaderboard_entries(_parse_leaderboard_entries(parsed))
+	leaderboard_status_text = "" if not leaderboard_entries.is_empty() else "No leaderboard scores yet"
+	_render_leaderboard()
+
+func _parse_leaderboard_entries(rows: Array) -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+
+	for row in rows:
+		if typeof(row) != TYPE_DICTIONARY:
+			continue
+
+		var player_name := str(row.get("player_name", "")).strip_edges()
+		var updated_at := str(row.get("updated_at", ""))
+		var high_score := _normalize_historic_solo_high_score(float(row.get("high_score", 0)), updated_at)
+		if player_name.is_empty() or high_score <= 0:
+			continue
+
+		entries.append({
+			"player_name": player_name,
+			"high_score": high_score,
+		})
+
+	return entries
+
+func _top_leaderboard_entries(entries: Array[Dictionary]) -> Array[Dictionary]:
+	var sorted_entries: Array[Dictionary] = []
+
+	for entry in entries:
+		var insert_index := -1
+		for index in range(sorted_entries.size()):
+			if int(sorted_entries[index]["high_score"]) < int(entry["high_score"]):
+				insert_index = index
+				break
+
+		if insert_index == -1:
+			sorted_entries.append(entry)
+		else:
+			sorted_entries.insert(insert_index, entry)
+
+	var top_entries: Array[Dictionary] = []
+	for index in range(min(10, sorted_entries.size())):
+		top_entries.append(sorted_entries[index])
+	return top_entries
+
+func _normalize_historic_solo_high_score(score: float, updated_at: String) -> int:
+	if not is_finite(score) or score <= 0.0:
+		return 0
+
+	if updated_at.is_empty() or updated_at >= SOLO_SCORE_REDESIGN_AT:
+		return int(round(score))
+
+	return min(HISTORIC_SOLO_SCORE_CAP, int(round(score * HISTORIC_SOLO_SCORE_FACTOR)))
+
+func _use_local_leaderboard_fallback(status_text: String) -> void:
+	leaderboard_entries = _local_leaderboard_entries()
+	leaderboard_status_text = status_text if not leaderboard_entries.is_empty() else "No scores yet"
+	_render_leaderboard()
+
+func _local_leaderboard_entries() -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	best_score = _load_best_score()
+	if best_score > 0:
+		entries.append({
+			"player_name": BATTLE_PLAYER_NAME,
+			"high_score": best_score,
+		})
+	return entries
+
+func _render_leaderboard() -> void:
+	if not is_instance_valid(leaderboard_rows_root) or not is_instance_valid(leaderboard_status_label):
+		return
+
+	for child in leaderboard_rows_root.get_children():
+		child.queue_free()
+
+	leaderboard_status_label.text = leaderboard_status_text
+	leaderboard_status_label.visible = not leaderboard_status_text.is_empty()
+
+	for index in range(leaderboard_entries.size()):
+		_add_leaderboard_row(leaderboard_rows_root, index + 1, leaderboard_entries[index], leaderboard_rows_root.size.x)
+
+func _add_leaderboard_row(parent: VBoxContainer, rank: int, entry: Dictionary, width: float) -> void:
+	var row := Control.new()
+	row.custom_minimum_size = Vector2(width, 44)
+	parent.add_child(row)
+
+	var rank_color := COLOR_GOLD if rank == 1 else COLOR_PRIMARY
+	var rank_label := _make_absolute_label("#%s" % rank, 14, rank_color, 900)
+	rank_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	rank_label.position = Vector2(0, 6)
+	rank_label.size = Vector2(56, 28)
+	row.add_child(rank_label)
+
+	var player_label := _make_absolute_label(str(entry["player_name"]), 15, COLOR_INK, 800)
+	player_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	player_label.clip_text = true
+	player_label.position = Vector2(64, 6)
+	player_label.size = Vector2(max(96.0, width - 160.0), 28)
+	row.add_child(player_label)
+
+	var score_label := _make_absolute_label(str(int(entry["high_score"])), 15, COLOR_PRIMARY, 900)
+	score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	score_label.position = Vector2(width - 88.0, 6)
+	score_label.size = Vector2(88, 28)
+	row.add_child(score_label)
 
 func _toggle_home_menu() -> void:
 	home_menu_open = not home_menu_open
@@ -468,10 +676,13 @@ func _build_page_header(title_text: String, tagline_text: String, icon_kind: Str
 	icon_slot.size = Vector2(84, 72)
 	add_child(icon_slot)
 
-	if icon_kind == "timer":
-		_add_page_timer_icon(icon_slot)
-	else:
-		_add_page_battle_icon(icon_slot)
+	match icon_kind:
+		"timer":
+			_add_page_timer_icon(icon_slot)
+		"trophy":
+			_add_page_trophy_icon(icon_slot)
+		_:
+			_add_page_battle_icon(icon_slot)
 
 	var tagline := _make_absolute_label(tagline_text, 12, COLOR_TEXT_INVERSE_SOFT, 800)
 	tagline.position = Vector2(0, 176)
@@ -829,7 +1040,7 @@ func _build_help_layout() -> void:
 func _clear_screen() -> void:
 	_clear_control_tweens()
 	for child in get_children():
-		if child == sfx_pool_root:
+		if child == sfx_pool_root or child == network_root:
 			continue
 
 		child.queue_free()
@@ -2554,6 +2765,9 @@ func _add_page_timer_icon(parent: Control) -> void:
 
 func _add_page_battle_icon(parent: Control) -> void:
 	_set_or_add_texture_icon(parent, "battle", 64, COLOR_TEXT_INVERSE)
+
+func _add_page_trophy_icon(parent: Control) -> void:
+	_set_or_add_texture_icon(parent, "trophy", 64, COLOR_TEXT_INVERSE)
 
 func _set_or_add_texture_icon(parent: Control, kind: String, icon_size: int, color: Color) -> void:
 	var texture := _get_icon_texture(kind, color, icon_size)
