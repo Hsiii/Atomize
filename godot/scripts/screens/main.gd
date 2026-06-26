@@ -14,7 +14,6 @@ const SCREEN_ARG_PREFIX := "--atomize-screen="
 const SOLO_DURATION_SECONDS := 60.0
 const SOLO_COMBO_STEP_DELAY_SECONDS := 0.18
 const SOLO_SEED_PREFIX := "godot-mobile"
-const VERSION_LABEL := "v0.0.0"
 const COLOR_PRIMARY := Color("#184e77")
 const COLOR_PRIMARY_STRONG := Color("#168aad")
 const COLOR_SECONDARY := Color("#34a0a4")
@@ -40,7 +39,6 @@ const PIXEL_BORDER := 2
 const RADIUS_BUTTON := 16
 const RADIUS_PANEL := 24
 const RADIUS_PILL := 2048
-const ICON_STROKE := 4.0
 const FEEDBACK_TWEEN_SECONDS := 0.1
 const HAPTIC_TAP_MS := 8
 const HAPTIC_SUCCESS_MS := 22
@@ -104,6 +102,22 @@ const PRIME_COMPENSATION_FACTORS := {
 	19: 0.8,
 	23: 0.8,
 }
+const ICON_PATHS := {
+	"atom": "res://assets/icons/atom.svg",
+	"back": "res://assets/icons/back.svg",
+	"battle": "res://assets/icons/battle.svg",
+	"bot": "res://assets/icons/bot.svg",
+	"cpu": "res://assets/icons/cpu.svg",
+	"delete": "res://assets/icons/delete.svg",
+	"guest": "res://assets/icons/guest.svg",
+	"help": "res://assets/icons/help.svg",
+	"menu": "res://assets/icons/menu.svg",
+	"pause": "res://assets/icons/pause.svg",
+	"submit": "res://assets/icons/submit.svg",
+	"timer": "res://assets/icons/timer.svg",
+	"trophy": "res://assets/icons/trophy.svg",
+	"users": "res://assets/icons/users.svg",
+}
 
 enum Screen {
 	HOME,
@@ -136,6 +150,7 @@ var battle_prime_queue: Array[int] = []
 var battle_bot_elapsed := 0.0
 var battle_result_text := ""
 var icon_texture_cache: Dictionary = {}
+var pixel_circle_texture_cache: Dictionary = {}
 var active_control_tweens: Dictionary = {}
 var sfx_pool_root: Node
 var sfx_players: Array[AudioStreamPlayer] = []
@@ -376,11 +391,6 @@ func _build_home_layout() -> void:
 	hero.size = Vector2(hero_diameter, hero_diameter)
 	_apply_panel_theme(hero, THEME_PANEL_HERO_ORB)
 	add_child(hero)
-
-	var version_label := _make_absolute_label(VERSION_LABEL, 12, COLOR_TEXT_INVERSE_SOFT, 600)
-	version_label.position = Vector2(12, 12)
-	version_label.size = Vector2(96, 24)
-	add_child(version_label)
 
 	var menu_button := _make_home_menu_button()
 	menu_button.position = Vector2(viewport_size.x - HOME_MENU_BUTTON_SIZE - 12.0, 10.0)
@@ -2209,150 +2219,40 @@ func _get_icon_texture(kind: String, color: Color, size: int) -> Texture2D:
 	if icon_texture_cache.has(cache_key):
 		return icon_texture_cache[cache_key]
 
-	var image := Image.create(size, size, false, Image.FORMAT_RGBA8)
-	image.fill(Color.TRANSPARENT)
-	var stroke: int = max(2, int(size / 12.0))
-	match kind:
-		"menu":
-			_draw_icon_rect(image, Rect2i(int(size * 0.22), int(size * 0.26), int(size * 0.56), max(2, stroke - 1)), color)
-			_draw_icon_rect(image, Rect2i(int(size * 0.22), int(size * 0.48), int(size * 0.56), max(2, stroke - 1)), color)
-			_draw_icon_rect(image, Rect2i(int(size * 0.22), int(size * 0.70), int(size * 0.56), max(2, stroke - 1)), color)
-		"back":
-			_draw_icon_line(image, Vector2(size * 0.68, size * 0.5), Vector2(size * 0.28, size * 0.5), color, stroke)
-			_draw_icon_line(image, Vector2(size * 0.28, size * 0.5), Vector2(size * 0.44, size * 0.34), color, stroke)
-			_draw_icon_line(image, Vector2(size * 0.28, size * 0.5), Vector2(size * 0.44, size * 0.66), color, stroke)
-		"delete":
-			var points := [
-				Vector2(size * 0.28, size * 0.24),
-				Vector2(size * 0.84, size * 0.24),
-				Vector2(size * 0.84, size * 0.76),
-				Vector2(size * 0.28, size * 0.76),
-				Vector2(size * 0.12, size * 0.5),
-				Vector2(size * 0.28, size * 0.24),
-			]
-			_draw_icon_polyline(image, points, color, stroke)
-			_draw_icon_line(image, Vector2(size * 0.48, size * 0.4), Vector2(size * 0.68, size * 0.6), color, stroke)
-			_draw_icon_line(image, Vector2(size * 0.68, size * 0.4), Vector2(size * 0.48, size * 0.6), color, stroke)
-		"submit":
-			_draw_icon_rect_outline(image, Rect2i(2, 2, size - 4, size - 4), color, stroke)
-			_draw_icon_line(image, Vector2(size * 0.5, size * 0.72), Vector2(size * 0.5, size * 0.24), color, stroke)
-			_draw_icon_line(image, Vector2(size * 0.5, size * 0.24), Vector2(size * 0.32, size * 0.42), color, stroke)
-			_draw_icon_line(image, Vector2(size * 0.5, size * 0.24), Vector2(size * 0.68, size * 0.42), color, stroke)
-		"pause":
-			_draw_icon_rect(image, Rect2i(int(size * 0.28), int(size * 0.2), stroke, int(size * 0.6)), color)
-			_draw_icon_rect(image, Rect2i(int(size * 0.58), int(size * 0.2), stroke, int(size * 0.6)), color)
-		"timer":
-			_draw_icon_rect_outline(image, Rect2i(int(size * 0.22), int(size * 0.26), int(size * 0.56), int(size * 0.56)), color, stroke)
-			_draw_icon_rect(image, Rect2i(int(size * 0.4), int(size * 0.1), int(size * 0.2), stroke), color)
-			_draw_icon_line(image, Vector2(size * 0.5, size * 0.54), Vector2(size * 0.66, size * 0.38), color, stroke)
-		"battle":
-			_draw_icon_line(image, Vector2(size * 0.24, size * 0.22), Vector2(size * 0.76, size * 0.74), color, stroke)
-			_draw_icon_line(image, Vector2(size * 0.76, size * 0.22), Vector2(size * 0.24, size * 0.74), color, stroke)
-			_draw_icon_rect(image, Rect2i(int(size * 0.16), int(size * 0.12), int(size * 0.22), stroke), color)
-			_draw_icon_rect(image, Rect2i(int(size * 0.62), int(size * 0.12), int(size * 0.22), stroke), color)
-		"cpu":
-			_draw_icon_rect_outline(image, Rect2i(int(size * 0.28), int(size * 0.28), int(size * 0.44), int(size * 0.44)), color, max(1, stroke - 1))
-			for index in [1, 2, 3]:
-				var pin := int(size * (0.2 + (0.2 * index)))
-				_draw_icon_rect(image, Rect2i(pin, int(size * 0.08), max(1, stroke - 1), int(size * 0.16)), color)
-				_draw_icon_rect(image, Rect2i(pin, int(size * 0.76), max(1, stroke - 1), int(size * 0.16)), color)
-				_draw_icon_rect(image, Rect2i(int(size * 0.08), pin, int(size * 0.16), max(1, stroke - 1)), color)
-				_draw_icon_rect(image, Rect2i(int(size * 0.76), pin, int(size * 0.16), max(1, stroke - 1)), color)
-		"users":
-			_draw_icon_rect_outline(image, Rect2i(int(size * 0.2), int(size * 0.18), int(size * 0.28), int(size * 0.28)), color, max(1, stroke - 1))
-			_draw_icon_rect_outline(image, Rect2i(int(size * 0.52), int(size * 0.28), int(size * 0.24), int(size * 0.24)), color, max(1, stroke - 1))
-			_draw_icon_polyline(image, [Vector2(size * 0.14, size * 0.78), Vector2(size * 0.26, size * 0.58), Vector2(size * 0.54, size * 0.58), Vector2(size * 0.66, size * 0.78)], color, stroke)
-			_draw_icon_polyline(image, [Vector2(size * 0.54, size * 0.68), Vector2(size * 0.78, size * 0.68), Vector2(size * 0.88, size * 0.82)], color, stroke)
-		"bot":
-			_draw_icon_line(image, Vector2(size * 0.5, size * 0.36), Vector2(size * 0.5, size * 0.16), color, stroke)
-			_draw_icon_rect(image, Rect2i(int(size * 0.44), int(size * 0.08), int(size * 0.12), int(size * 0.12)), color)
-			_draw_icon_rect_outline(image, Rect2i(int(size * 0.26), int(size * 0.38), int(size * 0.48), int(size * 0.34)), color, stroke)
-			_draw_icon_rect(image, Rect2i(int(size * 0.38), int(size * 0.5), stroke, stroke), color)
-			_draw_icon_rect(image, Rect2i(int(size * 0.58), int(size * 0.5), stroke, stroke), color)
-			_draw_icon_rect(image, Rect2i(int(size * 0.4), int(size * 0.62), int(size * 0.2), stroke), color)
-		"guest":
-			_draw_icon_rect_outline(image, Rect2i(int(size * 0.32), int(size * 0.18), int(size * 0.36), int(size * 0.36)), color, stroke)
-			_draw_icon_polyline(image, [Vector2(size * 0.24, size * 0.82), Vector2(size * 0.36, size * 0.62), Vector2(size * 0.64, size * 0.62), Vector2(size * 0.76, size * 0.82)], color, stroke)
-		"atom":
-			var center := Vector2(size * 0.5, size * 0.5)
-			var ring_stroke: int = max(1, stroke - 1)
-			_draw_icon_ellipse(image, center, size * 0.36, size * 0.14, 0.0, color, ring_stroke)
-			_draw_icon_ellipse(image, center, size * 0.36, size * 0.14, TAU / 3.0, color, ring_stroke)
-			_draw_icon_ellipse(image, center, size * 0.36, size * 0.14, -TAU / 3.0, color, ring_stroke)
-			_draw_icon_rect(image, Rect2i(int(size * 0.47), int(size * 0.47), max(2, stroke), max(2, stroke)), color)
-		"help":
-			_draw_question_mark_icon(image, color)
-
+	var image := _load_icon_image(kind, size)
+	_tint_icon_image(image, color)
 	var texture := ImageTexture.create_from_image(image)
 	icon_texture_cache[cache_key] = texture
 	return texture
 
-func _draw_question_mark_icon(image: Image, color: Color) -> void:
-	var size: int = image.get_width()
-	var cell: int = max(2, int(size / 8.0))
-	for point in [
-		Vector2i(2, 1),
-		Vector2i(3, 1),
-		Vector2i(4, 1),
-		Vector2i(5, 2),
-		Vector2i(5, 3),
-		Vector2i(4, 4),
-		Vector2i(3, 5),
-		Vector2i(3, 7),
-	]:
-		_draw_icon_rect(image, Rect2i(point.x * cell, point.y * cell, cell, cell), color)
+func _load_icon_image(kind: String, size: int) -> Image:
+	var image := Image.create(size, size, false, Image.FORMAT_RGBA8)
+	image.fill(Color.TRANSPARENT)
 
-func _draw_icon_polyline(image: Image, points: Array, color: Color, thickness: int) -> void:
-	for index in range(points.size() - 1):
-		_draw_icon_line(image, points[index], points[index + 1], color, thickness)
+	var path := str(ICON_PATHS.get(kind, ""))
+	if path.is_empty():
+		return image
 
-func _draw_icon_ellipse(
-	image: Image,
-	center: Vector2,
-	radius_x: float,
-	radius_y: float,
-	rotation: float,
-	color: Color,
-	thickness: int
-) -> void:
-	var points: Array[Vector2] = []
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return image
 
-	for index in range(33):
-		var angle := (TAU * float(index)) / 32.0
-		var local := Vector2(cos(angle) * radius_x, sin(angle) * radius_y)
-		points.append(center + local.rotated(rotation))
+	var scale: float = max(1.0, float(size) / 24.0)
+	if image.load_svg_from_buffer(file.get_buffer(file.get_length()), scale) != OK:
+		image.fill(Color.TRANSPARENT)
+		return image
 
-	_draw_icon_polyline(image, points, color, thickness)
+	if image.get_width() != size or image.get_height() != size:
+		image.resize(size, size, Image.INTERPOLATE_NEAREST)
+	return image
 
-func _draw_icon_line(image: Image, from_point: Vector2, to_point: Vector2, color: Color, thickness: int) -> void:
-	var steps := int(max(abs(to_point.x - from_point.x), abs(to_point.y - from_point.y)))
-	if steps <= 0:
-		_draw_icon_centered_pixel(image, int(from_point.x), int(from_point.y), thickness, color)
-		return
-
-	for index in range(steps + 1):
-		var t := float(index) / float(steps)
-		var point := from_point.lerp(to_point, t)
-		_draw_icon_centered_pixel(image, int(round(point.x)), int(round(point.y)), thickness, color)
-
-func _draw_icon_rect_outline(image: Image, rect: Rect2i, color: Color, thickness: int) -> void:
-	_draw_icon_rect(image, Rect2i(rect.position.x, rect.position.y, rect.size.x, thickness), color)
-	_draw_icon_rect(image, Rect2i(rect.position.x, rect.position.y + rect.size.y - thickness, rect.size.x, thickness), color)
-	_draw_icon_rect(image, Rect2i(rect.position.x, rect.position.y, thickness, rect.size.y), color)
-	_draw_icon_rect(image, Rect2i(rect.position.x + rect.size.x - thickness, rect.position.y, thickness, rect.size.y), color)
-
-func _draw_icon_centered_pixel(image: Image, x: int, y: int, size: int, color: Color) -> void:
-	var half := int(size / 2.0)
-	_draw_icon_rect(image, Rect2i(x - half, y - half, size, size), color)
-
-func _draw_icon_rect(image: Image, rect: Rect2i, color: Color) -> void:
-	var x_start: int = max(0, rect.position.x)
-	var y_start: int = max(0, rect.position.y)
-	var x_end: int = min(image.get_width(), rect.position.x + rect.size.x)
-	var y_end: int = min(image.get_height(), rect.position.y + rect.size.y)
-	for y in range(y_start, y_end):
-		for x in range(x_start, x_end):
-			image.set_pixel(x, y, color)
+func _tint_icon_image(image: Image, color: Color) -> void:
+	for y in range(image.get_height()):
+		for x in range(image.get_width()):
+			var pixel := image.get_pixel(x, y)
+			if pixel.a <= 0.0:
+				continue
+			image.set_pixel(x, y, Color(color.r, color.g, color.b, color.a * pixel.a))
 
 func _make_button_style(
 	color: Color,
@@ -2360,7 +2260,10 @@ func _make_button_style(
 	radius: int = RADIUS_BUTTON,
 	border_color: Color = COLOR_BORDER_CONTRAST,
 	border_width: int = PIXEL_BORDER
-) -> StyleBoxFlat:
+) -> StyleBox:
+	if radius == RADIUS_PILL:
+		return _make_pixel_circle_style(color, border_color, border_width, content_margin)
+
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
 	style.anti_aliasing = false
@@ -2409,8 +2312,8 @@ func _make_transparent_button_style() -> StyleBoxFlat:
 	style.bg_color = Color.TRANSPARENT
 	return style
 
-func _make_circle_style(color: Color, radius: float, border_color: Color, border_width: int) -> StyleBoxFlat:
-	return _make_pixel_box_style(color, border_color, border_width, int(radius), true)
+func _make_circle_style(color: Color, radius: float, border_color: Color, border_width: int) -> StyleBox:
+	return _make_pixel_circle_style(color, border_color, border_width)
 
 func _make_pixel_box_style(
 	color: Color,
@@ -2418,7 +2321,10 @@ func _make_pixel_box_style(
 	border_width: int,
 	radius: int = RADIUS_BUTTON,
 	with_shadow: bool = false
-) -> StyleBoxFlat:
+) -> StyleBox:
+	if radius == RADIUS_PILL:
+		return _make_pixel_circle_style(color, border_color, border_width)
+
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
 	style.anti_aliasing = false
@@ -2437,10 +2343,54 @@ func _make_pixel_box_style(
 		style.shadow_offset = Vector2(0, 8)
 	return style
 
-func _make_outline_circle_style(radius: float, border_color: Color, border_width: int) -> StyleBoxFlat:
-	var style := _make_circle_style(Color.TRANSPARENT, radius, border_color, border_width)
-	style.draw_center = false
+func _make_outline_circle_style(radius: float, border_color: Color, border_width: int) -> StyleBox:
+	return _make_pixel_circle_style(Color.TRANSPARENT, border_color, border_width)
+
+func _make_pixel_circle_style(
+	color: Color,
+	border_color: Color,
+	border_width: int,
+	content_margin: int = 0
+) -> StyleBoxTexture:
+	var style := StyleBoxTexture.new()
+	style.texture = _get_pixel_circle_texture(color, border_color, border_width)
+	style.texture_margin_left = 8
+	style.texture_margin_top = 8
+	style.texture_margin_right = 8
+	style.texture_margin_bottom = 8
+	style.content_margin_left = content_margin
+	style.content_margin_right = content_margin
+	style.content_margin_top = max(0, content_margin / 2)
+	style.content_margin_bottom = max(0, content_margin / 2)
+	style.draw_center = true
 	return style
+
+func _get_pixel_circle_texture(color: Color, border_color: Color, border_width: int) -> Texture2D:
+	var cache_key := "%s:%s:%d" % [color.to_html(true), border_color.to_html(true), border_width]
+	if pixel_circle_texture_cache.has(cache_key):
+		return pixel_circle_texture_cache[cache_key]
+
+	var image := Image.create(16, 16, false, Image.FORMAT_RGBA8)
+	image.fill(Color.TRANSPARENT)
+	var center := Vector2(7.5, 7.5)
+	var radius := 7.5
+	var border_pixels := 0.0
+	if border_width > 0 and border_color.a > 0.0:
+		border_pixels = 1.5
+
+	for y in range(16):
+		for x in range(16):
+			var distance := Vector2(float(x), float(y)).distance_to(center)
+			if distance > radius:
+				continue
+			if border_pixels > 0.0 and distance >= radius - border_pixels:
+				image.set_pixel(x, y, border_color)
+			else:
+				image.set_pixel(x, y, color)
+
+	var texture := ImageTexture.create_from_image(image)
+	pixel_circle_texture_cache[cache_key] = texture
+	return texture
 
 func _make_panel_style(color: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
