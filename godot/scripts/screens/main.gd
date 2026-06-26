@@ -47,6 +47,8 @@ const HAPTIC_SUCCESS_MS := 22
 const HAPTIC_FAIL_MS := 36
 const ATTACK_PARTICLE_COUNT := 9
 const DAMAGE_POP_SECONDS := 0.7
+const SFX_BUS_NAME := "SFX"
+const SFX_POOL_SIZE := 8
 const SFX_SAMPLE_RATE := 22050
 const HOME_BLOB_SIZE := 144.0
 const HOME_BLOB_GAP := 16.0
@@ -135,6 +137,9 @@ var battle_bot_elapsed := 0.0
 var battle_result_text := ""
 var icon_texture_cache: Dictionary = {}
 var active_control_tweens: Dictionary = {}
+var sfx_pool_root: Node
+var sfx_players: Array[AudioStreamPlayer] = []
+var sfx_pool_index := 0
 
 var root_margin: MarginContainer
 var content: VBoxContainer
@@ -156,6 +161,8 @@ var player_hp_bar: ProgressBar
 var player_hp_label: Label
 
 func _ready() -> void:
+	_ensure_audio_buses()
+	_build_sfx_pool()
 	theme = _make_app_theme()
 	best_score = _load_best_score()
 	best_combo = _load_best_combo()
@@ -807,6 +814,9 @@ func _build_help_layout() -> void:
 func _clear_screen() -> void:
 	_clear_control_tweens()
 	for child in get_children():
+		if child == sfx_pool_root:
+			continue
+
 		child.queue_free()
 	target_blob_panel = null
 
@@ -2032,51 +2042,81 @@ func _release_button_feedback(button: Button) -> void:
 	tween.set_ease(Tween.EASE_OUT)
 	tween.tween_property(button, "scale", Vector2.ONE, FEEDBACK_TWEEN_SECONDS)
 
+func _ensure_audio_buses() -> void:
+	if AudioServer.get_bus_index(SFX_BUS_NAME) != -1:
+		return
+
+	var bus_index := AudioServer.bus_count
+	AudioServer.add_bus(bus_index)
+	AudioServer.set_bus_name(bus_index, SFX_BUS_NAME)
+	AudioServer.set_bus_send(bus_index, "Master")
+	AudioServer.set_bus_volume_db(bus_index, -2.0)
+
+func _build_sfx_pool() -> void:
+	if is_instance_valid(sfx_pool_root):
+		return
+
+	sfx_pool_root = Node.new()
+	sfx_pool_root.name = "SfxPool"
+	add_child(sfx_pool_root)
+	sfx_players.clear()
+
+	for index in range(SFX_POOL_SIZE):
+		var player := AudioStreamPlayer.new()
+		player.bus = SFX_BUS_NAME if AudioServer.get_bus_index(SFX_BUS_NAME) != -1 else "Master"
+		player.volume_db = -9.0
+		sfx_pool_root.add_child(player)
+		sfx_players.append(player)
+
+func _next_sfx_player() -> AudioStreamPlayer:
+	if sfx_players.is_empty():
+		_build_sfx_pool()
+
+	var player := sfx_players[sfx_pool_index]
+	sfx_pool_index = (sfx_pool_index + 1) % max(1, sfx_players.size())
+
+	if player.playing:
+		player.stop()
+
+	return player
+
 func _play_sfx(kind: String) -> void:
 	_play_haptic(kind)
-	var tones: Array = [[150.0, 0.035, 0.16]]
+	var tones: Array = [[160.0, 0.04, 0.12]]
 
 	match kind:
 		"prime":
-			tones = [[220.0, 0.025, 0.18], [330.0, 0.025, 0.16]]
+			tones = [[261.63, 0.035, 0.12], [392.0, 0.035, 0.10]]
 		"backspace":
-			tones = [[130.0, 0.045, 0.18]]
+			tones = [[196.0, 0.035, 0.11], [146.83, 0.035, 0.08]]
 		"submit":
-			tones = [[180.0, 0.035, 0.18], [360.0, 0.045, 0.16]]
+			tones = [[196.0, 0.035, 0.11], [392.0, 0.04, 0.10], [783.99, 0.035, 0.07]]
 		"start":
-			tones = [[170.0, 0.035, 0.16], [260.0, 0.045, 0.18]]
+			tones = [[246.94, 0.04, 0.11], [329.63, 0.04, 0.10], [493.88, 0.045, 0.08]]
 		"success":
-			tones = [[330.0, 0.045, 0.17], [520.0, 0.055, 0.16]]
+			tones = [[392.0, 0.045, 0.11], [523.25, 0.05, 0.10], [783.99, 0.06, 0.08]]
 		"fail":
-			tones = [[110.0, 0.075, 0.2]]
+			tones = [[146.83, 0.09, 0.15], [98.0, 0.07, 0.10]]
 		"back":
-			tones = [[140.0, 0.035, 0.15]]
+			tones = [[220.0, 0.035, 0.10], [164.81, 0.035, 0.08]]
 
-	var player := AudioStreamPlayer.new()
+	var player := _next_sfx_player()
 	var stream := AudioStreamGenerator.new()
 	stream.mix_rate = SFX_SAMPLE_RATE
-	stream.buffer_length = 0.25
+	stream.buffer_length = 0.35
 	player.stream = stream
-	player.volume_db = -8.0
-	add_child(player)
 	player.play()
 
 	var playback := player.get_stream_playback()
 	if playback == null:
-		player.queue_free()
 		return
 
-	var duration := 0.0
 	for tone in tones:
 		var frequency := float(tone[0])
 		var seconds := float(tone[1])
 		var volume := float(tone[2])
-		duration += seconds
-		_push_square_tone(playback, frequency, seconds, volume)
-		_push_square_tone(playback, 0.0, 0.006, 0.0)
-		duration += 0.006
-
-	get_tree().create_timer(duration + 0.1).timeout.connect(player.queue_free)
+		_push_synth_tone(playback, frequency, seconds, volume)
+		_push_synth_tone(playback, 0.0, 0.006, 0.0)
 
 func _play_haptic(kind: String) -> void:
 	var duration := HAPTIC_TAP_MS
@@ -2090,7 +2130,7 @@ func _play_haptic(kind: String) -> void:
 
 	Input.vibrate_handheld(duration)
 
-func _push_square_tone(
+func _push_synth_tone(
 	playback: AudioStreamGeneratorPlayback,
 	frequency: float,
 	seconds: float,
@@ -2100,8 +2140,13 @@ func _push_square_tone(
 	for index in range(frame_count):
 		var sample := 0.0
 		if frequency > 0.0:
-			var phase := fmod((float(index) * frequency) / float(SFX_SAMPLE_RATE), 1.0)
-			sample = volume if phase < 0.5 else -volume
+			var time := float(index) / float(SFX_SAMPLE_RATE)
+			var attack: float = min(1.0, float(index) / max(1.0, float(frame_count) * 0.18))
+			var release: float = min(1.0, float(frame_count - index) / max(1.0, float(frame_count) * 0.32))
+			var envelope: float = min(attack, release)
+			var primary := sin(TAU * frequency * time)
+			var overtone := sin(TAU * frequency * 2.0 * time) * 0.22
+			sample = (primary + overtone) * volume * envelope
 		playback.push_frame(Vector2(sample, sample))
 
 func _add_back_arrow_icon(parent: Control, width: float, height: float, color: Color) -> void:
