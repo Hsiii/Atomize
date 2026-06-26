@@ -35,6 +35,67 @@ const exportPresetsPath = path.join(GODOT_DIRECTORY, 'export_presets.cfg');
 const originalExportPresets = readFileSync(exportPresetsPath, 'utf8');
 let shouldRestoreExportPresets = false;
 
+const projectSettingsPath = path.join(GODOT_DIRECTORY, 'project.godot');
+const originalProjectSettings = readFileSync(projectSettingsPath, 'utf8');
+let shouldRestoreProjectSettings = false;
+
+function escapeRegExp(value: string): string {
+    return value.replaceAll(/[$()*+.?[\\\]^{|}]/g, String.raw`\$&`);
+}
+
+function escapeGodotString(value: string): string {
+    return value
+        .replaceAll('\\', String.raw`\\`)
+        .replaceAll('"', String.raw`\"`);
+}
+
+function setApplicationSetting(
+    contents: string,
+    key: string,
+    value: string
+): string {
+    const line = `${key}="${escapeGodotString(value)}"`;
+    const existingSettingPattern = new RegExp(
+        `^${escapeRegExp(key)}="[^"]*"`,
+        'm'
+    );
+
+    if (existingSettingPattern.test(contents)) {
+        return contents.replace(existingSettingPattern, line);
+    }
+
+    const sectionPattern = /\[application]\n/;
+    const sectionMatch = sectionPattern.exec(contents);
+    if (!sectionMatch) {
+        throw new Error('Could not find [application] in godot/project.godot.');
+    }
+
+    const insertAt = sectionMatch.index + sectionMatch[0].length;
+    return `${contents.slice(0, insertAt)}${line}\n${contents.slice(insertAt)}`;
+}
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+
+if (supabaseUrl && supabaseAnonKey) {
+    const nextProjectSettings = setApplicationSetting(
+        setApplicationSetting(
+            originalProjectSettings,
+            'config/supabase_url',
+            supabaseUrl
+        ),
+        'config/supabase_anon_key',
+        supabaseAnonKey
+    );
+
+    writeFileSync(projectSettingsPath, nextProjectSettings);
+    shouldRestoreProjectSettings = true;
+} else {
+    console.warn(
+        '[Warn] VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY is missing; exported Godot build will use local leaderboard fallback.'
+    );
+}
+
 if (target === 'ios') {
     const iosTeamId = process.env.GODOT_IOS_TEAM_ID;
 
@@ -78,6 +139,10 @@ const result = (() => {
             }
         );
     } finally {
+        if (shouldRestoreProjectSettings) {
+            writeFileSync(projectSettingsPath, originalProjectSettings);
+        }
+
         if (shouldRestoreExportPresets) {
             writeFileSync(exportPresetsPath, originalExportPresets);
         }
