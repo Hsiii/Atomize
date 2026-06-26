@@ -43,7 +43,6 @@ const FEEDBACK_TWEEN_SECONDS := 0.1
 const HAPTIC_TAP_MS := 8
 const HAPTIC_SUCCESS_MS := 22
 const HAPTIC_FAIL_MS := 36
-const ATTACK_PARTICLE_COUNT := 9
 const DAMAGE_POP_SECONDS := 0.7
 const SFX_BUS_NAME := "SFX"
 const SFX_POOL_SIZE := 8
@@ -77,6 +76,8 @@ const THEME_PANEL_SURFACE := "AtomPanelSurface"
 const THEME_PANEL_CONTAINER_SURFACE := "AtomPanelContainerSurface"
 const THEME_PANEL_DIALOG := "AtomPanelDialog"
 const THEME_PANEL_TARGET := "AtomPanelTarget"
+const THEME_PANEL_TARGET_DANGER := "AtomPanelTargetDanger"
+const THEME_PANEL_TARGET_GOLD := "AtomPanelTargetGold"
 const THEME_PANEL_AVATAR_PRIMARY := "AtomPanelAvatarPrimary"
 const THEME_PANEL_AVATAR_SECONDARY := "AtomPanelAvatarSecondary"
 const THEME_PANEL_BADGE_PRIMARY := "AtomPanelBadgePrimary"
@@ -87,6 +88,8 @@ const THEME_PANEL_PARTICLE_DANGER := "AtomPanelParticleDanger"
 const THEME_PANEL_PARTICLE_GOLD := "AtomPanelParticleGold"
 const THEME_PANEL_PARTICLE_RING_PRIMARY := "AtomPanelParticleRingPrimary"
 const THEME_PANEL_PARTICLE_RING_SECONDARY := "AtomPanelParticleRingSecondary"
+const THEME_PANEL_PARTICLE_RING_DANGER := "AtomPanelParticleRingDanger"
+const THEME_PANEL_PARTICLE_RING_GOLD := "AtomPanelParticleRingGold"
 const THEME_PROGRESS_PRIMARY := "AtomProgressPrimary"
 const THEME_PROGRESS_SECONDARY := "AtomProgressSecondary"
 const THEME_PROGRESS_DANGER := "AtomProgressDanger"
@@ -169,6 +172,7 @@ var prime_grid: GridContainer
 var submit_button: Button
 var backspace_button: Button
 var target_blob_panel: Panel
+var enemy_avatar_panel: Panel
 var timer_bar: ProgressBar
 var enemy_hp_bar: ProgressBar
 var enemy_hp_label: Label
@@ -681,6 +685,7 @@ func _build_battle_game_layout() -> void:
 	var bot_avatar := _make_avatar_icon_circle(80, COLOR_SECONDARY, "bot")
 	bot_avatar.position = Vector2((viewport_size.x - 80.0) / 2.0, 134)
 	add_child(bot_avatar)
+	enemy_avatar_panel = bot_avatar
 
 	var target_blob := Panel.new()
 	target_blob.size = Vector2(160, 160)
@@ -829,6 +834,7 @@ func _clear_screen() -> void:
 
 		child.queue_free()
 	target_blob_panel = null
+	enemy_avatar_panel = null
 
 func _build_solo_layout() -> void:
 	_clear_screen()
@@ -1220,7 +1226,7 @@ func _resolve_next_queued_prime() -> void:
 		_play_sfx("fail")
 		_play_target_fault()
 		_spawn_damage_pop("-1 HP", _target_pop_position(), COLOR_DANGER)
-		_spawn_radial_particles(_target_center(), THEME_PANEL_PARTICLE_DANGER, THEME_PANEL_PARTICLE_DANGER, 6)
+		_spawn_radial_particles(_target_center(), THEME_PANEL_PARTICLE_DANGER, THEME_PANEL_PARTICLE_RING_DANGER, 6)
 		_render_solo()
 		return
 
@@ -1242,7 +1248,7 @@ func _resolve_next_queued_prime() -> void:
 		_play_sfx("fail")
 		_play_target_fault()
 		_spawn_damage_pop("-1 HP", _target_pop_position(), COLOR_DANGER)
-		_spawn_radial_particles(_target_center(), THEME_PANEL_PARTICLE_DANGER, THEME_PANEL_PARTICLE_DANGER, 6)
+		_spawn_radial_particles(_target_center(), THEME_PANEL_PARTICLE_DANGER, THEME_PANEL_PARTICLE_RING_DANGER, 6)
 	else:
 		solo_state = next_state
 		last_result_text = "Cleared" if outcome["cleared"] else "Hit +%s" % Game.compute_battle_factor_damage(next_prime)
@@ -1350,6 +1356,8 @@ func _make_app_theme() -> Theme:
 	_add_panel_theme(app_theme, THEME_PANEL_CONTAINER_SURFACE, "PanelContainer", _make_panel_style(COLOR_SURFACE))
 	_add_panel_theme(app_theme, THEME_PANEL_DIALOG, "Panel", _make_dialog_panel_style())
 	_add_panel_theme(app_theme, THEME_PANEL_TARGET, "Panel", _make_pixel_box_style(COLOR_PRIMARY_STRONG, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER, RADIUS_PILL, true))
+	_add_panel_theme(app_theme, THEME_PANEL_TARGET_DANGER, "Panel", _make_pixel_box_style(COLOR_DANGER, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER, RADIUS_PILL, true))
+	_add_panel_theme(app_theme, THEME_PANEL_TARGET_GOLD, "Panel", _make_pixel_box_style(COLOR_GOLD, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER, RADIUS_PILL, true))
 	_add_panel_theme(app_theme, THEME_PANEL_AVATAR_PRIMARY, "Panel", _make_pixel_box_style(COLOR_PRIMARY_STRONG, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER, RADIUS_PILL, true))
 	_add_panel_theme(app_theme, THEME_PANEL_AVATAR_SECONDARY, "Panel", _make_pixel_box_style(COLOR_SECONDARY, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER, RADIUS_PILL, true))
 	_add_panel_theme(app_theme, THEME_PANEL_BADGE_PRIMARY, "Panel", _make_button_style(COLOR_PRIMARY_STRONG))
@@ -1360,6 +1368,8 @@ func _make_app_theme() -> Theme:
 	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_GOLD, "Panel", _make_pixel_box_style(COLOR_GOLD, Color.TRANSPARENT, 0, RADIUS_PILL))
 	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_RING_PRIMARY, "Panel", _make_outline_circle_style(RADIUS_PILL, COLOR_PRIMARY_STRONG, PIXEL_BORDER))
 	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_RING_SECONDARY, "Panel", _make_outline_circle_style(RADIUS_PILL, COLOR_SECONDARY, PIXEL_BORDER))
+	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_RING_DANGER, "Panel", _make_outline_circle_style(RADIUS_PILL, COLOR_DANGER, PIXEL_BORDER))
+	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_RING_GOLD, "Panel", _make_outline_circle_style(RADIUS_PILL, COLOR_GOLD, PIXEL_BORDER))
 	_add_progress_theme(app_theme, THEME_PROGRESS_PRIMARY, COLOR_PRIMARY_STRONG)
 	_add_progress_theme(app_theme, THEME_PROGRESS_SECONDARY, COLOR_SECONDARY)
 	_add_progress_theme(app_theme, THEME_PROGRESS_DANGER, COLOR_DANGER)
@@ -1806,6 +1816,7 @@ func _play_target_impact() -> void:
 		return
 
 	target_blob_panel.pivot_offset = target_blob_panel.size / 2.0
+	_pulse_panel_theme(target_blob_panel, THEME_PANEL_TARGET_GOLD, THEME_PANEL_TARGET, 0.18)
 	var tween := _make_control_tween(target_blob_panel, "target-impact")
 	tween.set_trans(Tween.TRANS_SINE)
 	tween.set_ease(Tween.EASE_OUT)
@@ -1818,6 +1829,7 @@ func _play_target_fault() -> void:
 		return
 
 	_shake_control(target_blob_panel, 12.0)
+	_pulse_panel_theme(target_blob_panel, THEME_PANEL_TARGET_DANGER, THEME_PANEL_TARGET, 0.32)
 	_flash_control(target_blob_panel, COLOR_DANGER, 0.24)
 
 func _target_center() -> Vector2:
@@ -1834,7 +1846,11 @@ func _play_hp_hit(bar: ProgressBar, damage: int) -> void:
 	if not is_instance_valid(bar) or damage <= 0:
 		return
 
-	_shake_control(bar, 6.0)
+	var severity := _attack_severity(damage)
+	_shake_control(bar, 6.0 + float(severity) * 3.0)
+	_shake_screen(2.0 + float(severity) * 1.5)
+	_pulse_hp_bar_theme(bar, THEME_PROGRESS_DANGER, 0.42 + float(severity) * 0.06)
+	_pulse_label_color(_hp_label_for_bar(bar), COLOR_DANGER, _base_hp_color_for_bar(bar), 0.42)
 	_flash_control(bar, COLOR_DANGER, 0.56)
 	_spawn_damage_pop("-%s" % damage, _hp_pop_position(bar), COLOR_DANGER)
 
@@ -1842,12 +1858,96 @@ func _play_hp_regen(bar: ProgressBar, regen: int) -> void:
 	if not is_instance_valid(bar) or regen <= 0:
 		return
 
+	_pulse_hp_bar_theme(bar, THEME_PROGRESS_GOLD, 0.54)
+	_pulse_label_color(_hp_label_for_bar(bar), COLOR_GOLD, _base_hp_color_for_bar(bar), 0.54)
+	_shine_hp_bar(bar)
 	_flash_control(bar, COLOR_GOLD, 0.48)
 	_spawn_damage_pop("+%s" % regen, _hp_pop_position(bar), COLOR_GOLD)
+
+func _pulse_panel_theme(panel: Control, pulse_theme: String, base_theme: String, seconds: float) -> void:
+	if not is_instance_valid(panel):
+		return
+
+	_apply_panel_theme(panel, pulse_theme)
+	var tween := _make_control_tween(panel, "theme")
+	tween.tween_interval(seconds)
+	tween.tween_callback(_apply_panel_theme.bind(panel, base_theme))
+
+func _pulse_hp_bar_theme(bar: ProgressBar, pulse_theme: String, seconds: float) -> void:
+	if not is_instance_valid(bar):
+		return
+
+	_apply_progress_theme(bar, pulse_theme)
+	var tween := _make_control_tween(bar, "hp-theme")
+	tween.tween_interval(seconds)
+	tween.tween_callback(_restore_hp_bar_theme.bind(bar))
+
+func _restore_hp_bar_theme(bar: ProgressBar) -> void:
+	if not is_instance_valid(bar):
+		return
+
+	if bar == enemy_hp_bar:
+		_apply_progress_theme(bar, THEME_PROGRESS_SECONDARY)
+	else:
+		_apply_progress_theme(bar, THEME_PROGRESS_PRIMARY)
+
+func _pulse_label_color(label, pulse_color: Color, base_color: Color, seconds: float) -> void:
+	if not is_instance_valid(label):
+		return
+
+	_set_label_color(label, pulse_color)
+	var tween := _make_control_tween(label, "label-color")
+	tween.tween_interval(seconds)
+	tween.tween_callback(_set_label_color.bind(label, base_color))
+
+func _hp_label_for_bar(bar: ProgressBar):
+	return enemy_hp_label if bar == enemy_hp_bar else player_hp_label
+
+func _base_hp_color_for_bar(bar: ProgressBar) -> Color:
+	return COLOR_SECONDARY if bar == enemy_hp_bar else COLOR_INK
+
+func _shine_hp_bar(bar: ProgressBar) -> void:
+	if not is_instance_valid(bar):
+		return
+
+	var shine := ColorRect.new()
+	shine.color = Color(COLOR_GOLD.r, COLOR_GOLD.g, COLOR_GOLD.b, 0.42)
+	shine.position = Vector2(-16, -2)
+	shine.size = Vector2(16, bar.size.y + 4)
+	shine.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bar.add_child(shine)
+
+	var tween := shine.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(shine, "position", Vector2(bar.size.x + 16.0, -2), 0.56).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(shine, "modulate", Color(1, 1, 1, 0), 0.56).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tween.finished.connect(shine.queue_free)
 
 func _hp_pop_position(bar: ProgressBar) -> Vector2:
 	var y_offset := 18.0 if bar == enemy_hp_bar else -58.0
 	return bar.global_position + Vector2((bar.size.x - 96.0) / 2.0, y_offset)
+
+func _attack_severity(damage: int) -> int:
+	if damage > 30:
+		return 3
+
+	if damage > 15:
+		return 2
+
+	if damage > 5:
+		return 1
+
+	return 0
+
+func _shake_screen(distance: float) -> void:
+	var origin := position
+	var tween := _make_control_tween(self, "screen-shake")
+	tween.set_trans(Tween.TRANS_SINE)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property(self, "position", origin + Vector2(-distance, 0), 0.018)
+	tween.tween_property(self, "position", origin + Vector2(distance * 0.72, 0), 0.018)
+	tween.tween_property(self, "position", origin + Vector2(-distance * 0.36, 0), 0.018)
+	tween.tween_property(self, "position", origin, 0.018)
 
 func _shake_control(control: Control, distance: float) -> void:
 	if not is_instance_valid(control):
@@ -1870,7 +1970,7 @@ func _flash_control(control: Control, color: Color, alpha: float) -> void:
 	var flash: Control
 	if control == target_blob_panel:
 		var panel_flash := Panel.new()
-		_apply_panel_theme(panel_flash, THEME_PANEL_PARTICLE_DANGER if color == COLOR_DANGER else THEME_PANEL_PARTICLE_GOLD)
+		_apply_panel_theme(panel_flash, _particle_theme_for_color(color))
 		flash = panel_flash
 	else:
 		var rect_flash := ColorRect.new()
@@ -1885,6 +1985,18 @@ func _flash_control(control: Control, color: Color, alpha: float) -> void:
 	var tween := flash.create_tween()
 	tween.tween_property(flash, "modulate", Color(1, 1, 1, 0), 0.18)
 	tween.finished.connect(flash.queue_free)
+
+func _particle_theme_for_color(color: Color) -> String:
+	if color == COLOR_DANGER:
+		return THEME_PANEL_PARTICLE_DANGER
+
+	if color == COLOR_GOLD:
+		return THEME_PANEL_PARTICLE_GOLD
+
+	if color == COLOR_SECONDARY:
+		return THEME_PANEL_PARTICLE_SECONDARY
+
+	return THEME_PANEL_PARTICLE_PRIMARY
 
 func _spawn_damage_pop(text: String, position: Vector2, color: Color) -> void:
 	var label := _make_absolute_label(text, 18, color, 900)
@@ -1906,33 +2018,216 @@ func _spawn_radial_particles(center: Vector2, fill_theme: String, ring_theme: St
 		var endpoint := center + Vector2(cos(angle), sin(angle)) * distance
 		_spawn_particle(center, endpoint, fill_theme if index % 3 != 0 else ring_theme, 0.26 + float(index % 2) * 0.04, index)
 
-func _spawn_attack_particles(source: Vector2, target: Vector2, fill_theme: String, ring_theme: String) -> void:
+func _spawn_attack_particles(
+	source: Vector2,
+	target: Vector2,
+	fill_theme: String,
+	ring_theme: String,
+	damage: int = 0
+) -> void:
+	var severity := _attack_severity(damage)
+	var trail_count := _attack_trail_count(severity)
+	var lead_size := _attack_lead_size(severity)
+	var trail_size := _attack_trail_size(severity)
+	var spread_scale := _attack_spread_scale(severity)
+	var duration := _attack_duration(severity)
 	var delta := target - source
 	var direction := delta.normalized() if delta.length() > 0.0 else Vector2.RIGHT
 	var tangent := Vector2(-direction.y, direction.x)
-	for index in range(ATTACK_PARTICLE_COUNT):
-		var middle_offset := float(index - int(ATTACK_PARTICLE_COUNT / 2)) * 7.0
-		var endpoint := target + (tangent * middle_offset) - (direction * float(index % 3) * 4.0)
-		_spawn_particle(source, endpoint, fill_theme if index % 3 != 0 else ring_theme, 0.24 + float(index % 3) * 0.03, index)
+	var horizontal_direction := 1.0 if target.x >= source.x else -1.0
+	var control := (source + target) / 2.0 + Vector2(42.0 * horizontal_direction * spread_scale, -88.0 * spread_scale)
 
-func _spawn_particle(source: Vector2, target: Vector2, theme_name: String, duration: float, index: int) -> void:
-	var particle := Panel.new()
-	var particle_size := 8.0 + float(index % 3) * 2.0
-	particle.size = Vector2(particle_size, particle_size)
+	_spawn_attack_path_particle(source, control, target, fill_theme, duration * 0.82, 0.0, 0, lead_size, tangent, 0.0)
+
+	for index in range(trail_count):
+		var delay := (float(index) + 1.0) * 0.045
+		var wobble := 8.0 * spread_scale * (1.0 + float(index % 3) * 0.2)
+		var size: float = max(4.0, trail_size - (float(index % 4) * 1.0))
+		_spawn_attack_path_particle(
+			source,
+			control,
+			target,
+			fill_theme,
+			max(0.18, duration * 0.74 - delay),
+			delay,
+			index + 1,
+			size,
+			tangent,
+			wobble
+		)
+
+	_spawn_impact_rings(target, ring_theme, severity, duration * 0.74)
+
+func _spawn_attack_path_particle(
+	source: Vector2,
+	control: Vector2,
+	target: Vector2,
+	theme_name: String,
+	duration: float,
+	delay: float,
+	index: int,
+	particle_size: float,
+	tangent: Vector2,
+	wobble: float
+) -> void:
+	var particle := _make_particle_panel(theme_name, particle_size)
 	particle.position = source - (particle.size / 2.0)
+	particle.scale = Vector2(0.8, 0.8)
+	add_child(particle)
+
+	var tween := particle.create_tween()
+	if delay > 0.0:
+		tween.tween_interval(delay)
+	tween.set_parallel(true)
+	tween.tween_method(
+		_position_attack_particle.bind(particle, source, control, target, tangent, wobble),
+		0.0,
+		1.0,
+		duration
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween.tween_property(particle, "scale", Vector2(0.18, 0.18), duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tween.tween_property(particle, "modulate", Color(1, 1, 1, 0), duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tween.finished.connect(particle.queue_free)
+
+func _position_attack_particle(
+	progress: float,
+	particle: Control,
+	source: Vector2,
+	control: Vector2,
+	target: Vector2,
+	tangent: Vector2,
+	wobble: float
+) -> void:
+	if not is_instance_valid(particle):
+		return
+
+	var t: float = clamp(progress, 0.0, 1.0)
+	var accelerated := t * t
+	var point := _quadratic_bezier_vec2(source, control, target, accelerated)
+	var wobble_offset := tangent * (sin(t * PI * 4.0) * wobble * sin(t * PI))
+	particle.position = point - (particle.size / 2.0) + wobble_offset
+
+func _quadratic_bezier_vec2(source: Vector2, control: Vector2, target: Vector2, progress: float) -> Vector2:
+	var inverse := 1.0 - progress
+	return (source * inverse * inverse) + (control * 2.0 * inverse * progress) + (target * progress * progress)
+
+func _spawn_impact_rings(center: Vector2, ring_theme: String, severity: int, delay: float) -> void:
+	var ring_count := _attack_ring_count(severity)
+	var radius := _attack_impact_radius(severity)
+	for index in range(ring_count):
+		var angle := (TAU * float(index)) / float(ring_count) + 0.3
+		var endpoint := center + Vector2(cos(angle), sin(angle)) * (radius + float(index % 2) * 4.0)
+		_spawn_particle(center, endpoint, ring_theme, 0.26 + float(index % 3) * 0.035, index, delay, max(8.0, _attack_trail_size(severity)))
+
+func _make_particle_panel(theme_name: String, particle_size: float) -> Panel:
+	var particle := Panel.new()
+	particle.size = Vector2(particle_size, particle_size)
 	particle.pivot_offset = particle.size / 2.0
 	particle.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	particle.scale = Vector2(0.72, 0.72)
 	_apply_panel_theme(particle, theme_name)
+	return particle
+
+func _spawn_particle(
+	source: Vector2,
+	target: Vector2,
+	theme_name: String,
+	duration: float,
+	index: int,
+	delay: float = 0.0,
+	particle_size_override: float = -1.0
+) -> void:
+	var particle_size := particle_size_override if particle_size_override > 0.0 else 8.0 + float(index % 3) * 2.0
+	var particle := _make_particle_panel(theme_name, particle_size)
+	particle.position = source - (particle.size / 2.0)
+	particle.scale = Vector2(0.72, 0.72)
 	add_child(particle)
 
 	var arc_lift := Vector2(0, -10.0 - float(index % 4) * 4.0)
 	var tween := particle.create_tween()
+	if delay > 0.0:
+		tween.tween_interval(delay)
 	tween.set_parallel(true)
 	tween.tween_property(particle, "position", target - (particle.size / 2.0) + arc_lift, duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tween.tween_property(particle, "scale", Vector2(0.18, 0.18), duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	tween.tween_property(particle, "modulate", Color(1, 1, 1, 0), duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	tween.finished.connect(particle.queue_free)
+
+func _attack_trail_count(severity: int) -> int:
+	match severity:
+		3:
+			return 11
+		2:
+			return 8
+		1:
+			return 5
+		_:
+			return 3
+
+func _attack_lead_size(severity: int) -> float:
+	match severity:
+		3:
+			return 32.0
+		2:
+			return 24.0
+		1:
+			return 20.0
+		_:
+			return 16.0
+
+func _attack_trail_size(severity: int) -> float:
+	match severity:
+		3:
+			return 12.0
+		2:
+			return 12.0
+		1:
+			return 8.0
+		_:
+			return 8.0
+
+func _attack_spread_scale(severity: int) -> float:
+	match severity:
+		3:
+			return 2.0
+		2:
+			return 1.5
+		1:
+			return 1.0
+		_:
+			return 0.6
+
+func _attack_duration(severity: int) -> float:
+	match severity:
+		3:
+			return 0.72
+		2:
+			return 0.84
+		1:
+			return 0.96
+		_:
+			return 1.08
+
+func _attack_ring_count(severity: int) -> int:
+	match severity:
+		3:
+			return 7
+		2:
+			return 5
+		1:
+			return 4
+		_:
+			return 3
+
+func _attack_impact_radius(severity: int) -> float:
+	match severity:
+		3:
+			return 56.0
+		2:
+			return 44.0
+		1:
+			return 32.0
+		_:
+			return 24.0
 
 func _play_battle_event_feedback(event: Dictionary) -> void:
 	if event.is_empty():
@@ -1943,36 +2238,101 @@ func _play_battle_event_feedback(event: Dictionary) -> void:
 	var source_id := str(event.get("sourcePlayerId", ""))
 	var damage := int(event.get("damage", 0))
 	var regen := int(event.get("regen", 0))
+	var perfect_solve: bool = event.get("perfectSolve", false) == true
 
 	if event_type == "self-hit" or event_cause == "self-hit":
+		_play_source_fault(source_id)
 		_play_hp_hit(_hp_bar_for_player(source_id), damage)
 		if source_id == BATTLE_PLAYER_ID:
 			_play_target_fault()
 		var released_damage := int(event.get("releasedDamage", 0))
 		var released_target_id := str(event.get("targetPlayerId", ""))
 		if released_damage > 0 and released_target_id != "":
+			_play_attack_launch(source_id, released_damage)
 			_spawn_attack_particles(
 				_battle_source_anchor(source_id),
 				_battle_hp_anchor(released_target_id),
 				_particle_fill_theme_for_player(source_id),
-				_particle_ring_theme_for_player(source_id)
+				_particle_ring_theme_for_player(source_id),
+				released_damage
 			)
 			_play_hp_hit(_hp_bar_for_player(released_target_id), released_damage)
 		return
 
 	var target_id := str(event.get("targetPlayerId", event.get("loserPlayerId", "")))
 	if damage > 0 and target_id != "":
+		_play_attack_launch(source_id, damage)
 		_spawn_attack_particles(
 			_battle_source_anchor(source_id),
 			_battle_hp_anchor(target_id),
 			_particle_fill_theme_for_player(source_id),
-			_particle_ring_theme_for_player(source_id)
+			_particle_ring_theme_for_player(source_id),
+			damage
 		)
 		_play_hp_hit(_hp_bar_for_player(target_id), damage)
 		_play_target_impact()
 
+	if perfect_solve:
+		_play_perfect_burst(source_id)
+
 	if regen > 0:
 		_play_hp_regen(_hp_bar_for_player(source_id), regen)
+
+func _play_attack_launch(source_id: String, damage: int) -> void:
+	var severity := _attack_severity(damage)
+	var source_control = _battle_source_control(source_id)
+	if is_instance_valid(source_control):
+		_bump_control(source_control, 1.08 + float(severity) * 0.03, 0.14)
+		_flash_control(source_control, _player_accent_color(source_id), 0.22)
+
+	_spawn_radial_particles(
+		_battle_source_anchor(source_id),
+		_particle_fill_theme_for_player(source_id),
+		_particle_ring_theme_for_player(source_id),
+		5 + severity * 2
+	)
+
+func _play_source_fault(source_id: String) -> void:
+	var source_control = _battle_source_control(source_id)
+	if is_instance_valid(source_control):
+		_shake_control(source_control, 10.0)
+		_flash_control(source_control, COLOR_DANGER, 0.34)
+
+	_spawn_radial_particles(
+		_battle_source_anchor(source_id),
+		THEME_PANEL_PARTICLE_DANGER,
+		THEME_PANEL_PARTICLE_RING_DANGER,
+		7
+	)
+
+func _play_perfect_burst(source_id: String) -> void:
+	var source_control = _battle_source_control(source_id)
+	if is_instance_valid(source_control):
+		_bump_control(source_control, 1.14, 0.2)
+		_flash_control(source_control, COLOR_GOLD, 0.36)
+		if source_control == target_blob_panel:
+			_pulse_panel_theme(target_blob_panel, THEME_PANEL_TARGET_GOLD, THEME_PANEL_TARGET, 0.48)
+
+	var center := _battle_source_anchor(source_id)
+	_spawn_damage_pop("PERFECT", center + Vector2(-48, -56), COLOR_GOLD)
+	_spawn_radial_particles(center, THEME_PANEL_PARTICLE_GOLD, THEME_PANEL_PARTICLE_RING_GOLD, 12)
+
+func _bump_control(control: Control, peak_scale: float, seconds: float) -> void:
+	if not is_instance_valid(control):
+		return
+
+	control.pivot_offset = control.size / 2.0
+	var tween := _make_control_tween(control, "bump")
+	tween.set_trans(Tween.TRANS_SINE)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property(control, "scale", Vector2(peak_scale, peak_scale), seconds * 0.45)
+	tween.tween_property(control, "scale", Vector2.ONE, seconds * 0.55)
+
+func _battle_source_control(player_id: String):
+	return enemy_avatar_panel if player_id == BATTLE_BOT_ID else target_blob_panel
+
+func _player_accent_color(player_id: String) -> Color:
+	return COLOR_SECONDARY if player_id == BATTLE_BOT_ID else COLOR_PRIMARY_STRONG
 
 func _hp_bar_for_player(player_id: String) -> ProgressBar:
 	return enemy_hp_bar if player_id == BATTLE_BOT_ID else player_hp_bar
