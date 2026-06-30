@@ -28,7 +28,7 @@ func _init() -> void:
 	quit(1)
 
 func _load_fixture() -> Dictionary:
-	var file := FileAccess.open("res://tests/fixtures/core-fixtures.json", FileAccess.READ)
+	var file := FileAccess.open("res://tests/generated/core-fixtures.json", FileAccess.READ)
 
 	if file == null:
 		printerr("[Error] Could not open core parity fixture.")
