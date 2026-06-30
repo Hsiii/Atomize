@@ -87,6 +87,5 @@ APPLE_TEAM_ID=your-apple-team-id
 Then export and sync to a connected, unlocked iPhone:
 
 ```bash
-bun run godot:export:ios
-bun run godot:ios:run
+bun run ios
 ```
