@@ -44,7 +44,10 @@ fi
 
 PROVISIONING_ARGS=()
 if [[ "${IOS_ALLOW_PROVISIONING_UPDATES:-1}" != "0" ]]; then
-    PROVISIONING_ARGS=(-allowProvisioningUpdates)
+    PROVISIONING_ARGS=(
+        -allowProvisioningUpdates
+        -allowProvisioningDeviceRegistration
+    )
 fi
 
 TEAM_ARGS=()
