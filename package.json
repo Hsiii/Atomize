@@ -5,8 +5,7 @@
     "packageManager": "bun@1.2.5",
     "scripts": {
         "dev": "vite",
-        "android": "bun run android:export",
-        "android:export": "bun run scripts/godot/export-mobile.ts android",
+        "android": "bun run scripts/godot/export-mobile.ts android",
         "ios": "scripts/godot/ios.sh",
         "ios:build": "bash scripts/godot/ios-build.sh",
         "ios:export": "bun run scripts/godot/export-mobile.ts ios",

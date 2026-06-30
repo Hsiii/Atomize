@@ -60,7 +60,7 @@ Run these commands from the repository root:
 | Open the Godot editor                        | `bun run godot:open`     |
 | Regenerate parity fixtures                   | `bun run godot:fixtures` |
 | Run TypeScript/Godot parity tests            | `bun run godot:test`     |
-| Export Android debug APK                     | `bun run android:export` |
+| Export Android debug APK                     | `bun run android`        |
 | Export iOS debug Xcode package               | `bun run ios:export`     |
 | Export, build, install, and launch on iPhone | `bun run ios`            |
 
@@ -99,7 +99,7 @@ fallback, provide both values in the command environment:
 ```bash
 VITE_SUPABASE_URL=your-project-url \
     VITE_SUPABASE_ANON_KEY=your-anon-key \
-    bun run android:export
+    bun run android
 ```
 
 Omitting Supabase values is expected for offline gameplay testing.
@@ -136,7 +136,7 @@ Common macOS paths:
 Then export the debug APK:
 
 ```bash
-bun run android:export
+bun run android
 ```
 
 Output:
