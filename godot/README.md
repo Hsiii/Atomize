@@ -55,14 +55,14 @@ device latency testing, not a full replacement for the Vite UI yet.
 
 Run these commands from the repository root:
 
-| Task                                         | Command                        |
-| -------------------------------------------- | ------------------------------ |
-| Open the Godot editor                        | `bun run godot:open`           |
-| Regenerate parity fixtures                   | `bun run godot:fixtures`       |
-| Run TypeScript/Godot parity tests            | `bun run godot:test`           |
-| Export Android debug APK                     | `bun run godot:export:android` |
-| Export iOS debug Xcode package               | `bun run godot:export:ios`     |
-| Export, build, install, and launch on iPhone | `bun run ios`                  |
+| Task                                         | Command                  |
+| -------------------------------------------- | ------------------------ |
+| Open the Godot editor                        | `bun run godot:open`     |
+| Regenerate parity fixtures                   | `bun run godot:fixtures` |
+| Run TypeScript/Godot parity tests            | `bun run godot:test`     |
+| Export Android debug APK                     | `bun run android:export` |
+| Export iOS debug Xcode package               | `bun run ios:export`     |
+| Export, build, install, and launch on iPhone | `bun run ios`            |
 
 ## Logic Parity
 
@@ -99,7 +99,7 @@ fallback, provide both values in the command environment:
 ```bash
 VITE_SUPABASE_URL=your-project-url \
     VITE_SUPABASE_ANON_KEY=your-anon-key \
-    bun run godot:export:android
+    bun run android:export
 ```
 
 Omitting Supabase values is expected for offline gameplay testing.
@@ -136,7 +136,7 @@ Common macOS paths:
 Then export the debug APK:
 
 ```bash
-bun run godot:export:android
+bun run android:export
 ```
 
 Output:
@@ -181,7 +181,7 @@ APPLE_TEAM_ID=your-apple-team-id
 Export the debug Xcode package:
 
 ```bash
-bun run godot:export:ios
+bun run ios:export
 ```
 
 Output:

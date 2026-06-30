@@ -13,7 +13,7 @@ DERIVED_DATA_PATH="${IOS_DERIVED_DATA_PATH:-$ROOT_DIR/godot/build/ios/DerivedDat
 
 if [[ ! -d "$PROJECT" ]]; then
     echo "Godot iOS Xcode project not found at $PROJECT." >&2
-    echo "Set GODOT_IOS_TEAM_ID in .env.local, then run: bun run godot:export:ios" >&2
+    echo "Set GODOT_IOS_TEAM_ID in .env.local, then run: bun run ios:export" >&2
     exit 1
 fi
 
