@@ -41,7 +41,7 @@ import {
 const rootDirectory = path.resolve(import.meta.dirname, '../..');
 const outputPath = path.resolve(
     rootDirectory,
-    'godot/tests/fixtures/core-fixtures.json'
+    'godot/tests/generated/core-fixtures.json'
 );
 
 const seeds = [

@@ -10,5 +10,6 @@ apps/web/.env.local
 .vercel
 godot/.godot/
 godot/.import/
+godot/tests/generated/
 godot/export/
 godot/build/
