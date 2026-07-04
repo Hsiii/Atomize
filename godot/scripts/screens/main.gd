@@ -744,11 +744,11 @@ func _build_home_layout() -> void:
 	var total_blob_width := (HOME_BLOB_SIZE * 2.0) + HOME_BLOB_GAP
 	var blob_left := (viewport_size.x - total_blob_width) / 2.0
 	var blob_top := hero_height + 96.0
-	var solo_button := _make_home_blob_button("SOLO", _start_solo_pregame, COLOR_PRIMARY_STRONG, "timer")
+	var solo_button := _make_home_blob_button("Solo", _start_solo_pregame, COLOR_PRIMARY_STRONG, "timer")
 	solo_button.position = Vector2(blob_left, blob_top)
 	add_child(solo_button)
 
-	var battle_button := _make_home_blob_button("BATTLE", _start_battle_picker, COLOR_SECONDARY, "battle")
+	var battle_button := _make_home_blob_button("Battle", _start_battle_picker, COLOR_SECONDARY, "battle")
 	battle_button.position = Vector2(blob_left + HOME_BLOB_SIZE + HOME_BLOB_GAP, blob_top)
 	add_child(battle_button)
 
@@ -781,7 +781,7 @@ func _build_leaderboard_layout() -> void:
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(background)
 
-	_build_page_header("LEADERBOARD", "CHASE THE TOP SCORE.", "trophy")
+	_build_page_header("Leaderboard", "Top players.", "trophy")
 
 	var body_width: float = min(viewport_size.x - 48.0, 352.0)
 	var body_left: float = (viewport_size.x - body_width) / 2.0
@@ -997,7 +997,7 @@ func _build_solo_pregame_layout() -> void:
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(background)
 
-	_build_page_header("SOLO", "BEAT THE CLOCK.", "timer")
+	_build_page_header("Solo", "Beat the clock.", "timer")
 
 	var body_width: float = min(viewport_size.x - 48.0, 352.0)
 	var body_left: float = (viewport_size.x - body_width) / 2.0
@@ -1006,7 +1006,7 @@ func _build_solo_pregame_layout() -> void:
 	var button_width: float = min(body_width, viewport_size.x * 0.75)
 	var button_left: float = (viewport_size.x - button_width) / 2.0
 
-	var pb_title := _make_absolute_label("PERSONAL BEST", 12, COLOR_INK_SOFT, 700)
+	var pb_title := _make_absolute_label("Personal Best", 12, COLOR_INK_SOFT, 700)
 	pb_title.position = Vector2(stat_left, 304)
 	pb_title.size = Vector2(stat_width, 24)
 	add_child(pb_title)
@@ -1047,15 +1047,15 @@ func _build_battle_picker_layout() -> void:
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(background)
 
-	_build_page_header("BATTLE", "OUTSMART THEM.", "battle")
+	_build_page_header("Battle", "Outsmart them.", "battle")
 
 	var body_width: float = min(viewport_size.x - 48.0, 352.0)
 	var body_left: float = (viewport_size.x - body_width) / 2.0
 
-	_add_battle_section_title(body_left, 262, "cpu", "CPU TRAINING")
+	_add_battle_section_title(body_left, 262, "cpu", "CPU Training")
 	_add_battle_picker_row(body_left, 300, body_width, "bot", BATTLE_BOT_NAME, "Play", false, _start_battle_ready)
 
-	_add_battle_section_title(body_left, 384, "users", "ONLINE PLAYERS")
+	_add_battle_section_title(body_left, 384, "users", "Online Players")
 	_add_battle_online_state(body_left, 422, body_width)
 
 func _add_battle_section_title(left: float, top: float, icon_kind: String, label_text: String) -> void:
@@ -1502,7 +1502,7 @@ func _build_pause_layout() -> void:
 	var panel := _make_dialog_panel(228)
 	overlay.add_child(panel)
 
-	_add_dialog_header(panel, "PAUSED")
+	_add_dialog_header(panel, "Paused")
 
 	var actions := VBoxContainer.new()
 	actions.position = Vector2(12, 68)
@@ -1521,9 +1521,9 @@ func _build_game_over_layout() -> void:
 	var panel := _make_dialog_panel(368)
 	overlay.add_child(panel)
 
-	_add_dialog_header(panel, "TIME'S UP")
+	_add_dialog_header(panel, "Time's Up")
 
-	var hero_label := _make_absolute_label("SCORE", 12, COLOR_INK_SOFT, 700)
+	var hero_label := _make_absolute_label("Score", 12, COLOR_INK_SOFT, 700)
 	hero_label.position = Vector2(0, 72)
 	hero_label.size = Vector2(DIALOG_WIDTH, 20)
 	panel.add_child(hero_label)
@@ -1565,11 +1565,11 @@ func _render_solo() -> void:
 	timer_label.text = "%02d" % ceili(solo_time_left)
 	_set_label_color(timer_label, _timer_text_color())
 	score_label.text = "%s pt" % int(solo_state["score"])
-	stage_label.text = "STAGE %s" % [int(solo_state["clearedStages"]) + 1]
+	stage_label.text = "Stage %s" % [int(solo_state["clearedStages"]) + 1]
 	target_label.text = str(stage["remainingValue"])
-	factors_label.text = "%s FACTORS LEFT" % stage["remainingFactors"].size()
+	factors_label.text = "%s left" % stage["remainingFactors"].size()
 	factors_label.visible = true
-	queue_label.text = _join_numbers(prime_queue) if not prime_queue.is_empty() else "Queue primes"
+	queue_label.text = _join_numbers(prime_queue) if not prime_queue.is_empty() else ""
 	queue_label.modulate.a = 1.0 if not prime_queue.is_empty() else 0.46
 	queue_label.visible = true
 	result_label.text = last_result_text
@@ -1601,9 +1601,9 @@ func _render_battle() -> void:
 	player_hp_bar.max_value = max_hp
 	player_hp_bar.value = int(player["hp"])
 	player_hp_label.text = str(int(player["hp"]))
-	stage_label.text = "STAGE %s" % [int(player["stageIndex"]) + 1]
+	stage_label.text = "Stage %s" % [int(player["stageIndex"]) + 1]
 	target_label.text = str(player["stage"]["remainingValue"])
-	queue_label.text = _join_numbers(battle_prime_queue) if not battle_prime_queue.is_empty() else "Queue attacks"
+	queue_label.text = _join_numbers(battle_prime_queue) if not battle_prime_queue.is_empty() else ""
 	queue_label.modulate.a = 1.0 if not battle_prime_queue.is_empty() else 0.46
 	queue_label.visible = true
 	result_label.text = battle_result_text
@@ -1830,7 +1830,7 @@ func _build_battle_over_overlay() -> void:
 	var panel := _make_dialog_panel(248)
 	overlay.add_child(panel)
 
-	_add_dialog_header(panel, "VICTORY" if did_win else "DEFEAT")
+	_add_dialog_header(panel, "Victory" if did_win else "Defeat")
 
 	var message := _make_absolute_label("AtomBot defeated" if did_win else "AtomBot wins", 18, COLOR_INK, 800)
 	message.position = Vector2(0, 84)
