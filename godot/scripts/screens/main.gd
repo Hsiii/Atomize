@@ -7,13 +7,17 @@ const SupabaseClient := preload("res://scripts/core/supabase_client.gd")
 const BEST_SCORE_PATH := "user://best_score.json"
 const BATTLE_BOT_ID := "atom-bot"
 const BATTLE_BOT_NAME := "AtomBot"
-const BATTLE_BOT_STEP_SECONDS := 2.6
+const BATTLE_BOT_MISTAKE_CHANCE := 0.14
+const BATTLE_BOT_THINK_BASE_SECONDS := 0.42
+const BATTLE_BOT_THINK_FACTOR_SECONDS := 0.14
+const BATTLE_BOT_THINK_PENDING_DAMAGE_SECONDS := 0.012
 const BATTLE_PLAYER_ID := "guest-player"
 const BATTLE_PLAYER_NAME := "Guest"
 const COMBO_QUEUE_MAX_ITEMS := 7
 const SCREEN_ARG_PREFIX := "--atomize-screen="
 const SOLO_DURATION_SECONDS := 60.0
-const SOLO_COMBO_STEP_DELAY_SECONDS := 0.18
+const SOLO_COMBO_STEP_DELAY_SECONDS := 0.14
+const MULTIPLAYER_COMBO_STEP_DELAY_SECONDS := 0.22
 const SOLO_SEED_PREFIX := "godot-mobile"
 const SOLO_SCORE_REDESIGN_AT := "2026-04-07T10:48:36.000Z"
 const HISTORIC_SOLO_SCORE_FACTOR := 0.5
@@ -50,7 +54,7 @@ const FEEDBACK_TWEEN_SECONDS := 0.1
 const HAPTIC_TAP_MS := 8
 const HAPTIC_SUCCESS_MS := 22
 const HAPTIC_FAIL_MS := 36
-const DAMAGE_POP_SECONDS := 0.7
+const DAMAGE_POP_SECONDS := 0.78
 const SFX_BUS_NAME := "SFX"
 const SFX_POOL_SIZE := 8
 const SFX_SAMPLE_RATE := 22050
@@ -158,6 +162,11 @@ var did_set_new_best := false
 var home_menu_open := false
 var battle_snapshot: Dictionary
 var battle_prime_queue: Array[int] = []
+var battle_resolving_queue: Array[int] = []
+var battle_resolving_player_id := ""
+var battle_submitted_queue_length := 0
+var battle_resolve_elapsed := 0.0
+var battle_perfect_solve_eligible := false
 var battle_bot_elapsed := 0.0
 var battle_result_text := ""
 var leaderboard_entries: Array[Dictionary] = []
@@ -501,10 +510,20 @@ func _process(delta: float) -> void:
 	_poll_realtime_lobby(delta)
 
 	if screen == Screen.BATTLE_GAME:
-		battle_bot_elapsed += delta
-		if battle_bot_elapsed >= BATTLE_BOT_STEP_SECONDS:
-			battle_bot_elapsed = 0.0
-			_apply_atom_bot_turn()
+		if not battle_resolving_queue.is_empty():
+			battle_resolve_elapsed += delta
+			if battle_resolve_elapsed >= MULTIPLAYER_COMBO_STEP_DELAY_SECONDS:
+				battle_resolve_elapsed = 0.0
+				_resolve_next_battle_prime()
+			return
+
+		if not battle_snapshot.is_empty() and battle_snapshot["status"] == "playing":
+			var bot = BattleRoom.find_player(battle_snapshot["players"], BATTLE_BOT_ID)
+			if bot != null:
+				battle_bot_elapsed += delta
+				if battle_bot_elapsed >= _bot_think_delay_seconds(bot):
+					battle_bot_elapsed = 0.0
+					_apply_atom_bot_turn()
 		return
 
 	if screen != Screen.SOLO:
@@ -555,6 +574,7 @@ func _start_home() -> void:
 	screen = Screen.HOME
 	prime_queue.clear()
 	resolving_queue.clear()
+	_clear_battle_resolution()
 	home_menu_open = false
 	_build_home_layout()
 
@@ -588,6 +608,7 @@ func _start_battle_ready() -> void:
 	)
 	battle_snapshot = BattleRoom.set_player_ready(battle_snapshot, BATTLE_BOT_ID, true)
 	battle_prime_queue.clear()
+	_clear_battle_resolution()
 	battle_bot_elapsed = 0.0
 	battle_result_text = ""
 	screen = Screen.BATTLE_READY
@@ -602,12 +623,20 @@ func _start_battle_game() -> void:
 	battle_snapshot = BattleRoom.set_player_ready(battle_snapshot, BATTLE_PLAYER_ID, true)
 	battle_snapshot = BattleRoom.begin_room_match(battle_snapshot)
 	battle_prime_queue.clear()
+	_clear_battle_resolution()
 	battle_bot_elapsed = 0.0
 	battle_result_text = ""
 	screen = Screen.BATTLE_GAME
 	_build_battle_game_layout()
 	_render_battle()
 	_track_realtime_presence()
+
+func _clear_battle_resolution() -> void:
+	battle_resolving_queue.clear()
+	battle_resolving_player_id = ""
+	battle_submitted_queue_length = 0
+	battle_resolve_elapsed = 0.0
+	battle_perfect_solve_eligible = false
 
 func _start_solo_game() -> void:
 	run_seed = "%s:%s" % [SOLO_SEED_PREFIX, Time.get_ticks_usec()]
@@ -1582,12 +1611,13 @@ func _render_battle() -> void:
 	_set_label_color(result_label, _feedback_text_color(battle_result_text, COLOR_SECONDARY))
 
 	var is_finished: bool = battle_snapshot["status"] == "finished"
-	submit_button.disabled = is_finished or battle_prime_queue.is_empty()
-	backspace_button.disabled = is_finished or battle_prime_queue.is_empty()
+	var is_busy := not battle_resolving_queue.is_empty()
+	submit_button.disabled = is_finished or is_busy or battle_prime_queue.is_empty()
+	backspace_button.disabled = is_finished or is_busy or battle_prime_queue.is_empty()
 
 	for child in prime_grid.get_children():
 		if child is Button:
-			child.disabled = is_finished or battle_prime_queue.size() >= COMBO_QUEUE_MAX_ITEMS
+			child.disabled = is_finished or is_busy or battle_prime_queue.size() >= COMBO_QUEUE_MAX_ITEMS
 
 	if is_finished:
 		_build_battle_over_overlay()
@@ -1616,66 +1646,173 @@ func _backspace_battle_queue() -> void:
 	_render_battle()
 
 func _submit_battle_queue() -> void:
-	if screen != Screen.BATTLE_GAME or battle_prime_queue.is_empty():
+	if screen != Screen.BATTLE_GAME or battle_prime_queue.is_empty() or not battle_resolving_queue.is_empty():
 		return
 
-	_apply_battle_queue(BATTLE_PLAYER_ID, battle_prime_queue)
+	_begin_battle_queue(BATTLE_PLAYER_ID, battle_prime_queue.duplicate())
 	battle_prime_queue.clear()
 	_render_battle()
 
 func _apply_atom_bot_turn() -> void:
-	if screen != Screen.BATTLE_GAME or battle_snapshot.is_empty() or battle_snapshot["status"] != "playing":
+	if (
+		screen != Screen.BATTLE_GAME
+		or battle_snapshot.is_empty()
+		or battle_snapshot["status"] != "playing"
+		or not battle_resolving_queue.is_empty()
+	):
 		return
 
 	var bot = BattleRoom.find_player(battle_snapshot["players"], BATTLE_BOT_ID)
 	if bot == null:
 		return
 
-	var factors: Array = bot["stage"]["factors"]
-	if factors.is_empty():
+	if int(bot["stage"]["remainingValue"]) == 1:
+		battle_snapshot = BattleRoom.clear_solved_battle_stage(battle_snapshot, BATTLE_BOT_ID)
+		_play_battle_event_feedback(battle_snapshot.get("lastEvent", {}))
+		_render_battle()
 		return
 
-	_apply_battle_queue(BATTLE_BOT_ID, [int(factors[0])])
+	var selected_prime := _pick_bot_prime(bot)
+	if selected_prime == 0:
+		return
+
+	_begin_battle_queue(BATTLE_BOT_ID, [selected_prime])
 	_render_battle()
 
-func _apply_battle_queue(player_id: String, queued_primes: Array) -> void:
-	var submitted_length := queued_primes.size()
+func _begin_battle_queue(player_id: String, queued_primes: Array) -> void:
+	if (
+		screen != Screen.BATTLE_GAME
+		or battle_snapshot.is_empty()
+		or battle_snapshot["status"] != "playing"
+		or queued_primes.is_empty()
+		or not battle_resolving_queue.is_empty()
+	):
+		return
 
+	var acting_player = BattleRoom.find_player(battle_snapshot["players"], player_id)
+	if acting_player == null:
+		return
+
+	battle_resolving_queue.clear()
 	for prime in queued_primes:
-		if battle_snapshot["status"] != "playing":
-			return
+		battle_resolving_queue.append(int(prime))
 
-		var acting_player = BattleRoom.find_player(battle_snapshot["players"], player_id)
-		if acting_player == null:
-			return
+	battle_resolving_player_id = player_id
+	battle_submitted_queue_length = battle_resolving_queue.size()
+	battle_resolve_elapsed = 0.0
+	battle_perfect_solve_eligible = (
+		int(acting_player["stage"]["remainingValue"]) == int(acting_player["stage"]["targetValue"])
+	)
+	battle_result_text = ""
+	battle_bot_elapsed = 0.0
+	_resolve_next_battle_prime()
 
-		var stage: Dictionary = acting_player["stage"]
-		var outcome: Dictionary = Game.apply_prime_selection(stage, int(prime))
+func _resolve_next_battle_prime() -> void:
+	if battle_resolving_queue.is_empty() or battle_snapshot.is_empty():
+		_clear_battle_resolution()
+		return
 
-		if outcome["kind"] == "wrong":
-			battle_snapshot = BattleRoom.apply_battle_penalty(battle_snapshot, player_id)
-			battle_result_text = "Miss" if player_id == BATTLE_PLAYER_ID else "-8"
-			_play_sfx("fail")
-			_play_battle_event_feedback(battle_snapshot.get("lastEvent", {}))
-			return
+	if battle_snapshot["status"] != "playing":
+		_clear_battle_resolution()
+		return
 
-		var options: Dictionary = {}
-		if outcome["cleared"]:
-			options["resolvingQueueLength"] = submitted_length
-			options["perfectSolveEligible"] = submitted_length == stage["factors"].size()
+	var player_id := battle_resolving_player_id
+	var prime := int(battle_resolving_queue.pop_front())
+	var acting_player = BattleRoom.find_player(battle_snapshot["players"], player_id)
+	if acting_player == null:
+		_clear_battle_resolution()
+		return
 
-		battle_snapshot = BattleRoom.apply_battle_prime_selection(
+	var stage: Dictionary = acting_player["stage"]
+	var outcome: Dictionary = Game.apply_prime_selection(stage, prime)
+
+	if outcome["kind"] == "wrong":
+		battle_snapshot = BattleRoom.apply_battle_penalty(
 			battle_snapshot,
 			player_id,
-			int(prime),
-			options
+			stage,
+			int(acting_player["pendingFactorDamage"])
 		)
+		battle_result_text = "Miss" if player_id == BATTLE_PLAYER_ID else "-8"
+		_play_sfx("fail")
+		_play_battle_event_feedback(battle_snapshot.get("lastEvent", {}))
+		_finish_battle_resolution()
+		_render_battle()
+		return
 
-		var event: Dictionary = battle_snapshot.get("lastEvent", {})
-		if event.has("damage"):
-			battle_result_text = ""
-			_play_sfx("success" if player_id == BATTLE_PLAYER_ID else "fail")
-			_play_battle_event_feedback(event)
+	if outcome["cleared"] and not battle_resolving_queue.is_empty():
+		var released_damage := int(acting_player["pendingFactorDamage"]) + Game.compute_battle_factor_damage(prime)
+		battle_snapshot = BattleRoom.apply_battle_penalty(
+			battle_snapshot,
+			player_id,
+			outcome["stage"],
+			released_damage
+		)
+		battle_result_text = "Miss" if player_id == BATTLE_PLAYER_ID else "-8"
+		_play_sfx("fail")
+		_play_battle_event_feedback(battle_snapshot.get("lastEvent", {}))
+		_finish_battle_resolution()
+		_render_battle()
+		return
+
+	var is_final_queued_prime := battle_resolving_queue.is_empty()
+	var should_batch_combo_damage := battle_submitted_queue_length > 1
+	var options := {
+		"suppressAttack": should_batch_combo_damage and not outcome["cleared"] and not is_final_queued_prime,
+		"perfectSolveEligible": battle_perfect_solve_eligible,
+	}
+
+	if outcome["cleared"]:
+		options["resolvingQueueLength"] = battle_submitted_queue_length
+
+	battle_snapshot = BattleRoom.apply_battle_prime_selection(
+		battle_snapshot,
+		player_id,
+		prime,
+		options
+	)
+
+	var event: Dictionary = battle_snapshot.get("lastEvent", {})
+	if event.has("damage"):
+		battle_result_text = ""
+		_play_sfx("success" if player_id == BATTLE_PLAYER_ID else "fail")
+		_play_battle_event_feedback(event)
+	elif player_id == BATTLE_PLAYER_ID:
+		_play_sfx("prime")
+		_play_target_impact()
+
+	if battle_resolving_queue.is_empty():
+		_finish_battle_resolution()
+
+	_render_battle()
+
+func _finish_battle_resolution() -> void:
+	_clear_battle_resolution()
+	battle_bot_elapsed = 0.0
+
+func _bot_think_delay_seconds(bot: Dictionary) -> float:
+	var remaining_factor_count: int = int(bot["stage"]["remainingFactors"].size())
+	var pending_damage_weight: int = min(int(bot["pendingFactorDamage"]), 12)
+	return (
+		BATTLE_BOT_THINK_BASE_SECONDS
+		+ float(remaining_factor_count) * BATTLE_BOT_THINK_FACTOR_SECONDS
+		- float(pending_damage_weight) * BATTLE_BOT_THINK_PENDING_DAMAGE_SECONDS
+	)
+
+func _pick_bot_prime(bot: Dictionary) -> int:
+	var remaining_factors: Array = bot["stage"]["remainingFactors"]
+	if remaining_factors.is_empty():
+		return 0
+
+	var wrong_primes: Array[int] = []
+	for prime in Game.get_playable_stage_primes():
+		if not remaining_factors.has(prime):
+			wrong_primes.append(int(prime))
+
+	if not wrong_primes.is_empty() and randf() < BATTLE_BOT_MISTAKE_CHANCE:
+		return wrong_primes[randi_range(0, wrong_primes.size() - 1)]
+
+	return int(remaining_factors[randi_range(0, remaining_factors.size() - 1)])
 
 func _build_battle_over_overlay() -> void:
 	if has_node("BattleOverOverlay"):
@@ -1739,7 +1876,7 @@ func _submit_queue() -> void:
 	resolving_queue = prime_queue.duplicate()
 	submitted_queue_length = resolving_queue.size()
 	prime_queue.clear()
-	resolve_elapsed = SOLO_COMBO_STEP_DELAY_SECONDS
+	resolve_elapsed = 0.0
 	last_result_text = "Resolving..."
 	_render_solo()
 
@@ -2570,26 +2707,27 @@ func _spawn_attack_particles(
 	var horizontal_direction := 1.0 if target.x >= source.x else -1.0
 	var control := (source + target) / 2.0 + Vector2(42.0 * horizontal_direction * spread_scale, -88.0 * spread_scale)
 
-	_spawn_attack_path_particle(source, control, target, fill_theme, duration * 0.82, 0.0, 0, lead_size, tangent, 0.0)
+	_spawn_attack_path_particle(source, control, target, fill_theme, duration * 0.82, 0.0, 0, lead_size, tangent, 0.0, 0.0)
 
 	for index in range(trail_count):
-		var delay := (float(index) + 1.0) * 0.045
-		var wobble := 8.0 * spread_scale * (1.0 + float(index % 3) * 0.2)
-		var size: float = max(4.0, trail_size - (float(index % 4) * 1.0))
+		var delay := duration * (float(index) + 1.0) * 0.06
+		var wobble := 10.0 * spread_scale
+		var size: float = trail_size * max(0.5, 1.0 - float(index) * 0.06)
 		_spawn_attack_path_particle(
 			source,
 			control,
 			target,
 			fill_theme,
-			max(0.18, duration * 0.74 - delay),
+			max(0.18, duration * 0.82 - delay),
 			delay,
 			index + 1,
 			size,
 			tangent,
-			wobble
+			wobble,
+			float(index) * 1.8
 		)
 
-	_spawn_impact_rings(target, ring_theme, severity, duration * 0.74)
+	_spawn_impact_rings(target, ring_theme, severity, duration * 0.78)
 
 func _spawn_attack_path_particle(
 	source: Vector2,
@@ -2601,7 +2739,8 @@ func _spawn_attack_path_particle(
 	index: int,
 	particle_size: float,
 	tangent: Vector2,
-	wobble: float
+	wobble: float,
+	wobble_phase: float
 ) -> void:
 	var particle := _make_particle_panel(theme_name, particle_size)
 	particle.position = source - (particle.size / 2.0)
@@ -2613,7 +2752,7 @@ func _spawn_attack_path_particle(
 		tween.tween_interval(delay)
 	tween.set_parallel(true)
 	tween.tween_method(
-		_position_attack_particle.bind(particle, source, control, target, tangent, wobble),
+		_position_attack_particle.bind(particle, source, control, target, tangent, wobble, wobble_phase),
 		0.0,
 		1.0,
 		duration
@@ -2629,7 +2768,8 @@ func _position_attack_particle(
 	control: Vector2,
 	target: Vector2,
 	tangent: Vector2,
-	wobble: float
+	wobble: float,
+	wobble_phase: float
 ) -> void:
 	if not is_instance_valid(particle):
 		return
@@ -2637,7 +2777,7 @@ func _position_attack_particle(
 	var t: float = clamp(progress, 0.0, 1.0)
 	var accelerated := t * t
 	var point := _quadratic_bezier_vec2(source, control, target, accelerated)
-	var wobble_offset := tangent * (sin(t * PI * 4.0) * wobble * sin(t * PI))
+	var wobble_offset := tangent * (sin(t * PI * 4.0 + wobble_phase) * wobble * sin(t * PI))
 	particle.position = point - (particle.size / 2.0) + wobble_offset
 
 func _quadratic_bezier_vec2(source: Vector2, control: Vector2, target: Vector2, progress: float) -> Vector2:
@@ -2699,24 +2839,24 @@ func _attack_trail_count(severity: int) -> int:
 func _attack_lead_size(severity: int) -> float:
 	match severity:
 		3:
-			return 32.0
+			return 30.0
 		2:
 			return 24.0
 		1:
-			return 20.0
+			return 18.0
 		_:
-			return 16.0
+			return 14.0
 
 func _attack_trail_size(severity: int) -> float:
 	match severity:
 		3:
 			return 12.0
 		2:
-			return 12.0
+			return 10.0
 		1:
 			return 8.0
 		_:
-			return 8.0
+			return 6.0
 
 func _attack_spread_scale(severity: int) -> float:
 	match severity:
@@ -2754,11 +2894,11 @@ func _attack_ring_count(severity: int) -> int:
 func _attack_impact_radius(severity: int) -> float:
 	match severity:
 		3:
-			return 56.0
+			return 54.0
 		2:
 			return 44.0
 		1:
-			return 32.0
+			return 34.0
 		_:
 			return 24.0
 
