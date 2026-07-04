@@ -1834,24 +1834,43 @@ func _build_battle_over_overlay() -> void:
 	overlay.name = "BattleOverOverlay"
 	add_child(overlay)
 
-	var panel := _make_dialog_panel(248)
+	var panel := _make_dialog_panel(360)
 	overlay.add_child(panel)
 
-	_add_dialog_header(panel, "Victory" if did_win else "Defeat")
+	_add_dialog_header(panel, "Victory" if did_win else "Defeat", COLOR_GOLD if did_win else COLOR_INK_SOFT)
 
-	var message := _make_absolute_label("AtomBot defeated" if did_win else "AtomBot wins", 18, COLOR_INK, 800)
-	message.position = Vector2(0, 84)
-	message.size = Vector2(DIALOG_WIDTH, 32)
-	panel.add_child(message)
+	var columns := HBoxContainer.new()
+	columns.position = Vector2(12, 76)
+	columns.size = Vector2(DIALOG_WIDTH - 24.0, 164)
+	columns.add_theme_constant_override("separation", 8)
+	panel.add_child(columns)
 
-	var actions := VBoxContainer.new()
-	actions.position = Vector2(12, 140)
-	actions.size = Vector2(DIALOG_WIDTH - 24.0, 96)
+	_add_battle_result_column(columns, player, did_win, true, _battle_exp_gained(player, bot, did_win))
+
+	var divider := ColorRect.new()
+	divider.color = COLOR_BORDER_SOFT
+	divider.custom_minimum_size = Vector2(1, 156)
+	columns.add_child(divider)
+
+	_add_battle_result_column(columns, bot, not did_win, false, 0)
+
+	var actions := HBoxContainer.new()
+	actions.position = Vector2(12, 292)
+	actions.size = Vector2(DIALOG_WIDTH - 24.0, DIALOG_BUTTON_HEIGHT)
 	actions.add_theme_constant_override("separation", 8)
 	panel.add_child(actions)
 
-	actions.add_child(_make_dialog_button("Retry", _start_battle_ready, COLOR_PRIMARY_STRONG))
-	actions.add_child(_make_dialog_button("Top", _start_home, COLOR_SECONDARY))
+	actions.add_child(_make_dialog_action_button("Rematch", _start_battle_ready, COLOR_SECONDARY))
+	actions.add_child(_make_dialog_action_button("Top", _start_home, COLOR_PRIMARY_STRONG))
+
+func _battle_exp_gained(player, opponent, did_win: bool) -> int:
+	if did_win:
+		return 150
+
+	if player != null and opponent != null and int(player["hp"]) == 0 and int(opponent["hp"]) == 0:
+		return 50
+
+	return 30
 
 func _queue_prime(prime: int) -> void:
 	if screen != Screen.SOLO or not resolving_queue.is_empty():
@@ -2366,9 +2385,9 @@ func _make_dialog_panel(height: float) -> Panel:
 	_apply_panel_theme(panel, THEME_PANEL_DIALOG)
 	return panel
 
-func _add_dialog_header(panel: Panel, title: String) -> void:
+func _add_dialog_header(panel: Panel, title: String, header_color: Color = COLOR_PRIMARY) -> void:
 	var header := ColorRect.new()
-	header.color = COLOR_PRIMARY
+	header.color = header_color
 	header.position = Vector2.ZERO
 	header.size = Vector2(DIALOG_WIDTH, 56)
 	panel.add_child(header)
@@ -2418,6 +2437,47 @@ func _add_dialog_stat_row(container: VBoxContainer, label_text: String, value: i
 	row.add_child(label)
 
 	var value_label := _make_absolute_label(str(value), 16, COLOR_PRIMARY, 800)
+	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	value_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(value_label)
+
+func _add_battle_result_column(
+	container: HBoxContainer,
+	player,
+	is_winner: bool,
+	show_exp: bool,
+	exp_gained: int
+) -> void:
+	var column := VBoxContainer.new()
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	column.custom_minimum_size = Vector2(124, 156)
+	column.alignment = BoxContainer.ALIGNMENT_CENTER
+	column.add_theme_constant_override("separation", 8)
+	container.add_child(column)
+
+	var player_name := BATTLE_GUEST_NAME if player == null else str(player.get("name", BATTLE_GUEST_NAME))
+	var name_label := _make_absolute_label(player_name, 14, COLOR_GOLD if is_winner else COLOR_INK_SOFT, 900)
+	name_label.custom_minimum_size = Vector2(124, 28)
+	column.add_child(name_label)
+
+	_add_battle_column_stat(column, "Atomized", str(0 if player == null else int(player.get("stageIndex", 0))), COLOR_PRIMARY)
+	_add_battle_column_stat(column, "Max Combo", str(0 if player == null else int(player.get("maxCombo", 0))), COLOR_PRIMARY)
+
+	if show_exp and exp_gained > 0:
+		_add_battle_column_stat(column, "EXP", "+%s" % exp_gained, COLOR_GOLD)
+
+func _add_battle_column_stat(container: VBoxContainer, label_text: String, value_text: String, value_color: Color) -> void:
+	var row := HBoxContainer.new()
+	row.custom_minimum_size = Vector2(124, 32)
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	container.add_child(row)
+
+	var label := _make_absolute_label(label_text, 11, COLOR_INK_SOFT, 800)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(label)
+
+	var value_label := _make_absolute_label(value_text, 13, value_color, 900)
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	value_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(value_label)
