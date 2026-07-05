@@ -3,9 +3,160 @@
 This directory is a parallel Godot 4 project for the iOS and Android port.
 The Vite app remains the web/PWA client.
 
-## Start Here
+## Setup From Zero
 
-Use this path when setting up a machine for the first time:
+Use this path when setting up a fresh machine with no repo tools installed yet.
+Atomize currently uses the standard Godot 4.4 editor. The .NET editor is not
+needed unless you are deliberately adding C# code.
+
+### Windows
+
+1. Install Git for Windows.
+2. Install Bun from PowerShell:
+
+    ```powershell
+    powershell -c "irm bun.sh/install.ps1|iex"
+    ```
+
+3. Close and reopen PowerShell, then verify both tools:
+
+    ```powershell
+    git --version
+    bun --version
+    ```
+
+4. Download the standard Windows build from the
+   [Godot 4.4 stable archive](https://godotengine.org/download/archive/4.4-stable/).
+   Unzip it to a stable location such as `C:\Tools\Godot`.
+5. Make Godot discoverable. Either add the Godot folder to `PATH` so
+   `godot --version` works, or create `.env.local` in the repository root after
+   cloning:
+
+    ```bash
+    GODOT_BIN=C:\Tools\Godot\Godot_v4.4-stable_win64.exe
+    ```
+
+6. Clone the repo and open the Godot project:
+
+    ```powershell
+    git clone https://github.com/Hsiii/Atomize.git
+    cd Atomize
+    bun install
+    bun run godot
+    ```
+
+### macOS
+
+1. Install Git. If macOS prompts for Command Line Tools, accept the install.
+2. Install Bun:
+
+    ```bash
+    curl -fsSL https://bun.com/install | bash
+    ```
+
+3. Open a new terminal, then verify both tools:
+
+    ```bash
+    git --version
+    bun --version
+    ```
+
+4. Download the standard macOS build from the
+   [Godot 4.4 stable archive](https://godotengine.org/download/archive/4.4-stable/)
+   and move `Godot.app` to `/Applications`.
+5. Clone the repo and open the Godot project:
+
+    ```bash
+    git clone https://github.com/Hsiii/Atomize.git
+    cd Atomize
+    bun install
+    bun run godot
+    ```
+
+    The wrapper script auto-detects:
+
+    ```text
+    /Applications/Godot.app/Contents/MacOS/Godot
+    /Applications/Godot_mono.app/Contents/MacOS/Godot
+    ```
+
+    If Godot is elsewhere, add this to root `.env.local`:
+
+    ```bash
+    GODOT_BIN=/absolute/path/to/Godot.app/Contents/MacOS/Godot
+    ```
+
+### Linux
+
+1. Install Git, curl, and unzip. On Debian or Ubuntu:
+
+    ```bash
+    sudo apt update
+    sudo apt install git curl unzip
+    ```
+
+2. Install Bun:
+
+    ```bash
+    curl -fsSL https://bun.com/install | bash
+    ```
+
+3. Open a new terminal, then verify both tools:
+
+    ```bash
+    git --version
+    bun --version
+    ```
+
+4. Download the standard Linux build from the
+   [Godot 4.4 stable archive](https://godotengine.org/download/archive/4.4-stable/)
+   and extract it to a stable location such as `~/Applications/godot`.
+5. Make Godot discoverable. Either symlink the executable somewhere on `PATH`:
+
+    ```bash
+    mkdir -p ~/.local/bin
+    ln -s ~/Applications/godot/Godot_v4.4-stable_linux.x86_64 ~/.local/bin/godot
+    godot --version
+    ```
+
+    Or create `.env.local` in the repository root after cloning:
+
+    ```bash
+    GODOT_BIN=/home/<you>/Applications/godot/Godot_v4.4-stable_linux.x86_64
+    ```
+
+6. Clone the repo and open the Godot project:
+
+    ```bash
+    git clone https://github.com/Hsiii/Atomize.git
+    cd Atomize
+    bun install
+    bun run godot
+    ```
+
+### After The Editor Opens
+
+1. If this machine will export mobile builds, install matching Godot export
+   templates:
+
+    ```text
+    Editor > Manage Export Templates > Download and Install
+    ```
+
+2. Run the parity check from the repository root:
+
+    ```bash
+    bun run godot:test
+    ```
+
+3. Run the game in the editor with the play button, or press `F5`.
+
+The main scene is `res://scenes/Main.tscn`. It is a solo gameplay harness for
+device latency testing, not a full replacement for the Vite UI yet.
+
+## Short Path
+
+Use this path when Git, Bun, and Godot are already installed:
 
 1. Install the repo dependencies from the repository root:
 
@@ -34,7 +185,8 @@ Use this path when setting up a machine for the first time:
     bun run godot
     ```
 
-4. In Godot, install matching export templates:
+4. In Godot, install matching export templates if this machine will export
+   mobile builds:
 
     ```text
     Editor > Manage Export Templates > Download and Install
@@ -47,9 +199,6 @@ Use this path when setting up a machine for the first time:
     ```
 
 6. Run the game in the editor with the play button, or press `F5`.
-
-The main scene is `res://scenes/Main.tscn`. It is a solo gameplay harness for
-device latency testing, not a full replacement for the Vite UI yet.
 
 ## Command Reference
 

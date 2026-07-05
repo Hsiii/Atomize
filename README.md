@@ -67,5 +67,5 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 ## Godot mobile port
 
 The parallel Godot iOS/Android port lives in `godot/`. The Vite app remains the
-web/PWA client. See `godot/README.md` for Godot setup, parity tests, and mobile
-export commands.
+web/PWA client. See `godot/README.md` for the Windows, macOS, and Linux setup
+guide, parity tests, and mobile export commands.
