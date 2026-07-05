@@ -69,6 +69,9 @@ const DAMAGE_POP_SECONDS := 0.78
 const SOLO_SCORE_POP_SECONDS := 0.9
 const TIMER_PENALTY_POP_SECONDS := 0.7
 const BATTLE_HP_ZERO_HOLD_SECONDS := 0.9
+const BATTLE_ATTACK_FLIGHT_END := 0.82
+const BATTLE_ATTACK_IMPACT_START := 0.78
+const BATTLE_ATTACK_TRAIL_STEP := 0.06
 const SFX_BUS_NAME := "SFX"
 const SFX_POOL_SIZE := 8
 const SFX_SAMPLE_RATE := 22050
@@ -122,6 +125,8 @@ const THEME_PANEL_PARTICLE_RING_PRIMARY := "AtomPanelParticleRingPrimary"
 const THEME_PANEL_PARTICLE_RING_SECONDARY := "AtomPanelParticleRingSecondary"
 const THEME_PANEL_PARTICLE_RING_DANGER := "AtomPanelParticleRingDanger"
 const THEME_PANEL_PARTICLE_RING_GOLD := "AtomPanelParticleRingGold"
+const THEME_PANEL_ATTACK_BALL_PRIMARY := "AtomPanelAttackBallPrimary"
+const THEME_PANEL_ATTACK_BALL_SECONDARY := "AtomPanelAttackBallSecondary"
 const THEME_PROGRESS_PRIMARY := "AtomProgressPrimary"
 const THEME_PROGRESS_SECONDARY := "AtomProgressSecondary"
 const THEME_PROGRESS_DANGER := "AtomProgressDanger"
@@ -3086,6 +3091,8 @@ func _make_app_theme() -> Theme:
 	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_RING_SECONDARY, "Panel", _make_outline_circle_style(RADIUS_PILL, COLOR_SECONDARY, PIXEL_BORDER))
 	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_RING_DANGER, "Panel", _make_outline_circle_style(RADIUS_PILL, COLOR_DANGER, PIXEL_BORDER))
 	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_RING_GOLD, "Panel", _make_outline_circle_style(RADIUS_PILL, COLOR_GOLD, PIXEL_BORDER))
+	_add_panel_theme(app_theme, THEME_PANEL_ATTACK_BALL_PRIMARY, "Panel", _make_pixel_box_style(COLOR_PRIMARY_STRONG, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER, RADIUS_PILL))
+	_add_panel_theme(app_theme, THEME_PANEL_ATTACK_BALL_SECONDARY, "Panel", _make_pixel_box_style(COLOR_SECONDARY, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER, RADIUS_PILL))
 	_add_progress_theme(app_theme, THEME_PROGRESS_PRIMARY, COLOR_PRIMARY_STRONG)
 	_add_progress_theme(app_theme, THEME_PROGRESS_SECONDARY, COLOR_SECONDARY)
 	_add_progress_theme(app_theme, THEME_PROGRESS_DANGER, COLOR_DANGER)
@@ -3896,7 +3903,9 @@ func _spawn_attack_particles(
 	target: Vector2,
 	fill_theme: String,
 	ring_theme: String,
-	damage: int = 0
+	ball_theme: String,
+	damage: int = 0,
+	completion_callback: Callable = Callable()
 ) -> void:
 	var severity := _attack_severity(damage)
 	var trail_count := _attack_trail_count(severity)
@@ -3904,16 +3913,19 @@ func _spawn_attack_particles(
 	var trail_size := _attack_trail_size(severity)
 	var spread_scale := _attack_spread_scale(severity)
 	var duration := _attack_duration(severity)
+	var flight_duration := duration * BATTLE_ATTACK_FLIGHT_END
+	var impact_delay := duration * BATTLE_ATTACK_IMPACT_START
+	var impact_duration: float = max(0.01, duration - impact_delay)
 	var delta := target - source
 	var direction := delta.normalized() if delta.length() > 0.0 else Vector2.RIGHT
 	var tangent := Vector2(-direction.y, direction.x)
 	var horizontal_direction := 1.0 if target.x >= source.x else -1.0
 	var control := (source + target) / 2.0 + Vector2(42.0 * horizontal_direction * spread_scale, -88.0 * spread_scale)
 
-	_spawn_attack_path_particle(source, control, target, fill_theme, duration * 0.82, 0.0, 0, lead_size, tangent, 0.0, 0.0)
+	_spawn_attack_path_particle(source, control, target, ball_theme, flight_duration, 0.0, 0, lead_size, tangent, 0.0, 0.0, true)
 
 	for index in range(trail_count):
-		var delay := duration * (float(index) + 1.0) * 0.06
+		var delay := duration * (float(index) + 1.0) * BATTLE_ATTACK_TRAIL_STEP
 		var wobble := 10.0 * spread_scale
 		var size: float = trail_size * max(0.5, 1.0 - float(index) * 0.06)
 		_spawn_attack_path_particle(
@@ -3921,16 +3933,22 @@ func _spawn_attack_particles(
 			control,
 			target,
 			fill_theme,
-			max(0.18, duration * 0.82 - delay),
+			max(0.01, flight_duration - delay),
 			delay,
 			index + 1,
 			size,
 			tangent,
 			wobble,
-			float(index) * 1.8
+			float(index) * 1.8,
+			false
 		)
 
-	_spawn_impact_rings(target, ring_theme, severity, duration * 0.78)
+	_spawn_impact_rings(target, ring_theme, severity, impact_delay, impact_duration)
+
+	if completion_callback.is_valid():
+		var completion_tween := create_tween()
+		completion_tween.tween_interval(duration)
+		completion_tween.tween_callback(completion_callback)
 
 func _spawn_attack_path_particle(
 	source: Vector2,
@@ -3943,11 +3961,12 @@ func _spawn_attack_path_particle(
 	particle_size: float,
 	tangent: Vector2,
 	wobble: float,
-	wobble_phase: float
+	wobble_phase: float,
+	is_lead: bool = false
 ) -> void:
 	var particle := _make_particle_panel(theme_name, particle_size)
 	particle.position = source - (particle.size / 2.0)
-	particle.scale = Vector2(0.8, 0.8)
+	particle.modulate = Color(1, 1, 1, 0)
 	add_child(particle)
 
 	var tween := particle.create_tween()
@@ -3960,9 +3979,15 @@ func _spawn_attack_path_particle(
 		1.0,
 		duration
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	tween.tween_property(particle, "scale", Vector2(0.18, 0.18), duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	tween.tween_property(particle, "modulate", Color(1, 1, 1, 0), duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	tween.finished.connect(particle.queue_free)
+
+	var fade_tween := particle.create_tween()
+	if delay > 0.0:
+		fade_tween.tween_interval(delay)
+	var fade_in_duration: float = min(duration * 0.18, 0.12)
+	fade_tween.tween_property(particle, "modulate", Color(1, 1, 1, 1), fade_in_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	if not is_lead:
+		fade_tween.tween_property(particle, "modulate", Color(1, 1, 1, 0.35), max(0.01, duration - fade_in_duration)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 func _position_attack_particle(
 	progress: float,
@@ -3987,13 +4012,29 @@ func _quadratic_bezier_vec2(source: Vector2, control: Vector2, target: Vector2, 
 	var inverse := 1.0 - progress
 	return (source * inverse * inverse) + (control * 2.0 * inverse * progress) + (target * progress * progress)
 
-func _spawn_impact_rings(center: Vector2, ring_theme: String, severity: int, delay: float) -> void:
+func _spawn_impact_rings(center: Vector2, ring_theme: String, severity: int, delay: float, duration: float) -> void:
 	var ring_count := _attack_ring_count(severity)
 	var radius := _attack_impact_radius(severity)
+	var ring_size := _attack_lead_size(severity) * 0.5
 	for index in range(ring_count):
 		var angle := (TAU * float(index)) / float(ring_count) + 0.3
-		var endpoint := center + Vector2(cos(angle), sin(angle)) * (radius + float(index % 2) * 4.0)
-		_spawn_particle(center, endpoint, ring_theme, 0.26 + float(index % 3) * 0.035, index, delay, max(8.0, _attack_trail_size(severity)))
+		var endpoint := center + Vector2(cos(angle), sin(angle)) * radius
+		_spawn_attack_impact_ring(center, endpoint, ring_theme, delay, duration, ring_size)
+
+func _spawn_attack_impact_ring(source: Vector2, target: Vector2, ring_theme: String, delay: float, duration: float, particle_size: float) -> void:
+	var particle := _make_particle_panel(ring_theme, particle_size)
+	particle.position = source - (particle.size / 2.0)
+	particle.modulate = Color(1, 1, 1, 0.9)
+	add_child(particle)
+
+	var tween := particle.create_tween()
+	if delay > 0.0:
+		tween.tween_interval(delay)
+	tween.set_parallel(true)
+	tween.tween_property(particle, "position", target - (particle.size / 2.0), duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(particle, "scale", Vector2(0.6, 0.6), duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.tween_property(particle, "modulate", Color(1, 1, 1, 0), duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tween.finished.connect(particle.queue_free)
 
 func _make_particle_panel(theme_name: String, particle_size: float) -> Panel:
 	var particle := Panel.new()
@@ -4149,15 +4190,12 @@ func _apply_battle_event_display_hp(event_id: int, event: Dictionary, player_id:
 		_schedule_battle_result_reveal(event_id, BATTLE_HP_ZERO_HOLD_SECONDS)
 	return applied
 
-func _schedule_battle_hp_hit(event: Dictionary, player_id: String, damage: int) -> void:
+func _battle_hp_hit_callback(event: Dictionary, player_id: String, damage: int) -> Callable:
 	if damage <= 0 or player_id == "":
-		return
+		return Callable()
 
 	var event_id := int(event.get("id", 0))
-	var delay := _attack_duration(_attack_severity(damage))
-	var tween := create_tween()
-	tween.tween_interval(delay)
-	tween.tween_callback(_apply_delayed_battle_hp_hit.bind(event_id, event.duplicate(true), player_id, damage))
+	return _apply_delayed_battle_hp_hit.bind(event_id, event.duplicate(true), player_id, damage)
 
 func _apply_delayed_battle_hp_hit(event_id: int, event: Dictionary, player_id: String, damage: int) -> void:
 	if event_id < battle_display_event_id:
@@ -4210,9 +4248,10 @@ func _play_battle_event_feedback(event: Dictionary) -> void:
 				_battle_hp_anchor(released_target_id),
 				_particle_fill_theme_for_player(source_id),
 				_particle_ring_theme_for_player(source_id),
-				released_damage
+				_particle_ball_theme_for_player(source_id),
+				released_damage,
+				_battle_hp_hit_callback(event, released_target_id, released_damage)
 			)
-			_schedule_battle_hp_hit(event, released_target_id, released_damage)
 		return
 
 	var target_id := str(event.get("targetPlayerId", event.get("loserPlayerId", "")))
@@ -4223,10 +4262,10 @@ func _play_battle_event_feedback(event: Dictionary) -> void:
 			_battle_hp_anchor(target_id),
 			_particle_fill_theme_for_player(source_id),
 			_particle_ring_theme_for_player(source_id),
-			damage
+			_particle_ball_theme_for_player(source_id),
+			damage,
+			_battle_hp_hit_callback(event, target_id, damage)
 		)
-		_schedule_battle_hp_hit(event, target_id, damage)
-		_play_target_impact()
 
 	if perfect_solve:
 		_play_perfect_burst(source_id)
@@ -4310,6 +4349,9 @@ func _particle_fill_theme_for_player(player_id: String) -> String:
 
 func _particle_ring_theme_for_player(player_id: String) -> String:
 	return THEME_PANEL_PARTICLE_RING_SECONDARY if player_id == BATTLE_BOT_ID else THEME_PANEL_PARTICLE_RING_PRIMARY
+
+func _particle_ball_theme_for_player(player_id: String) -> String:
+	return THEME_PANEL_ATTACK_BALL_SECONDARY if player_id == BATTLE_BOT_ID else THEME_PANEL_ATTACK_BALL_PRIMARY
 
 func _make_control_tween(control: Control, channel: String) -> Tween:
 	var key := "%s:%s" % [control.get_instance_id(), channel]
