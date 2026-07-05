@@ -76,6 +76,9 @@ const HOME_MENU_BUTTON_SIZE := 48.0
 const SOLO_TARGET_SIZE := 256.0
 const SOLO_KEY_SIZE := 80.0
 const SOLO_KEY_GAP := 8.0
+const QUEUE_CHIP_SIZE := 26.0
+const QUEUE_CHIP_GAP := 2.0
+const QUEUE_SEPARATOR_WIDTH := 10.0
 const SOLO_CONTROL_BOTTOM_MARGIN := 16.0
 const PAGE_HEADER_BOTTOM := 224.0
 const DIALOG_WIDTH := 304.0
@@ -435,7 +438,7 @@ var stage_label: Label
 var score_label: Label
 var score_unit_label: Label
 var target_label: Label
-var queue_label: Label
+var queue_label: HBoxContainer
 var result_label: Label
 var leaderboard_rows_root: VBoxContainer
 var leaderboard_status_label: Label
@@ -1957,7 +1960,7 @@ func _build_battle_game_layout() -> void:
 	player_hp_bar.size = Vector2(viewport_size.x - 24.0, 10)
 	add_child(player_hp_bar)
 
-	queue_label = _make_absolute_label("", 18, COLOR_INK, 800)
+	queue_label = _make_queue_panel()
 	queue_label.position = Vector2(24, 508)
 	queue_label.size = Vector2(viewport_size.x - 48.0, 28)
 	add_child(queue_label)
@@ -2056,9 +2059,9 @@ func _build_solo_layout() -> void:
 	target_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	target_blob.add_child(target_label)
 
-	queue_label = _make_absolute_label("", 18, COLOR_INK, 800)
-	queue_label.position = Vector2(24, 456)
-	queue_label.size = Vector2(viewport_size.x - 48.0, 32)
+	queue_label = _make_queue_panel()
+	queue_label.position = Vector2(24, 420)
+	queue_label.size = Vector2(viewport_size.x - 48.0, 66)
 	add_child(queue_label)
 
 	result_label = _make_absolute_label("", 14, COLOR_PRIMARY, 800)
@@ -2167,10 +2170,7 @@ func _render_solo() -> void:
 	score_label.text = str(int(solo_state["score"]))
 	stage_label.text = "Stage %s" % [int(solo_state["clearedStages"]) + 1]
 	target_label.text = str(stage["remainingValue"])
-	var queue_text := _format_queue_label(prime_queue)
-	queue_label.text = queue_text
-	queue_label.modulate.a = 1.0 if not queue_text.is_empty() else 0.46
-	queue_label.visible = true
+	_render_queue_panel(prime_queue)
 	result_label.text = last_result_text
 	result_label.visible = last_result_text != ""
 	_set_label_color(result_label, _feedback_text_color(last_result_text, COLOR_PRIMARY))
@@ -2207,10 +2207,7 @@ func _render_battle() -> void:
 	player_hp_label.text = str(int(player["hp"]))
 	stage_label.text = "Stage %s" % [int(player["stageIndex"]) + 1]
 	target_label.text = str(player["stage"]["remainingValue"])
-	var queue_text := _format_queue_label(battle_prime_queue)
-	queue_label.text = queue_text
-	queue_label.modulate.a = 1.0 if not queue_text.is_empty() else 0.46
-	queue_label.visible = true
+	_render_queue_panel(battle_prime_queue)
 	result_label.text = battle_result_text
 	result_label.visible = battle_result_text != ""
 	_set_label_color(result_label, _feedback_text_color(battle_result_text, COLOR_SECONDARY))
@@ -4603,17 +4600,50 @@ func _make_panel_style(color: Color) -> StyleBoxFlat:
 	style.content_margin_bottom = 20
 	return style
 
-func _format_queue_label(numbers: Array) -> String:
+func _make_queue_panel() -> HBoxContainer:
+	var panel := HBoxContainer.new()
+	panel.alignment = BoxContainer.ALIGNMENT_CENTER
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_theme_constant_override("separation", int(QUEUE_CHIP_GAP))
+	return panel
+
+func _render_queue_panel(numbers: Array) -> void:
+	if not is_instance_valid(queue_label):
+		return
+
+	for child in queue_label.get_children():
+		child.queue_free()
+
 	var display_numbers := numbers.duplicate()
-	if not keyboard_buffered_prime_input.is_empty():
+	var has_pending_input := not keyboard_buffered_prime_input.is_empty()
+	if has_pending_input:
 		display_numbers.append(keyboard_buffered_prime_input)
 
-	return _join_numbers(display_numbers) if not display_numbers.is_empty() else ""
+	queue_label.visible = true
+	queue_label.modulate.a = 1.0 if not display_numbers.is_empty() else 0.46
+	if display_numbers.is_empty():
+		return
 
-func _join_numbers(numbers: Array) -> String:
-	var labels: Array[String] = []
+	for index in range(display_numbers.size()):
+		var is_pending := has_pending_input and index == display_numbers.size() - 1
+		queue_label.add_child(_make_queue_chip(str(display_numbers[index]), is_pending))
 
-	for number in numbers:
-		labels.append(str(number))
+		if index < display_numbers.size() - 1:
+			queue_label.add_child(_make_queue_separator())
 
-	return " × ".join(labels)
+func _make_queue_chip(text: String, is_pending: bool) -> Panel:
+	var chip := Panel.new()
+	chip.custom_minimum_size = Vector2(QUEUE_CHIP_SIZE, QUEUE_CHIP_SIZE)
+	chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	chip.modulate.a = 0.5 if is_pending else 1.0
+	_apply_panel_theme(chip, THEME_PANEL_PARTICLE_PRIMARY)
+
+	var label := _make_absolute_label(text, 12, COLOR_TEXT_INVERSE, 700)
+	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	chip.add_child(label)
+	return chip
+
+func _make_queue_separator() -> Label:
+	var separator := _make_absolute_label("×", 12, COLOR_INK_SOFT, 600)
+	separator.custom_minimum_size = Vector2(QUEUE_SEPARATOR_WIDTH, QUEUE_CHIP_SIZE)
+	return separator
