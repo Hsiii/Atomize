@@ -14,6 +14,9 @@ const BATTLE_BOT_THINK_FACTOR_SECONDS := 0.14
 const BATTLE_BOT_THINK_PENDING_DAMAGE_SECONDS := 0.012
 const BATTLE_PLAYER_ID := "guest-player"
 const BATTLE_GUEST_NAME := "Guest"
+const TUTORIAL_CPU_HP := 136
+const TUTORIAL_CPU_THINK_BASE_SECONDS := 1.4
+const TUTORIAL_CPU_THINK_FACTOR_SECONDS := 0.2
 const COMBO_QUEUE_MAX_ITEMS := 7
 const SCREEN_ARG_PREFIX := "--atomize-screen="
 const SOLO_DURATION_SECONDS := 60.0
@@ -148,6 +151,206 @@ enum Screen {
 	GAME_OVER,
 }
 
+enum TutorialStep {
+	INTRO,
+	STAGE_ONE_PRIME,
+	STAGE_ONE_QUEUE,
+	STAGE_ONE_SUBMIT,
+	STAGE_ONE_RESULT,
+	STAGE_TWO_PRIME,
+	STAGE_TWO_QUEUE,
+	STAGE_TWO_RESULT,
+	STAGE_TWO_FINISH,
+	STAGE_TWO_FINISH_SUBMIT,
+	PERFECT_SOLVE_EXPLAIN,
+	PERFECT_SOLVE_QUEUE,
+	PERFECT_SOLVE_SUBMIT,
+	PERFECT_SOLVE_RESULT,
+	ENEMY_TURN,
+	ENEMY_ATTACK,
+	TRY_WRONG_PRIME,
+	WRONG_PRIME_RESULT,
+	OVERFLOW_EXPLAIN,
+	OVERFLOW_QUEUE,
+	OVERFLOW_SUBMIT,
+	OVERFLOW_RESULT,
+	OVERFLOW_CLEAR,
+	SUMMARY,
+	DONE,
+}
+
+const TUTORIAL_PLAYER_FACTORS := [
+	[2, 3],
+	[2, 3, 13],
+	[2, 7],
+	[3, 7],
+	[2, 2, 5],
+	[11, 13],
+]
+const TUTORIAL_CPU_FACTORS := [
+	[2, 5],
+	[3, 3],
+	[2, 2, 3],
+	[5, 5],
+]
+const TUTORIAL_LESSONS := {
+	TutorialStep.INTRO: {
+		"action": "Start",
+		"blocking": true,
+		"body": "This is your compound. Factor and atomize it to deal damage to the enemy.",
+		"position": "bottom",
+		"title": "Tutorial - Factor to survive",
+	},
+	TutorialStep.STAGE_ONE_PRIME: {
+		"blocking": false,
+		"body": "Your compound is 6 = 2 x 3. Tap 2 to start queuing factors.",
+		"position": "top",
+		"title": "Pick a prime factor",
+	},
+	TutorialStep.STAGE_ONE_QUEUE: {
+		"blocking": false,
+		"body": "Now tap 3 to complete the factorization.",
+		"position": "top",
+		"title": "Queue the next factor",
+	},
+	TutorialStep.STAGE_ONE_SUBMIT: {
+		"blocking": false,
+		"body": "Hit send to attack with your queued factors.",
+		"position": "top",
+		"title": "Send the queue",
+	},
+	TutorialStep.STAGE_ONE_RESULT: {
+		"action": "Next compound",
+		"blocking": true,
+		"body": "Compound cleared. Each factor you queue deals damage, and clearing finishes the attack.",
+		"position": "bottom",
+		"title": "Atomized!",
+	},
+	TutorialStep.STAGE_TWO_PRIME: {
+		"blocking": false,
+		"body": "This compound is 78. You can spot 2 and 3 as factors - start with 2.",
+		"position": "top",
+		"title": "Trickier compound",
+	},
+	TutorialStep.STAGE_TWO_QUEUE: {
+		"blocking": false,
+		"body": "Add 3 and send. Not sure what's left after 6? Fire off what you know.",
+		"position": "top",
+		"title": "Partial factoring",
+	},
+	TutorialStep.STAGE_TWO_RESULT: {
+		"action": "Finish it",
+		"blocking": true,
+		"body": "The blob dropped from 78 to 13. Damage dealt while you figure out the rest.",
+		"position": "bottom",
+		"title": "Partial clear",
+	},
+	TutorialStep.STAGE_TWO_FINISH: {
+		"blocking": false,
+		"body": "13 is prime - tap 13 to finish it off.",
+		"position": "top",
+		"title": "Finish the compound",
+	},
+	TutorialStep.STAGE_TWO_FINISH_SUBMIT: {
+		"blocking": false,
+		"body": "Send the last factor to finish this compound.",
+		"position": "top",
+		"title": "Finish it off",
+	},
+	TutorialStep.PERFECT_SOLVE_EXPLAIN: {
+		"action": "Try it",
+		"blocking": true,
+		"body": "Queue ALL factors in one send for a perfect clear. Perfect clears heal HP! Try it on this blob.",
+		"position": "bottom",
+		"title": "Perfect clear",
+	},
+	TutorialStep.PERFECT_SOLVE_QUEUE: {
+		"blocking": false,
+		"body": "This compound is 14 = 2 x 7. Queue both factors at once.",
+		"position": "top",
+		"title": "Queue all factors",
+	},
+	TutorialStep.PERFECT_SOLVE_SUBMIT: {
+		"blocking": false,
+		"body": "Send the perfect combo!",
+		"position": "top",
+		"title": "Send it",
+	},
+	TutorialStep.PERFECT_SOLVE_RESULT: {
+		"action": "Next",
+		"blocking": true,
+		"body": "Your HP went up! Perfect clears heal and deal bonus combo damage - the more factors, the bigger the bonus.",
+		"position": "bottom",
+		"title": "Healed!",
+	},
+	TutorialStep.ENEMY_TURN: {
+		"action": "Show attack",
+		"blocking": true,
+		"body": "Enemy clears cost you HP. Watch your HP bar.",
+		"position": "bottom",
+		"title": "Enemy turn",
+	},
+	TutorialStep.ENEMY_ATTACK: {
+		"action": "Next",
+		"blocking": true,
+		"body": "You lost HP! But there is a way to recover...",
+		"position": "bottom",
+		"title": "Ouch!",
+	},
+	TutorialStep.TRY_WRONG_PRIME: {
+		"blocking": false,
+		"body": "Tap 2 and submit. It does not divide the current compound.",
+		"position": "top",
+		"title": "Try a wrong factor",
+	},
+	TutorialStep.WRONG_PRIME_RESULT: {
+		"action": "Next",
+		"blocking": true,
+		"body": "Wrong factors deal damage to yourself and break combos. Avoid mistakes to stay alive.",
+		"position": "bottom",
+		"title": "Wrong factors backfire",
+	},
+	TutorialStep.OVERFLOW_EXPLAIN: {
+		"action": "Try it",
+		"blocking": true,
+		"body": "What if you queue more factors than needed? Let's find out.",
+		"position": "bottom",
+		"title": "Over-queuing",
+	},
+	TutorialStep.OVERFLOW_QUEUE: {
+		"blocking": false,
+		"body": "Queue 3, 7, then 2. The blob only needs 3 x 7, so 2 is extra.",
+		"position": "top",
+		"title": "Queue too many",
+	},
+	TutorialStep.OVERFLOW_SUBMIT: {
+		"blocking": false,
+		"body": "Now submit and watch what happens.",
+		"position": "top",
+		"title": "Send it",
+	},
+	TutorialStep.OVERFLOW_RESULT: {
+		"action": "Next",
+		"blocking": true,
+		"body": "The blob cleared to 1, but the extra 2 backfired as self-damage. Only queue what you need!",
+		"position": "bottom",
+		"title": "Overflow penalty",
+	},
+	TutorialStep.OVERFLOW_CLEAR: {
+		"blocking": false,
+		"body": "Hit Enter to break the 1 and move on.",
+		"position": "top",
+		"title": "Clear the 1",
+	},
+	TutorialStep.SUMMARY: {
+		"action": "Keep playing",
+		"blocking": true,
+		"body": "Queue primes, clear compounds for combo damage, and avoid wrong factors. Finish the match!",
+		"position": "bottom",
+		"title": "You are ready",
+	},
+}
+
 var screen := Screen.HOME
 var previous_screen := Screen.HOME
 var run_seed := ""
@@ -164,6 +367,14 @@ var did_set_new_best := false
 var home_menu_open := false
 var needs_tutorial := false
 var battle_player_name := ""
+var tutorial_active := false
+var tutorial_step := TutorialStep.DONE
+var tutorial_enemy_attack_seen := false
+var tutorial_enemy_turn_acknowledged := false
+var tutorial_self_penalty_seen := false
+var tutorial_overflow_penalty_seen := false
+var tutorial_cpu_attack_allowed := false
+var tutorial_tracked_event_id := -1
 var battle_snapshot: Dictionary
 var battle_prime_queue: Array[int] = []
 var battle_resolving_queue: Array[int] = []
@@ -235,6 +446,8 @@ func _ready() -> void:
 	match _get_requested_screen():
 		"help":
 			_start_help()
+		"tutorial":
+			_start_tutorial_game()
 		"leaderboard":
 			_start_leaderboard()
 		"solo":
@@ -529,7 +742,7 @@ func _process(delta: float) -> void:
 
 		if not battle_snapshot.is_empty() and battle_snapshot["status"] == "playing":
 			var bot = BattleRoom.find_player(battle_snapshot["players"], BATTLE_BOT_ID)
-			if bot != null:
+			if bot != null and _can_apply_bot_turn(bot):
 				battle_bot_elapsed += delta
 				if battle_bot_elapsed >= _bot_think_delay_seconds(bot):
 					battle_bot_elapsed = 0.0
@@ -577,10 +790,14 @@ func _unhandled_input(event: InputEvent) -> void:
 			or screen == Screen.BATTLE_GAME
 			or screen == Screen.GAME_OVER
 		):
-			_start_home()
+			if tutorial_active and screen == Screen.BATTLE_GAME:
+				_skip_tutorial()
+			else:
+				_start_home()
 
 func _start_home() -> void:
 	_close_realtime_lobby()
+	_reset_tutorial_runtime(false)
 	screen = Screen.HOME
 	prime_queue.clear()
 	resolving_queue.clear()
@@ -593,13 +810,30 @@ func _start_help() -> void:
 	_build_help_layout()
 
 func _start_tutorial_play() -> void:
-	_mark_tutorial_complete()
-	_start_battle_ready()
-	_start_battle_game()
+	_start_tutorial_game()
 
 func _skip_tutorial() -> void:
 	_mark_tutorial_complete()
 	_start_home()
+
+func _start_tutorial_game() -> void:
+	_close_realtime_lobby()
+	_reset_tutorial_runtime(true)
+	var room_id := "tutorial:%s" % Time.get_ticks_usec()
+	battle_snapshot = BattleRoom.create_room_snapshot(room_id, BATTLE_PLAYER_ID, battle_player_name)
+	battle_snapshot = BattleRoom.add_player_to_room(battle_snapshot, BATTLE_BOT_ID, BATTLE_BOT_NAME)
+	battle_snapshot = _set_tutorial_cpu_hp(battle_snapshot)
+	battle_snapshot = BattleRoom.set_player_ready(battle_snapshot, BATTLE_PLAYER_ID, true)
+	battle_snapshot = BattleRoom.set_player_ready(battle_snapshot, BATTLE_BOT_ID, true)
+	battle_snapshot = BattleRoom.begin_room_match(battle_snapshot)
+	battle_snapshot = _normalize_tutorial_snapshot(battle_snapshot)
+	battle_prime_queue.clear()
+	_clear_battle_resolution()
+	battle_bot_elapsed = 0.0
+	battle_result_text = ""
+	screen = Screen.BATTLE_GAME
+	_build_battle_game_layout()
+	_render_battle()
 
 func _start_leaderboard() -> void:
 	_close_realtime_lobby()
@@ -619,6 +853,7 @@ func _start_battle_picker() -> void:
 	_connect_realtime_lobby()
 
 func _start_battle_ready() -> void:
+	_reset_tutorial_runtime(false)
 	battle_snapshot = BattleRoom.create_room_snapshot("godot-atom-bot", BATTLE_BOT_ID, BATTLE_BOT_NAME)
 	battle_snapshot = BattleRoom.add_player_to_room(
 		battle_snapshot,
@@ -656,6 +891,87 @@ func _clear_battle_resolution() -> void:
 	battle_submitted_queue_length = 0
 	battle_resolve_elapsed = 0.0
 	battle_perfect_solve_eligible = false
+
+func _reset_tutorial_runtime(active: bool) -> void:
+	tutorial_active = active
+	tutorial_step = TutorialStep.INTRO if active else TutorialStep.DONE
+	tutorial_enemy_attack_seen = false
+	tutorial_enemy_turn_acknowledged = false
+	tutorial_self_penalty_seen = false
+	tutorial_overflow_penalty_seen = false
+	tutorial_cpu_attack_allowed = false
+	tutorial_tracked_event_id = -1
+
+func _set_tutorial_cpu_hp(snapshot: Dictionary) -> Dictionary:
+	var next_snapshot := snapshot.duplicate(true)
+	for player in next_snapshot["players"]:
+		if player["id"] == BATTLE_BOT_ID:
+			player["hp"] = TUTORIAL_CPU_HP
+	return next_snapshot
+
+func _normalize_tutorial_snapshot(snapshot: Dictionary) -> Dictionary:
+	if snapshot.is_empty():
+		return snapshot
+
+	var next_snapshot := snapshot.duplicate(true)
+	var normalized_players: Array = []
+	for player in next_snapshot["players"]:
+		var next_player: Dictionary = player.duplicate(true)
+		var side := "cpu" if str(player["id"]) == BATTLE_BOT_ID else "player"
+		var scripted_stage := _get_tutorial_stage(side, int(player["stageIndex"]), str(snapshot["seed"]))
+		if not _is_same_stage_shape(next_player["stage"], scripted_stage):
+			next_player["stage"] = scripted_stage
+		normalized_players.append(next_player)
+
+	next_snapshot["players"] = normalized_players
+	var local_player = BattleRoom.find_player(normalized_players, BATTLE_PLAYER_ID)
+	if local_player != null:
+		next_snapshot["stageIndex"] = int(local_player["stageIndex"])
+		next_snapshot["stage"] = local_player["stage"]
+
+	return next_snapshot
+
+func _get_tutorial_stage(side: String, stage_index: int, seed: String) -> Dictionary:
+	var scripted_factors := TUTORIAL_CPU_FACTORS if side == "cpu" else TUTORIAL_PLAYER_FACTORS
+	if stage_index >= 0 and stage_index < scripted_factors.size():
+		return _create_stage_state(stage_index, scripted_factors[stage_index])
+
+	return Game.generate_stage("%s:%s" % [seed, side], stage_index)
+
+func _create_stage_state(stage_index: int, factors: Array) -> Dictionary:
+	var normalized_factors := factors.duplicate()
+	normalized_factors.sort()
+	var target_value := 1
+	for prime in normalized_factors:
+		target_value *= int(prime)
+
+	return {
+		"stageIndex": stage_index,
+		"targetValue": target_value,
+		"remainingValue": target_value,
+		"factors": normalized_factors,
+		"remainingFactors": normalized_factors.duplicate(),
+	}
+
+func _is_same_stage_shape(current_stage: Dictionary, scripted_stage: Dictionary) -> bool:
+	var current_factors: Array = current_stage["factors"]
+	var scripted_factors: Array = scripted_stage["factors"]
+	return (
+		int(current_stage["stageIndex"]) == int(scripted_stage["stageIndex"])
+		and int(current_stage["targetValue"]) == int(scripted_stage["targetValue"])
+		and current_factors.size() == scripted_factors.size()
+		and _arrays_match(current_factors, scripted_factors)
+	)
+
+func _arrays_match(left: Array, right: Array) -> bool:
+	if left.size() != right.size():
+		return false
+
+	for index in range(left.size()):
+		if int(left[index]) != int(right[index]):
+			return false
+
+	return true
 
 func _start_solo_game() -> void:
 	run_seed = "%s:%s" % [SOLO_SEED_PREFIX, Time.get_ticks_usec()]
@@ -766,7 +1082,7 @@ func _build_home_layout() -> void:
 	var blob_top := hero_height + 96.0
 
 	if needs_tutorial:
-		var play_button := _make_home_blob_button("Play", _start_help, COLOR_PRIMARY_STRONG, "help")
+		var play_button := _make_home_blob_button("Play", _start_tutorial_game, COLOR_PRIMARY_STRONG, "help")
 		play_button.position = Vector2((viewport_size.x - HOME_BLOB_SIZE) / 2.0, blob_top)
 		add_child(play_button)
 		return
@@ -792,7 +1108,7 @@ func _build_home_dropdown(position: Vector2) -> void:
 	var leaderboard_button := _make_dropdown_button("Leaderboard", _start_leaderboard)
 	dropdown.add_child(leaderboard_button)
 
-	var help_button := _make_dropdown_button("Tutorial", _start_help)
+	var help_button := _make_dropdown_button("Tutorial", _start_tutorial_game)
 	dropdown.add_child(help_button)
 
 	var reset_button := _make_dropdown_button("Reset Best", _reset_best_score)
@@ -1300,7 +1616,8 @@ func _build_battle_game_layout() -> void:
 	result_label.size = Vector2(viewport_size.x, 24)
 	add_child(result_label)
 
-	var player_name := _make_absolute_label(battle_player_name, 15, COLOR_INK, 800)
+	var player_name_text := "You" if tutorial_active else battle_player_name
+	var player_name := _make_absolute_label(player_name_text, 15, COLOR_INK, 800)
 	player_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	player_name.position = Vector2(12, 452)
 	player_name.size = Vector2(160, 24)
@@ -1612,6 +1929,11 @@ func _render_battle() -> void:
 	if screen != Screen.BATTLE_GAME or battle_snapshot.is_empty():
 		return
 
+	if tutorial_active:
+		battle_snapshot = _normalize_tutorial_snapshot(battle_snapshot)
+		_track_tutorial_event()
+		_sync_tutorial_state()
+
 	var player = BattleRoom.find_player(battle_snapshot["players"], BATTLE_PLAYER_ID)
 	var bot = BattleRoom.find_player(battle_snapshot["players"], BATTLE_BOT_ID)
 
@@ -1636,19 +1958,44 @@ func _render_battle() -> void:
 
 	var is_finished: bool = battle_snapshot["status"] == "finished"
 	var is_busy := not battle_resolving_queue.is_empty()
-	submit_button.disabled = is_finished or is_busy or battle_prime_queue.is_empty()
-	backspace_button.disabled = is_finished or is_busy or battle_prime_queue.is_empty()
+	var can_submit_solved_stage := int(player["stage"]["remainingValue"]) == 1
+	submit_button.disabled = (
+		is_finished
+		or is_busy
+		or (battle_prime_queue.is_empty() and not can_submit_solved_stage)
+		or (tutorial_active and _tutorial_is_submit_locked())
+	)
+	backspace_button.disabled = (
+		is_finished
+		or is_busy
+		or battle_prime_queue.is_empty()
+		or (tutorial_active and tutorial_step != TutorialStep.DONE)
+	)
 
 	for child in prime_grid.get_children():
 		if child is Button:
-			child.disabled = is_finished or is_busy or battle_prime_queue.size() >= COMBO_QUEUE_MAX_ITEMS
+			var prime := int(child.text)
+			child.disabled = (
+				is_finished
+				or is_busy
+				or battle_prime_queue.size() >= COMBO_QUEUE_MAX_ITEMS
+				or (tutorial_active and _tutorial_prime_disabled(prime))
+			)
 
 	if is_finished:
 		_build_battle_over_overlay()
 
+	_render_tutorial_overlay()
+
 func _queue_battle_prime(prime: int) -> void:
 	if screen != Screen.BATTLE_GAME or battle_snapshot["status"] != "playing":
 		return
+
+	if tutorial_active:
+		_sync_tutorial_state()
+		if _tutorial_is_interaction_blocked() or _tutorial_prime_disabled(prime):
+			_play_sfx("fail")
+			return
 
 	if battle_prime_queue.size() >= COMBO_QUEUE_MAX_ITEMS:
 		_play_sfx("fail")
@@ -1659,10 +2006,16 @@ func _queue_battle_prime(prime: int) -> void:
 
 	battle_prime_queue.append(prime)
 	battle_result_text = ""
+	if tutorial_active:
+		_sync_tutorial_state()
 	_render_battle()
 
 func _backspace_battle_queue() -> void:
 	if screen != Screen.BATTLE_GAME or battle_prime_queue.is_empty():
+		return
+
+	if tutorial_active and tutorial_step != TutorialStep.DONE:
+		_play_sfx("fail")
 		return
 
 	battle_prime_queue.pop_back()
@@ -1670,7 +2023,25 @@ func _backspace_battle_queue() -> void:
 	_render_battle()
 
 func _submit_battle_queue() -> void:
-	if screen != Screen.BATTLE_GAME or battle_prime_queue.is_empty() or not battle_resolving_queue.is_empty():
+	if screen != Screen.BATTLE_GAME or not battle_resolving_queue.is_empty():
+		return
+
+	var player = BattleRoom.find_player(battle_snapshot["players"], BATTLE_PLAYER_ID)
+	if player == null:
+		return
+
+	var can_submit_solved_stage := int(player["stage"]["remainingValue"]) == 1
+	if tutorial_active:
+		_sync_tutorial_state()
+		if _tutorial_is_submit_locked():
+			_play_sfx("fail")
+			return
+
+	if battle_prime_queue.is_empty():
+		if can_submit_solved_stage:
+			battle_snapshot = BattleRoom.clear_solved_battle_stage(battle_snapshot, BATTLE_PLAYER_ID)
+			_play_battle_event_feedback(battle_snapshot.get("lastEvent", {}))
+			_render_battle()
 		return
 
 	_begin_battle_queue(BATTLE_PLAYER_ID, battle_prime_queue.duplicate())
@@ -1696,7 +2067,7 @@ func _apply_atom_bot_turn() -> void:
 		_render_battle()
 		return
 
-	var selected_prime := _pick_bot_prime(bot)
+	var selected_prime := _pick_tutorial_bot_prime(bot) if tutorial_active else _pick_bot_prime(bot)
 	if selected_prime == 0:
 		return
 
@@ -1815,6 +2186,9 @@ func _finish_battle_resolution() -> void:
 	battle_bot_elapsed = 0.0
 
 func _bot_think_delay_seconds(bot: Dictionary) -> float:
+	if tutorial_active:
+		return TUTORIAL_CPU_THINK_BASE_SECONDS + float(bot["stage"]["remainingFactors"].size()) * TUTORIAL_CPU_THINK_FACTOR_SECONDS
+
 	var remaining_factor_count: int = int(bot["stage"]["remainingFactors"].size())
 	var pending_damage_weight: int = min(int(bot["pendingFactorDamage"]), 12)
 	return (
@@ -1888,6 +2262,303 @@ func _battle_exp_gained(player, opponent, did_win: bool) -> int:
 		return 50
 
 	return 30
+
+func _track_tutorial_event() -> void:
+	if not tutorial_active or not battle_snapshot.has("lastEvent"):
+		return
+
+	var event: Dictionary = battle_snapshot["lastEvent"]
+	var event_id := int(event.get("id", -1))
+	if event_id == -1 or event_id == tutorial_tracked_event_id:
+		return
+
+	tutorial_tracked_event_id = event_id
+	var source_player_id := str(event.get("sourcePlayerId", ""))
+	var event_type := str(event.get("type", ""))
+
+	if source_player_id == BATTLE_BOT_ID and (event_type == "attack" or event_type == "finish"):
+		tutorial_enemy_attack_seen = true
+
+	if source_player_id == BATTLE_PLAYER_ID and event_type == "self-hit":
+		tutorial_self_penalty_seen = true
+		if tutorial_step == TutorialStep.OVERFLOW_QUEUE or tutorial_step == TutorialStep.OVERFLOW_SUBMIT:
+			tutorial_overflow_penalty_seen = true
+
+func _sync_tutorial_state() -> void:
+	if not tutorial_active:
+		return
+
+	var player = BattleRoom.find_player(battle_snapshot.get("players", []), BATTLE_PLAYER_ID)
+	if player == null:
+		return
+
+	match tutorial_step:
+		TutorialStep.STAGE_ONE_PRIME:
+			if _queue_matches([2]):
+				tutorial_step = TutorialStep.STAGE_ONE_QUEUE
+		TutorialStep.STAGE_ONE_QUEUE:
+			if battle_prime_queue.is_empty():
+				tutorial_step = TutorialStep.STAGE_ONE_PRIME
+			elif _queue_matches([2, 3]):
+				tutorial_step = TutorialStep.STAGE_ONE_SUBMIT
+		TutorialStep.STAGE_ONE_SUBMIT:
+			if int(player["stageIndex"]) >= 1:
+				tutorial_step = TutorialStep.STAGE_ONE_RESULT
+		TutorialStep.STAGE_TWO_PRIME:
+			if _queue_matches([2]):
+				tutorial_step = TutorialStep.STAGE_TWO_QUEUE
+		TutorialStep.STAGE_TWO_QUEUE:
+			var stage: Dictionary = player["stage"]
+			if battle_prime_queue.is_empty() and int(stage["remainingValue"]) == int(stage["targetValue"]):
+				tutorial_step = TutorialStep.STAGE_TWO_PRIME
+			elif int(player["stageIndex"]) >= 1 and int(stage["remainingValue"]) == 13:
+				tutorial_step = TutorialStep.STAGE_TWO_RESULT
+		TutorialStep.STAGE_TWO_FINISH:
+			if _queue_matches([13]):
+				tutorial_step = TutorialStep.STAGE_TWO_FINISH_SUBMIT
+		TutorialStep.STAGE_TWO_FINISH_SUBMIT:
+			if int(player["stageIndex"]) >= 2:
+				tutorial_step = TutorialStep.ENEMY_TURN
+		TutorialStep.ENEMY_TURN:
+			if tutorial_enemy_attack_seen:
+				tutorial_step = TutorialStep.ENEMY_ATTACK
+		TutorialStep.PERFECT_SOLVE_QUEUE:
+			if _queue_matches([2, 7]):
+				tutorial_step = TutorialStep.PERFECT_SOLVE_SUBMIT
+		TutorialStep.PERFECT_SOLVE_SUBMIT:
+			if int(player["stageIndex"]) >= 3:
+				tutorial_step = TutorialStep.PERFECT_SOLVE_RESULT
+		TutorialStep.TRY_WRONG_PRIME:
+			if tutorial_self_penalty_seen:
+				tutorial_step = TutorialStep.WRONG_PRIME_RESULT
+		TutorialStep.OVERFLOW_QUEUE:
+			if _queue_matches([3, 7, 2]):
+				tutorial_step = TutorialStep.OVERFLOW_SUBMIT
+		TutorialStep.OVERFLOW_SUBMIT:
+			if tutorial_overflow_penalty_seen:
+				tutorial_step = TutorialStep.OVERFLOW_RESULT
+		TutorialStep.OVERFLOW_CLEAR:
+			if int(player["stageIndex"]) >= 4:
+				tutorial_step = TutorialStep.SUMMARY
+
+func _tutorial_handle_action() -> void:
+	match tutorial_step:
+		TutorialStep.INTRO:
+			tutorial_step = TutorialStep.STAGE_ONE_PRIME
+		TutorialStep.STAGE_ONE_RESULT:
+			tutorial_step = TutorialStep.STAGE_TWO_PRIME
+		TutorialStep.STAGE_TWO_RESULT:
+			tutorial_step = TutorialStep.STAGE_TWO_FINISH
+		TutorialStep.PERFECT_SOLVE_EXPLAIN:
+			tutorial_step = TutorialStep.PERFECT_SOLVE_QUEUE
+		TutorialStep.PERFECT_SOLVE_RESULT:
+			tutorial_step = TutorialStep.TRY_WRONG_PRIME
+		TutorialStep.ENEMY_TURN:
+			tutorial_enemy_turn_acknowledged = true
+			tutorial_cpu_attack_allowed = true
+			battle_bot_elapsed = 0.0
+		TutorialStep.ENEMY_ATTACK:
+			tutorial_step = TutorialStep.PERFECT_SOLVE_EXPLAIN
+		TutorialStep.WRONG_PRIME_RESULT:
+			tutorial_step = TutorialStep.OVERFLOW_EXPLAIN
+		TutorialStep.OVERFLOW_EXPLAIN:
+			tutorial_step = TutorialStep.OVERFLOW_QUEUE
+		TutorialStep.OVERFLOW_RESULT:
+			tutorial_step = TutorialStep.OVERFLOW_CLEAR
+		TutorialStep.SUMMARY:
+			_mark_tutorial_complete()
+			_start_home()
+			return
+
+	_render_battle()
+
+func _tutorial_is_interaction_blocked() -> bool:
+	if not tutorial_active:
+		return false
+
+	if tutorial_step == TutorialStep.ENEMY_TURN and tutorial_enemy_turn_acknowledged:
+		return true
+
+	var lesson: Dictionary = TUTORIAL_LESSONS.get(tutorial_step, {})
+	return lesson.get("blocking", false) == true
+
+func _tutorial_expected_queue() -> Array:
+	match tutorial_step:
+		TutorialStep.STAGE_ONE_PRIME, TutorialStep.STAGE_ONE_QUEUE, TutorialStep.STAGE_ONE_SUBMIT:
+			return [2, 3]
+		TutorialStep.STAGE_TWO_PRIME, TutorialStep.STAGE_TWO_QUEUE:
+			return [2, 3]
+		TutorialStep.STAGE_TWO_FINISH, TutorialStep.STAGE_TWO_FINISH_SUBMIT:
+			return [13]
+		TutorialStep.PERFECT_SOLVE_QUEUE, TutorialStep.PERFECT_SOLVE_SUBMIT:
+			return [2, 7]
+		TutorialStep.TRY_WRONG_PRIME:
+			return [2]
+		TutorialStep.OVERFLOW_QUEUE, TutorialStep.OVERFLOW_SUBMIT:
+			return [3, 7, 2]
+		_:
+			return []
+
+func _tutorial_prime_disabled(prime: int) -> bool:
+	if _tutorial_is_interaction_blocked():
+		return true
+
+	if not _is_tutorial_prime_entry_step(tutorial_step):
+		return not _tutorial_expected_queue().is_empty()
+
+	var expected_queue := _tutorial_expected_queue()
+	if expected_queue.is_empty():
+		return false
+
+	if not _queue_has_prefix(battle_prime_queue, expected_queue):
+		return true
+
+	if battle_prime_queue.size() >= expected_queue.size():
+		return true
+
+	return prime != int(expected_queue[battle_prime_queue.size()])
+
+func _tutorial_is_submit_locked() -> bool:
+	if _tutorial_is_interaction_blocked():
+		return true
+
+	match tutorial_step:
+		TutorialStep.STAGE_ONE_SUBMIT:
+			return not _queue_matches([2, 3])
+		TutorialStep.STAGE_TWO_QUEUE:
+			return not _queue_matches([2, 3])
+		TutorialStep.STAGE_TWO_FINISH_SUBMIT:
+			return not _queue_matches([13])
+		TutorialStep.PERFECT_SOLVE_SUBMIT:
+			return not _queue_matches([2, 7])
+		TutorialStep.TRY_WRONG_PRIME:
+			return not _queue_matches([2])
+		TutorialStep.OVERFLOW_SUBMIT:
+			return not _queue_matches([3, 7, 2])
+		TutorialStep.OVERFLOW_CLEAR:
+			return false
+		_:
+			return true
+
+func _queue_matches(expected_queue: Array) -> bool:
+	return _arrays_match(battle_prime_queue, expected_queue)
+
+func _queue_has_prefix(queue: Array, expected_queue: Array) -> bool:
+	if queue.size() > expected_queue.size():
+		return false
+
+	for index in range(queue.size()):
+		if int(queue[index]) != int(expected_queue[index]):
+			return false
+
+	return true
+
+func _is_tutorial_prime_entry_step(step: int) -> bool:
+	return (
+		step == TutorialStep.STAGE_ONE_PRIME
+		or step == TutorialStep.STAGE_ONE_QUEUE
+		or step == TutorialStep.STAGE_TWO_PRIME
+		or step == TutorialStep.STAGE_TWO_QUEUE
+		or step == TutorialStep.STAGE_TWO_FINISH
+		or step == TutorialStep.PERFECT_SOLVE_QUEUE
+		or step == TutorialStep.TRY_WRONG_PRIME
+		or step == TutorialStep.OVERFLOW_QUEUE
+	)
+
+func _can_apply_bot_turn(bot: Dictionary) -> bool:
+	if not tutorial_active:
+		return true
+
+	var player = BattleRoom.find_player(battle_snapshot.get("players", []), BATTLE_PLAYER_ID)
+	if player == null:
+		return false
+
+	if int(player["stageIndex"]) < 2:
+		return false
+
+	if not tutorial_cpu_attack_allowed:
+		return false
+
+	if tutorial_enemy_attack_seen:
+		return false
+
+	return int(bot["hp"]) > 0 and int(player["hp"]) > 0
+
+func _pick_tutorial_bot_prime(bot: Dictionary) -> int:
+	if int(bot["stageIndex"]) == 0:
+		if int(bot["stage"]["remainingValue"]) == 10:
+			return 2
+		if int(bot["stage"]["remainingValue"]) == 5:
+			return 5
+
+	if int(bot["stageIndex"]) == 1:
+		return 3
+
+	return _pick_bot_prime(bot)
+
+func _render_tutorial_overlay() -> void:
+	if has_node("TutorialCoachOverlay"):
+		get_node("TutorialCoachOverlay").queue_free()
+
+	if not tutorial_active or tutorial_step == TutorialStep.DONE:
+		return
+
+	if tutorial_step == TutorialStep.ENEMY_TURN and tutorial_enemy_turn_acknowledged:
+		return
+
+	var lesson: Dictionary = TUTORIAL_LESSONS.get(tutorial_step, {})
+	if lesson.is_empty():
+		return
+
+	var viewport_size := get_viewport_rect().size
+	var overlay := Control.new()
+	overlay.name = "TutorialCoachOverlay"
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(overlay)
+
+	var has_primary_action := str(lesson.get("action", "")) != ""
+	var has_skip_action := tutorial_step == TutorialStep.INTRO
+	var card_height := 172.0 if has_primary_action or has_skip_action else 124.0
+	var card_width: float = min(viewport_size.x - 32.0, 360.0)
+	var card := Panel.new()
+	card.size = Vector2(card_width, card_height)
+	card.position = Vector2(
+		(viewport_size.x - card_width) / 2.0,
+		72.0 if str(lesson.get("position", "bottom")) == "top" else viewport_size.y - card_height - 24.0
+	)
+	card.mouse_filter = Control.MOUSE_FILTER_STOP
+	_apply_panel_theme(card, THEME_PANEL_DIALOG)
+	overlay.add_child(card)
+
+	var title := _make_absolute_label(str(lesson["title"]), 16, COLOR_INK, 900)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	title.position = Vector2(14, 12)
+	title.size = Vector2(card_width - 28.0, 24)
+	card.add_child(title)
+
+	var body := _make_absolute_label(str(lesson["body"]), 12, COLOR_INK_SOFT, 700)
+	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	body.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.position = Vector2(14, 42)
+	body.size = Vector2(card_width - 28.0, 64)
+	card.add_child(body)
+
+	if has_primary_action or has_skip_action:
+		var actions := HBoxContainer.new()
+		actions.position = Vector2(14, card_height - 58.0)
+		actions.size = Vector2(card_width - 28.0, DIALOG_BUTTON_HEIGHT)
+		actions.add_theme_constant_override("separation", 8)
+		card.add_child(actions)
+
+		if has_primary_action:
+			var action_button := _make_dialog_action_button(str(lesson["action"]), _tutorial_handle_action, COLOR_PRIMARY_STRONG)
+			actions.add_child(action_button)
+
+		if has_skip_action:
+			var skip_button := _make_dialog_action_button("Skip", _skip_tutorial, COLOR_SECONDARY)
+			actions.add_child(skip_button)
 
 func _queue_prime(prime: int) -> void:
 	if screen != Screen.SOLO or not resolving_queue.is_empty():
