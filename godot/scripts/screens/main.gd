@@ -99,7 +99,7 @@ const THEME_PANEL_TARGET_DANGER := "AtomPanelTargetDanger"
 const THEME_PANEL_TARGET_GOLD := "AtomPanelTargetGold"
 const THEME_PANEL_AVATAR_PRIMARY := "AtomPanelAvatarPrimary"
 const THEME_PANEL_AVATAR_SECONDARY := "AtomPanelAvatarSecondary"
-const THEME_PANEL_BADGE_PRIMARY := "AtomPanelBadgePrimary"
+const THEME_PANEL_BADGE_GOLD := "AtomPanelBadgeGold"
 const THEME_PANEL_BADGE_SURFACE := "AtomPanelBadgeSurface"
 const THEME_PANEL_PARTICLE_PRIMARY := "AtomPanelParticlePrimary"
 const THEME_PANEL_PARTICLE_SECONDARY := "AtomPanelParticleSecondary"
@@ -2982,7 +2982,7 @@ func _make_app_theme() -> Theme:
 	_add_panel_theme(app_theme, THEME_PANEL_TARGET_GOLD, "Panel", _make_pixel_box_style(COLOR_GOLD, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER, RADIUS_PILL, true))
 	_add_panel_theme(app_theme, THEME_PANEL_AVATAR_PRIMARY, "Panel", _make_pixel_box_style(COLOR_PRIMARY_STRONG, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER, RADIUS_PILL, true))
 	_add_panel_theme(app_theme, THEME_PANEL_AVATAR_SECONDARY, "Panel", _make_pixel_box_style(COLOR_SECONDARY, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER, RADIUS_PILL, true))
-	_add_panel_theme(app_theme, THEME_PANEL_BADGE_PRIMARY, "Panel", _make_button_style(COLOR_PRIMARY_STRONG))
+	_add_panel_theme(app_theme, THEME_PANEL_BADGE_GOLD, "Panel", _make_button_style(COLOR_GOLD))
 	_add_panel_theme(app_theme, THEME_PANEL_BADGE_SURFACE, "Panel", _make_button_style(COLOR_SURFACE))
 	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_PRIMARY, "Panel", _make_pixel_box_style(COLOR_PRIMARY_STRONG, Color.TRANSPARENT, 0, RADIUS_PILL))
 	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_SECONDARY, "Panel", _make_pixel_box_style(COLOR_SECONDARY, Color.TRANSPARENT, 0, RADIUS_PILL))
@@ -3320,11 +3320,11 @@ func _make_dialog_action_button(text: String, callback: Callable, color: Color) 
 func _make_best_score_badge() -> Panel:
 	var badge := Panel.new()
 	badge.size = Vector2(124, 28)
-	var badge_color := COLOR_PRIMARY_STRONG if did_set_new_best else COLOR_SURFACE
-	_apply_panel_theme(badge, THEME_PANEL_BADGE_PRIMARY if did_set_new_best else THEME_PANEL_BADGE_SURFACE)
+	var badge_color := COLOR_GOLD if did_set_new_best else COLOR_SURFACE
+	_apply_panel_theme(badge, THEME_PANEL_BADGE_GOLD if did_set_new_best else THEME_PANEL_BADGE_SURFACE)
 
 	var badge_text := "NEW BEST!" if did_set_new_best else "BEST %s" % best_score
-	var text_color := _get_button_text_color(badge_color)
+	var text_color := COLOR_TEXT_INVERSE if did_set_new_best else _get_button_text_color(badge_color)
 	var label := _make_absolute_label(badge_text, 12, text_color, 800)
 	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	badge.add_child(label)
