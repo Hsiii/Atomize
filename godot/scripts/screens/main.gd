@@ -19,6 +19,7 @@ const TUTORIAL_CPU_THINK_BASE_SECONDS := 1.4
 const TUTORIAL_CPU_THINK_FACTOR_SECONDS := 0.2
 const COMBO_QUEUE_MAX_ITEMS := 7
 const SCREEN_ARG_PREFIX := "--atomize-screen="
+const APP_VERSION_LABEL := "v0.0.0"
 const SOLO_DURATION_SECONDS := 60.0
 const SOLO_COMBO_STEP_DELAY_SECONDS := 0.14
 const MULTIPLAYER_COMBO_STEP_DELAY_SECONDS := 0.22
@@ -1305,6 +1306,12 @@ func _build_home_layout() -> void:
 	background.color = COLOR_PAGE_BG
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(background)
+
+	var version_label := _make_absolute_label(APP_VERSION_LABEL, 13, COLOR_TEXT_INVERSE_SOFT, 600)
+	version_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	version_label.position = Vector2(14.0, 14.0)
+	version_label.size = Vector2(96.0, 24.0)
+	add_child(version_label)
 
 	var hero_height: float = min(384.0, viewport_size.y * 0.48)
 	var hero_diameter: float = max(viewport_size.x * 1.6, viewport_size.y * 1.3)
