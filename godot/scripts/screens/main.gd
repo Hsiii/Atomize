@@ -51,6 +51,7 @@ const COLOR_OUTLINE_STRONG := Color(0.094, 0.306, 0.467, 0.44)
 const COLOR_BUTTON_DISABLED := Color(0.094, 0.306, 0.467, 0.12)
 const COLOR_DANGER := Color("#c43a3a")
 const COLOR_GOLD := Color("#d4a017")
+const COLOR_GOLD_STRONG := Color("#e8b825")
 const COLOR_TRACK := Color(0.063, 0.106, 0.180, 0.12)
 const COLOR_BLOB_SHADOW := Color(0.063, 0.106, 0.180, 0.08)
 const PIXEL_BORDER := 2
@@ -105,6 +106,7 @@ const THEME_PANEL_PARTICLE_PRIMARY := "AtomPanelParticlePrimary"
 const THEME_PANEL_PARTICLE_SECONDARY := "AtomPanelParticleSecondary"
 const THEME_PANEL_PARTICLE_DANGER := "AtomPanelParticleDanger"
 const THEME_PANEL_PARTICLE_GOLD := "AtomPanelParticleGold"
+const THEME_PANEL_PARTICLE_GOLD_STRONG := "AtomPanelParticleGoldStrong"
 const THEME_PANEL_PARTICLE_RING_PRIMARY := "AtomPanelParticleRingPrimary"
 const THEME_PANEL_PARTICLE_RING_SECONDARY := "AtomPanelParticleRingSecondary"
 const THEME_PANEL_PARTICLE_RING_DANGER := "AtomPanelParticleRingDanger"
@@ -140,6 +142,16 @@ const ICON_PATHS := {
 	"trophy": "res://assets/icons/trophy.svg",
 	"users": "res://assets/icons/users.svg",
 }
+const VICTORY_CONFETTI := [
+	{"angle": -30.0, "distance": 16.0, "size": 0.70, "delay": 0.12},
+	{"angle": 25.0, "distance": 18.0, "size": 0.55, "delay": 0.18},
+	{"angle": 72.0, "distance": 15.0, "size": 0.65, "delay": 0.10},
+	{"angle": -80.0, "distance": 17.0, "size": 0.60, "delay": 0.22},
+	{"angle": 120.0, "distance": 14.5, "size": 0.68, "delay": 0.15},
+	{"angle": -125.0, "distance": 16.5, "size": 0.58, "delay": 0.20},
+	{"angle": 160.0, "distance": 13.5, "size": 0.72, "delay": 0.13},
+	{"angle": -165.0, "distance": 19.0, "size": 0.50, "delay": 0.25},
+]
 
 enum Screen {
 	HOME,
@@ -2442,6 +2454,8 @@ func _build_battle_over_overlay() -> void:
 	add_child(overlay)
 
 	var panel := _make_dialog_panel(360)
+	if did_win:
+		_spawn_victory_confetti(overlay, panel.position + (panel.size / 2.0))
 	overlay.add_child(panel)
 
 	_add_dialog_header(panel, "Victory" if did_win else "Defeat", COLOR_GOLD if did_win else COLOR_INK_SOFT)
@@ -2988,6 +3002,7 @@ func _make_app_theme() -> Theme:
 	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_SECONDARY, "Panel", _make_pixel_box_style(COLOR_SECONDARY, Color.TRANSPARENT, 0, RADIUS_PILL))
 	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_DANGER, "Panel", _make_pixel_box_style(COLOR_DANGER, Color.TRANSPARENT, 0, RADIUS_PILL))
 	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_GOLD, "Panel", _make_pixel_box_style(COLOR_GOLD, Color.TRANSPARENT, 0, RADIUS_PILL))
+	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_GOLD_STRONG, "Panel", _make_pixel_box_style(COLOR_GOLD_STRONG, Color.TRANSPARENT, 0, RADIUS_PILL))
 	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_RING_PRIMARY, "Panel", _make_outline_circle_style(RADIUS_PILL, COLOR_PRIMARY_STRONG, PIXEL_BORDER))
 	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_RING_SECONDARY, "Panel", _make_outline_circle_style(RADIUS_PILL, COLOR_SECONDARY, PIXEL_BORDER))
 	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_RING_DANGER, "Panel", _make_outline_circle_style(RADIUS_PILL, COLOR_DANGER, PIXEL_BORDER))
@@ -3718,6 +3733,60 @@ func _spawn_damage_pop(text: String, position: Vector2, color: Color) -> void:
 	tween.tween_property(label, "position", position + Vector2(0, -18), DAMAGE_POP_SECONDS).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tween.tween_property(label, "modulate", Color(1, 1, 1, 0), DAMAGE_POP_SECONDS).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	tween.finished.connect(label.queue_free)
+
+func _spawn_victory_confetti(parent: Control, center: Vector2) -> void:
+	for index in range(VICTORY_CONFETTI.size()):
+		var dot: Dictionary = VICTORY_CONFETTI[index]
+		var angle := deg_to_rad(float(dot["angle"]))
+		var distance := float(dot["distance"]) * 16.0
+		var direction := Vector2(sin(angle), -cos(angle))
+		var endpoint := center + (direction * distance)
+		var particle_size := float(dot["size"]) * 16.0
+		_spawn_confetti_particle(
+			parent,
+			center,
+			endpoint,
+			_victory_confetti_theme(index),
+			particle_size,
+			float(dot["delay"])
+		)
+
+func _victory_confetti_theme(index: int) -> String:
+	match index % 3:
+		0:
+			return THEME_PANEL_PARTICLE_GOLD
+		1:
+			return THEME_PANEL_PARTICLE_GOLD_STRONG
+		_:
+			return THEME_PANEL_PARTICLE_PRIMARY
+
+func _spawn_confetti_particle(
+	parent: Control,
+	source: Vector2,
+	target: Vector2,
+	theme_name: String,
+	particle_size: float,
+	delay: float
+) -> void:
+	var particle := _make_particle_panel(theme_name, particle_size)
+	particle.position = source - (particle.size / 2.0)
+	particle.scale = Vector2.ZERO
+	particle.modulate = Color(1, 1, 1, 0)
+	parent.add_child(particle)
+
+	var mid_target := source + ((target - source) * 0.45)
+	var tween := particle.create_tween()
+	if delay > 0.0:
+		tween.tween_interval(delay)
+	tween.set_parallel(true)
+	tween.tween_property(particle, "position", mid_target - (particle.size / 2.0), 0.39).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(particle, "scale", Vector2(1.15, 1.15), 0.39).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(particle, "modulate", Color(1, 1, 1, 1), 0.39).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.chain().set_parallel(true)
+	tween.tween_property(particle, "position", target - (particle.size / 2.0), 0.91).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(particle, "scale", Vector2(0.6, 0.6), 0.91).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tween.tween_property(particle, "modulate", Color(1, 1, 1, 0), 0.91).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tween.finished.connect(particle.queue_free)
 
 func _spawn_radial_particles(center: Vector2, fill_theme: String, ring_theme: String, count: int = 8) -> void:
 	for index in range(count):
