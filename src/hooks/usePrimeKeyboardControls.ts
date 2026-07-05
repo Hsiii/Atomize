@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import type { Prime } from '../core/primes';
-import {
-    desktopActionKeybinds,
-    getDesktopPrimeFromKey,
-} from '../lib/game-keybinds';
+import { desktopActionKeybinds } from '../lib/game-keybinds';
 
 type UsePrimeKeyboardControlsOptions = {
     canQueuePrime: boolean;
@@ -25,6 +22,10 @@ type UsePrimeKeyboardControlsResult = {
     handlePrimeTap: (prime: Prime) => void;
     handleSubmit: () => void;
 };
+
+function isPrimeDigitKey(key: string): boolean {
+    return key.length === 1 && key >= '1' && key <= '9';
+}
 
 export function usePrimeKeyboardControls({
     canQueuePrime,
@@ -86,17 +87,6 @@ export function usePrimeKeyboardControls({
     }
 
     function processFreshDigit(digit: string) {
-        if (digit === '4') {
-            const shortcutPrime = playablePrimes.find((prime) => prime === 23);
-
-            if (shortcutPrime !== undefined) {
-                clearBufferedPrimeInput();
-                onPrimeTap(shortcutPrime);
-            }
-
-            return;
-        }
-
         const matchingPrimes = playablePrimes.filter((prime) =>
             String(prime).startsWith(digit)
         );
@@ -147,6 +137,19 @@ export function usePrimeKeyboardControls({
         processFreshDigit(digit);
     }
 
+    function handlePrime23Shortcut() {
+        if (isInputDisabled || !canQueuePrime) {
+            return;
+        }
+
+        const shortcutPrime = playablePrimes.find((prime) => prime === 23);
+
+        if (shortcutPrime !== undefined) {
+            clearBufferedPrimeInput();
+            onPrimeTap(shortcutPrime);
+        }
+    }
+
     function handlePrimeTap(prime: Prime) {
         clearBufferedPrimeInput();
         onPrimeTap(prime);
@@ -187,7 +190,6 @@ export function usePrimeKeyboardControls({
     useEffect(() => {
         function handleWindowKeyDown(event: KeyboardEvent) {
             const { target } = event;
-            const normalizedKey = event.key.toLowerCase();
 
             if (
                 target instanceof HTMLElement &&
@@ -232,16 +234,13 @@ export function usePrimeKeyboardControls({
                 return;
             }
 
-            const directPrime = getDesktopPrimeFromKey(
-                playablePrimes,
-                normalizedKey
-            );
-
-            if (directPrime !== undefined) {
+            if (event.shiftKey && event.code === 'Digit2') {
                 event.preventDefault();
-                handlePrimeTap(directPrime);
+                handlePrime23Shortcut();
                 return;
             }
+
+            const normalizedKey = event.key.toLowerCase();
 
             if (normalizedKey === desktopActionKeybinds.backspace) {
                 if (
@@ -262,7 +261,7 @@ export function usePrimeKeyboardControls({
                 return;
             }
 
-            if (!/^[1-9]$/.test(event.key)) {
+            if (!isPrimeDigitKey(event.key)) {
                 return;
             }
 
