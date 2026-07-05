@@ -1859,7 +1859,7 @@ func _build_game_over_layout() -> void:
 	var overlay := _make_modal_overlay()
 	add_child(overlay)
 
-	var panel := _make_dialog_panel(368)
+	var panel := _make_dialog_panel(408)
 	overlay.add_child(panel)
 
 	_add_dialog_header(panel, "Time's Up")
@@ -1880,15 +1880,18 @@ func _build_game_over_layout() -> void:
 
 	var stats := VBoxContainer.new()
 	stats.position = Vector2(12, 188)
-	stats.size = Vector2(DIALOG_WIDTH - 24.0, 92)
+	stats.size = Vector2(DIALOG_WIDTH - 24.0, 132)
 	stats.add_theme_constant_override("separation", 8)
 	panel.add_child(stats)
 
 	_add_dialog_stat_row(stats, "Atomized", int(solo_state["clearedStages"]))
 	_add_dialog_stat_row(stats, "Max Combo", int(solo_state["maxCombo"]))
+	var exp_gained := int(floor(float(solo_state["score"]) / 10.0))
+	if exp_gained > 0:
+		_add_dialog_stat_text_row(stats, "EXP", "+%d" % exp_gained)
 
 	var actions := HBoxContainer.new()
-	actions.position = Vector2(12, 304)
+	actions.position = Vector2(12, 344)
 	actions.size = Vector2(DIALOG_WIDTH - 24.0, DIALOG_BUTTON_HEIGHT)
 	actions.add_theme_constant_override("separation", 8)
 	panel.add_child(actions)
@@ -3123,6 +3126,9 @@ func _make_best_score_badge() -> Panel:
 	return badge
 
 func _add_dialog_stat_row(container: VBoxContainer, label_text: String, value: int) -> void:
+	_add_dialog_stat_text_row(container, label_text, str(value))
+
+func _add_dialog_stat_text_row(container: VBoxContainer, label_text: String, value_text: String) -> void:
 	var row := HBoxContainer.new()
 	row.custom_minimum_size = Vector2(DIALOG_WIDTH - 24.0, 36)
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -3133,7 +3139,7 @@ func _add_dialog_stat_row(container: VBoxContainer, label_text: String, value: i
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(label)
 
-	var value_label := _make_absolute_label(str(value), 16, COLOR_PRIMARY, 800)
+	var value_label := _make_absolute_label(value_text, 16, COLOR_PRIMARY, 800)
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	value_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(value_label)
