@@ -5,6 +5,7 @@ import { uiText } from '../../app-state';
 import type { SoloState } from '../../core/game';
 import type { Prime } from '../../core/primes';
 import { usePrimeKeyboardControls } from '../../hooks/usePrimeKeyboardControls';
+import { getSoloExpGain } from '../../lib/app-helpers';
 import type { BestScoreRecord } from '../../lib/app-helpers';
 
 import './GamePlayScreen.css';
@@ -215,7 +216,7 @@ export function SingleGameScreen({
                         atomized={soloState.clearedStages}
                         bestScore={bestScore.score}
                         comboCount={soloState.maxCombo}
-                        expGained={Math.floor(soloState.score / 10)}
+                        expGained={getSoloExpGain(soloState.score)}
                         isNewBest={isNewBest}
                         mode='solo'
                         onRetry={handleRetry}

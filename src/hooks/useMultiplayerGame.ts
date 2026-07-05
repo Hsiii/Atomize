@@ -9,6 +9,7 @@ import type { Prime } from '../core/primes';
 import {
     createRoomId,
     detachPromise,
+    getBattleExpGain,
     getDisplayPlayerName,
     isPendingGuestJoin,
     playablePrimes,
@@ -230,6 +231,7 @@ type UseMultiplayerGameOptions = {
     playerName: string;
     screen: Screen;
     onScreenChange: (screen: Screen) => void;
+    onBattleFinish?: (experienceGain: number) => void;
 };
 
 type UseMultiplayerGameResult = {
@@ -257,6 +259,7 @@ type UseMultiplayerGameResult = {
 };
 
 export function useMultiplayerGame({
+    onBattleFinish,
     playerName,
     screen,
     onScreenChange,
@@ -787,6 +790,8 @@ export function useMultiplayerGame({
                 opponent !== undefined &&
                 opponent.hp <= 0;
 
+            onBattleFinish?.(getBattleExpGain(isWinner, isTie));
+
             if (supabaseAuthClient) {
                 detachPromise(
                     supabaseAuthClient.auth.getSession().then(({ data }) => {
@@ -808,7 +813,12 @@ export function useMultiplayerGame({
                 );
             }
         }
-    }, [multiplayer.snapshot, multiplayer.playerId, multiplayer.roomId]);
+    }, [
+        multiplayer.snapshot,
+        multiplayer.playerId,
+        multiplayer.roomId,
+        onBattleFinish,
+    ]);
 
     return {
         playablePrimes,

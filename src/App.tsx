@@ -15,11 +15,14 @@ import { useMultiplayerGame } from './hooks/useMultiplayerGame';
 import { useSoloGame } from './hooks/useSoloGame';
 import { useTutorialGame } from './hooks/useTutorialGame';
 import {
+    addExperience,
     calculateLevel,
     detachPromise,
     getInitialPlayerName,
+    getSoloExpGain,
     isGuestModeEnabled,
     loadBestScore,
+    loadExperience,
     markTutorialComplete,
     normalizeHistoricSoloHighScore,
     persistPlayerName,
@@ -185,6 +188,7 @@ async function syncAuthenticatedLeaderboardProfile({
 }) {
     const userId = currentSession.user.id;
     const fallbackHighScore = loadBestScore().score;
+    const fallbackExperience = loadExperience();
     const existingRecordResponse = await authClient
         .from('combo_leaderboard')
         .select('player_name, high_score, experience, updated_at')
@@ -207,6 +211,10 @@ async function syncAuthenticatedLeaderboardProfile({
             existingRecord?.updated_at
         ),
         fallbackHighScore
+    );
+    const nextExperience = Math.max(
+        existingRecord?.experience ?? 0,
+        fallbackExperience
     );
 
     if (nextHighScore > 0) {
@@ -242,6 +250,7 @@ async function syncAuthenticatedLeaderboardProfile({
             user_id: userId,
             player_name: nextPlayerName,
             high_score: nextHighScore,
+            experience: nextExperience,
         },
         { onConflict: 'user_id' }
     );
@@ -261,7 +270,7 @@ async function syncAuthenticatedLeaderboardProfile({
         );
     }
 
-    return calculateLevel(existingRecord?.experience ?? 0);
+    return calculateLevel(nextExperience);
 }
 
 const SCREEN_TO_PATH = {
@@ -354,8 +363,7 @@ export default function App(): JSX.Element {
                         currentSession: data.session,
                         fallbackName: getAuthDisplayName(
                             data.session.user.user_metadata as
-                                | Record<string, unknown>
-                                | undefined,
+                                Record<string, unknown> | undefined,
                             data.session.user.email
                         ),
                         onPlayerName: setPlayerName,
@@ -383,8 +391,7 @@ export default function App(): JSX.Element {
                             currentSession,
                             fallbackName: getAuthDisplayName(
                                 currentSession.user.user_metadata as
-                                    | Record<string, unknown>
-                                    | undefined,
+                                    Record<string, unknown> | undefined,
                                 currentSession.user.email
                             ),
                             onPlayerName: setPlayerName,
@@ -404,8 +411,50 @@ export default function App(): JSX.Element {
     }, []);
 
     const [playerName, setPlayerName] = useState(() => getInitialPlayerName());
-    const [playerLevel, setPlayerLevel] = useState<number | undefined>(
-        undefined
+    const [playerLevel, setPlayerLevel] = useState(() =>
+        calculateLevel(loadExperience())
+    );
+    const awardExperience = useCallback(
+        (experienceGain: number) => {
+            const normalizedGain = Math.max(0, Math.floor(experienceGain));
+
+            if (normalizedGain === 0) {
+                return;
+            }
+
+            const userId = session?.user.id;
+            const authClient = supabaseAuthClient;
+
+            if (!authClient || !userId) {
+                setPlayerLevel(calculateLevel(addExperience(normalizedGain)));
+                return;
+            }
+
+            detachPromise(
+                Promise.resolve(
+                    authClient
+                        .rpc('add_solo_exp', {
+                            p_user_id: userId,
+                            p_exp_gain: normalizedGain,
+                        })
+                        .then(() =>
+                            authClient
+                                .from('combo_leaderboard')
+                                .select('experience')
+                                .eq('user_id', userId)
+                                .single()
+                        )
+                        .then((res) => {
+                            if (res.data) {
+                                setPlayerLevel(
+                                    calculateLevel(res.data.experience)
+                                );
+                            }
+                        })
+                )
+            );
+        },
+        [session?.user.id]
     );
     const soloGame = useSoloGame({
         screen,
@@ -429,45 +478,17 @@ export default function App(): JSX.Element {
             );
         },
         onGameFinish: (score) => {
-            const userId = session?.user.id;
-            const authClient = supabaseAuthClient;
-            if (!authClient || !userId) {
-                return;
-            }
-            const expGain = Math.floor(score / 10);
-            if (expGain > 0) {
-                detachPromise(
-                    Promise.resolve(
-                        authClient
-                            .rpc('add_solo_exp', {
-                                p_user_id: userId,
-                                p_exp_gain: expGain,
-                            })
-                            .then(() =>
-                                authClient
-                                    .from('combo_leaderboard')
-                                    .select('experience')
-                                    .eq('user_id', userId)
-                                    .single()
-                            )
-                            .then((res) => {
-                                if (res.data) {
-                                    setPlayerLevel(
-                                        calculateLevel(res.data.experience)
-                                    );
-                                }
-                            })
-                    )
-                );
-            }
+            awardExperience(getSoloExpGain(score));
         },
     });
     const multiplayerGame = useMultiplayerGame({
+        onBattleFinish: awardExperience,
         playerName,
         screen,
         onScreenChange,
     });
     const localCpuGame = useLocalCpuGame({
+        onBattleFinish: awardExperience,
         playerName,
         screen,
         onScreenChange,
@@ -700,7 +721,7 @@ export default function App(): JSX.Element {
         setIsGuest(true);
         setGuestModeEnabled(true);
         setPlayerName('');
-        setPlayerLevel(undefined);
+        setPlayerLevel(calculateLevel(loadExperience()));
         persistPlayerName('');
     }
 
