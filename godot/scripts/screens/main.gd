@@ -2822,9 +2822,6 @@ func _resolve_next_queued_prime() -> void:
 
 	var next_state: Dictionary = Game.advance_solo_state(current_state, run_seed, next_prime, options)
 
-	if outcome["cleared"]:
-		_apply_time_compensation(current_state, submitted_queue_length)
-
 	if has_redundant_buffered_primes:
 		solo_state = Game.apply_solo_penalty(next_state)
 		solo_time_left = max(0.0, solo_time_left - 1.0)
@@ -2836,6 +2833,8 @@ func _resolve_next_queued_prime() -> void:
 		_spawn_radial_particles(_target_center(), THEME_PANEL_PARTICLE_DANGER, THEME_PANEL_PARTICLE_RING_DANGER, 6)
 	else:
 		solo_state = next_state
+		if outcome["cleared"]:
+			_apply_time_compensation(current_state, submitted_queue_length)
 		last_result_text = ""
 		_play_sfx("success" if outcome["cleared"] else "prime")
 		_play_target_impact()
