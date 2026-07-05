@@ -436,6 +436,7 @@ var queue_label: Label
 var result_label: Label
 var leaderboard_rows_root: VBoxContainer
 var leaderboard_status_label: Label
+var battle_online_scroll: ScrollContainer
 var battle_online_rows_root: VBoxContainer
 var battle_online_status_label: Label
 var prime_grid: GridContainer
@@ -1733,32 +1734,41 @@ func _add_battle_online_state(left: float, top: float, width: float) -> void:
 	battle_online_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	add_child(battle_online_status_label)
 
+	battle_online_scroll = ScrollContainer.new()
+	battle_online_scroll.position = Vector2(left, top)
+	battle_online_scroll.size = Vector2(width, 196)
+	add_child(battle_online_scroll)
+
 	battle_online_rows_root = VBoxContainer.new()
-	battle_online_rows_root.position = Vector2(left, top)
-	battle_online_rows_root.size = Vector2(width, 196)
+	battle_online_rows_root.custom_minimum_size = Vector2(width, 0)
+	battle_online_rows_root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	battle_online_rows_root.add_theme_constant_override("separation", 8)
-	add_child(battle_online_rows_root)
+	battle_online_scroll.add_child(battle_online_rows_root)
 
 	_render_battle_online_players()
 
 func _render_battle_online_players() -> void:
-	if not is_instance_valid(battle_online_status_label) or not is_instance_valid(battle_online_rows_root):
+	if (
+		not is_instance_valid(battle_online_status_label)
+		or not is_instance_valid(battle_online_scroll)
+		or not is_instance_valid(battle_online_rows_root)
+	):
 		return
 
 	for child in battle_online_rows_root.get_children():
 		child.queue_free()
 
 	if realtime_online_players.is_empty():
-		battle_online_rows_root.visible = false
+		battle_online_scroll.visible = false
 		battle_online_status_label.visible = true
 		battle_online_status_label.text = "No players online\nPlayers will appear here when they join."
 		return
 
-	battle_online_rows_root.visible = true
+	battle_online_scroll.visible = true
 	battle_online_status_label.visible = false
 
-	for index in range(min(3, realtime_online_players.size())):
-		_add_battle_online_row(battle_online_rows_root, realtime_online_players[index], battle_online_rows_root.size.x)
+	for index in range(realtime_online_players.size()):
+		_add_battle_online_row(battle_online_rows_root, realtime_online_players[index], battle_online_scroll.size.x)
 
 func _add_battle_online_row(parent: VBoxContainer, player: Dictionary, width: float) -> void:
 	var row := Control.new()
