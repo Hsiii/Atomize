@@ -40,6 +40,7 @@ const COLOR_INK := Color("#223247")
 const COLOR_PAGE_BG := Color("#f4f7fb")
 const COLOR_SURFACE := Color("#ffffff")
 const COLOR_INK_SOFT := Color(0.063, 0.106, 0.180, 0.72)
+const COLOR_INK_SOFT_HINT := Color(0.063, 0.106, 0.180, 0.50)
 const COLOR_KEYPAD_BUTTON_BG := Color(0.094, 0.306, 0.467, 0.12)
 const COLOR_KEYPAD_BUTTON_ACTIVE_BG := Color(0.063, 0.106, 0.180, 0.14)
 const COLOR_KEYPAD_BUTTON_TEXT := Color(0.063, 0.106, 0.180, 0.54)
@@ -442,6 +443,7 @@ var leaderboard_status_label: Label
 var battle_online_scroll: ScrollContainer
 var battle_online_rows_root: VBoxContainer
 var battle_online_status_label: Label
+var battle_online_hint_label: Label
 var prime_grid: GridContainer
 var submit_button: Button
 var backspace_button: Button
@@ -1738,10 +1740,17 @@ func _add_battle_picker_row(
 func _add_battle_online_state(left: float, top: float, width: float) -> void:
 	battle_online_status_label = _make_absolute_label("", 13, COLOR_INK_SOFT, 700)
 	battle_online_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	battle_online_status_label.position = Vector2(left, top + 8.0)
-	battle_online_status_label.size = Vector2(width, 56)
+	battle_online_status_label.position = Vector2(left, top + 10.0)
+	battle_online_status_label.size = Vector2(width, 24)
 	battle_online_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	add_child(battle_online_status_label)
+
+	battle_online_hint_label = _make_absolute_label("Players will appear here when they join.", 13, COLOR_INK_SOFT_HINT, 600)
+	battle_online_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	battle_online_hint_label.position = Vector2(left, top + 34.0)
+	battle_online_hint_label.size = Vector2(width, 28)
+	battle_online_hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	add_child(battle_online_hint_label)
 
 	battle_online_scroll = ScrollContainer.new()
 	battle_online_scroll.position = Vector2(left, top)
@@ -1759,6 +1768,7 @@ func _add_battle_online_state(left: float, top: float, width: float) -> void:
 func _render_battle_online_players() -> void:
 	if (
 		not is_instance_valid(battle_online_status_label)
+		or not is_instance_valid(battle_online_hint_label)
 		or not is_instance_valid(battle_online_scroll)
 		or not is_instance_valid(battle_online_rows_root)
 	):
@@ -1770,11 +1780,14 @@ func _render_battle_online_players() -> void:
 	if realtime_online_players.is_empty():
 		battle_online_scroll.visible = false
 		battle_online_status_label.visible = true
-		battle_online_status_label.text = "No players online\nPlayers will appear here when they join."
+		battle_online_hint_label.visible = true
+		battle_online_status_label.text = "No players online"
+		battle_online_hint_label.text = "Players will appear here when they join."
 		return
 
 	battle_online_scroll.visible = true
 	battle_online_status_label.visible = false
+	battle_online_hint_label.visible = false
 
 	for index in range(realtime_online_players.size()):
 		_add_battle_online_row(battle_online_rows_root, realtime_online_players[index], battle_online_scroll.size.x)
