@@ -143,7 +143,6 @@ const ICON_PATHS := {
 
 enum Screen {
 	HOME,
-	HELP,
 	LEADERBOARD,
 	SOLO_PREGAME,
 	BATTLE_PICKER,
@@ -786,8 +785,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif screen == Screen.PAUSED:
 			_resume_game()
 		elif (
-			screen == Screen.HELP
-			or screen == Screen.LEADERBOARD
+			screen == Screen.LEADERBOARD
 			or screen == Screen.SOLO_PREGAME
 			or screen == Screen.BATTLE_PICKER
 			or screen == Screen.BATTLE_READY
@@ -1045,10 +1043,6 @@ func _start_home() -> void:
 	_build_home_layout()
 
 func _start_help() -> void:
-	screen = Screen.HELP
-	_build_help_layout()
-
-func _start_tutorial_play() -> void:
 	_start_tutorial_game()
 
 func _skip_tutorial() -> void:
@@ -1906,68 +1900,6 @@ func _build_battle_game_layout() -> void:
 	_add_submit_icon(submit_button, SOLO_KEY_SIZE, (SOLO_KEY_SIZE * 2.0) + SOLO_KEY_GAP, _get_button_text_color(COLOR_PRIMARY_STRONG))
 	submit_button.pressed.connect(_submit_battle_queue)
 	add_child(submit_button)
-
-func _build_help_layout() -> void:
-	_clear_screen()
-
-	var viewport_size := get_viewport_rect().size
-
-	var background := ColorRect.new()
-	background.color = COLOR_PAGE_BG
-	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(background)
-
-	var header_bottom := 208.0
-	var header := ColorRect.new()
-	header.color = COLOR_PRIMARY
-	header.position = Vector2.ZERO
-	header.size = Vector2(viewport_size.x, header_bottom)
-	add_child(header)
-
-	var header_rule := ColorRect.new()
-	header_rule.color = COLOR_PRIMARY_STRONG
-	header_rule.position = Vector2(0, header_bottom - PIXEL_BORDER)
-	header_rule.size = Vector2(viewport_size.x, PIXEL_BORDER)
-	add_child(header_rule)
-
-	var back_button := _make_header_icon_button("←", _start_home)
-	back_button.position = Vector2(12, 24)
-	add_child(back_button)
-
-	var title := _make_absolute_label("Tutorial", 16, COLOR_TEXT_INVERSE, 900)
-	title.position = Vector2(0, 28)
-	title.size = Vector2(viewport_size.x, 36)
-	add_child(title)
-
-	var icon := _make_absolute_label("?", 64, COLOR_TEXT_INVERSE, 900)
-	icon.position = Vector2(0, 82)
-	icon.size = Vector2(viewport_size.x, 72)
-	add_child(icon)
-
-	var tagline := _make_absolute_label("Tutorial - Factor to survive", 12, COLOR_TEXT_INVERSE_SOFT, 800)
-	tagline.position = Vector2(0, 168)
-	tagline.size = Vector2(viewport_size.x, 24)
-	add_child(tagline)
-
-	var body := VBoxContainer.new()
-	body.position = Vector2((viewport_size.x - 320.0) / 2.0, 256)
-	body.size = Vector2(320, 272)
-	body.add_theme_constant_override("separation", 12)
-	add_child(body)
-
-	_add_help_rule(body, "Tutorial - Factor to survive", "This is your compound. Factor and atomize it to deal damage to the enemy.")
-	_add_help_rule(body, "Queue the next factor", "Now tap 3 to complete the factorization.")
-	_add_help_rule(body, "Perfect clear", "Queue ALL factors in one send for a perfect clear. Perfect clears heal HP! Try it on this blob.")
-	_add_help_rule(body, "You are ready", "Queue primes, clear compounds for combo damage, and avoid wrong factors. Finish the match!")
-
-	var actions := VBoxContainer.new()
-	actions.position = Vector2(48, viewport_size.y - 180.0)
-	actions.size = Vector2(viewport_size.x - 96.0, 112)
-	actions.add_theme_constant_override("separation", 12)
-	add_child(actions)
-
-	actions.add_child(_make_wide_page_button("Start", _start_tutorial_play, COLOR_PRIMARY_STRONG))
-	actions.add_child(_make_wide_page_button("Skip", _skip_tutorial, COLOR_SECONDARY))
 
 func _clear_screen() -> void:
 	_clear_control_tweens()
@@ -3279,24 +3211,6 @@ func _make_hp_bar(color: Color) -> ProgressBar:
 	bar.value = BattleRoom.STARTING_HP
 	_apply_progress_theme(bar, _progress_theme_for_color(color))
 	return bar
-
-func _add_help_rule(container: VBoxContainer, title_text: String, body_text: String) -> void:
-	var rule := VBoxContainer.new()
-	rule.custom_minimum_size = Vector2(320, 64)
-	rule.add_theme_constant_override("separation", 4)
-	container.add_child(rule)
-
-	var title := _make_absolute_label(title_text, 16, COLOR_INK, 800)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	title.custom_minimum_size = Vector2(320, 20)
-	rule.add_child(title)
-
-	var body := _make_absolute_label(body_text, 13, COLOR_INK_SOFT, 700)
-	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	body.custom_minimum_size = Vector2(320, 36)
-	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	rule.add_child(body)
 
 func _make_wide_page_button(text: String, callback: Callable, color: Color) -> Button:
 	var button := Button.new()
