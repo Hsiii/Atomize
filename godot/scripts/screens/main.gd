@@ -2898,7 +2898,7 @@ func _resolve_next_queued_prime() -> void:
 		_play_target_impact()
 		var score_delta := int(next_state["score"]) - int(current_state["score"])
 		if score_delta > 0:
-			_spawn_damage_pop("+%s" % score_delta, _target_pop_position(), COLOR_PRIMARY)
+			_spawn_damage_pop("+%s" % score_delta, _target_pop_position(), COLOR_GOLD)
 		_spawn_radial_particles(
 			_target_center(),
 			THEME_PANEL_PARTICLE_PRIMARY,
