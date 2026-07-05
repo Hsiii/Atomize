@@ -105,6 +105,7 @@ const THEME_PANEL_AVATAR_PRIMARY := "AtomPanelAvatarPrimary"
 const THEME_PANEL_AVATAR_SECONDARY := "AtomPanelAvatarSecondary"
 const THEME_PANEL_BADGE_GOLD := "AtomPanelBadgeGold"
 const THEME_PANEL_BADGE_SURFACE := "AtomPanelBadgeSurface"
+const THEME_PANEL_READY_BADGE := "AtomPanelReadyBadge"
 const THEME_PANEL_PARTICLE_PRIMARY := "AtomPanelParticlePrimary"
 const THEME_PANEL_PARTICLE_SECONDARY := "AtomPanelParticleSecondary"
 const THEME_PANEL_PARTICLE_DANGER := "AtomPanelParticleDanger"
@@ -1825,6 +1826,7 @@ func _build_battle_ready_layout() -> void:
 
 	var bot_avatar := _make_avatar_icon_circle(80, COLOR_SECONDARY, "bot")
 	bot_avatar.position = Vector2((viewport_size.x - 80.0) / 2.0, 268)
+	_add_ready_badge(bot_avatar, 20)
 	add_child(bot_avatar)
 
 	var bot_label := _make_absolute_label(BATTLE_BOT_NAME, 15, COLOR_TEXT_INVERSE, 800)
@@ -3023,6 +3025,7 @@ func _make_app_theme() -> Theme:
 	_add_panel_theme(app_theme, THEME_PANEL_AVATAR_SECONDARY, "Panel", _make_pixel_box_style(COLOR_SECONDARY, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER, RADIUS_PILL, true))
 	_add_panel_theme(app_theme, THEME_PANEL_BADGE_GOLD, "Panel", _make_button_style(COLOR_GOLD))
 	_add_panel_theme(app_theme, THEME_PANEL_BADGE_SURFACE, "Panel", _make_button_style(COLOR_SURFACE))
+	_add_panel_theme(app_theme, THEME_PANEL_READY_BADGE, "Panel", _make_pixel_box_style(COLOR_SURFACE, COLOR_PRIMARY, PIXEL_BORDER, RADIUS_PILL, true))
 	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_PRIMARY, "Panel", _make_pixel_box_style(COLOR_PRIMARY_STRONG, Color.TRANSPARENT, 0, RADIUS_PILL))
 	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_SECONDARY, "Panel", _make_pixel_box_style(COLOR_SECONDARY, Color.TRANSPARENT, 0, RADIUS_PILL))
 	_add_panel_theme(app_theme, THEME_PANEL_PARTICLE_DANGER, "Panel", _make_pixel_box_style(COLOR_DANGER, Color.TRANSPARENT, 0, RADIUS_PILL))
@@ -3268,6 +3271,24 @@ func _make_avatar_icon_circle(size: float, color: Color, icon_kind: String) -> P
 		_add_guest_avatar_icon(icon_slot, size, COLOR_TEXT_INVERSE)
 
 	return avatar
+
+func _add_ready_badge(parent: Control, size: float) -> void:
+	var badge := Panel.new()
+	badge.size = Vector2(size, size)
+	badge.position = Vector2(parent.size.x - size + 2.0, parent.size.y - size + 2.0)
+	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_apply_panel_theme(badge, THEME_PANEL_READY_BADGE)
+	parent.add_child(badge)
+
+	var check := Line2D.new()
+	check.default_color = COLOR_PRIMARY
+	check.width = 3.0
+	check.points = PackedVector2Array([
+		Vector2(size * 0.28, size * 0.52),
+		Vector2(size * 0.42, size * 0.66),
+		Vector2(size * 0.74, size * 0.34),
+	])
+	badge.add_child(check)
 
 func _make_hp_bar(color: Color) -> ProgressBar:
 	var bar := ProgressBar.new()
