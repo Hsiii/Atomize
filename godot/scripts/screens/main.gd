@@ -839,7 +839,7 @@ func _start_leaderboard() -> void:
 	_close_realtime_lobby()
 	screen = Screen.LEADERBOARD
 	leaderboard_entries.clear()
-	leaderboard_status_text = "Loading scores..."
+	leaderboard_status_text = "Waiting..."
 	_build_leaderboard_layout()
 	_request_leaderboard()
 
@@ -1180,7 +1180,7 @@ func _on_leaderboard_request_completed(
 		return
 
 	leaderboard_entries = _top_leaderboard_entries(_parse_leaderboard_entries(parsed))
-	leaderboard_status_text = "" if not leaderboard_entries.is_empty() else "No leaderboard scores yet"
+	leaderboard_status_text = "" if not leaderboard_entries.is_empty() else "No records found"
 	_render_leaderboard()
 
 func _parse_leaderboard_entries(rows: Array) -> Array[Dictionary]:
@@ -1232,9 +1232,9 @@ func _normalize_historic_solo_high_score(score: float, updated_at: String) -> in
 
 	return min(HISTORIC_SOLO_SCORE_CAP, int(round(score * HISTORIC_SOLO_SCORE_FACTOR)))
 
-func _use_local_leaderboard_fallback(status_text: String) -> void:
+func _use_local_leaderboard_fallback(_status_text: String) -> void:
 	leaderboard_entries = _local_leaderboard_entries()
-	leaderboard_status_text = status_text if not leaderboard_entries.is_empty() else "No records found"
+	leaderboard_status_text = "" if not leaderboard_entries.is_empty() else "No records found"
 	_render_leaderboard()
 
 func _local_leaderboard_entries() -> Array[Dictionary]:
