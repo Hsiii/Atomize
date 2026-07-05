@@ -125,6 +125,8 @@ export const uiText = {
     wins: 'Wins',
     losses: 'Losses',
     winRate: 'Win Rate',
+    levelLabel: 'Lv.',
+    exp: 'EXP',
     loginError: 'Could not start Google log in.',
     emailLoginError: 'Could not log in with email and password.',
     emailSignupError: 'Could not create your account.',

@@ -5,11 +5,15 @@ import { PRIME_POOL } from '../core/primes';
 const playerNameStorageKey = 'atomize.playerName';
 const bestScoreStorageKey = 'atomize.bestScore';
 const bestMaxComboStorageKey = 'atomize.bestMaxCombo';
+const experienceStorageKey = 'atomize.experience';
 const tutorialCompleteStorageKey = 'atomize.tutorialComplete';
 const guestModeStorageKey = 'atomize.isGuestMode';
 const SOLO_SCORE_REDESIGN_AT = '2026-04-07T10:48:36.000Z';
 const HISTORIC_SOLO_SCORE_FACTOR = 0.5;
 const HISTORIC_SOLO_SCORE_CAP = 600;
+const battleWinExperience = 150;
+const battleTieExperience = 50;
+const battleLossExperience = 30;
 
 const guestSessionNumber = Math.floor(Math.random() * 999) + 1;
 
@@ -154,6 +158,53 @@ export function saveBestScore(score: number, maxCombo: number): boolean {
     }
 
     return isNewHighScore;
+}
+
+export function loadExperience(): number {
+    const experience = Number(
+        globalThis.localStorage.getItem(experienceStorageKey) ?? '0'
+    );
+
+    return Number.isFinite(experience) && experience > 0
+        ? Math.floor(experience)
+        : 0;
+}
+
+export function saveExperience(experience: number): number {
+    const normalizedExperience = Math.max(0, Math.floor(experience));
+
+    if (normalizedExperience > 0) {
+        globalThis.localStorage.setItem(
+            experienceStorageKey,
+            String(normalizedExperience)
+        );
+    } else {
+        globalThis.localStorage.removeItem(experienceStorageKey);
+    }
+
+    return normalizedExperience;
+}
+
+export function addExperience(experienceGain: number): number {
+    const normalizedGain = Math.max(0, Math.floor(experienceGain));
+
+    if (normalizedGain === 0) {
+        return loadExperience();
+    }
+
+    return saveExperience(loadExperience() + normalizedGain);
+}
+
+export function getSoloExpGain(score: number): number {
+    return Math.max(0, Math.floor(score / 10));
+}
+
+export function getBattleExpGain(isWinner: boolean, isTie: boolean): number {
+    if (isWinner) {
+        return battleWinExperience;
+    }
+
+    return isTie ? battleTieExperience : battleLossExperience;
 }
 
 export function isTutorialComplete(): boolean {

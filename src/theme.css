@@ -203,6 +203,8 @@
     --size-waiting-mark-min-width: 5.5rem;
     --size-waiting-mark-min-height: 1.62rem;
     --size-toast-width: 18rem;
+    --size-level-badge-height: 2rem;
+    --size-account-exp-track: 0.5rem;
 
     --opacity-disabled: 0.38;
     --opacity-muted: 0.5;

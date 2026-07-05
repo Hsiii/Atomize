@@ -6,7 +6,11 @@ import { applyPrimeSelection } from '../core/game';
 import type { RoomPlayer, RoomSnapshot } from '../core/multiplayer';
 import type { Prime } from '../core/primes';
 import { BLOB_REVEAL_TOTAL_MS } from '../core/timing';
-import { getDisplayPlayerName, playablePrimes } from '../lib/app-helpers';
+import {
+    getBattleExpGain,
+    getDisplayPlayerName,
+    playablePrimes,
+} from '../lib/app-helpers';
 import { processLocalBattleQueue } from '../lib/local-battle-queue';
 import {
     addPlayerToRoom,
@@ -25,6 +29,7 @@ type UseLocalCpuGameOptions = {
     playerName: string;
     screen: Screen;
     onScreenChange: (screen: Screen) => void;
+    onBattleFinish?: (experienceGain: number) => void;
 };
 
 type UseLocalCpuGameResult = {
@@ -48,6 +53,7 @@ type UseLocalCpuGameResult = {
 };
 
 export function useLocalCpuGame({
+    onBattleFinish,
     playerName,
     screen,
     onScreenChange,
@@ -63,6 +69,7 @@ export function useLocalCpuGame({
     const cpuTurnTimeoutRef = useRef<number | undefined>(undefined);
     const cpuRevealTimeoutRef = useRef<number | undefined>(undefined);
     const gameplayGenerationRef = useRef(0);
+    const recordedBattleExpRoomIdRef = useRef<string | undefined>(undefined);
     const previousCpuStageIndexRef = useRef<number | undefined>(undefined);
     // Use shared blob reveal state.
     const [isCpuBlobRevealActive, startBlobReveal, endBlobReveal] =
@@ -107,6 +114,45 @@ export function useLocalCpuGame({
         },
         []
     );
+
+    useEffect(() => {
+        if (multiplayerSnapshot?.status === 'playing') {
+            recordedBattleExpRoomIdRef.current = undefined;
+            return;
+        }
+
+        if (
+            multiplayerSnapshot?.status !== 'finished' ||
+            !multiplayerSnapshot.roomId ||
+            recordedBattleExpRoomIdRef.current === multiplayerSnapshot.roomId
+        ) {
+            return;
+        }
+
+        recordedBattleExpRoomIdRef.current = multiplayerSnapshot.roomId;
+
+        const localPlayer = multiplayerSnapshot.players.find(
+            (player) => player.id === playerId
+        );
+        const opponentPlayer = multiplayerSnapshot.players.find(
+            (player) => player.id !== playerId
+        );
+
+        if (!localPlayer) {
+            return;
+        }
+
+        const isWinner =
+            localPlayer.hp > 0 &&
+            opponentPlayer !== undefined &&
+            opponentPlayer.hp <= 0;
+        const isTie =
+            localPlayer.hp <= 0 &&
+            opponentPlayer !== undefined &&
+            opponentPlayer.hp <= 0;
+
+        onBattleFinish?.(getBattleExpGain(isWinner, isTie));
+    }, [multiplayerSnapshot, onBattleFinish, playerId]);
 
     useEffect(() => {
         const cpuStageIndex = cpuPlayer?.stageIndex;
