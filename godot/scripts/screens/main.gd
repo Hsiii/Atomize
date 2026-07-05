@@ -68,6 +68,7 @@ const HAPTIC_FAIL_MS := 36
 const DAMAGE_POP_SECONDS := 0.78
 const SOLO_SCORE_POP_SECONDS := 0.9
 const TIMER_PENALTY_POP_SECONDS := 0.7
+const BATTLE_HP_ZERO_HOLD_SECONDS := 0.9
 const SFX_BUS_NAME := "SFX"
 const SFX_POOL_SIZE := 8
 const SFX_SAMPLE_RATE := 22050
@@ -409,6 +410,10 @@ var battle_resolve_elapsed := 0.0
 var battle_perfect_solve_eligible := false
 var battle_bot_elapsed := 0.0
 var battle_result_text := ""
+var battle_display_player_hp := -1
+var battle_display_bot_hp := -1
+var battle_display_event_id := -1
+var battle_result_reveal_event_id := -1
 var leaderboard_entries: Array[Dictionary] = []
 var leaderboard_status_text := ""
 var supabase_client: SupabaseClient
@@ -1085,6 +1090,7 @@ func _start_tutorial_game() -> void:
 	battle_snapshot = _normalize_tutorial_snapshot(battle_snapshot)
 	battle_prime_queue.clear()
 	_clear_battle_resolution()
+	_reset_battle_display_state()
 	battle_bot_elapsed = 0.0
 	battle_result_text = ""
 	screen = Screen.BATTLE_GAME
@@ -1119,6 +1125,7 @@ func _start_battle_ready() -> void:
 	battle_snapshot = BattleRoom.set_player_ready(battle_snapshot, BATTLE_BOT_ID, true)
 	battle_prime_queue.clear()
 	_clear_battle_resolution()
+	_reset_battle_display_state()
 	battle_bot_elapsed = 0.0
 	battle_result_text = ""
 	screen = Screen.BATTLE_READY
@@ -1134,6 +1141,7 @@ func _start_battle_game() -> void:
 	battle_snapshot = BattleRoom.begin_room_match(battle_snapshot)
 	battle_prime_queue.clear()
 	_clear_battle_resolution()
+	_reset_battle_display_state()
 	battle_bot_elapsed = 0.0
 	battle_result_text = ""
 	screen = Screen.BATTLE_GAME
@@ -1147,6 +1155,12 @@ func _clear_battle_resolution() -> void:
 	battle_submitted_queue_length = 0
 	battle_resolve_elapsed = 0.0
 	battle_perfect_solve_eligible = false
+
+func _reset_battle_display_state() -> void:
+	battle_display_player_hp = -1
+	battle_display_bot_hp = -1
+	battle_display_event_id = -1
+	battle_result_reveal_event_id = -1
 
 func _reset_tutorial_runtime(active: bool) -> void:
 	tutorial_active = active
@@ -2206,12 +2220,17 @@ func _render_battle() -> void:
 		return
 
 	var max_hp := int(battle_snapshot["maxHp"])
+	if battle_display_player_hp < 0:
+		battle_display_player_hp = int(player["hp"])
+	if battle_display_bot_hp < 0:
+		battle_display_bot_hp = int(bot["hp"])
+
 	enemy_hp_bar.max_value = max_hp
-	enemy_hp_bar.value = int(bot["hp"])
-	enemy_hp_label.text = str(int(bot["hp"]))
+	enemy_hp_bar.value = battle_display_bot_hp
+	enemy_hp_label.text = str(battle_display_bot_hp)
 	player_hp_bar.max_value = max_hp
-	player_hp_bar.value = int(player["hp"])
-	player_hp_label.text = str(int(player["hp"]))
+	player_hp_bar.value = battle_display_player_hp
+	player_hp_label.text = str(battle_display_player_hp)
 	stage_label.text = "Stage %s" % [int(player["stageIndex"]) + 1]
 	target_label.text = str(player["stage"]["remainingValue"])
 	_render_queue_panel(battle_prime_queue)
@@ -2245,10 +2264,20 @@ func _render_battle() -> void:
 				or (tutorial_active and _tutorial_prime_disabled(prime))
 			)
 
-	if is_finished:
+	if is_finished and _is_battle_result_ready_to_render(player, bot):
 		_build_battle_over_overlay()
 
 	_render_tutorial_overlay()
+
+func _is_battle_result_ready_to_render(player: Dictionary, bot: Dictionary) -> bool:
+	if battle_display_player_hp != int(player["hp"]) or battle_display_bot_hp != int(bot["hp"]):
+		return false
+
+	var last_event: Dictionary = battle_snapshot.get("lastEvent", {})
+	if last_event.has("id") and battle_result_reveal_event_id < int(last_event["id"]):
+		return false
+
+	return true
 
 func _queue_battle_prime(prime: int) -> void:
 	if screen != Screen.BATTLE_GAME or battle_snapshot["status"] != "playing":
@@ -3694,7 +3723,7 @@ func _hp_label_for_bar(bar: ProgressBar):
 	return enemy_hp_label if bar == enemy_hp_bar else player_hp_label
 
 func _base_hp_color_for_bar(bar: ProgressBar) -> Color:
-	return COLOR_SECONDARY if bar == enemy_hp_bar else COLOR_INK
+	return COLOR_SECONDARY if bar == enemy_hp_bar else COLOR_PRIMARY_STRONG
 
 func _shine_hp_bar(bar: ProgressBar) -> void:
 	if not is_instance_valid(bar):
@@ -4076,6 +4105,83 @@ func _attack_impact_radius(severity: int) -> float:
 		_:
 			return 24.0
 
+func _battle_event_hp_for_player(event: Dictionary, player_id: String) -> int:
+	if player_id == "":
+		return -1
+
+	if str(event.get("sourcePlayerId", "")) == player_id and event.has("sourceHp"):
+		return int(event["sourceHp"])
+	if str(event.get("targetPlayerId", "")) == player_id and event.has("targetHp"):
+		return int(event["targetHp"])
+	if str(event.get("winnerPlayerId", "")) == player_id and event.has("winnerHp"):
+		return int(event["winnerHp"])
+	if str(event.get("loserPlayerId", "")) == player_id and event.has("loserHp"):
+		return int(event["loserHp"])
+
+	return -1
+
+func _apply_battle_display_hp(player_id: String, hp: int, event_id: int) -> bool:
+	if event_id < battle_display_event_id:
+		return false
+
+	if player_id == BATTLE_PLAYER_ID:
+		if battle_display_player_hp == hp:
+			return true
+		battle_display_player_hp = hp
+	elif player_id == BATTLE_BOT_ID:
+		if battle_display_bot_hp == hp:
+			return true
+		battle_display_bot_hp = hp
+	else:
+		return false
+
+	battle_display_event_id = max(battle_display_event_id, event_id)
+	_render_battle()
+	return true
+
+func _apply_battle_event_display_hp(event_id: int, event: Dictionary, player_id: String) -> bool:
+	var hp := _battle_event_hp_for_player(event, player_id)
+	if hp < 0:
+		return false
+
+	var applied := _apply_battle_display_hp(player_id, hp, event_id)
+	if applied and str(event.get("type", "")) == "finish" and hp == 0:
+		_schedule_battle_result_reveal(event_id, BATTLE_HP_ZERO_HOLD_SECONDS)
+	return applied
+
+func _schedule_battle_hp_hit(event: Dictionary, player_id: String, damage: int) -> void:
+	if damage <= 0 or player_id == "":
+		return
+
+	var event_id := int(event.get("id", 0))
+	var delay := _attack_duration(_attack_severity(damage))
+	var tween := create_tween()
+	tween.tween_interval(delay)
+	tween.tween_callback(_apply_delayed_battle_hp_hit.bind(event_id, event.duplicate(true), player_id, damage))
+
+func _apply_delayed_battle_hp_hit(event_id: int, event: Dictionary, player_id: String, damage: int) -> void:
+	if event_id < battle_display_event_id:
+		return
+
+	if not _apply_battle_event_display_hp(event_id, event, player_id):
+		return
+
+	_play_hp_hit(_hp_bar_for_player(player_id), damage)
+
+func _schedule_battle_result_reveal(event_id: int, delay: float) -> void:
+	var tween := create_tween()
+	if delay > 0.0:
+		tween.tween_interval(delay)
+	tween.tween_callback(_reveal_battle_result.bind(event_id))
+
+func _reveal_battle_result(event_id: int) -> void:
+	var last_event: Dictionary = battle_snapshot.get("lastEvent", {})
+	if last_event.has("id") and int(last_event["id"]) != event_id:
+		return
+
+	battle_result_reveal_event_id = max(battle_result_reveal_event_id, event_id)
+	_render_battle()
+
 func _play_battle_event_feedback(event: Dictionary) -> void:
 	if event.is_empty():
 		return
@@ -4086,6 +4192,9 @@ func _play_battle_event_feedback(event: Dictionary) -> void:
 	var damage := int(event.get("damage", 0))
 	var regen := int(event.get("regen", 0))
 	var perfect_solve: bool = event.get("perfectSolve", false) == true
+	var event_id := int(event.get("id", 0))
+
+	_apply_battle_event_display_hp(event_id, event, source_id)
 
 	if event_type == "self-hit" or event_cause == "self-hit":
 		_play_source_fault(source_id)
@@ -4103,7 +4212,7 @@ func _play_battle_event_feedback(event: Dictionary) -> void:
 				_particle_ring_theme_for_player(source_id),
 				released_damage
 			)
-			_play_hp_hit(_hp_bar_for_player(released_target_id), released_damage)
+			_schedule_battle_hp_hit(event, released_target_id, released_damage)
 		return
 
 	var target_id := str(event.get("targetPlayerId", event.get("loserPlayerId", "")))
@@ -4116,7 +4225,7 @@ func _play_battle_event_feedback(event: Dictionary) -> void:
 			_particle_ring_theme_for_player(source_id),
 			damage
 		)
-		_play_hp_hit(_hp_bar_for_player(target_id), damage)
+		_schedule_battle_hp_hit(event, target_id, damage)
 		_play_target_impact()
 
 	if perfect_solve:
