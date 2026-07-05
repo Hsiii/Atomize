@@ -1689,7 +1689,8 @@ func _add_battle_online_state(left: float, top: float, width: float) -> void:
 	battle_online_status_label = _make_absolute_label("", 13, COLOR_INK_SOFT, 700)
 	battle_online_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	battle_online_status_label.position = Vector2(left, top + 8.0)
-	battle_online_status_label.size = Vector2(width, 24)
+	battle_online_status_label.size = Vector2(width, 56)
+	battle_online_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	add_child(battle_online_status_label)
 
 	battle_online_rows_root = VBoxContainer.new()
@@ -1710,7 +1711,7 @@ func _render_battle_online_players() -> void:
 	if realtime_online_players.is_empty():
 		battle_online_rows_root.visible = false
 		battle_online_status_label.visible = true
-		battle_online_status_label.text = realtime_status_text if not realtime_status_text.is_empty() else "No players online"
+		battle_online_status_label.text = "No players online\nPlayers will appear here when they join."
 		return
 
 	battle_online_rows_root.visible = true
