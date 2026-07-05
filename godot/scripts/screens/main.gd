@@ -1528,19 +1528,19 @@ func _add_leaderboard_header(parent: VBoxContainer, width: float) -> void:
 	header.custom_minimum_size = Vector2(width, 28)
 	parent.add_child(header)
 
-	var rank_label := _make_absolute_label("Rank", 11, COLOR_INK_SOFT, 800)
+	var rank_label := _make_absolute_label("RANK", 11, COLOR_INK_SOFT, 800)
 	rank_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	rank_label.position = Vector2(0, 0)
 	rank_label.size = Vector2(56, 24)
 	header.add_child(rank_label)
 
-	var player_label := _make_absolute_label("Player", 11, COLOR_INK_SOFT, 800)
+	var player_label := _make_absolute_label("PLAYER", 11, COLOR_INK_SOFT, 800)
 	player_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	player_label.position = Vector2(64, 0)
 	player_label.size = Vector2(max(96.0, width - 160.0), 24)
 	header.add_child(player_label)
 
-	var score_label := _make_absolute_label("High Score", 11, COLOR_INK_SOFT, 800)
+	var score_label := _make_absolute_label("HIGH SCORE", 11, COLOR_INK_SOFT, 800)
 	score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	score_label.position = Vector2(width - 88.0, 0)
 	score_label.size = Vector2(88, 24)
@@ -1635,7 +1635,7 @@ func _build_solo_pregame_layout() -> void:
 	var button_width: float = min(body_width, viewport_size.x * 0.75)
 	var button_left: float = (viewport_size.x - button_width) / 2.0
 
-	var pb_title := _make_absolute_label("Personal Best", 12, COLOR_INK_SOFT, 700)
+	var pb_title := _make_absolute_label("PERSONAL BEST", 12, COLOR_INK_SOFT, 700)
 	pb_title.position = Vector2(stat_left, 304)
 	pb_title.size = Vector2(stat_width, 24)
 	add_child(pb_title)
@@ -1699,7 +1699,7 @@ func _add_battle_section_title(left: float, top: float, icon_kind: String, label
 	else:
 		_add_users_icon(icon_slot, 20, COLOR_KEYPAD_BUTTON_TEXT)
 
-	var label := _make_absolute_label(label_text, 12, COLOR_INK_SOFT, 800)
+	var label := _make_absolute_label(label_text.to_upper(), 12, COLOR_INK_SOFT, 800)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	label.position = Vector2(left + 26.0, top)
 	label.size = Vector2(220, 24)
@@ -3219,7 +3219,7 @@ func _make_home_blob_button(text: String, callback: Callable, color: Color, icon
 	else:
 		_add_help_icon(icon_slot, content_color)
 
-	var label := _make_absolute_label(text, 16, content_color, 900)
+	var label := _make_absolute_label(text.to_upper(), 16, content_color, 900)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.custom_minimum_size = Vector2(HOME_BLOB_SIZE, 24)
 	content_stack.add_child(label)
