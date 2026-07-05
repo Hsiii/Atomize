@@ -151,8 +151,9 @@ needed unless you are deliberately adding C# code.
 
 3. Run the game in the editor with the play button, or press `F5`.
 
-The main scene is `res://scenes/Main.tscn`. It is a solo gameplay harness for
-device latency testing, not a full replacement for the Vite UI yet.
+The main scene is `res://scenes/Main.tscn`. It includes the mobile home,
+tutorial, solo, leaderboard, realtime lobby presence, and CPU battle flows.
+Account management, friends, and full web/PWA routing stay in the Vite app.
 
 ## Short Path
 
