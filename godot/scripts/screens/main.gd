@@ -1914,10 +1914,13 @@ func _build_battle_game_layout() -> void:
 	enemy_hp_bar.size = Vector2(viewport_size.x - 24.0, 10)
 	add_child(enemy_hp_bar)
 
-	var bot_avatar := _make_avatar_icon_circle(80, COLOR_SECONDARY, "bot")
-	bot_avatar.position = Vector2((viewport_size.x - 80.0) / 2.0, 134)
-	add_child(bot_avatar)
-	enemy_avatar_panel = bot_avatar
+	var enemy_blob := Panel.new()
+	enemy_blob.size = Vector2(112, 112)
+	enemy_blob.position = Vector2((viewport_size.x - 112.0) / 2.0, 118)
+	_apply_panel_theme(enemy_blob, THEME_PANEL_AVATAR_SECONDARY)
+	add_child(enemy_blob)
+	_add_target_atom_art(enemy_blob, 84)
+	enemy_avatar_panel = enemy_blob
 
 	var target_blob := Panel.new()
 	target_blob.size = Vector2(160, 160)
