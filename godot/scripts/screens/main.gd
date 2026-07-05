@@ -1747,9 +1747,9 @@ func _add_battle_online_row(parent: VBoxContainer, player: Dictionary, width: fl
 func _format_realtime_status(status: String) -> String:
 	match status:
 		"in-game":
-			return "In game"
+			return "In Game"
 		"in-team":
-			return "In team"
+			return "In Team"
 		_:
 			return "Lobby"
 
