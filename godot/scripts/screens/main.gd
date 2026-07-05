@@ -1837,7 +1837,11 @@ func _build_battle_ready_layout() -> void:
 	versus.size = Vector2(viewport_size.x, 56)
 	add_child(versus)
 
-	var player_avatar := _make_avatar_initial_circle(80, COLOR_PRIMARY_STRONG, "G", 20)
+	var player_initial := battle_player_name.substr(0, 1).to_upper()
+	if player_initial.is_empty():
+		player_initial = BATTLE_GUEST_NAME.substr(0, 1)
+
+	var player_avatar := _make_avatar_initial_circle(80, COLOR_PRIMARY_STRONG, player_initial, 20)
 	player_avatar.position = Vector2((viewport_size.x - 80.0) / 2.0, 470)
 	add_child(player_avatar)
 
