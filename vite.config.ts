@@ -49,6 +49,7 @@ export default defineConfig({
         }),
     ],
     server: {
+        allowedHosts: ['.lhr.life'],
         host: true,
         port: 5173,
     },
