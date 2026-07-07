@@ -169,50 +169,21 @@ export function AccountScreen({
         statsContent = (
             <div className='account-stats-container-inner'>
                 <div className='solo-pregame-pb account-stats-centered'>
-                    <div
-                        className='solo-pregame-pb-stat'
-                        style={{
-                            flexDirection: 'column',
-                            alignItems: 'stretch',
-                            gap: '0.5rem',
-                        }}
-                    >
-                        <div
-                            style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'baseline',
-                            }}
-                        >
+                    <div className='solo-pregame-pb-stat account-exp-stat'>
+                        <div className='account-exp-header'>
                             <span className='solo-pregame-pb-label'>
-                                Lv. {expData.level}
+                                {uiText.levelLabel} {expData.level}
                             </span>
-                            <span
-                                className='solo-pregame-pb-label'
-                                style={{
-                                    fontSize: '0.8em',
-                                    color: 'var(--color-ink-soft)',
-                                }}
-                            >
+                            <span className='solo-pregame-pb-label account-exp-value'>
                                 {Math.floor(expData.progressInLevel)} /{' '}
-                                {expData.totalRequiredForNext} EXP
+                                {expData.totalRequiredForNext} {uiText.exp}
                             </span>
                         </div>
-                        <div
-                            style={{
-                                height: '6px',
-                                background: 'var(--color-border-soft)',
-                                borderRadius: '3px',
-                                overflow: 'hidden',
-                            }}
-                        >
+                        <div className='account-exp-track'>
                             <div
+                                className='account-exp-fill'
                                 style={{
-                                    height: '100%',
-                                    background: 'var(--color-primary)',
                                     width: `${expData.progressPercent}%`,
-                                    borderRadius: '3px',
-                                    transition: 'width 0.8s ease-out',
                                 }}
                             />
                         </div>

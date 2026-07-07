@@ -11,6 +11,7 @@ import type {
     SideHpImpacts,
 } from '../../hooks/useBattleAnimations';
 import { usePrimeKeyboardControls } from '../../hooks/usePrimeKeyboardControls';
+import { getBattleExpGain } from '../../lib/app-helpers';
 import {
     getTutorialAction,
     getTutorialExpectedQueue,
@@ -81,6 +82,18 @@ export function MultiplayerGameScreen({
     const currentPlayerWon =
         isMatchFinished &&
         Boolean(currentMultiplayerPlayer && currentMultiplayerPlayer.hp > 0);
+    const currentPlayerTied =
+        isMatchFinished &&
+        Boolean(
+            currentMultiplayerPlayer &&
+            currentMultiplayerPlayer.hp <= 0 &&
+            opponentPlayer &&
+            opponentPlayer.hp <= 0
+        );
+    const battleExpGained = getBattleExpGain(
+        currentPlayerWon,
+        currentPlayerTied
+    );
     const tutorial = useBattleTutorial({
         battleVisualsBusy: battle.isAnimating,
         currentPlayer: currentMultiplayerPlayer,
@@ -350,18 +363,7 @@ export function MultiplayerGameScreen({
                             atomized: currentMultiplayerPlayer?.stageIndex ?? 0,
                             isWinner: currentPlayerWon,
                         }}
-                        expGained={(() => {
-                            if (currentPlayerWon) {
-                                return 150;
-                            }
-                            if (
-                                currentMultiplayerPlayer?.hp === 0 &&
-                                opponentPlayer?.hp === 0
-                            ) {
-                                return 50;
-                            }
-                            return 30;
-                        })()}
+                        expGained={battleExpGained}
                         mode='battle'
                         onRematch={onRematch}
                         onReturnHome={onBack}

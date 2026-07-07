@@ -130,6 +130,13 @@ input::placeholder {
     color: var(--color-text-inverse);
 }
 
+@media (max-width: 480px), (min-width: 900px) {
+    .page-title-row .floating-back-button {
+        background: var(--color-surface-strong);
+        color: var(--color-primary);
+    }
+}
+
 .page-title {
     margin: var(--space-0);
     font-family: var(--type-action-label-family);

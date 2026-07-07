@@ -1,15 +1,15 @@
 import type { Prime } from '../core/primes';
 
 export const desktopPrimeKeybinds = [
-    'r',
-    't',
-    'y',
-    'f',
-    'g',
-    'h',
-    'v',
-    'b',
-    'n',
+    '2',
+    '3',
+    '5',
+    '7',
+    '11',
+    '13',
+    '17',
+    '19',
+    'Shift+2',
 ] as const;
 
 export const desktopActionKeybinds = {
@@ -28,19 +28,4 @@ export function getDesktopPrimeKeybind(
     }
 
     return desktopPrimeKeybinds[index];
-}
-
-export function getDesktopPrimeFromKey(
-    primes: readonly Prime[],
-    key: string
-): Prime | undefined {
-    const index = desktopPrimeKeybinds.indexOf(
-        key as (typeof desktopPrimeKeybinds)[number]
-    );
-
-    if (index === -1 || index >= primes.length) {
-        return undefined;
-    }
-
-    return primes[index];
 }

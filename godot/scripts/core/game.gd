@@ -65,6 +65,10 @@ static func generate_stage(seed: String, stage_index: int) -> Dictionary:
 		var selectable_primes := (
 			get_fallback_stage_primes(max_prime_value) if available_primes.is_empty() else available_primes
 		)
+
+		if selectable_primes.is_empty():
+			break
+
 		var selected_prime := pick_stage_prime(selectable_primes, rng, large_repeat_prime)
 
 		factors.append(selected_prime)

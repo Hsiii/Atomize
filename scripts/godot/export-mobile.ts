@@ -26,6 +26,7 @@ if (target !== 'android' && target !== 'ios') {
 }
 
 const exportConfig = exportsByTarget[target];
+const godotBinary = requireGodotBinary();
 mkdirSync(path.dirname(exportConfig.outputPath), { recursive: true });
 const buildDirectory = path.resolve(GODOT_DIRECTORY, 'build');
 mkdirSync(buildDirectory, { recursive: true });
@@ -76,6 +77,29 @@ function setApplicationSetting(
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+const iosTeamId = process.env.GODOT_IOS_TEAM_ID;
+let nextExportPresets = originalExportPresets;
+
+if (target === 'ios') {
+    if (!iosTeamId) {
+        console.error(
+            '[Error] Set GODOT_IOS_TEAM_ID in .env.local before exporting iOS builds.'
+        );
+        process.exit(1);
+    }
+
+    nextExportPresets = originalExportPresets.replace(
+        /application\/app_store_team_id="[^"]*"/,
+        `application/app_store_team_id="${iosTeamId}"`
+    );
+
+    if (nextExportPresets === originalExportPresets) {
+        console.error(
+            '[Error] Could not find application/app_store_team_id in godot/export_presets.cfg.'
+        );
+        process.exit(1);
+    }
+}
 
 if (supabaseUrl && supabaseAnonKey) {
     const nextProjectSettings = setApplicationSetting(
@@ -97,27 +121,6 @@ if (supabaseUrl && supabaseAnonKey) {
 }
 
 if (target === 'ios') {
-    const iosTeamId = process.env.GODOT_IOS_TEAM_ID;
-
-    if (!iosTeamId) {
-        console.error(
-            '[Error] Set GODOT_IOS_TEAM_ID in .env.local before exporting iOS builds.'
-        );
-        process.exit(1);
-    }
-
-    const nextExportPresets = originalExportPresets.replace(
-        /application\/app_store_team_id="[^"]*"/,
-        `application/app_store_team_id="${iosTeamId}"`
-    );
-
-    if (nextExportPresets === originalExportPresets) {
-        console.error(
-            '[Error] Could not find application/app_store_team_id in godot/export_presets.cfg.'
-        );
-        process.exit(1);
-    }
-
     writeFileSync(exportPresetsPath, nextExportPresets);
     shouldRestoreExportPresets = true;
 }
@@ -125,7 +128,7 @@ if (target === 'ios') {
 const result = (() => {
     try {
         return spawnSync(
-            requireGodotBinary(),
+            godotBinary,
             [
                 '--headless',
                 '--path',

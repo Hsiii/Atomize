@@ -8,7 +8,9 @@ function isSupportedEnvKey(key: string): boolean {
     return (
         key.startsWith('GODOT_') ||
         key.startsWith('IOS_') ||
-        key === 'APPLE_TEAM_ID'
+        key === 'APPLE_TEAM_ID' ||
+        key === 'VITE_SUPABASE_ANON_KEY' ||
+        key === 'VITE_SUPABASE_URL'
     );
 }
 

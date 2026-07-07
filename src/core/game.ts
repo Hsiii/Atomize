@@ -195,6 +195,11 @@ export function generateStage(seed: string, stageIndex: number): StageState {
             availablePrimes.length === 0
                 ? getFallbackStagePrimes(maxPrimeValue)
                 : availablePrimes;
+
+        if (selectablePrimes.length === 0) {
+            break;
+        }
+
         const selectedPrime = pickStagePrime(
             selectablePrimes,
             rng,

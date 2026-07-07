@@ -81,7 +81,10 @@ export function ScoreDialog(props: ScoreDialogProps): JSX.Element {
 
                 {props.mode === 'battle' ? (
                     <div className='score-dialog-players'>
-                        <PlayerColumn expGained={props.expGained} player={props.currentPlayer} />
+                        <PlayerColumn
+                            expGained={props.expGained}
+                            player={props.currentPlayer}
+                        />
                         <div
                             aria-hidden='true'
                             className='score-dialog-player-divider'
@@ -126,11 +129,12 @@ export function ScoreDialog(props: ScoreDialogProps): JSX.Element {
                                 label={uiText.maxCombo}
                                 value={props.comboCount}
                             />
-                            {props.expGained !== undefined && props.expGained > 0 ? (
-                                <div className='score-dialog-stat-row'>
-                                    <span className='score-dialog-stat-label'>EXP</span>
-                                    <span className='score-dialog-stat-value'>+{props.expGained}</span>
-                                </div>
+                            {props.expGained !== undefined &&
+                            props.expGained > 0 ? (
+                                <StatRow
+                                    label={uiText.exp}
+                                    value={`+${props.expGained}`}
+                                />
                             ) : undefined}
                         </div>
                     </>
@@ -171,7 +175,7 @@ function StatRow({
     value,
 }: {
     label: string;
-    value: number;
+    value: number | string;
 }): JSX.Element {
     return (
         <div className='score-dialog-stat-row'>
@@ -183,7 +187,13 @@ function StatRow({
 
 /* Battle player column */
 
-function PlayerColumn({ player, expGained }: { player: PlayerStats; expGained?: number }): JSX.Element {
+function PlayerColumn({
+    player,
+    expGained,
+}: {
+    player: PlayerStats;
+    expGained?: number;
+}): JSX.Element {
     const modifier = player.isWinner
         ? ' score-dialog-player--winner'
         : ' score-dialog-player--loser';
@@ -207,10 +217,7 @@ function PlayerColumn({ player, expGained }: { player: PlayerStats; expGained?: 
                 <StatRow label={uiText.atomized} value={player.atomized} />
                 <StatRow label={uiText.maxCombo} value={player.maxCombo} />
                 {expGained !== undefined && expGained > 0 ? (
-                    <div className='score-dialog-stat-row'>
-                        <span className='score-dialog-stat-label'>EXP</span>
-                        <span className='score-dialog-stat-value'>+{expGained}</span>
-                    </div>
+                    <StatRow label={uiText.exp} value={`+${expGained}`} />
                 ) : undefined}
             </div>
         </div>

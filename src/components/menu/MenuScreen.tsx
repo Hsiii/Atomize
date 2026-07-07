@@ -27,6 +27,7 @@ type MenuScreenProps = {
     onOpenTutorial?: () => void;
     isGuest: boolean;
     needsTutorial?: boolean;
+    playerLevel: number | undefined;
 };
 
 export function MenuScreen({
@@ -41,6 +42,7 @@ export function MenuScreen({
     onOpenTutorial,
     isGuest,
     needsTutorial,
+    playerLevel,
 }: MenuScreenProps): JSX.Element {
     const [menuOpen, setMenuOpen] = useState(false);
     const [clickedMode, setClickedMode] = useState<string | undefined>(
@@ -209,6 +211,15 @@ export function MenuScreen({
                         />
                         <span>{uiText.titleTail}</span>
                     </h1>
+                    {playerLevel !== undefined ? (
+                        <div
+                            aria-label={`Level ${playerLevel}`}
+                            className='menu-level-badge'
+                        >
+                            <span>{uiText.levelLabel}</span>
+                            <strong>{playerLevel}</strong>
+                        </div>
+                    ) : undefined}
 
                     <div className='menu-content'>
                         {needsTutorial ? (

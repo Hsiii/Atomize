@@ -118,9 +118,36 @@ function createStageFixtures(): readonly StageFixture[] {
         Array.from({ length: 16 }, (_, stageIndex) => ({
             seed,
             stageIndex,
-            stage: generateStage(seed, stageIndex),
+            stage: assertValidStage(generateStage(seed, stageIndex)),
         }))
     );
+}
+
+function assertValidStage(stage: StageState): StageState {
+    if (
+        !Number.isSafeInteger(stage.targetValue) ||
+        stage.targetValue < 1 ||
+        stage.targetValue !==
+            stage.factors.reduce((product, factor) => product * factor, 1) ||
+        stage.remainingValue !== stage.targetValue ||
+        stage.remainingFactors.length !== stage.factors.length
+    ) {
+        throw new Error(
+            `Invalid generated stage ${stage.stageIndex}: ${JSON.stringify(stage)}`
+        );
+    }
+
+    return stage;
+}
+
+function assertStageGenerationInvariants() {
+    for (let seedIndex = 0; seedIndex < 32; seedIndex++) {
+        const seed = `stage-invariant:${seedIndex}`;
+
+        for (let stageIndex = 0; stageIndex < 128; stageIndex++) {
+            assertValidStage(generateStage(seed, stageIndex));
+        }
+    }
 }
 
 function createHashFixtures(): readonly HashFixture[] {
@@ -289,6 +316,8 @@ function pickWrongPrime(stage: StageState): Prime {
 
     return wrongPrime;
 }
+
+assertStageGenerationInvariants();
 
 const fixture = {
     generatedBy: 'scripts/godot/generate-core-fixtures.ts',
