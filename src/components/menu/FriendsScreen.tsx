@@ -43,7 +43,6 @@ function normalizePlayerName(value: string): string {
 }
 
 function detachFriendAction(action: Promise<void>, onError: () => void) {
-    // eslint-disable-next-line unicorn/prefer-await
     action.catch(onError);
 }
 
@@ -102,7 +101,9 @@ async function fetchFriends(userId: string): Promise<FriendsLoadResult> {
     return {
         friends: nextFriendIds
             .map((id) => profileById.get(id))
-            .filter((profile): profile is FriendProfile => Boolean(profile)),
+            .filter(
+                (profile): profile is FriendProfile => profile !== undefined
+            ),
     };
 }
 
@@ -130,7 +131,6 @@ export function FriendsScreen({
 
         async function loadMountedFriends() {
             setLoadingFriends(true);
-            // eslint-disable-next-line unicorn/no-declarations-before-early-exit
             const result = await fetchFriends(userId);
 
             if (!mounted) {

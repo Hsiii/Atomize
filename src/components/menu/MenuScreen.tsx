@@ -211,7 +211,7 @@ export function MenuScreen({
                         />
                         <span>{uiText.titleTail}</span>
                     </h1>
-                    {playerLevel !== undefined ? (
+                    {typeof playerLevel === 'number' ? (
                         <div
                             aria-label={`Level ${playerLevel}`}
                             className='menu-level-badge'
