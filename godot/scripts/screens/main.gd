@@ -443,6 +443,9 @@ var realtime_online_players: Array[Dictionary] = []
 var icon_texture_cache: Dictionary = {}
 var pixel_circle_texture_cache: Dictionary = {}
 var active_control_tweens: Dictionary = {}
+var app_background_throttled := false
+var foreground_max_fps := 0
+var master_bus_was_muted := false
 var sfx_pool_root: Node
 var sfx_players: Array[AudioStreamPlayer] = []
 var sfx_pool_index := 0
@@ -475,6 +478,7 @@ var player_hp_bar: ProgressBar
 var player_hp_label: Label
 
 func _ready() -> void:
+	get_tree().set_quit_on_go_back(false)
 	_ensure_audio_buses()
 	_build_sfx_pool()
 	supabase_client = SupabaseClient.new()
@@ -812,35 +816,85 @@ func _process(delta: float) -> void:
 	_resolve_next_queued_prime()
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_APPLICATION_PAUSED and screen == Screen.SOLO:
-		_pause_game()
+	match what:
+		NOTIFICATION_APPLICATION_PAUSED:
+			_throttle_background_app()
+		NOTIFICATION_APPLICATION_RESUMED:
+			_restore_foreground_app()
+		NOTIFICATION_WM_GO_BACK_REQUEST:
+			if _handle_back_navigation():
+				get_viewport().set_input_as_handled()
+			else:
+				get_tree().quit()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_pressed():
 		return
 
 	if event.is_action_pressed("ui_cancel"):
-		if screen == Screen.SOLO:
-			_pause_game()
-		elif screen == Screen.PAUSED:
-			_resume_game()
-		elif (
-			screen == Screen.LEADERBOARD
-			or screen == Screen.SOLO_PREGAME
-			or screen == Screen.BATTLE_PICKER
-			or screen == Screen.BATTLE_READY
-			or screen == Screen.BATTLE_GAME
-			or screen == Screen.GAME_OVER
-		):
-			if tutorial_active and screen == Screen.BATTLE_GAME:
-				_skip_tutorial()
-			else:
-				_start_home()
-		get_viewport().set_input_as_handled()
+		if _handle_back_navigation():
+			get_viewport().set_input_as_handled()
 		return
 
 	if _handle_game_keyboard_input(event):
 		get_viewport().set_input_as_handled()
+
+func _handle_back_navigation() -> bool:
+	if screen == Screen.SOLO:
+		_pause_game()
+		return true
+
+	if screen == Screen.PAUSED:
+		_resume_game()
+		return true
+
+	if (
+		screen == Screen.LEADERBOARD
+		or screen == Screen.SOLO_PREGAME
+		or screen == Screen.BATTLE_PICKER
+		or screen == Screen.BATTLE_READY
+		or screen == Screen.BATTLE_GAME
+		or screen == Screen.GAME_OVER
+	):
+		if tutorial_active and screen == Screen.BATTLE_GAME:
+			_skip_tutorial()
+		else:
+			_start_home()
+		return true
+
+	return false
+
+func _throttle_background_app() -> void:
+	if app_background_throttled:
+		return
+
+	app_background_throttled = true
+	foreground_max_fps = Engine.max_fps
+	Engine.max_fps = 5
+
+	var master_bus_index := AudioServer.get_bus_index("Master")
+	if master_bus_index >= 0:
+		master_bus_was_muted = AudioServer.is_bus_mute(master_bus_index)
+		AudioServer.set_bus_mute(master_bus_index, true)
+
+	if screen == Screen.SOLO:
+		_pause_game()
+
+	get_tree().paused = true
+
+func _restore_foreground_app() -> void:
+	get_tree().paused = false
+
+	if not app_background_throttled:
+		return
+
+	Engine.max_fps = foreground_max_fps
+
+	var master_bus_index := AudioServer.get_bus_index("Master")
+	if master_bus_index >= 0:
+		AudioServer.set_bus_mute(master_bus_index, master_bus_was_muted)
+
+	app_background_throttled = false
 
 func _handle_game_keyboard_input(event: InputEvent) -> bool:
 	if screen != Screen.SOLO and screen != Screen.BATTLE_GAME:
