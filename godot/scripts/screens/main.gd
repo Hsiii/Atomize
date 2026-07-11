@@ -21,7 +21,8 @@ const TUTORIAL_CPU_THINK_BASE_SECONDS := 1.4
 const TUTORIAL_CPU_THINK_FACTOR_SECONDS := 0.2
 const COMBO_QUEUE_MAX_ITEMS := 7
 const SCREEN_ARG_PREFIX := "--atomize-screen="
-const APP_VERSION_LABEL := "v0.0.0"
+const APP_VERSION_FALLBACK := "0.1.0"
+const APP_VERSION_SETTING := "application/config/version"
 const SOLO_DURATION_SECONDS := 60.0
 const SOLO_COMBO_STEP_DELAY_SECONDS := 0.14
 const MULTIPLAYER_COMBO_STEP_DELAY_SECONDS := 0.22
@@ -83,6 +84,8 @@ const SFX_SAMPLE_RATE := 22050
 const HOME_BLOB_SIZE := 144.0
 const HOME_BLOB_GAP := 16.0
 const HOME_MENU_BUTTON_SIZE := 48.0
+const SAFE_AREA_EDGE_PADDING := 12.0
+const SAFE_AREA_PAGE_PADDING := 24.0
 const SOLO_TARGET_SIZE := 256.0
 const SOLO_KEY_SIZE := 80.0
 const SOLO_KEY_GAP := 8.0
@@ -1365,10 +1368,10 @@ func _build_base_layout() -> void:
 
 	root_margin = MarginContainer.new()
 	root_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	root_margin.add_theme_constant_override("margin_left", 24)
-	root_margin.add_theme_constant_override("margin_top", 32)
-	root_margin.add_theme_constant_override("margin_right", 24)
-	root_margin.add_theme_constant_override("margin_bottom", 32)
+	root_margin.add_theme_constant_override("margin_left", int(SAFE_AREA_PAGE_PADDING + _safe_area_left()))
+	root_margin.add_theme_constant_override("margin_top", int(32.0 + _safe_area_top()))
+	root_margin.add_theme_constant_override("margin_right", int(SAFE_AREA_PAGE_PADDING + _safe_area_right()))
+	root_margin.add_theme_constant_override("margin_bottom", int(32.0 + _safe_area_bottom()))
 	add_child(root_margin)
 
 	var panel := PanelContainer.new()
@@ -1383,19 +1386,81 @@ func _build_base_layout() -> void:
 	content.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	panel.add_child(content)
 
+func _safe_area_insets() -> Dictionary:
+	if not OS.has_feature("mobile"):
+		return {
+			"left": 0.0,
+			"top": 0.0,
+			"right": 0.0,
+			"bottom": 0.0,
+		}
+
+	var screen_size := Vector2(DisplayServer.screen_get_size())
+	if screen_size.x <= 0.0 or screen_size.y <= 0.0:
+		return {
+			"left": 0.0,
+			"top": 0.0,
+			"right": 0.0,
+			"bottom": 0.0,
+		}
+
+	var viewport_size := get_viewport_rect().size
+	var scale := Vector2(viewport_size.x / screen_size.x, viewport_size.y / screen_size.y)
+	var safe_area := DisplayServer.get_display_safe_area()
+	var safe_start := Vector2(safe_area.position) * scale
+	var safe_end := Vector2(safe_area.end) * scale
+
+	return {
+		"left": maxf(0.0, safe_start.x),
+		"top": maxf(0.0, safe_start.y),
+		"right": maxf(0.0, viewport_size.x - safe_end.x),
+		"bottom": maxf(0.0, viewport_size.y - safe_end.y),
+	}
+
+func _safe_area_left() -> float:
+	return float(_safe_area_insets()["left"])
+
+func _safe_area_top() -> float:
+	return float(_safe_area_insets()["top"])
+
+func _safe_area_right() -> float:
+	return float(_safe_area_insets()["right"])
+
+func _safe_area_bottom() -> float:
+	return float(_safe_area_insets()["bottom"])
+
+func _safe_top_y(base: float) -> float:
+	return base + _safe_area_top()
+
+func _safe_bottom_y(viewport_height: float, height: float, bottom_margin: float) -> float:
+	return viewport_height - height - bottom_margin - _safe_area_bottom()
+
+func _app_version_label() -> String:
+	var version := APP_VERSION_FALLBACK
+	if ProjectSettings.has_setting(APP_VERSION_SETTING):
+		version = str(ProjectSettings.get_setting(APP_VERSION_SETTING)).strip_edges()
+
+	if version.is_empty():
+		version = APP_VERSION_FALLBACK
+
+	return "v%s" % version.trim_prefix("v")
+
 func _build_home_layout() -> void:
 	_clear_screen()
 
 	var viewport_size := get_viewport_rect().size
+	var safe_left := _safe_area_left()
+	var safe_top := _safe_area_top()
+	var safe_right := _safe_area_right()
 
 	var background := ColorRect.new()
 	background.color = COLOR_PAGE_BG
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(background)
 
-	var version_label := _make_absolute_label(APP_VERSION_LABEL, 13, COLOR_TEXT_INVERSE_SOFT, 600)
+	var version_label := _make_absolute_label(_app_version_label(), 13, COLOR_TEXT_INVERSE_SOFT, 600)
 	version_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	version_label.position = Vector2(14.0, 14.0)
+	version_label.position = Vector2(SAFE_AREA_EDGE_PADDING + safe_left, SAFE_AREA_EDGE_PADDING + safe_top)
 	version_label.size = Vector2(96.0, 24.0)
 	add_child(version_label)
 
@@ -1409,9 +1474,18 @@ func _build_home_layout() -> void:
 
 	if not needs_tutorial:
 		var menu_button := _make_home_menu_button()
-		menu_button.position = Vector2(viewport_size.x - HOME_MENU_BUTTON_SIZE - 12.0, 10.0)
+		menu_button.position = Vector2(
+			viewport_size.x - HOME_MENU_BUTTON_SIZE - SAFE_AREA_EDGE_PADDING - safe_right,
+			SAFE_AREA_EDGE_PADDING + safe_top
+		)
 		add_child(menu_button)
-		_build_home_dropdown(menu_button.position + Vector2(-92, HOME_MENU_BUTTON_SIZE + 4))
+		var dropdown_position := menu_button.position + Vector2(-92, HOME_MENU_BUTTON_SIZE + 4)
+		dropdown_position.x = clampf(
+			dropdown_position.x,
+			SAFE_AREA_EDGE_PADDING + safe_left,
+			viewport_size.x - 128.0 - SAFE_AREA_EDGE_PADDING - safe_right
+		)
+		_build_home_dropdown(dropdown_position)
 
 	var title_row := _make_home_title()
 	title_row.size = Vector2(min(viewport_size.x * 0.92, 320.0), 72)
@@ -1478,6 +1552,7 @@ func _build_leaderboard_layout() -> void:
 	_clear_screen()
 
 	var viewport_size := get_viewport_rect().size
+	var safe_top := _safe_area_top()
 
 	var background := ColorRect.new()
 	background.color = COLOR_PAGE_BG
@@ -1491,13 +1566,13 @@ func _build_leaderboard_layout() -> void:
 
 	leaderboard_status_label = _make_absolute_label("", 13, COLOR_INK_SOFT, 700)
 	leaderboard_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	leaderboard_status_label.position = Vector2(body_left, 262)
+	leaderboard_status_label.position = Vector2(body_left, 262.0 + safe_top)
 	leaderboard_status_label.size = Vector2(body_width, 24)
 	add_child(leaderboard_status_label)
 
 	leaderboard_rows_root = VBoxContainer.new()
-	leaderboard_rows_root.position = Vector2(body_left, 304)
-	leaderboard_rows_root.size = Vector2(body_width, 480)
+	leaderboard_rows_root.position = Vector2(body_left, 304.0 + safe_top)
+	leaderboard_rows_root.size = Vector2(body_width, maxf(160.0, viewport_size.y - leaderboard_rows_root.position.y - 32.0 - _safe_area_bottom()))
 	leaderboard_rows_root.add_theme_constant_override("separation", 8)
 	add_child(leaderboard_rows_root)
 
@@ -1677,29 +1752,31 @@ func _toggle_home_menu() -> void:
 
 func _build_page_header(title_text: String, tagline_text: String, icon_kind: String) -> void:
 	var viewport_size := get_viewport_rect().size
+	var safe_top := _safe_area_top()
+	var header_bottom := PAGE_HEADER_BOTTOM + safe_top
 	var header := ColorRect.new()
 	header.color = COLOR_PRIMARY
 	header.position = Vector2.ZERO
-	header.size = Vector2(viewport_size.x, PAGE_HEADER_BOTTOM)
+	header.size = Vector2(viewport_size.x, header_bottom)
 	add_child(header)
 
 	var header_rule := ColorRect.new()
 	header_rule.color = COLOR_PRIMARY_STRONG
-	header_rule.position = Vector2(0, PAGE_HEADER_BOTTOM - PIXEL_BORDER)
+	header_rule.position = Vector2(0, header_bottom - PIXEL_BORDER)
 	header_rule.size = Vector2(viewport_size.x, PIXEL_BORDER)
 	add_child(header_rule)
 
 	var back_button := _make_header_icon_button("←", _start_home)
-	back_button.position = Vector2(12, 24)
+	back_button.position = Vector2(SAFE_AREA_EDGE_PADDING + _safe_area_left(), _safe_top_y(24.0))
 	add_child(back_button)
 
 	var title := _make_absolute_label(title_text, 16, COLOR_TEXT_INVERSE, 900)
-	title.position = Vector2(0, 28)
+	title.position = Vector2(0, _safe_top_y(28.0))
 	title.size = Vector2(viewport_size.x, 36)
 	add_child(title)
 
 	var icon_slot := Control.new()
-	icon_slot.position = Vector2((viewport_size.x - 84.0) / 2.0, 94)
+	icon_slot.position = Vector2((viewport_size.x - 84.0) / 2.0, _safe_top_y(94.0))
 	icon_slot.size = Vector2(84, 72)
 	add_child(icon_slot)
 
@@ -1712,7 +1789,7 @@ func _build_page_header(title_text: String, tagline_text: String, icon_kind: Str
 			_add_page_battle_icon(icon_slot)
 
 	var tagline := _make_absolute_label(tagline_text, 12, COLOR_TEXT_INVERSE_SOFT, 800)
-	tagline.position = Vector2(0, 176)
+	tagline.position = Vector2(0, _safe_top_y(176.0))
 	tagline.size = Vector2(viewport_size.x, 24)
 	add_child(tagline)
 
@@ -1720,6 +1797,7 @@ func _build_solo_pregame_layout() -> void:
 	_clear_screen()
 
 	var viewport_size := get_viewport_rect().size
+	var safe_top := _safe_area_top()
 
 	var background := ColorRect.new()
 	background.color = COLOR_PAGE_BG
@@ -1736,15 +1814,15 @@ func _build_solo_pregame_layout() -> void:
 	var button_left: float = (viewport_size.x - button_width) / 2.0
 
 	var pb_title := _make_absolute_label("PERSONAL BEST", 12, COLOR_INK_SOFT, 700)
-	pb_title.position = Vector2(stat_left, 304)
+	pb_title.position = Vector2(stat_left, 304.0 + safe_top)
 	pb_title.size = Vector2(stat_width, 24)
 	add_child(pb_title)
 
-	_add_pregame_stat_row(stat_left, 352, stat_width, "Score", best_score)
-	_add_pregame_stat_row(stat_left, 400, stat_width, "Max Combo", best_combo)
+	_add_pregame_stat_row(stat_left, 352.0 + safe_top, stat_width, "Score", best_score)
+	_add_pregame_stat_row(stat_left, 400.0 + safe_top, stat_width, "Max Combo", best_combo)
 
 	var start_button := _make_wide_page_button("GO", _start_solo_game, COLOR_PRIMARY_STRONG)
-	start_button.position = Vector2(button_left, 512)
+	start_button.position = Vector2(button_left, minf(512.0 + safe_top, _safe_bottom_y(viewport_size.y, 56.0, 48.0)))
 	start_button.size = Vector2(button_width, 56)
 	add_child(start_button)
 
@@ -1770,6 +1848,7 @@ func _build_battle_picker_layout() -> void:
 	_clear_screen()
 
 	var viewport_size := get_viewport_rect().size
+	var safe_top := _safe_area_top()
 
 	var background := ColorRect.new()
 	background.color = COLOR_PAGE_BG
@@ -1781,11 +1860,11 @@ func _build_battle_picker_layout() -> void:
 	var body_width: float = min(viewport_size.x - 48.0, 352.0)
 	var body_left: float = (viewport_size.x - body_width) / 2.0
 
-	_add_battle_section_title(body_left, 262, "cpu", "CPU Training")
-	_add_battle_picker_row(body_left, 300, body_width, "bot", BATTLE_BOT_NAME, "Play", false, _start_battle_ready)
+	_add_battle_section_title(body_left, 262.0 + safe_top, "cpu", "CPU Training")
+	_add_battle_picker_row(body_left, 300.0 + safe_top, body_width, "bot", BATTLE_BOT_NAME, "Play", false, _start_battle_ready)
 
-	_add_battle_section_title(body_left, 384, "users", "Online Players")
-	_add_battle_online_state(body_left, 422, body_width)
+	_add_battle_section_title(body_left, 384.0 + safe_top, "users", "Online Players")
+	_add_battle_online_state(body_left, 422.0 + safe_top, body_width)
 
 func _add_battle_section_title(left: float, top: float, icon_kind: String, label_text: String) -> void:
 	var icon_slot := Control.new()
@@ -1941,6 +2020,7 @@ func _build_battle_ready_layout() -> void:
 	_clear_screen()
 
 	var viewport_size := get_viewport_rect().size
+	var safe_top := _safe_area_top()
 
 	var background := ColorRect.new()
 	background.color = COLOR_PRIMARY
@@ -1948,21 +2028,21 @@ func _build_battle_ready_layout() -> void:
 	add_child(background)
 
 	var back_button := _make_header_icon_button("←", _start_battle_picker)
-	back_button.position = Vector2(12, 18)
+	back_button.position = Vector2(SAFE_AREA_EDGE_PADDING + _safe_area_left(), _safe_top_y(18.0))
 	add_child(back_button)
 
 	var bot_avatar := _make_avatar_icon_circle(80, COLOR_SECONDARY, "bot")
-	bot_avatar.position = Vector2((viewport_size.x - 80.0) / 2.0, 268)
+	bot_avatar.position = Vector2((viewport_size.x - 80.0) / 2.0, 268.0 + safe_top)
 	_add_ready_badge(bot_avatar, 20)
 	add_child(bot_avatar)
 
 	var bot_label := _make_absolute_label(BATTLE_BOT_NAME, 15, COLOR_TEXT_INVERSE_SUBTLE, 800)
-	bot_label.position = Vector2(0, 354)
+	bot_label.position = Vector2(0, 354.0 + safe_top)
 	bot_label.size = Vector2(viewport_size.x, 24)
 	add_child(bot_label)
 
 	var versus := _make_absolute_label("VS", 46, COLOR_TEXT_INVERSE_SUBTLE, 900)
-	versus.position = Vector2(0, 394)
+	versus.position = Vector2(0, 394.0 + safe_top)
 	versus.size = Vector2(viewport_size.x, 56)
 	add_child(versus)
 
@@ -1971,23 +2051,27 @@ func _build_battle_ready_layout() -> void:
 		player_initial = BATTLE_GUEST_NAME.substr(0, 1)
 
 	var player_avatar := _make_avatar_initial_circle(80, COLOR_PRIMARY_STRONG, player_initial, 20)
-	player_avatar.position = Vector2((viewport_size.x - 80.0) / 2.0, 470)
+	player_avatar.position = Vector2((viewport_size.x - 80.0) / 2.0, 470.0 + safe_top)
 	add_child(player_avatar)
 
 	var player_label := _make_absolute_label(battle_player_name, 15, COLOR_TEXT_INVERSE_SUBTLE, 800)
-	player_label.position = Vector2(0, 558)
+	player_label.position = Vector2(0, 558.0 + safe_top)
 	player_label.size = Vector2(viewport_size.x, 24)
 	add_child(player_label)
 
 	var ready_button := _make_wide_page_button("Ready", _start_battle_game, COLOR_PRIMARY_STRONG)
-	ready_button.position = Vector2((viewport_size.x - 258.0) / 2.0, viewport_size.y - 88.0)
 	ready_button.size = Vector2(258, 56)
+	ready_button.position = Vector2((viewport_size.x - 258.0) / 2.0, _safe_bottom_y(viewport_size.y, ready_button.size.y, 32.0))
 	add_child(ready_button)
 
 func _build_battle_game_layout() -> void:
 	_clear_screen()
 
 	var viewport_size := get_viewport_rect().size
+	var safe_top := _safe_area_top()
+	var safe_bottom := _safe_area_bottom()
+	var safe_left := _safe_area_left()
+	var safe_right := _safe_area_right()
 
 	var background := ColorRect.new()
 	background.color = COLOR_PAGE_BG
@@ -1996,24 +2080,24 @@ func _build_battle_game_layout() -> void:
 
 	var enemy_name := _make_absolute_label(BATTLE_BOT_NAME, 15, COLOR_SECONDARY, 800)
 	enemy_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	enemy_name.position = Vector2(12, 8)
+	enemy_name.position = Vector2(SAFE_AREA_EDGE_PADDING + safe_left, 8.0 + safe_top)
 	enemy_name.size = Vector2(160, 24)
 	add_child(enemy_name)
 
 	enemy_hp_label = _make_absolute_label("", 15, COLOR_SECONDARY, 800)
 	enemy_hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	enemy_hp_label.position = Vector2(viewport_size.x - 92.0, 8)
+	enemy_hp_label.position = Vector2(viewport_size.x - 92.0 - safe_right, 8.0 + safe_top)
 	enemy_hp_label.size = Vector2(80, 24)
 	add_child(enemy_hp_label)
 
 	enemy_hp_bar = _make_hp_bar(COLOR_SECONDARY)
-	enemy_hp_bar.position = Vector2(12, 34)
-	enemy_hp_bar.size = Vector2(viewport_size.x - 24.0, 10)
+	enemy_hp_bar.position = Vector2(SAFE_AREA_EDGE_PADDING + safe_left, 34.0 + safe_top)
+	enemy_hp_bar.size = Vector2(viewport_size.x - (SAFE_AREA_EDGE_PADDING * 2.0) - safe_left - safe_right, 10)
 	add_child(enemy_hp_bar)
 
 	var enemy_blob := Panel.new()
 	enemy_blob.size = Vector2(112, 112)
-	enemy_blob.position = Vector2((viewport_size.x - 112.0) / 2.0, 118)
+	enemy_blob.position = Vector2((viewport_size.x - 112.0) / 2.0, 118.0 + safe_top)
 	_apply_panel_theme(enemy_blob, THEME_PANEL_AVATAR_SECONDARY)
 	add_child(enemy_blob)
 	_add_target_atom_art(enemy_blob, 84)
@@ -2021,7 +2105,7 @@ func _build_battle_game_layout() -> void:
 
 	var target_blob := Panel.new()
 	target_blob.size = Vector2(160, 160)
-	target_blob.position = Vector2((viewport_size.x - 160.0) / 2.0, 208)
+	target_blob.position = Vector2((viewport_size.x - 160.0) / 2.0, 208.0 + safe_top)
 	_apply_panel_theme(target_blob, THEME_PANEL_TARGET)
 	add_child(target_blob)
 	target_blob_panel = target_blob
@@ -2033,44 +2117,44 @@ func _build_battle_game_layout() -> void:
 	target_blob.add_child(target_label)
 
 	stage_label = _make_absolute_label("", 12, COLOR_INK_SOFT, 800)
-	stage_label.position = Vector2(24, 382)
+	stage_label.position = Vector2(24.0 + safe_left, 382.0 + safe_top)
 	stage_label.size = Vector2(viewport_size.x - 48.0, 24)
 	add_child(stage_label)
 
 	battle_result_text = ""
 	result_label = _make_absolute_label("", 15, COLOR_SECONDARY, 800)
-	result_label.position = Vector2(0, 412)
+	result_label.position = Vector2(0, 412.0 + safe_top)
 	result_label.size = Vector2(viewport_size.x, 24)
 	add_child(result_label)
 
 	var player_name_text := "You" if tutorial_active else battle_player_name
 	var player_name := _make_absolute_label(player_name_text, 15, COLOR_PRIMARY_STRONG, 800)
 	player_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	player_name.position = Vector2(12, 452)
+	player_name.position = Vector2(SAFE_AREA_EDGE_PADDING + safe_left, 452.0 + safe_top)
 	player_name.size = Vector2(160, 24)
 	add_child(player_name)
 
 	player_hp_label = _make_absolute_label("", 15, COLOR_PRIMARY_STRONG, 800)
 	player_hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	player_hp_label.position = Vector2(viewport_size.x - 92.0, 452)
+	player_hp_label.position = Vector2(viewport_size.x - 92.0 - safe_right, 452.0 + safe_top)
 	player_hp_label.size = Vector2(80, 24)
 	add_child(player_hp_label)
 
 	player_hp_bar = _make_hp_bar(COLOR_PRIMARY_STRONG)
-	player_hp_bar.position = Vector2(12, 476)
-	player_hp_bar.size = Vector2(viewport_size.x - 24.0, 10)
+	player_hp_bar.position = Vector2(SAFE_AREA_EDGE_PADDING + safe_left, 476.0 + safe_top)
+	player_hp_bar.size = Vector2(viewport_size.x - (SAFE_AREA_EDGE_PADDING * 2.0) - safe_left - safe_right, 10)
 	add_child(player_hp_bar)
 
 	queue_label = _make_queue_panel()
-	queue_label.position = Vector2(24, 508)
-	queue_label.size = Vector2(viewport_size.x - 48.0, 28)
+	queue_label.position = Vector2(24.0 + safe_left, 508.0 + safe_top)
+	queue_label.size = Vector2(viewport_size.x - 48.0 - safe_left - safe_right, 28)
 	add_child(queue_label)
 
 	prime_grid = GridContainer.new()
 	prime_grid.columns = 3
 	prime_grid.add_theme_constant_override("h_separation", int(SOLO_KEY_GAP))
 	prime_grid.add_theme_constant_override("v_separation", int(SOLO_KEY_GAP))
-	prime_grid.position = Vector2(12, viewport_size.y - (SOLO_KEY_SIZE * 3.0) - (SOLO_KEY_GAP * 2.0) - SOLO_CONTROL_BOTTOM_MARGIN)
+	prime_grid.position = Vector2(12.0 + safe_left, viewport_size.y - (SOLO_KEY_SIZE * 3.0) - (SOLO_KEY_GAP * 2.0) - SOLO_CONTROL_BOTTOM_MARGIN - safe_bottom)
 	prime_grid.size = Vector2((SOLO_KEY_SIZE * 3.0) + (SOLO_KEY_GAP * 2.0), (SOLO_KEY_SIZE * 3.0) + (SOLO_KEY_GAP * 2.0))
 	add_child(prime_grid)
 
@@ -2109,6 +2193,10 @@ func _build_solo_layout() -> void:
 	_clear_screen()
 
 	var viewport_size := get_viewport_rect().size
+	var safe_top := _safe_area_top()
+	var safe_bottom := _safe_area_bottom()
+	var safe_left := _safe_area_left()
+	var safe_right := _safe_area_right()
 
 	var background := ColorRect.new()
 	background.color = COLOR_PAGE_BG
@@ -2116,7 +2204,7 @@ func _build_solo_layout() -> void:
 	add_child(background)
 
 	var pause_button := _make_pause_icon_button()
-	pause_button.position = Vector2(12, 12)
+	pause_button.position = Vector2(SAFE_AREA_EDGE_PADDING + safe_left, SAFE_AREA_EDGE_PADDING + safe_top)
 	pause_button.pressed.connect(_pause_game)
 	add_child(pause_button)
 
@@ -2125,31 +2213,31 @@ func _build_solo_layout() -> void:
 	timer_bar.min_value = 0
 	timer_bar.max_value = SOLO_DURATION_SECONDS
 	timer_bar.value = solo_time_left
-	timer_bar.position = Vector2(96, 28)
-	timer_bar.size = Vector2(viewport_size.x - 192.0, 8)
+	timer_bar.position = Vector2(96.0 + safe_left, 28.0 + safe_top)
+	timer_bar.size = Vector2(viewport_size.x - 192.0 - safe_left - safe_right, 8)
 	_apply_progress_theme(timer_bar, THEME_PROGRESS_PRIMARY)
 	add_child(timer_bar)
 
 	score_label = _make_absolute_label("", 16, COLOR_PRIMARY, 900)
 	score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	score_label.position = Vector2(viewport_size.x - 112.0, 16)
+	score_label.position = Vector2(viewport_size.x - 112.0 - safe_right, 16.0 + safe_top)
 	score_label.size = Vector2(70, 24)
 	add_child(score_label)
 
 	score_unit_label = _make_absolute_label("pt", 13, COLOR_INK_SOFT, 600)
 	score_unit_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	score_unit_label.position = Vector2(viewport_size.x - 38.0, 16)
+	score_unit_label.position = Vector2(viewport_size.x - 38.0 - safe_right, 16.0 + safe_top)
 	score_unit_label.size = Vector2(22, 24)
 	add_child(score_unit_label)
 
 	stage_label = _make_absolute_label("", 12, COLOR_INK_SOFT, 800)
-	stage_label.position = Vector2(24, 92)
-	stage_label.size = Vector2(viewport_size.x - 48.0, 24)
+	stage_label.position = Vector2(24.0 + safe_left, 92.0 + safe_top)
+	stage_label.size = Vector2(viewport_size.x - 48.0 - safe_left - safe_right, 24)
 	add_child(stage_label)
 
 	var target_blob := Panel.new()
 	target_blob.size = Vector2(SOLO_TARGET_SIZE, SOLO_TARGET_SIZE)
-	target_blob.position = Vector2((viewport_size.x - SOLO_TARGET_SIZE) / 2.0, 120)
+	target_blob.position = Vector2((viewport_size.x - SOLO_TARGET_SIZE) / 2.0, 120.0 + safe_top)
 	_apply_panel_theme(target_blob, THEME_PANEL_TARGET)
 	add_child(target_blob)
 	target_blob_panel = target_blob
@@ -2161,20 +2249,20 @@ func _build_solo_layout() -> void:
 	target_blob.add_child(target_label)
 
 	queue_label = _make_queue_panel()
-	queue_label.position = Vector2(24, 420)
-	queue_label.size = Vector2(viewport_size.x - 48.0, 66)
+	queue_label.position = Vector2(24.0 + safe_left, 420.0 + safe_top)
+	queue_label.size = Vector2(viewport_size.x - 48.0 - safe_left - safe_right, 66)
 	add_child(queue_label)
 
 	result_label = _make_absolute_label("", 14, COLOR_PRIMARY, 800)
-	result_label.position = Vector2(24, 492)
-	result_label.size = Vector2(viewport_size.x - 48.0, 28)
+	result_label.position = Vector2(24.0 + safe_left, 492.0 + safe_top)
+	result_label.size = Vector2(viewport_size.x - 48.0 - safe_left - safe_right, 28)
 	add_child(result_label)
 
 	prime_grid = GridContainer.new()
 	prime_grid.columns = 3
 	prime_grid.add_theme_constant_override("h_separation", int(SOLO_KEY_GAP))
 	prime_grid.add_theme_constant_override("v_separation", int(SOLO_KEY_GAP))
-	prime_grid.position = Vector2(12, viewport_size.y - (SOLO_KEY_SIZE * 3.0) - (SOLO_KEY_GAP * 2.0) - SOLO_CONTROL_BOTTOM_MARGIN)
+	prime_grid.position = Vector2(12.0 + safe_left, viewport_size.y - (SOLO_KEY_SIZE * 3.0) - (SOLO_KEY_GAP * 2.0) - SOLO_CONTROL_BOTTOM_MARGIN - safe_bottom)
 	prime_grid.size = Vector2((SOLO_KEY_SIZE * 3.0) + (SOLO_KEY_GAP * 2.0), (SOLO_KEY_SIZE * 3.0) + (SOLO_KEY_GAP * 2.0))
 	add_child(prime_grid)
 
@@ -2913,7 +3001,7 @@ func _render_tutorial_overlay() -> void:
 	card.size = Vector2(card_width, card_height)
 	card.position = Vector2(
 		(viewport_size.x - card_width) / 2.0,
-		72.0 if str(lesson.get("position", "bottom")) == "top" else viewport_size.y - card_height - 24.0
+		_safe_top_y(72.0) if str(lesson.get("position", "bottom")) == "top" else _safe_bottom_y(viewport_size.y, card_height, 24.0)
 	)
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
 	_apply_panel_theme(card, THEME_PANEL_DIALOG)
