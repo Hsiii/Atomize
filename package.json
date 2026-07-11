@@ -10,6 +10,7 @@
         "lint": "eslint .",
         "godot": "bun run scripts/godot/open-project.ts",
         "godot:test": "bun run scripts/godot/generate-core-fixtures.ts && bun run scripts/godot/run-core-parity.ts",
+        "godot:smoke": "bun run scripts/godot/run-screen-smoke.ts",
         "ios": "scripts/godot/ios.sh",
         "ios:export": "bun run scripts/godot/export-mobile.ts ios",
         "android": "bun run scripts/godot/export-mobile.ts android"
