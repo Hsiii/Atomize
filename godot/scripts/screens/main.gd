@@ -37,8 +37,18 @@ const DESKTOP_PRIME_KEYBINDS := ["r", "t", "y", "f", "g", "h", "v", "b", "n"]
 const DESKTOP_BACKSPACE_KEY := "u"
 const DESKTOP_SUBMIT_KEY := "j"
 const REALTIME_LOBBY_TOPIC := "realtime:atomize:lobby"
+const REALTIME_ROOM_TOPIC_PREFIX := "realtime:atomize:"
 const REALTIME_HEARTBEAT_SECONDS := 25.0
 const REALTIME_RECONNECT_SECONDS := 6.0
+const REALTIME_EVENT_ROOM_INVITE := "room_invite"
+const REALTIME_EVENT_INVITE_DECLINED := "invite_declined"
+const REALTIME_EVENT_ROOM_STATE := "room_state"
+const REALTIME_EVENT_JOIN_REQUEST := "join_request"
+const REALTIME_EVENT_PLAYER_READY := "player_ready"
+const REALTIME_EVENT_PRIME_SELECTED := "prime_selected"
+const REALTIME_EVENT_COMBO_PENALTY := "combo_penalty"
+const REALTIME_EVENT_CLEAR_SOLVED_STAGE := "clear_solved_stage"
+const REALTIME_EVENT_ROOM_ERROR := "room_error"
 const COLOR_PRIMARY := Color("#184e77")
 const COLOR_PRIMARY_STRONG := Color("#168aad")
 const COLOR_SECONDARY := Color("#34a0a4")
@@ -443,6 +453,18 @@ var realtime_reconnect_elapsed := 0.0
 var realtime_status_text := ""
 var realtime_presence_state: Dictionary = {}
 var realtime_online_players: Array[Dictionary] = []
+var realtime_invited_player_ids: Dictionary = {}
+var realtime_pending_invitation: Dictionary = {}
+var realtime_room_id := ""
+var realtime_room_topic := ""
+var realtime_room_join_ref := ""
+var realtime_room_joined := false
+var realtime_room_is_host := false
+var realtime_room_player_id := ""
+var realtime_room_status_text := ""
+var realtime_room_action_order := 0
+var realtime_remote_action_orders: Dictionary = {}
+var realtime_pending_invite_target_id := ""
 var icon_texture_cache: Dictionary = {}
 var pixel_circle_texture_cache: Dictionary = {}
 var active_control_tweens: Dictionary = {}
@@ -577,6 +599,9 @@ func _close_realtime_lobby() -> void:
 	realtime_status_text = ""
 	realtime_presence_state.clear()
 	realtime_online_players.clear()
+	realtime_invited_player_ids.clear()
+	realtime_pending_invitation.clear()
+	_reset_realtime_room_state(false)
 
 	var state := realtime_socket.get_ready_state()
 	if state == WebSocketPeer.STATE_OPEN or state == WebSocketPeer.STATE_CONNECTING:
@@ -594,6 +619,9 @@ func _poll_realtime_lobby(delta: float) -> void:
 			realtime_status_text = "Joining realtime..."
 			_send_realtime_join()
 			_render_battle_online_players()
+
+		if realtime_joined and not realtime_room_id.is_empty() and realtime_room_join_ref.is_empty():
+			_send_realtime_room_join()
 
 		realtime_heartbeat_elapsed += delta
 		if realtime_heartbeat_elapsed >= REALTIME_HEARTBEAT_SECONDS:
@@ -682,15 +710,151 @@ func _send_realtime_message(
 
 	realtime_socket.send_text(JSON.stringify(message))
 
+func _send_realtime_broadcast(topic: String, event_name: String, payload: Dictionary, join_ref: String) -> void:
+	_send_realtime_message(
+		topic,
+		"broadcast",
+		{
+			"type": "broadcast",
+			"event": event_name,
+			"payload": payload,
+		},
+		_next_realtime_ref(),
+		join_ref
+	)
+
+func _send_realtime_room_broadcast(event_name: String, payload: Dictionary) -> void:
+	if not realtime_room_joined:
+		return
+
+	_send_realtime_broadcast(realtime_room_topic, event_name, payload, realtime_room_join_ref)
+
+func _send_realtime_lobby_broadcast(event_name: String, payload: Dictionary) -> void:
+	if not realtime_joined:
+		return
+
+	_send_realtime_broadcast(REALTIME_LOBBY_TOPIC, event_name, payload, realtime_join_ref)
+
+func _send_realtime_room_join() -> void:
+	if realtime_room_id.is_empty() or realtime_socket.get_ready_state() != WebSocketPeer.STATE_OPEN:
+		return
+
+	realtime_room_topic = _realtime_room_topic_for(realtime_room_id)
+	realtime_room_join_ref = _next_realtime_ref()
+	realtime_room_joined = false
+	_send_realtime_message(
+		realtime_room_topic,
+		"phx_join",
+		{
+			"config": {
+				"broadcast": {
+					"ack": false,
+					"self": false,
+				},
+				"presence": {
+					"enabled": false,
+				},
+				"postgres_changes": [],
+				"private": false,
+			},
+			"access_token": supabase_client.anon_key,
+		},
+		realtime_room_join_ref,
+		realtime_room_join_ref
+	)
+
+func _realtime_room_topic_for(room_id: String) -> String:
+	return "%s%s" % [REALTIME_ROOM_TOPIC_PREFIX, room_id]
+
+func _broadcast_realtime_room_state() -> void:
+	if battle_snapshot.is_empty():
+		return
+
+	_send_realtime_room_broadcast(
+		REALTIME_EVENT_ROOM_STATE,
+		{
+			"type": REALTIME_EVENT_ROOM_STATE,
+			"snapshot": battle_snapshot,
+			"sourcePlayerId": realtime_room_player_id,
+		}
+	)
+
+func _send_realtime_room_invite(target_player_id: String) -> void:
+	if target_player_id.is_empty() or realtime_room_id.is_empty():
+		return
+
+	realtime_invited_player_ids[target_player_id] = true
+	_send_realtime_lobby_broadcast(
+		REALTIME_EVENT_ROOM_INVITE,
+		{
+			"type": REALTIME_EVENT_ROOM_INVITE,
+			"roomCode": realtime_room_id,
+			"fromName": battle_player_name,
+			"fromPlayerId": realtime_player_id,
+			"targetPlayerId": target_player_id,
+		}
+	)
+
+func _reset_realtime_room_state(send_leave: bool = true) -> void:
+	if (
+		send_leave
+		and realtime_room_joined
+		and not realtime_room_topic.is_empty()
+		and realtime_socket.get_ready_state() == WebSocketPeer.STATE_OPEN
+	):
+		_send_realtime_message(
+			realtime_room_topic,
+			"phx_leave",
+			{},
+			_next_realtime_ref(),
+			realtime_room_join_ref
+		)
+
+	realtime_room_id = ""
+	realtime_room_topic = ""
+	realtime_room_join_ref = ""
+	realtime_room_joined = false
+	realtime_room_is_host = false
+	realtime_room_player_id = ""
+	realtime_room_status_text = ""
+	realtime_room_action_order = 0
+	realtime_remote_action_orders.clear()
+	realtime_pending_invite_target_id = ""
+
+func _leave_realtime_room() -> void:
+	_reset_realtime_room_state()
+	battle_snapshot.clear()
+	_clear_battle_resolution()
+	_reset_battle_display_state()
+	_track_realtime_presence()
+
+func _is_realtime_room_active() -> bool:
+	return not realtime_room_id.is_empty() and not realtime_room_player_id.is_empty()
+
+func _create_realtime_room_id() -> String:
+	return "room-%s-%s" % [Time.get_unix_time_from_system(), Time.get_ticks_usec()]
+
+func _next_realtime_room_action_order() -> int:
+	realtime_room_action_order += 1
+	return realtime_room_action_order
+
 func _handle_realtime_packet(text: String) -> void:
 	var parsed = JSON.parse_string(text)
 	if typeof(parsed) != TYPE_DICTIONARY:
 		return
 
+	var topic := str(parsed.get("topic", ""))
 	var event_name := str(parsed.get("event", ""))
 	var payload = parsed.get("payload", {})
 	if event_name == "phx_reply":
 		_handle_realtime_reply(parsed, payload)
+		return
+
+	if event_name == "broadcast" and typeof(payload) == TYPE_DICTIONARY:
+		_handle_realtime_broadcast(topic, payload)
+		return
+
+	if topic != REALTIME_LOBBY_TOPIC:
 		return
 
 	if event_name == "presence_state" and typeof(payload) == TYPE_DICTIONARY:
@@ -710,7 +874,14 @@ func _handle_realtime_packet(text: String) -> void:
 
 func _handle_realtime_reply(message: Dictionary, payload) -> void:
 	var ref := str(message.get("ref", ""))
-	if ref != realtime_join_ref or typeof(payload) != TYPE_DICTIONARY:
+	if typeof(payload) != TYPE_DICTIONARY:
+		return
+
+	if ref == realtime_room_join_ref:
+		_handle_realtime_room_reply(payload)
+		return
+
+	if ref != realtime_join_ref:
 		return
 
 	if str(payload.get("status", "")) == "ok":
@@ -722,6 +893,211 @@ func _handle_realtime_reply(message: Dictionary, payload) -> void:
 		realtime_status_text = "Realtime unavailable"
 
 	_render_battle_online_players()
+
+func _handle_realtime_room_reply(payload: Dictionary) -> void:
+	if str(payload.get("status", "")) != "ok":
+		realtime_room_joined = false
+		realtime_room_status_text = "Room unavailable"
+		_build_battle_ready_layout()
+		return
+
+	realtime_room_joined = true
+	realtime_room_status_text = ""
+
+	if realtime_room_is_host:
+		_broadcast_realtime_room_state()
+		if not realtime_pending_invite_target_id.is_empty():
+			_send_realtime_room_invite(realtime_pending_invite_target_id)
+			realtime_pending_invite_target_id = ""
+	else:
+		_send_realtime_room_broadcast(
+			REALTIME_EVENT_JOIN_REQUEST,
+			{
+				"type": REALTIME_EVENT_JOIN_REQUEST,
+				"playerId": realtime_room_player_id,
+				"playerName": battle_player_name,
+			}
+		)
+
+	_track_realtime_presence()
+	_build_battle_ready_layout()
+
+func _handle_realtime_broadcast(topic: String, payload: Dictionary) -> void:
+	var broadcast_event := str(payload.get("event", ""))
+	var message = payload.get("payload", {})
+	if typeof(message) != TYPE_DICTIONARY:
+		return
+
+	if topic == REALTIME_LOBBY_TOPIC:
+		_handle_lobby_broadcast(broadcast_event, message)
+		return
+
+	if topic == realtime_room_topic:
+		_handle_room_broadcast(broadcast_event, message)
+
+func _handle_lobby_broadcast(event_name: String, message: Dictionary) -> void:
+	match event_name:
+		REALTIME_EVENT_ROOM_INVITE:
+			_handle_lobby_room_invite(message)
+		REALTIME_EVENT_INVITE_DECLINED:
+			_handle_lobby_invite_declined(message)
+
+func _handle_lobby_room_invite(message: Dictionary) -> void:
+	if str(message.get("targetPlayerId", "")) != realtime_player_id:
+		return
+
+	if screen != Screen.BATTLE_PICKER or not realtime_room_id.is_empty():
+		return
+
+	realtime_pending_invitation = {
+		"fromName": str(message.get("fromName", BATTLE_GUEST_NAME)),
+		"fromPlayerId": str(message.get("fromPlayerId", "")),
+		"roomCode": str(message.get("roomCode", "")),
+	}
+	_build_battle_picker_layout()
+
+func _handle_lobby_invite_declined(message: Dictionary) -> void:
+	if str(message.get("targetPlayerId", "")) != realtime_player_id:
+		return
+
+	if str(message.get("roomCode", "")) != realtime_room_id:
+		return
+
+	if battle_snapshot.has("players") and battle_snapshot["players"].size() >= 2:
+		return
+
+	realtime_status_text = "Invitation declined"
+	_leave_realtime_room()
+	_start_battle_picker()
+
+func _handle_room_broadcast(event_name: String, message: Dictionary) -> void:
+	match event_name:
+		REALTIME_EVENT_ROOM_STATE:
+			_handle_room_state_broadcast(message)
+		REALTIME_EVENT_JOIN_REQUEST:
+			_handle_join_request_broadcast(message)
+		REALTIME_EVENT_PLAYER_READY:
+			_handle_player_ready_broadcast(message)
+		REALTIME_EVENT_PRIME_SELECTED:
+			_handle_gameplay_broadcast(message)
+		REALTIME_EVENT_COMBO_PENALTY:
+			_handle_gameplay_broadcast(message)
+		REALTIME_EVENT_CLEAR_SOLVED_STAGE:
+			_handle_gameplay_broadcast(message)
+		REALTIME_EVENT_ROOM_ERROR:
+			_handle_room_error_broadcast(message)
+
+func _handle_room_state_broadcast(message: Dictionary) -> void:
+	var snapshot = message.get("snapshot", {})
+	if typeof(snapshot) != TYPE_DICTIONARY:
+		return
+
+	battle_snapshot = snapshot
+	_clear_battle_resolution()
+	_reset_battle_display_state()
+	_track_realtime_presence()
+
+	if str(battle_snapshot.get("status", "")) == "playing":
+		_enter_realtime_battle_game()
+	else:
+		screen = Screen.BATTLE_READY
+		_build_battle_ready_layout()
+
+func _handle_join_request_broadcast(message: Dictionary) -> void:
+	if not realtime_room_is_host or battle_snapshot.is_empty():
+		return
+
+	if str(message.get("type", "")) != REALTIME_EVENT_JOIN_REQUEST:
+		return
+
+	var player_id := str(message.get("playerId", ""))
+	var player_name := str(message.get("playerName", BATTLE_GUEST_NAME)).strip_edges()
+	if player_id.is_empty():
+		return
+	if player_name.is_empty():
+		player_name = BATTLE_GUEST_NAME
+
+	var next_snapshot = BattleRoom.add_player_to_room(battle_snapshot, player_id, player_name)
+	if next_snapshot == null:
+		_send_realtime_room_broadcast(
+			REALTIME_EVENT_ROOM_ERROR,
+			{
+				"type": REALTIME_EVENT_ROOM_ERROR,
+				"targetPlayerId": player_id,
+				"message": "Room already full",
+			}
+		)
+		return
+
+	battle_snapshot = next_snapshot
+	_broadcast_realtime_room_state()
+	_build_battle_ready_layout()
+
+func _handle_player_ready_broadcast(message: Dictionary) -> void:
+	if not realtime_room_is_host or battle_snapshot.is_empty():
+		return
+
+	if str(message.get("type", "")) != REALTIME_EVENT_PLAYER_READY:
+		return
+
+	var ready_snapshot := BattleRoom.set_player_ready(
+		battle_snapshot,
+		str(message.get("playerId", "")),
+		message.get("ready", false) == true
+	)
+	battle_snapshot = BattleRoom.begin_room_match(ready_snapshot)
+	_broadcast_realtime_room_state()
+
+	if str(battle_snapshot.get("status", "")) == "playing":
+		_enter_realtime_battle_game()
+	else:
+		_build_battle_ready_layout()
+
+func _handle_gameplay_broadcast(message: Dictionary) -> void:
+	if battle_snapshot.is_empty() or str(message.get("playerId", "")) == realtime_room_player_id:
+		return
+
+	var player_id := str(message.get("playerId", ""))
+	var action_order := int(message.get("actionOrder", 0))
+	var last_action_order := int(realtime_remote_action_orders.get(player_id, 0))
+	if action_order <= last_action_order:
+		return
+
+	realtime_remote_action_orders[player_id] = action_order
+	match str(message.get("type", "")):
+		REALTIME_EVENT_PRIME_SELECTED:
+			battle_snapshot = BattleRoom.apply_battle_prime_selection(
+				battle_snapshot,
+				player_id,
+				int(message.get("prime", 0)),
+				{
+					"suppressAttack": message.get("suppressAttack", false) == true,
+					"perfectSolveEligible": message.get("perfectSolveEligible", false) == true,
+					"resolvingQueueLength": int(message.get("resolvingQueueLength", 1)),
+				}
+			)
+		REALTIME_EVENT_COMBO_PENALTY:
+			battle_snapshot = BattleRoom.apply_battle_penalty(
+				battle_snapshot,
+				player_id,
+				message.get("preservedStage", null),
+				message.get("releasedDamage", null)
+			)
+		REALTIME_EVENT_CLEAR_SOLVED_STAGE:
+			battle_snapshot = BattleRoom.clear_solved_battle_stage(battle_snapshot, player_id)
+
+	_play_battle_event_feedback(battle_snapshot.get("lastEvent", {}))
+	_render_battle()
+
+func _handle_room_error_broadcast(message: Dictionary) -> void:
+	if str(message.get("targetPlayerId", "")) != realtime_room_player_id:
+		return
+
+	var error_text := str(message.get("message", "Room unavailable"))
+	_leave_realtime_room()
+	realtime_status_text = error_text
+	screen = Screen.BATTLE_PICKER
+	_build_battle_picker_layout()
 
 func _apply_realtime_presence_diff(payload: Dictionary) -> void:
 	var joins = payload.get("joins", {})
@@ -774,8 +1150,11 @@ func _next_realtime_ref() -> String:
 	return str(realtime_ref_counter)
 
 func _realtime_presence_status() -> String:
-	if screen == Screen.BATTLE_READY or screen == Screen.BATTLE_GAME:
+	if screen == Screen.BATTLE_GAME:
 		return "in-game"
+
+	if screen == Screen.BATTLE_READY and _is_realtime_room_active():
+		return "in-team"
 
 	return "lobby"
 
@@ -791,7 +1170,7 @@ func _process(delta: float) -> void:
 			return
 
 		if not battle_snapshot.is_empty() and battle_snapshot["status"] == "playing":
-			var bot = BattleRoom.find_player(battle_snapshot["players"], BATTLE_BOT_ID)
+			var bot = null if _is_realtime_room_active() else BattleRoom.find_player(battle_snapshot["players"], BATTLE_BOT_ID)
 			if bot != null and _can_apply_bot_turn(bot):
 				battle_bot_elapsed += delta
 				if battle_bot_elapsed >= _bot_think_delay_seconds(bot):
@@ -1179,11 +1558,13 @@ func _start_solo_pregame() -> void:
 	_build_solo_pregame_layout()
 
 func _start_battle_picker() -> void:
+	_leave_realtime_room()
 	screen = Screen.BATTLE_PICKER
 	_build_battle_picker_layout()
 	_connect_realtime_lobby()
 
 func _start_battle_ready() -> void:
+	_leave_realtime_room()
 	_reset_tutorial_runtime(false)
 	battle_snapshot = BattleRoom.create_room_snapshot("godot-atom-bot", BATTLE_BOT_ID, BATTLE_BOT_NAME)
 	battle_snapshot = BattleRoom.add_player_to_room(
@@ -1201,7 +1582,73 @@ func _start_battle_ready() -> void:
 	_build_battle_ready_layout()
 	_track_realtime_presence()
 
+func _start_hosted_realtime_room(target_player_id: String) -> void:
+	if target_player_id.is_empty() or not realtime_joined:
+		realtime_status_text = "Realtime unavailable"
+		_render_battle_online_players()
+		return
+
+	_reset_tutorial_runtime(false)
+	_reset_realtime_room_state()
+	realtime_room_id = _create_realtime_room_id()
+	realtime_room_topic = _realtime_room_topic_for(realtime_room_id)
+	realtime_room_is_host = true
+	realtime_room_player_id = realtime_player_id
+	realtime_room_status_text = "Creating room..."
+	realtime_pending_invite_target_id = target_player_id
+	battle_snapshot = BattleRoom.create_room_snapshot(realtime_room_id, realtime_room_player_id, battle_player_name)
+	battle_prime_queue.clear()
+	_clear_battle_resolution()
+	_reset_battle_display_state()
+	screen = Screen.BATTLE_READY
+	_build_battle_ready_layout()
+	_send_realtime_room_join()
+	_track_realtime_presence()
+
+func _accept_realtime_invitation() -> void:
+	var room_id := str(realtime_pending_invitation.get("roomCode", ""))
+	if room_id.is_empty() or not realtime_joined:
+		realtime_pending_invitation.clear()
+		_build_battle_picker_layout()
+		return
+
+	_reset_tutorial_runtime(false)
+	_reset_realtime_room_state()
+	realtime_room_id = room_id
+	realtime_room_topic = _realtime_room_topic_for(room_id)
+	realtime_room_is_host = false
+	realtime_room_player_id = realtime_player_id
+	realtime_room_status_text = "Joining room..."
+	realtime_pending_invitation.clear()
+	battle_snapshot.clear()
+	battle_prime_queue.clear()
+	_clear_battle_resolution()
+	_reset_battle_display_state()
+	screen = Screen.BATTLE_READY
+	_build_battle_ready_layout()
+	_send_realtime_room_join()
+	_track_realtime_presence()
+
+func _decline_realtime_invitation() -> void:
+	if realtime_pending_invitation.is_empty():
+		return
+
+	_send_realtime_lobby_broadcast(
+		REALTIME_EVENT_INVITE_DECLINED,
+		{
+			"type": REALTIME_EVENT_INVITE_DECLINED,
+			"roomCode": str(realtime_pending_invitation.get("roomCode", "")),
+			"targetPlayerId": str(realtime_pending_invitation.get("fromPlayerId", "")),
+		}
+	)
+	realtime_pending_invitation.clear()
+	_build_battle_picker_layout()
+
 func _start_battle_game() -> void:
+	if _is_realtime_room_active():
+		_toggle_realtime_ready()
+		return
+
 	if battle_snapshot.is_empty():
 		_start_battle_ready()
 		return
@@ -1217,6 +1664,50 @@ func _start_battle_game() -> void:
 	_build_battle_game_layout()
 	_render_battle()
 	_track_realtime_presence()
+
+func _enter_realtime_battle_game() -> void:
+	if battle_snapshot.is_empty():
+		return
+
+	battle_prime_queue.clear()
+	_clear_battle_resolution()
+	_reset_battle_display_state()
+	battle_bot_elapsed = 0.0
+	battle_result_text = ""
+	screen = Screen.BATTLE_GAME
+	_build_battle_game_layout()
+	_render_battle()
+	_track_realtime_presence()
+
+func _toggle_realtime_ready() -> void:
+	if not _is_realtime_room_active() or battle_snapshot.is_empty():
+		return
+
+	var local_player = BattleRoom.find_player(battle_snapshot.get("players", []), realtime_room_player_id)
+	if local_player == null or str(battle_snapshot.get("status", "")) != "waiting":
+		return
+
+	var next_ready: bool = local_player.get("ready", false) != true
+	if realtime_room_is_host:
+		battle_snapshot = BattleRoom.set_player_ready(battle_snapshot, realtime_room_player_id, next_ready)
+		battle_snapshot = BattleRoom.begin_room_match(battle_snapshot)
+		_broadcast_realtime_room_state()
+		if str(battle_snapshot.get("status", "")) == "playing":
+			_enter_realtime_battle_game()
+		else:
+			_build_battle_ready_layout()
+		return
+
+	battle_snapshot = BattleRoom.set_player_ready(battle_snapshot, realtime_room_player_id, next_ready)
+	_send_realtime_room_broadcast(
+		REALTIME_EVENT_PLAYER_READY,
+		{
+			"type": REALTIME_EVENT_PLAYER_READY,
+			"playerId": realtime_room_player_id,
+			"ready": next_ready,
+		}
+	)
+	_build_battle_ready_layout()
 
 func _clear_battle_resolution() -> void:
 	battle_resolving_queue.clear()
@@ -1863,8 +2354,38 @@ func _build_battle_picker_layout() -> void:
 	_add_battle_section_title(body_left, 262.0 + safe_top, "cpu", "CPU Training")
 	_add_battle_picker_row(body_left, 300.0 + safe_top, body_width, "bot", BATTLE_BOT_NAME, "Play", false, _start_battle_ready)
 
-	_add_battle_section_title(body_left, 384.0 + safe_top, "users", "Online Players")
-	_add_battle_online_state(body_left, 422.0 + safe_top, body_width)
+	var online_section_top := 384.0 + safe_top
+	if not realtime_pending_invitation.is_empty():
+		_add_realtime_invitation_card(body_left, online_section_top, body_width)
+		online_section_top += 112.0
+
+	_add_battle_section_title(body_left, online_section_top, "users", "Online Players")
+	_add_battle_online_state(body_left, online_section_top + 38.0, body_width)
+
+func _add_realtime_invitation_card(left: float, top: float, width: float) -> void:
+	var panel := Panel.new()
+	panel.position = Vector2(left, top)
+	panel.size = Vector2(width, 88)
+	_apply_panel_theme(panel, THEME_PANEL_SURFACE)
+	add_child(panel)
+
+	var from_name := str(realtime_pending_invitation.get("fromName", BATTLE_GUEST_NAME))
+	var title := _make_absolute_label("%s invited you" % from_name, 14, COLOR_INK, 800)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	title.clip_text = true
+	title.position = Vector2(12, 10)
+	title.size = Vector2(width - 24.0, 24)
+	panel.add_child(title)
+
+	var accept_button := _make_dialog_action_button("Accept", _accept_realtime_invitation, COLOR_PRIMARY_STRONG)
+	accept_button.position = Vector2(12, 44)
+	accept_button.size = Vector2((width - 32.0) / 2.0, 34)
+	panel.add_child(accept_button)
+
+	var decline_button := _make_dialog_action_button("Decline", _decline_realtime_invitation, COLOR_SECONDARY)
+	decline_button.position = Vector2(20.0 + accept_button.size.x, 44)
+	decline_button.size = Vector2((width - 32.0) / 2.0, 34)
+	panel.add_child(decline_button)
 
 func _add_battle_section_title(left: float, top: float, icon_kind: String, label_text: String) -> void:
 	var icon_slot := Control.new()
@@ -1960,8 +2481,12 @@ func _render_battle_online_players() -> void:
 		battle_online_scroll.visible = false
 		battle_online_status_label.visible = true
 		battle_online_hint_label.visible = true
-		battle_online_status_label.text = "No players online"
-		battle_online_hint_label.text = "Players will appear here when they join."
+		battle_online_status_label.text = realtime_status_text if not realtime_status_text.is_empty() else "No players online"
+		battle_online_hint_label.text = (
+			"Players will appear here when they join."
+			if realtime_status_text.is_empty()
+			else "Check your connection or try again."
+		)
 		return
 
 	battle_online_scroll.visible = true
@@ -1999,13 +2524,19 @@ func _add_battle_online_row(parent: VBoxContainer, player: Dictionary, width: fl
 	name.size = Vector2(max(104.0, width - 152.0), 28)
 	row.add_child(name)
 
-	var status := Button.new()
-	status.text = _format_realtime_status(str(player.get("status", "lobby")))
-	status.disabled = true
-	_apply_button_theme(status, THEME_BUTTON_SMALL_SURFACE)
-	status.position = Vector2(width - 88.0, 14.0)
-	status.size = Vector2(88, 36)
-	row.add_child(status)
+	var player_id := str(player.get("player_id", ""))
+	var player_status := str(player.get("status", "lobby"))
+	var is_invited := realtime_invited_player_ids.has(player_id)
+	var action := Button.new()
+	action.disabled = player_status != "lobby" or is_invited
+	action.text = "Invited" if is_invited else ("Invite" if player_status == "lobby" else _format_realtime_status(player_status))
+	_apply_button_theme(action, THEME_BUTTON_SMALL_SURFACE if action.disabled else THEME_BUTTON_SMALL_PRIMARY)
+	action.position = Vector2(width - 88.0, 14.0)
+	action.size = Vector2(88, 36)
+	_wire_button_feedback(action, "tap")
+	if not action.disabled:
+		action.pressed.connect(_start_hosted_realtime_room.bind(player_id))
+	row.add_child(action)
 
 func _format_realtime_status(status: String) -> String:
 	match status:
@@ -2015,6 +2546,48 @@ func _format_realtime_status(status: String) -> String:
 			return "In Team"
 		_:
 			return "Lobby"
+
+func _battle_local_player_id() -> String:
+	if _is_realtime_room_active():
+		return realtime_room_player_id
+
+	return BATTLE_PLAYER_ID
+
+func _battle_opponent_player_id() -> String:
+	if battle_snapshot.is_empty() or not battle_snapshot.has("players"):
+		return BATTLE_BOT_ID
+
+	var opponent = BattleRoom.find_opponent(battle_snapshot["players"], _battle_local_player_id())
+	if opponent == null:
+		return BATTLE_BOT_ID
+
+	return str(opponent.get("id", BATTLE_BOT_ID))
+
+func _battle_local_player():
+	if battle_snapshot.is_empty() or not battle_snapshot.has("players"):
+		return null
+
+	return BattleRoom.find_player(battle_snapshot["players"], _battle_local_player_id())
+
+func _battle_opponent_player():
+	if battle_snapshot.is_empty() or not battle_snapshot.has("players"):
+		return null
+
+	return BattleRoom.find_opponent(battle_snapshot["players"], _battle_local_player_id())
+
+func _battle_opponent_name() -> String:
+	var opponent = _battle_opponent_player()
+	if opponent == null:
+		return "Waiting..." if _is_realtime_room_active() else BATTLE_BOT_NAME
+
+	return str(opponent.get("name", BATTLE_BOT_NAME))
+
+func _battle_local_player_name() -> String:
+	var player = _battle_local_player()
+	if player == null:
+		return battle_player_name
+
+	return str(player.get("name", battle_player_name))
 
 func _build_battle_ready_layout() -> void:
 	_clear_screen()
@@ -2031,30 +2604,49 @@ func _build_battle_ready_layout() -> void:
 	back_button.position = Vector2(SAFE_AREA_EDGE_PADDING + _safe_area_left(), _safe_top_y(18.0))
 	add_child(back_button)
 
-	var bot_avatar := _make_avatar_icon_circle(80, COLOR_SECONDARY, "bot")
-	bot_avatar.position = Vector2((viewport_size.x - 80.0) / 2.0, 268.0 + safe_top)
-	_add_ready_badge(bot_avatar, 20)
-	add_child(bot_avatar)
+	var opponent = _battle_opponent_player()
+	var opponent_ready: bool = opponent != null and opponent.get("ready", false) == true
+	var opponent_name := _battle_opponent_name()
+	var opponent_avatar: Panel
+	if _is_realtime_room_active():
+		var opponent_initial := opponent_name.substr(0, 1).to_upper()
+		if opponent == null:
+			opponent_initial = "?"
+		elif opponent_initial.is_empty():
+			opponent_initial = BATTLE_GUEST_NAME.substr(0, 1)
+		opponent_avatar = _make_avatar_initial_circle(80, COLOR_SECONDARY, opponent_initial, 20)
+	else:
+		opponent_avatar = _make_avatar_icon_circle(80, COLOR_SECONDARY, "bot")
 
-	var bot_label := _make_absolute_label(BATTLE_BOT_NAME, 15, COLOR_TEXT_INVERSE_SUBTLE, 800)
-	bot_label.position = Vector2(0, 354.0 + safe_top)
-	bot_label.size = Vector2(viewport_size.x, 24)
-	add_child(bot_label)
+	opponent_avatar.position = Vector2((viewport_size.x - 80.0) / 2.0, 268.0 + safe_top)
+	if opponent_ready or not _is_realtime_room_active():
+		_add_ready_badge(opponent_avatar, 20)
+	add_child(opponent_avatar)
+
+	var opponent_label := _make_absolute_label(opponent_name, 15, COLOR_TEXT_INVERSE_SUBTLE, 800)
+	opponent_label.position = Vector2(0, 354.0 + safe_top)
+	opponent_label.size = Vector2(viewport_size.x, 24)
+	add_child(opponent_label)
 
 	var versus := _make_absolute_label("VS", 46, COLOR_TEXT_INVERSE_SUBTLE, 900)
 	versus.position = Vector2(0, 394.0 + safe_top)
 	versus.size = Vector2(viewport_size.x, 56)
 	add_child(versus)
 
-	var player_initial := battle_player_name.substr(0, 1).to_upper()
+	var local_player = _battle_local_player()
+	var local_ready: bool = local_player != null and local_player.get("ready", false) == true
+	var local_player_name := _battle_local_player_name()
+	var player_initial := local_player_name.substr(0, 1).to_upper()
 	if player_initial.is_empty():
 		player_initial = BATTLE_GUEST_NAME.substr(0, 1)
 
 	var player_avatar := _make_avatar_initial_circle(80, COLOR_PRIMARY_STRONG, player_initial, 20)
 	player_avatar.position = Vector2((viewport_size.x - 80.0) / 2.0, 470.0 + safe_top)
+	if local_ready:
+		_add_ready_badge(player_avatar, 20)
 	add_child(player_avatar)
 
-	var player_label := _make_absolute_label(battle_player_name, 15, COLOR_TEXT_INVERSE_SUBTLE, 800)
+	var player_label := _make_absolute_label(local_player_name, 15, COLOR_TEXT_INVERSE_SUBTLE, 800)
 	player_label.position = Vector2(0, 558.0 + safe_top)
 	player_label.size = Vector2(viewport_size.x, 24)
 	add_child(player_label)
@@ -2062,7 +2654,14 @@ func _build_battle_ready_layout() -> void:
 	var ready_button := _make_wide_page_button("Ready", _start_battle_game, COLOR_PRIMARY_STRONG)
 	ready_button.size = Vector2(258, 56)
 	ready_button.position = Vector2((viewport_size.x - 258.0) / 2.0, _safe_bottom_y(viewport_size.y, ready_button.size.y, 32.0))
+	ready_button.disabled = _is_realtime_room_active() and (local_player == null or opponent == null)
 	add_child(ready_button)
+
+	if not realtime_room_status_text.is_empty():
+		var status := _make_absolute_label(realtime_room_status_text, 12, COLOR_TEXT_INVERSE_SOFT, 700)
+		status.position = Vector2(0, ready_button.position.y - 34.0)
+		status.size = Vector2(viewport_size.x, 24)
+		add_child(status)
 
 func _build_battle_game_layout() -> void:
 	_clear_screen()
@@ -2078,7 +2677,7 @@ func _build_battle_game_layout() -> void:
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(background)
 
-	var enemy_name := _make_absolute_label(BATTLE_BOT_NAME, 15, COLOR_SECONDARY, 800)
+	var enemy_name := _make_absolute_label(_battle_opponent_name(), 15, COLOR_SECONDARY, 800)
 	enemy_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	enemy_name.position = Vector2(SAFE_AREA_EDGE_PADDING + safe_left, 8.0 + safe_top)
 	enemy_name.size = Vector2(160, 24)
@@ -2127,7 +2726,7 @@ func _build_battle_game_layout() -> void:
 	result_label.size = Vector2(viewport_size.x, 24)
 	add_child(result_label)
 
-	var player_name_text := "You" if tutorial_active else battle_player_name
+	var player_name_text := "You" if tutorial_active else _battle_local_player_name()
 	var player_name := _make_absolute_label(player_name_text, 15, COLOR_PRIMARY_STRONG, 800)
 	player_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	player_name.position = Vector2(SAFE_AREA_EDGE_PADDING + safe_left, 452.0 + safe_top)
@@ -2381,8 +2980,10 @@ func _render_battle() -> void:
 		_track_tutorial_event()
 		_sync_tutorial_state()
 
-	var player = BattleRoom.find_player(battle_snapshot["players"], BATTLE_PLAYER_ID)
-	var bot = BattleRoom.find_player(battle_snapshot["players"], BATTLE_BOT_ID)
+	var local_player_id := _battle_local_player_id()
+	var opponent_player_id := _battle_opponent_player_id()
+	var player = BattleRoom.find_player(battle_snapshot["players"], local_player_id)
+	var bot = BattleRoom.find_player(battle_snapshot["players"], opponent_player_id)
 
 	if player == null or bot == null:
 		return
@@ -2497,7 +3098,8 @@ func _submit_battle_queue() -> void:
 	if not keyboard_buffered_prime_input.is_empty():
 		return
 
-	var player = BattleRoom.find_player(battle_snapshot["players"], BATTLE_PLAYER_ID)
+	var local_player_id := _battle_local_player_id()
+	var player = BattleRoom.find_player(battle_snapshot["players"], local_player_id)
 	if player == null:
 		return
 
@@ -2510,12 +3112,13 @@ func _submit_battle_queue() -> void:
 
 	if battle_prime_queue.is_empty():
 		if can_submit_solved_stage:
-			battle_snapshot = BattleRoom.clear_solved_battle_stage(battle_snapshot, BATTLE_PLAYER_ID)
+			battle_snapshot = BattleRoom.clear_solved_battle_stage(battle_snapshot, local_player_id)
+			_broadcast_realtime_clear_solved_stage(local_player_id)
 			_play_battle_event_feedback(battle_snapshot.get("lastEvent", {}))
 			_render_battle()
 		return
 
-	_begin_battle_queue(BATTLE_PLAYER_ID, battle_prime_queue.duplicate())
+	_begin_battle_queue(local_player_id, battle_prime_queue.duplicate())
 	battle_prime_queue.clear()
 	_render_battle()
 
@@ -2593,13 +3196,15 @@ func _resolve_next_battle_prime() -> void:
 	var outcome: Dictionary = Game.apply_prime_selection(stage, prime)
 
 	if outcome["kind"] == "wrong":
+		var released_damage_on_miss := int(acting_player["pendingFactorDamage"])
 		battle_snapshot = BattleRoom.apply_battle_penalty(
 			battle_snapshot,
 			player_id,
 			stage,
-			int(acting_player["pendingFactorDamage"])
+			released_damage_on_miss
 		)
-		battle_result_text = "Miss" if player_id == BATTLE_PLAYER_ID else "-8"
+		_broadcast_realtime_combo_penalty(player_id, stage, released_damage_on_miss)
+		battle_result_text = "Miss" if player_id == _battle_local_player_id() else "-8"
 		_play_sfx("fail")
 		_play_battle_event_feedback(battle_snapshot.get("lastEvent", {}))
 		_finish_battle_resolution()
@@ -2614,7 +3219,8 @@ func _resolve_next_battle_prime() -> void:
 			outcome["stage"],
 			released_damage
 		)
-		battle_result_text = "Miss" if player_id == BATTLE_PLAYER_ID else "-8"
+		_broadcast_realtime_combo_penalty(player_id, outcome["stage"], released_damage)
+		battle_result_text = "Miss" if player_id == _battle_local_player_id() else "-8"
 		_play_sfx("fail")
 		_play_battle_event_feedback(battle_snapshot.get("lastEvent", {}))
 		_finish_battle_resolution()
@@ -2637,13 +3243,14 @@ func _resolve_next_battle_prime() -> void:
 		prime,
 		options
 	)
+	_broadcast_realtime_prime_selected(player_id, prime, options)
 
 	var event: Dictionary = battle_snapshot.get("lastEvent", {})
 	if event.has("damage"):
 		battle_result_text = ""
-		_play_sfx("success" if player_id == BATTLE_PLAYER_ID else "fail")
+		_play_sfx("success" if player_id == _battle_local_player_id() else "fail")
 		_play_battle_event_feedback(event)
-	elif player_id == BATTLE_PLAYER_ID:
+	elif player_id == _battle_local_player_id():
 		_play_sfx("prime")
 		_play_target_impact()
 
@@ -2655,6 +3262,56 @@ func _resolve_next_battle_prime() -> void:
 func _finish_battle_resolution() -> void:
 	_clear_battle_resolution()
 	battle_bot_elapsed = 0.0
+
+func _should_broadcast_realtime_action(player_id: String) -> bool:
+	return _is_realtime_room_active() and player_id == realtime_room_player_id and realtime_room_joined
+
+func _broadcast_realtime_prime_selected(player_id: String, prime: int, options: Dictionary) -> void:
+	if not _should_broadcast_realtime_action(player_id):
+		return
+
+	var payload := {
+		"type": REALTIME_EVENT_PRIME_SELECTED,
+		"playerId": player_id,
+		"actionOrder": _next_realtime_room_action_order(),
+		"prime": prime,
+	}
+	if options.has("suppressAttack"):
+		payload["suppressAttack"] = options["suppressAttack"]
+	if options.has("perfectSolveEligible"):
+		payload["perfectSolveEligible"] = options["perfectSolveEligible"]
+	if options.has("resolvingQueueLength"):
+		payload["resolvingQueueLength"] = options["resolvingQueueLength"]
+
+	_send_realtime_room_broadcast(REALTIME_EVENT_PRIME_SELECTED, payload)
+
+func _broadcast_realtime_combo_penalty(player_id: String, preserved_stage, released_damage: int) -> void:
+	if not _should_broadcast_realtime_action(player_id):
+		return
+
+	_send_realtime_room_broadcast(
+		REALTIME_EVENT_COMBO_PENALTY,
+		{
+			"type": REALTIME_EVENT_COMBO_PENALTY,
+			"playerId": player_id,
+			"actionOrder": _next_realtime_room_action_order(),
+			"preservedStage": preserved_stage,
+			"releasedDamage": released_damage,
+		}
+	)
+
+func _broadcast_realtime_clear_solved_stage(player_id: String) -> void:
+	if not _should_broadcast_realtime_action(player_id):
+		return
+
+	_send_realtime_room_broadcast(
+		REALTIME_EVENT_CLEAR_SOLVED_STAGE,
+		{
+			"type": REALTIME_EVENT_CLEAR_SOLVED_STAGE,
+			"playerId": player_id,
+			"actionOrder": _next_realtime_room_action_order(),
+		}
+	)
 
 func _bot_think_delay_seconds(bot: Dictionary) -> float:
 	if tutorial_active:
@@ -2687,8 +3344,8 @@ func _build_battle_over_overlay() -> void:
 	if has_node("BattleOverOverlay"):
 		return
 
-	var player = BattleRoom.find_player(battle_snapshot["players"], BATTLE_PLAYER_ID)
-	var bot = BattleRoom.find_player(battle_snapshot["players"], BATTLE_BOT_ID)
+	var player = BattleRoom.find_player(battle_snapshot["players"], _battle_local_player_id())
+	var bot = BattleRoom.find_player(battle_snapshot["players"], _battle_opponent_player_id())
 	var did_win := player != null and bot != null and int(bot["hp"]) <= 0 and int(player["hp"]) > 0
 	var exp_gained := 0 if tutorial_active else _battle_exp_gained(player, bot, did_win)
 	_add_experience(exp_gained)
@@ -2727,7 +3384,9 @@ func _build_battle_over_overlay() -> void:
 	actions.add_theme_constant_override("separation", 8)
 	panel.add_child(actions)
 
-	actions.add_child(_make_dialog_action_button("Rematch", _start_battle_ready, COLOR_SECONDARY))
+	var next_battle_label := "Battle" if _is_realtime_room_active() else "Rematch"
+	var next_battle_callback := _start_battle_picker if _is_realtime_room_active() else _start_battle_ready
+	actions.add_child(_make_dialog_action_button(next_battle_label, next_battle_callback, COLOR_SECONDARY))
 	actions.add_child(_make_dialog_action_button("Top", _start_home, COLOR_PRIMARY_STRONG))
 
 func _battle_exp_gained(player, opponent, did_win: bool) -> int:
@@ -4380,11 +5039,11 @@ func _apply_battle_display_hp(player_id: String, hp: int, event_id: int) -> bool
 	if event_id < battle_display_event_id:
 		return false
 
-	if player_id == BATTLE_PLAYER_ID:
+	if player_id == _battle_local_player_id():
 		if battle_display_player_hp == hp:
 			return true
 		battle_display_player_hp = hp
-	elif player_id == BATTLE_BOT_ID:
+	elif player_id == _battle_opponent_player_id():
 		if battle_display_bot_hp == hp:
 			return true
 		battle_display_bot_hp = hp
@@ -4452,7 +5111,7 @@ func _play_battle_event_feedback(event: Dictionary) -> void:
 	if event_type == "self-hit" or event_cause == "self-hit":
 		_play_source_fault(source_id)
 		_play_hp_hit(_hp_bar_for_player(source_id), damage)
-		if source_id == BATTLE_PLAYER_ID:
+		if source_id == _battle_local_player_id():
 			_play_target_fault()
 		var released_damage := int(event.get("releasedDamage", 0))
 		var released_target_id := str(event.get("targetPlayerId", ""))
@@ -4539,13 +5198,13 @@ func _bump_control(control: Control, peak_scale: float, seconds: float) -> void:
 	tween.tween_property(control, "scale", Vector2.ONE, seconds * 0.55)
 
 func _battle_source_control(player_id: String):
-	return enemy_avatar_panel if player_id == BATTLE_BOT_ID else target_blob_panel
+	return enemy_avatar_panel if player_id == _battle_opponent_player_id() else target_blob_panel
 
 func _player_accent_color(player_id: String) -> Color:
-	return COLOR_SECONDARY if player_id == BATTLE_BOT_ID else COLOR_PRIMARY_STRONG
+	return COLOR_SECONDARY if player_id == _battle_opponent_player_id() else COLOR_PRIMARY_STRONG
 
 func _hp_bar_for_player(player_id: String) -> ProgressBar:
-	return enemy_hp_bar if player_id == BATTLE_BOT_ID else player_hp_bar
+	return enemy_hp_bar if player_id == _battle_opponent_player_id() else player_hp_bar
 
 func _battle_hp_anchor(player_id: String) -> Vector2:
 	var bar := _hp_bar_for_player(player_id)
@@ -4555,18 +5214,18 @@ func _battle_hp_anchor(player_id: String) -> Vector2:
 
 func _battle_source_anchor(player_id: String) -> Vector2:
 	var viewport_size := get_viewport_rect().size
-	if player_id == BATTLE_BOT_ID:
+	if player_id == _battle_opponent_player_id():
 		return Vector2(viewport_size.x / 2.0, 174.0)
 	return _target_center()
 
 func _particle_fill_theme_for_player(player_id: String) -> String:
-	return THEME_PANEL_PARTICLE_SECONDARY if player_id == BATTLE_BOT_ID else THEME_PANEL_PARTICLE_PRIMARY
+	return THEME_PANEL_PARTICLE_SECONDARY if player_id == _battle_opponent_player_id() else THEME_PANEL_PARTICLE_PRIMARY
 
 func _particle_ring_theme_for_player(player_id: String) -> String:
-	return THEME_PANEL_PARTICLE_RING_SECONDARY if player_id == BATTLE_BOT_ID else THEME_PANEL_PARTICLE_RING_PRIMARY
+	return THEME_PANEL_PARTICLE_RING_SECONDARY if player_id == _battle_opponent_player_id() else THEME_PANEL_PARTICLE_RING_PRIMARY
 
 func _particle_ball_theme_for_player(player_id: String) -> String:
-	return THEME_PANEL_ATTACK_BALL_SECONDARY if player_id == BATTLE_BOT_ID else THEME_PANEL_ATTACK_BALL_PRIMARY
+	return THEME_PANEL_ATTACK_BALL_SECONDARY if player_id == _battle_opponent_player_id() else THEME_PANEL_ATTACK_BALL_PRIMARY
 
 func _make_control_tween(control: Control, channel: String) -> Tween:
 	var key := "%s:%s" % [control.get_instance_id(), channel]
