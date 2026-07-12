@@ -5,23 +5,33 @@ const MAX_ROOM_PLAYERS := 2
 const VALID_ROOM_STATUSES := ["waiting", "countdown", "playing", "finished"]
 
 static func host_player_id(snapshot: Dictionary) -> String:
-	var players = snapshot.get("players", [])
-	if typeof(players) != TYPE_ARRAY or players.is_empty():
+	var players_variant: Variant = snapshot.get("players", [])
+	if typeof(players_variant) != TYPE_ARRAY:
 		return ""
 
-	var host = players[0]
-	if typeof(host) != TYPE_DICTIONARY:
+	var players: Array = players_variant
+	if players.is_empty():
 		return ""
 
+	var host_variant: Variant = players[0]
+	if typeof(host_variant) != TYPE_DICTIONARY:
+		return ""
+
+	var host: Dictionary = host_variant
 	return str(host.get("id", ""))
 
 static func has_player(snapshot: Dictionary, player_id: String) -> bool:
-	var players = snapshot.get("players", [])
-	if typeof(players) != TYPE_ARRAY:
+	var players_variant: Variant = snapshot.get("players", [])
+	if typeof(players_variant) != TYPE_ARRAY:
 		return false
 
-	for player in players:
-		if typeof(player) == TYPE_DICTIONARY and str(player.get("id", "")) == player_id:
+	var players: Array = players_variant
+	for player_variant: Variant in players:
+		if typeof(player_variant) != TYPE_DICTIONARY:
+			continue
+
+		var player: Dictionary = player_variant
+		if str(player.get("id", "")) == player_id:
 			return true
 
 	return false
@@ -31,10 +41,11 @@ static func validate_room_state_message(
 	room_id: String,
 	last_state_version: int
 ) -> Dictionary:
-	var snapshot = message.get("snapshot", {})
-	if typeof(snapshot) != TYPE_DICTIONARY:
+	var snapshot_variant: Variant = message.get("snapshot", {})
+	if typeof(snapshot_variant) != TYPE_DICTIONARY:
 		return _rejected("missing snapshot")
 
+	var snapshot: Dictionary = snapshot_variant
 	if not _is_valid_snapshot(snapshot, room_id):
 		return _rejected("invalid snapshot")
 
@@ -90,15 +101,20 @@ static func _is_valid_snapshot(snapshot: Dictionary, room_id: String) -> bool:
 	if not VALID_ROOM_STATUSES.has(status):
 		return false
 
-	var players = snapshot.get("players", [])
-	if typeof(players) != TYPE_ARRAY or players.is_empty() or players.size() > MAX_ROOM_PLAYERS:
+	var players_variant: Variant = snapshot.get("players", [])
+	if typeof(players_variant) != TYPE_ARRAY:
 		return false
 
-	var player_ids := {}
-	for player in players:
-		if typeof(player) != TYPE_DICTIONARY:
+	var players: Array = players_variant
+	if players.is_empty() or players.size() > MAX_ROOM_PLAYERS:
+		return false
+
+	var player_ids: Dictionary = {}
+	for player_variant: Variant in players:
+		if typeof(player_variant) != TYPE_DICTIONARY:
 			return false
 
+		var player: Dictionary = player_variant
 		var player_id := str(player.get("id", ""))
 		if player_id.is_empty() or player_ids.has(player_id):
 			return false

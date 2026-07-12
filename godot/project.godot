@@ -11,6 +11,11 @@ run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://assets/icon.svg"
 
+[debug]
+
+gdscript/warnings/enable=true
+gdscript/warnings/untyped_declaration=1
+
 [display]
 
 window/size/viewport_width=390
