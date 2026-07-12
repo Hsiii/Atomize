@@ -6,6 +6,8 @@ export type RoomBroadcastMessage =
           type: 'room_state';
           snapshot: RoomSnapshot;
           sourcePlayerId: string;
+          authorityPlayerId: string;
+          stateVersion: number;
       }
     | {
           type: 'join_request';

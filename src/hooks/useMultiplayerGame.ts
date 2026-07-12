@@ -194,6 +194,30 @@ function resolveJoiningPlayerName(
     );
 }
 
+function getRoomHostPlayerId(snapshot: RoomSnapshot): string | undefined {
+    return snapshot.players[0]?.id;
+}
+
+function isAuthoritativeRoomStateMessage(
+    message: RoomBroadcastMessage,
+    roomId: string,
+    lastStateVersion: number
+): message is Extract<RoomBroadcastMessage, { type: 'room_state' }> {
+    if (message.type !== 'room_state') {
+        return false;
+    }
+
+    if (message.snapshot.roomId !== roomId) {
+        return false;
+    }
+
+    if (message.stateVersion <= lastStateVersion) {
+        return false;
+    }
+
+    return message.authorityPlayerId === getRoomHostPlayerId(message.snapshot);
+}
+
 function applyGameplayBroadcastMessage(
     snapshot: RoomSnapshot,
     message: GameplayBroadcastMessage
@@ -290,6 +314,7 @@ export function useMultiplayerGame({
     const latestMultiplayerRef = useRef(multiplayer);
     const joinLookupTimeoutRef = useRef<number | undefined>(undefined);
     const joinRetryIntervalRef = useRef<number | undefined>(undefined);
+    const roomStateVersionRef = useRef(0);
     const localGameplayActionOrderRef = useRef(0);
     const gameplayGenerationRef = useRef(0);
     const orderedGameplayMessagesRef = useRef<
@@ -566,11 +591,7 @@ export function useMultiplayerGame({
 
             await subscribeToRoom(roomId, playerId, true, async () => {
                 updateSnapshot(snapshot, '');
-                await broadcastMessage({
-                    type: 'room_state',
-                    snapshot,
-                    sourcePlayerId: playerId,
-                });
+                await broadcastRoomState(snapshot, playerId);
 
                 const lobbyChannel = lobbyChannelRef.current;
 
@@ -697,11 +718,7 @@ export function useMultiplayerGame({
             const nextSnapshot = beginRoomMatch(readySnapshot);
 
             updateSnapshot(nextSnapshot, '');
-            await broadcastMessage({
-                type: 'room_state',
-                snapshot: nextSnapshot,
-                sourcePlayerId: currentState.playerId,
-            });
+            await broadcastRoomState(nextSnapshot, currentState.playerId);
             return;
         }
 
@@ -967,6 +984,21 @@ export function useMultiplayerGame({
         }
     }
 
+    async function broadcastRoomState(
+        snapshot: RoomSnapshot,
+        sourcePlayerId: string
+    ): Promise<boolean> {
+        roomStateVersionRef.current++;
+
+        return await broadcastMessage({
+            type: 'room_state',
+            snapshot,
+            sourcePlayerId,
+            authorityPlayerId: getRoomHostPlayerId(snapshot) ?? sourcePlayerId,
+            stateVersion: roomStateVersionRef.current,
+        });
+    }
+
     function updateSnapshot(snapshot: RoomSnapshot, statusText?: string) {
         setMultiplayerState((currentState) =>
             shouldIgnoreSnapshotRegression(currentState.snapshot, snapshot)
@@ -1022,15 +1054,22 @@ export function useMultiplayerGame({
         channel
             .on('broadcast', { event: 'room_state' }, ({ payload }) => {
                 const message = payload as RoomBroadcastMessage;
-
-                if (message.type !== 'room_state') {
-                    return;
-                }
-
                 const currentState = latestMultiplayerRef.current;
 
                 if (
-                    !currentState.isHost &&
+                    currentState.isHost ||
+                    !isAuthoritativeRoomStateMessage(
+                        message,
+                        roomId,
+                        roomStateVersionRef.current
+                    )
+                ) {
+                    return;
+                }
+
+                roomStateVersionRef.current = message.stateVersion;
+
+                if (
                     currentState.playerId &&
                     message.snapshot.players.some(
                         (player) => player.id === currentState.playerId
@@ -1146,15 +1185,17 @@ export function useMultiplayerGame({
         );
         const actionOrder = getNextGameplayActionOrder();
         updateSnapshot(nextSnapshot, '');
-        const didBroadcast = await broadcastMessage({
-            type: 'prime_selected',
-            playerId: currentState.playerId,
-            actionOrder,
-            prime,
-            suppressAttack,
-            perfectSolveEligible,
-            resolvingQueueLength,
-        });
+        const didBroadcast = currentState.isHost
+            ? await broadcastRoomState(nextSnapshot, currentState.playerId)
+            : await broadcastMessage({
+                  type: 'prime_selected',
+                  playerId: currentState.playerId,
+                  actionOrder,
+                  prime,
+                  suppressAttack,
+                  perfectSolveEligible,
+                  resolvingQueueLength,
+              });
 
         return {
             snapshot: nextSnapshot,
@@ -1198,13 +1239,15 @@ export function useMultiplayerGame({
         );
         const actionOrder = getNextGameplayActionOrder();
         updateSnapshot(nextSnapshot, '');
-        return await broadcastMessage({
-            type: 'combo_penalty',
-            playerId: currentState.playerId,
-            actionOrder,
-            preservedStage,
-            releasedDamage,
-        });
+        return currentState.isHost
+            ? await broadcastRoomState(nextSnapshot, currentState.playerId)
+            : await broadcastMessage({
+                  type: 'combo_penalty',
+                  playerId: currentState.playerId,
+                  actionOrder,
+                  preservedStage,
+                  releasedDamage,
+              });
     }
 
     async function sendSolvedStageClear(): Promise<boolean> {
@@ -1224,11 +1267,13 @@ export function useMultiplayerGame({
         );
         const actionOrder = getNextGameplayActionOrder();
         updateSnapshot(nextSnapshot, '');
-        return await broadcastMessage({
-            type: 'clear_solved_stage',
-            playerId: currentState.playerId,
-            actionOrder,
-        });
+        return currentState.isHost
+            ? await broadcastRoomState(nextSnapshot, currentState.playerId)
+            : await broadcastMessage({
+                  type: 'clear_solved_stage',
+                  playerId: currentState.playerId,
+                  actionOrder,
+              });
     }
 
     async function handleJoinRequestBroadcast(
@@ -1277,11 +1322,7 @@ export function useMultiplayerGame({
         }
 
         updateSnapshot(nextSnapshot, '');
-        await broadcastMessage({
-            type: 'room_state',
-            snapshot: nextSnapshot,
-            sourcePlayerId,
-        });
+        await broadcastRoomState(nextSnapshot, sourcePlayerId);
 
         return undefined;
     }
@@ -1345,11 +1386,7 @@ export function useMultiplayerGame({
         const readySnapshot = beginRoomMatch(nextSnapshot);
 
         updateSnapshot(readySnapshot, '');
-        await broadcastMessage({
-            type: 'room_state',
-            snapshot: readySnapshot,
-            sourcePlayerId,
-        });
+        await broadcastRoomState(readySnapshot, sourcePlayerId);
 
         return undefined;
     }
@@ -1465,7 +1502,11 @@ export function useMultiplayerGame({
     ) {
         const currentState = latestMultiplayerRef.current;
 
-        if (!currentState.snapshot || message.playerId === localPlayerId) {
+        if (
+            !currentState.isHost ||
+            !currentState.snapshot ||
+            message.playerId === localPlayerId
+        ) {
             return;
         }
 
@@ -1500,6 +1541,11 @@ export function useMultiplayerGame({
             orderedState.pendingMessages.delete(nextMessage.actionOrder);
             orderedState.lastAppliedOrder = nextMessage.actionOrder;
             updateSnapshot(nextSnapshot, '');
+            if (currentState.playerId) {
+                detachPromise(
+                    broadcastRoomState(nextSnapshot, currentState.playerId)
+                );
+            }
             nextMessage = orderedState.pendingMessages.get(
                 orderedState.lastAppliedOrder + 1
             );
@@ -1530,6 +1576,7 @@ export function useMultiplayerGame({
     }
 
     function resetGameplayMessageOrdering() {
+        roomStateVersionRef.current = 0;
         localGameplayActionOrderRef.current = 0;
         orderedGameplayMessagesRef.current.clear();
     }

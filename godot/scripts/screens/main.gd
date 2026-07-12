@@ -2,6 +2,7 @@ extends Control
 
 const Game := preload("res://scripts/core/game.gd")
 const BattleRoom := preload("res://scripts/core/multiplayer_room.gd")
+const RealtimeAuthority := preload("res://scripts/core/realtime_authority.gd")
 const SaveManager := preload("res://scripts/core/save_manager.gd")
 const SupabaseClient := preload("res://scripts/core/supabase_client.gd")
 
@@ -461,6 +462,8 @@ var realtime_room_is_host := false
 var realtime_room_player_id := ""
 var realtime_room_status_text := ""
 var realtime_room_action_order := 0
+var realtime_room_state_version := 0
+var realtime_room_authority_player_id := ""
 var realtime_remote_action_orders: Dictionary = {}
 var realtime_pending_invite_target_id := ""
 var icon_texture_cache: Dictionary = {}
@@ -767,8 +770,13 @@ func _realtime_room_topic_for(room_id: String) -> String:
 	return "%s%s" % [REALTIME_ROOM_TOPIC_PREFIX, room_id]
 
 func _broadcast_realtime_room_state() -> void:
-	if battle_snapshot.is_empty():
+	if battle_snapshot.is_empty() or not realtime_room_is_host:
 		return
+
+	realtime_room_state_version += 1
+	realtime_room_authority_player_id = RealtimeAuthority.host_player_id(battle_snapshot)
+	if realtime_room_authority_player_id.is_empty():
+		realtime_room_authority_player_id = realtime_room_player_id
 
 	_send_realtime_room_broadcast(
 		REALTIME_EVENT_ROOM_STATE,
@@ -776,6 +784,8 @@ func _broadcast_realtime_room_state() -> void:
 			"type": REALTIME_EVENT_ROOM_STATE,
 			"snapshot": battle_snapshot,
 			"sourcePlayerId": realtime_room_player_id,
+			"authorityPlayerId": realtime_room_authority_player_id,
+			"stateVersion": realtime_room_state_version,
 		}
 	)
 
@@ -818,6 +828,8 @@ func _reset_realtime_room_state(send_leave: bool = true) -> void:
 	realtime_room_player_id = ""
 	realtime_room_status_text = ""
 	realtime_room_action_order = 0
+	realtime_room_state_version = 0
+	realtime_room_authority_player_id = ""
 	realtime_remote_action_orders.clear()
 	realtime_pending_invite_target_id = ""
 
@@ -988,11 +1000,20 @@ func _handle_room_broadcast(event_name: String, message: Dictionary) -> void:
 			_handle_room_error_broadcast(message)
 
 func _handle_room_state_broadcast(message: Dictionary) -> void:
-	var snapshot = message.get("snapshot", {})
-	if typeof(snapshot) != TYPE_DICTIONARY:
+	if realtime_room_is_host:
 		return
 
-	battle_snapshot = snapshot
+	var validation := RealtimeAuthority.validate_room_state_message(
+		message,
+		realtime_room_id,
+		realtime_room_state_version
+	)
+	if not validation["accepted"]:
+		return
+
+	battle_snapshot = validation["snapshot"]
+	realtime_room_state_version = int(validation["stateVersion"])
+	realtime_room_authority_player_id = str(validation["authorityPlayerId"])
 	_clear_battle_resolution()
 	_reset_battle_display_state()
 	_track_realtime_presence()
@@ -1054,16 +1075,24 @@ func _handle_player_ready_broadcast(message: Dictionary) -> void:
 		_build_battle_ready_layout()
 
 func _handle_gameplay_broadcast(message: Dictionary) -> void:
-	if battle_snapshot.is_empty() or str(message.get("playerId", "")) == realtime_room_player_id:
+	if (
+		not realtime_room_is_host
+		or battle_snapshot.is_empty()
+		or str(message.get("playerId", "")) == realtime_room_player_id
+	):
 		return
 
 	var player_id := str(message.get("playerId", ""))
-	var action_order := int(message.get("actionOrder", 0))
 	var last_action_order := int(realtime_remote_action_orders.get(player_id, 0))
-	if action_order <= last_action_order:
+	var validation := RealtimeAuthority.validate_gameplay_action(
+		battle_snapshot,
+		message,
+		last_action_order
+	)
+	if not validation["accepted"]:
 		return
 
-	realtime_remote_action_orders[player_id] = action_order
+	realtime_remote_action_orders[player_id] = int(validation["actionOrder"])
 	match str(message.get("type", "")):
 		REALTIME_EVENT_PRIME_SELECTED:
 			battle_snapshot = BattleRoom.apply_battle_prime_selection(
@@ -1086,6 +1115,7 @@ func _handle_gameplay_broadcast(message: Dictionary) -> void:
 		REALTIME_EVENT_CLEAR_SOLVED_STAGE:
 			battle_snapshot = BattleRoom.clear_solved_battle_stage(battle_snapshot, player_id)
 
+	_broadcast_realtime_room_state()
 	_play_battle_event_feedback(battle_snapshot.get("lastEvent", {}))
 	_render_battle()
 
@@ -3332,6 +3362,10 @@ func _broadcast_realtime_prime_selected(player_id: String, prime: int, options: 
 	if not _should_broadcast_realtime_action(player_id):
 		return
 
+	if realtime_room_is_host:
+		_broadcast_realtime_room_state()
+		return
+
 	var payload := {
 		"type": REALTIME_EVENT_PRIME_SELECTED,
 		"playerId": player_id,
@@ -3351,6 +3385,10 @@ func _broadcast_realtime_combo_penalty(player_id: String, preserved_stage, relea
 	if not _should_broadcast_realtime_action(player_id):
 		return
 
+	if realtime_room_is_host:
+		_broadcast_realtime_room_state()
+		return
+
 	_send_realtime_room_broadcast(
 		REALTIME_EVENT_COMBO_PENALTY,
 		{
@@ -3364,6 +3402,10 @@ func _broadcast_realtime_combo_penalty(player_id: String, preserved_stage, relea
 
 func _broadcast_realtime_clear_solved_stage(player_id: String) -> void:
 	if not _should_broadcast_realtime_action(player_id):
+		return
+
+	if realtime_room_is_host:
+		_broadcast_realtime_room_state()
 		return
 
 	_send_realtime_room_broadcast(
