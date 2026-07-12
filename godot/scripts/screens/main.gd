@@ -2,12 +2,9 @@ extends Control
 
 const Game := preload("res://scripts/core/game.gd")
 const BattleRoom := preload("res://scripts/core/multiplayer_room.gd")
+const SaveManager := preload("res://scripts/core/save_manager.gd")
 const SupabaseClient := preload("res://scripts/core/supabase_client.gd")
 
-const LOCAL_SAVE_VERSION := 1
-const BEST_SCORE_PATH := "user://best_score.json"
-const EXPERIENCE_PATH := "user://experience.json"
-const TUTORIAL_COMPLETE_PATH := "user://tutorial_complete.txt"
 const BATTLE_BOT_ID := "atom-bot"
 const BATTLE_BOT_NAME := "AtomBot"
 const BATTLE_BOT_MISTAKE_CHANCE := 0.14
@@ -440,6 +437,7 @@ var battle_display_event_id := -1
 var battle_result_reveal_event_id := -1
 var leaderboard_entries: Array[Dictionary] = []
 var leaderboard_status_text := ""
+var save_manager: SaveManager
 var supabase_client: SupabaseClient
 var realtime_socket := WebSocketPeer.new()
 var realtime_player_id := ""
@@ -506,9 +504,10 @@ func _ready() -> void:
 	get_tree().set_quit_on_go_back(false)
 	_ensure_audio_buses()
 	_build_sfx_pool()
+	save_manager = SaveManager.new()
 	supabase_client = SupabaseClient.new()
 	realtime_player_id = "godot-%s" % Time.get_ticks_usec()
-	battle_player_name = _create_guest_display_name()
+	battle_player_name = save_manager.load_player_name(_create_guest_display_name())
 	_build_network_nodes()
 	theme = _make_app_theme()
 	best_score = _load_best_score()
@@ -3814,64 +3813,30 @@ func _apply_time_compensation(state_before_clear: Dictionary, queue_length: int)
 	solo_time_left += compensation
 
 func _is_tutorial_complete() -> bool:
-	return FileAccess.file_exists(TUTORIAL_COMPLETE_PATH)
+	return save_manager.is_tutorial_complete()
 
 func _mark_tutorial_complete() -> void:
 	needs_tutorial = false
-	var file := FileAccess.open(TUTORIAL_COMPLETE_PATH, FileAccess.WRITE)
-	if file != null:
-		file.store_string("1")
+	save_manager.mark_tutorial_complete()
 
 func _reset_best_score() -> void:
 	best_score = 0
 	best_combo = 0
-	var file := FileAccess.open(BEST_SCORE_PATH, FileAccess.WRITE)
-	if file != null:
-		file.store_string(JSON.stringify({"version": LOCAL_SAVE_VERSION, "score": 0, "maxCombo": 0}))
+	save_manager.reset_best_record()
 
 	_start_home()
 
 func _load_best_score() -> int:
-	return int(_load_best_record().get("score", 0))
+	return save_manager.load_best_score()
 
 func _load_best_combo() -> int:
-	return int(_load_best_record().get("maxCombo", 0))
+	return save_manager.load_best_combo()
 
 func _load_best_record() -> Dictionary:
-	if not FileAccess.file_exists(BEST_SCORE_PATH):
-		return {"score": 0, "maxCombo": 0}
-
-	var file := FileAccess.open(BEST_SCORE_PATH, FileAccess.READ)
-	if file == null:
-		return {"score": 0, "maxCombo": 0}
-
-	var parsed = JSON.parse_string(file.get_as_text())
-	if typeof(parsed) != TYPE_DICTIONARY:
-		return {"score": 0, "maxCombo": 0}
-
-	return parsed
+	return save_manager.load_best_record()
 
 func _save_best_score(score: int, max_combo: int) -> bool:
-	var record := _load_best_record()
-	var current_best_score := int(record.get("score", 0))
-	var current_best_combo := int(record.get("maxCombo", 0))
-	var next_best_score := maxi(score, current_best_score)
-	var next_best_combo := maxi(max_combo, current_best_combo)
-	var is_new_high_score := score > current_best_score
-
-	if next_best_score == current_best_score and next_best_combo == current_best_combo:
-		return is_new_high_score
-
-	var file := FileAccess.open(BEST_SCORE_PATH, FileAccess.WRITE)
-	if file == null:
-		return false
-
-	file.store_string(JSON.stringify({
-		"version": LOCAL_SAVE_VERSION,
-		"score": next_best_score,
-		"maxCombo": next_best_combo,
-	}))
-	return is_new_high_score
+	return save_manager.save_best_score(score, max_combo)
 
 func _solo_exp_gained(score: int) -> int:
 	return maxi(0, int(floor(float(score) / 10.0)))
@@ -3880,41 +3845,14 @@ func _calculate_level(experience: int) -> int:
 	return floori(sqrt(float(maxi(0, experience)) / 100.0)) + 1
 
 func _add_experience(experience_gain: int) -> int:
-	var normalized_gain := maxi(0, experience_gain)
-	if normalized_gain == 0:
-		return player_experience
-
-	player_experience = _save_experience(player_experience + normalized_gain)
+	player_experience = save_manager.add_experience(player_experience, experience_gain)
 	return player_experience
 
 func _load_experience() -> int:
-	if not FileAccess.file_exists(EXPERIENCE_PATH):
-		return 0
-
-	var file := FileAccess.open(EXPERIENCE_PATH, FileAccess.READ)
-	if file == null:
-		return 0
-
-	var parsed = JSON.parse_string(file.get_as_text())
-	if typeof(parsed) == TYPE_DICTIONARY:
-		return maxi(0, int(parsed.get("experience", 0)))
-
-	if typeof(parsed) == TYPE_FLOAT or typeof(parsed) == TYPE_INT:
-		return maxi(0, int(parsed))
-
-	return 0
+	return save_manager.load_experience()
 
 func _save_experience(experience: int) -> int:
-	var normalized_experience := maxi(0, experience)
-	var file := FileAccess.open(EXPERIENCE_PATH, FileAccess.WRITE)
-	if file == null:
-		return player_experience
-
-	file.store_string(JSON.stringify({
-		"version": LOCAL_SAVE_VERSION,
-		"experience": normalized_experience,
-	}))
-	return normalized_experience
+	return save_manager.save_experience(experience)
 
 func _make_app_theme() -> Theme:
 	var app_theme := Theme.new()
