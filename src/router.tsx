@@ -1,21 +1,49 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import type { JSX } from 'react';
 
 import { useAppContext } from './app-context';
-import { MultiplayerGameScreen } from './components/game/MultiplayerGameScreen';
-import { SingleGameScreen } from './components/game/SingleGameScreen';
-import { AccountScreen } from './components/menu/AccountScreen';
-import { AuthScreen } from './components/menu/AuthScreen';
-import { FriendsScreen } from './components/menu/FriendsScreen';
-import { LeaderboardScreen } from './components/menu/LeaderboardScreen';
-import { MenuScreen } from './components/menu/MenuScreen';
-import { OpponentPickerScreen } from './components/menu/OpponentPickerScreen';
-import { SoloPregameScreen } from './components/menu/SoloPregameScreen';
 import {
     detachPromise,
     formatCountdown,
     isTutorialComplete,
 } from './lib/app-helpers';
+
+const AccountScreen = lazy(async () => {
+    const module = await import('./components/menu/AccountScreen');
+    return { default: module.AccountScreen };
+});
+const AuthScreen = lazy(async () => {
+    const module = await import('./components/menu/AuthScreen');
+    return { default: module.AuthScreen };
+});
+const FriendsScreen = lazy(async () => {
+    const module = await import('./components/menu/FriendsScreen');
+    return { default: module.FriendsScreen };
+});
+const LeaderboardScreen = lazy(async () => {
+    const module = await import('./components/menu/LeaderboardScreen');
+    return { default: module.LeaderboardScreen };
+});
+const MenuScreen = lazy(async () => {
+    const module = await import('./components/menu/MenuScreen');
+    return { default: module.MenuScreen };
+});
+const MultiplayerGameScreen = lazy(async () => {
+    const module = await import('./components/game/MultiplayerGameScreen');
+    return { default: module.MultiplayerGameScreen };
+});
+const OpponentPickerScreen = lazy(async () => {
+    const module = await import('./components/menu/OpponentPickerScreen');
+    return { default: module.OpponentPickerScreen };
+});
+const SingleGameScreen = lazy(async () => {
+    const module = await import('./components/game/SingleGameScreen');
+    return { default: module.SingleGameScreen };
+});
+const SoloPregameScreen = lazy(async () => {
+    const module = await import('./components/menu/SoloPregameScreen');
+    return { default: module.SoloPregameScreen };
+});
 
 function MenuPage(): JSX.Element {
     const {
@@ -357,7 +385,7 @@ function LeaderboardPage(): JSX.Element {
     );
 }
 
-export function AppRoutes(): JSX.Element {
+function ResolvedRoute(): JSX.Element {
     const { pathname } = useAppContext();
 
     switch (pathname) {
@@ -405,6 +433,14 @@ export function AppRoutes(): JSX.Element {
             return <MenuPage />;
         }
     }
+}
+
+export function AppRoutes(): JSX.Element {
+    return (
+        <Suspense fallback={undefined}>
+            <ResolvedRoute />
+        </Suspense>
+    );
 }
 
 export { isTutorialComplete } from './lib/app-helpers';
