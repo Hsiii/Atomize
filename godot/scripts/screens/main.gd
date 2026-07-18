@@ -21,6 +21,7 @@ const COMBO_QUEUE_MAX_ITEMS := 7
 const SCREEN_ARG_PREFIX := "--atomize-screen="
 const APP_VERSION_FALLBACK := "0.1.0"
 const APP_VERSION_SETTING := "application/config/version"
+const REDUCE_MOTION_SETTING := "accessibility/reduce_motion"
 const SOLO_DURATION_SECONDS := 60.0
 const SOLO_COMBO_STEP_DELAY_SECONDS := 0.14
 const MULTIPLAYER_COMBO_STEP_DELAY_SECONDS := 0.22
@@ -129,6 +130,7 @@ const THEME_BUTTON_PAGE_SECONDARY := "AtomButtonPageSecondary"
 const THEME_BUTTON_BLOB_PRIMARY := "AtomButtonBlobPrimary"
 const THEME_BUTTON_BLOB_SECONDARY := "AtomButtonBlobSecondary"
 const THEME_PANEL_HERO_ORB := "AtomPanelHeroOrb"
+const THEME_PANEL_HOME_MENU := "AtomPanelHomeMenu"
 const THEME_PANEL_LOGO_DOT := "AtomPanelLogoDot"
 const THEME_PANEL_SURFACE := "AtomPanelSurface"
 const THEME_PANEL_CONTAINER_SURFACE := "AtomPanelContainerSurface"
@@ -181,6 +183,7 @@ const ICON_PATHS := {
 	"back": "res://assets/icons/back.svg",
 	"battle": "res://assets/icons/battle.svg",
 	"bot": "res://assets/icons/bot.svg",
+	"chevron_up": "res://assets/icons/chevron-up.svg",
 	"cpu": "res://assets/icons/cpu.svg",
 	"delete": "res://assets/icons/delete.svg",
 	"guest": "res://assets/icons/guest.svg",
@@ -2028,21 +2031,6 @@ func _build_home_layout() -> void:
 	_apply_panel_theme(hero, THEME_PANEL_HERO_ORB)
 	add_child(hero)
 
-	if not needs_tutorial:
-		var menu_button := _make_home_menu_button()
-		menu_button.position = Vector2(
-			viewport_size.x - HOME_MENU_BUTTON_SIZE - SAFE_AREA_EDGE_PADDING - safe_right,
-			SAFE_AREA_EDGE_PADDING + safe_top
-		)
-		add_child(menu_button)
-		var dropdown_position := menu_button.position + Vector2(-92, HOME_MENU_BUTTON_SIZE + 4)
-		dropdown_position.x = clampf(
-			dropdown_position.x,
-			SAFE_AREA_EDGE_PADDING + safe_left,
-			viewport_size.x - 128.0 - SAFE_AREA_EDGE_PADDING - safe_right
-		)
-		_build_home_dropdown(dropdown_position)
-
 	var title_row := _make_home_title()
 	title_row.size = Vector2(min(viewport_size.x * 0.92, 320.0), 72)
 	title_row.position = Vector2(
@@ -2073,6 +2061,8 @@ func _build_home_layout() -> void:
 	add_child(battle_button)
 	_start_home_blob_idle(battle_button, true)
 
+	_build_home_menu_controls(viewport_size, safe_top, safe_right)
+
 func _add_home_level_badge(viewport_size: Vector2, top: float) -> void:
 	var level := _calculate_level(player_experience)
 	var badge := Panel.new()
@@ -2085,27 +2075,70 @@ func _add_home_level_badge(viewport_size: Vector2, top: float) -> void:
 	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	badge.add_child(label)
 
-func _build_home_dropdown(position: Vector2) -> void:
-	if not home_menu_open:
+func _build_home_menu_controls(viewport_size: Vector2, safe_top: float, safe_right: float) -> void:
+	var menu_button_position := Vector2(
+		viewport_size.x - HOME_MENU_BUTTON_SIZE - SAFE_AREA_EDGE_PADDING - safe_right,
+		SAFE_AREA_EDGE_PADDING + safe_top
+	)
+
+	if home_menu_open:
+		var scrim := ColorRect.new()
+		scrim.color = Color(0.063, 0.106, 0.180, 0.18)
+		scrim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		scrim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(scrim)
+
+		var dismiss_button := Button.new()
+		dismiss_button.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		dismiss_button.text = ""
+		dismiss_button.flat = true
+		_apply_button_theme(dismiss_button, THEME_BUTTON_TRANSPARENT)
+		dismiss_button.pressed.connect(_toggle_home_menu)
+		add_child(dismiss_button)
+
+		var panel := Panel.new()
+		panel.size = Vector2(64.0, 224.0)
+		panel.position = Vector2(
+			viewport_size.x - panel.size.x - SAFE_AREA_EDGE_PADDING - safe_right,
+			menu_button_position.y + HOME_MENU_BUTTON_SIZE + 4.0
+		)
+		_apply_panel_theme(panel, THEME_PANEL_HOME_MENU)
+		add_child(panel)
+
+		var dropdown := VBoxContainer.new()
+		dropdown.position = Vector2(8.0, 8.0)
+		dropdown.size = Vector2(48.0, 208.0)
+		dropdown.add_theme_constant_override("separation", 4)
+		panel.add_child(dropdown)
+
+		dropdown.add_child(_make_home_menu_item("guest", "Player", _show_player_name_dialog))
+		dropdown.add_child(_make_home_menu_item("trophy", "Leaderboard", _start_leaderboard))
+		dropdown.add_child(_make_home_menu_item("help", "Tutorial", _start_tutorial_game))
+		dropdown.add_child(_make_home_menu_item("delete", "Reset best", _reset_best_score))
+
+		_animate_home_menu_open(scrim, panel)
+
+	var menu_button := _make_home_menu_button()
+	menu_button.position = menu_button_position
+	add_child(menu_button)
+
+func _animate_home_menu_open(scrim: ColorRect, panel: Panel) -> void:
+	if _prefers_reduced_motion():
 		return
 
-	var dropdown := VBoxContainer.new()
-	dropdown.position = position
-	dropdown.size = Vector2(128, 208)
-	dropdown.add_theme_constant_override("separation", 8)
-	add_child(dropdown)
+	scrim.modulate.a = 0.0
+	panel.modulate.a = 0.0
+	panel.pivot_offset = Vector2(panel.size.x - 20.0, 0.0)
+	panel.scale = Vector2(0.92, 0.92)
+	panel.position.y -= 8.0
 
-	var name_button := _make_dropdown_button("Player", _show_player_name_dialog)
-	dropdown.add_child(name_button)
-
-	var leaderboard_button := _make_dropdown_button("Leaderboard", _start_leaderboard)
-	dropdown.add_child(leaderboard_button)
-
-	var help_button := _make_dropdown_button("Tutorial", _start_tutorial_game)
-	dropdown.add_child(help_button)
-
-	var reset_button := _make_dropdown_button("Reset Best", _reset_best_score)
-	dropdown.add_child(reset_button)
+	var tween := panel.create_tween().set_parallel(true)
+	tween.set_trans(Tween.TRANS_BACK)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property(scrim, "modulate:a", 1.0, 0.18)
+	tween.tween_property(panel, "modulate:a", 1.0, 0.16)
+	tween.tween_property(panel, "scale", Vector2.ONE, 0.24)
+	tween.tween_property(panel, "position:y", panel.position.y + 8.0, 0.24)
 
 func _show_player_name_dialog() -> void:
 	home_menu_open = false
@@ -3966,6 +3999,7 @@ func _make_app_theme() -> Theme:
 	_add_button_theme(app_theme, THEME_BUTTON_BLOB_SECONDARY, COLOR_SECONDARY, COLOR_TEXT_INVERSE, 16, COLOR_SECONDARY, 16, RADIUS_PILL, COLOR_BORDER_INVERSE_SOFT)
 	_add_transparent_button_theme(app_theme)
 	_add_panel_theme(app_theme, THEME_PANEL_HERO_ORB, "Panel", _make_pixel_box_style(COLOR_PRIMARY, COLOR_OUTLINE_STRONG, PIXEL_BORDER, RADIUS_PILL, true))
+	_add_panel_theme(app_theme, THEME_PANEL_HOME_MENU, "Panel", _make_home_menu_panel_style())
 	_add_panel_theme(app_theme, THEME_PANEL_LOGO_DOT, "Panel", _make_pixel_box_style(COLOR_TEXT_INVERSE, Color.TRANSPARENT, 0, RADIUS_PILL))
 	_add_panel_theme(app_theme, THEME_PANEL_SURFACE, "Panel", _make_panel_style(COLOR_SURFACE))
 	_add_panel_theme(app_theme, THEME_PANEL_CONTAINER_SURFACE, "PanelContainer", _make_panel_style(COLOR_SURFACE))
@@ -4163,6 +4197,9 @@ func _make_home_blob_button(text: String, callback: Callable, color: Color, icon
 	return button
 
 func _start_home_blob_idle(button: Button, starts_raised: bool) -> void:
+	if _prefers_reduced_motion():
+		return
+
 	var base_y := button.position.y
 	var raised_y := base_y - 4.0
 	if starts_raised:
@@ -4188,18 +4225,24 @@ func _make_home_menu_button() -> Button:
 	_apply_button_theme(button, THEME_BUTTON_TRANSPARENT)
 	_wire_button_feedback(button, "tap")
 	button.pressed.connect(_toggle_home_menu)
-	_set_or_add_texture_icon(button, "menu", 28, COLOR_TEXT_INVERSE_SOFT)
+	_set_or_add_texture_icon(button, "chevron_up" if home_menu_open else "menu", 28, COLOR_TEXT_INVERSE_SOFT)
 
 	return button
 
-func _make_dropdown_button(text: String, callback: Callable) -> Button:
+func _make_home_menu_item(icon_kind: String, tooltip: String, callback: Callable) -> Button:
 	var button := Button.new()
-	button.text = text
-	button.custom_minimum_size = Vector2(128, 44)
-	_apply_button_theme(button, THEME_BUTTON_SMALL_SURFACE)
+	button.text = ""
+	button.tooltip_text = tooltip
+	button.custom_minimum_size = Vector2(48, 48)
+	button.flat = true
+	_apply_button_theme(button, THEME_BUTTON_TRANSPARENT)
 	_wire_button_feedback(button, "tap")
+	_set_or_add_texture_icon(button, icon_kind, 24, COLOR_PRIMARY)
 	button.pressed.connect(callback)
 	return button
+
+func _prefers_reduced_motion() -> bool:
+	return bool(ProjectSettings.get_setting(REDUCE_MOTION_SETTING, false))
 
 func _make_header_icon_button(text: String, callback: Callable) -> Button:
 	var button := Button.new()
@@ -6096,6 +6139,13 @@ func _make_dialog_panel_style(border_color: Color = COLOR_PRIMARY) -> StyleBoxFl
 	style.corner_radius_top_right = RADIUS_PANEL
 	style.corner_radius_bottom_right = RADIUS_PANEL
 	style.corner_radius_bottom_left = RADIUS_PANEL
+	return style
+
+func _make_home_menu_panel_style() -> StyleBoxFlat:
+	var style := _make_dialog_panel_style(COLOR_BORDER_SOFT)
+	style.shadow_color = Color(0.063, 0.106, 0.180, 0.16)
+	style.shadow_size = 12
+	style.shadow_offset = Vector2(0, 8)
 	return style
 
 func _make_transparent_button_style() -> StyleBoxFlat:
