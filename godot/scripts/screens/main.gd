@@ -129,6 +129,7 @@ const THEME_BUTTON_SMALL_PRIMARY := "AtomButtonSmallPrimary"
 const THEME_BUTTON_SMALL_SURFACE := "AtomButtonSmallSurface"
 const THEME_BUTTON_PAGE_PRIMARY := "AtomButtonPagePrimary"
 const THEME_BUTTON_PAGE_SECONDARY := "AtomButtonPageSecondary"
+const THEME_BUTTON_PAGE_DANGER := "AtomButtonPageDanger"
 const THEME_BUTTON_BLOB_PRIMARY := "AtomButtonBlobPrimary"
 const THEME_BUTTON_BLOB_SECONDARY := "AtomButtonBlobSecondary"
 const THEME_PANEL_HERO_ORB := "AtomPanelHeroOrb"
@@ -531,6 +532,8 @@ var player_hp_label: Label
 var player_name_input: LineEdit
 var player_name_status_label: Label
 var player_name_save_button: Button
+var player_name_cancel_button: Button
+var player_name_guest_button: Button
 
 func _ready() -> void:
 	get_tree().set_quit_on_go_back(false)
@@ -562,6 +565,20 @@ func _ready() -> void:
 			_start_home()
 			home_menu_open = true
 			_build_home_layout()
+		"dialog-player-name":
+			needs_tutorial = false
+			_start_home()
+			_show_player_name_dialog()
+		"dialog-reset-best":
+			needs_tutorial = false
+			_start_home()
+			_show_reset_best_dialog()
+		"dialog-pause":
+			_start_solo_game()
+			_pause_game()
+		"dialog-game-over":
+			_start_solo_game()
+			_build_game_over_layout()
 		"help":
 			_start_help()
 		"tutorial":
@@ -1347,6 +1364,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func _handle_back_navigation() -> bool:
+	if has_node("PlayerNameOverlay") or has_node("ResetBestOverlay"):
+		_start_home()
+		return true
+
+	if screen == Screen.HOME and home_menu_open:
+		_toggle_home_menu()
+		return true
+
 	if screen == Screen.SOLO:
 		_pause_game()
 		return true
@@ -2134,7 +2159,7 @@ func _build_home_menu_controls(viewport_size: Vector2, safe_top: float, safe_rig
 		dropdown.add_child(_make_home_menu_item("guest", "Player", _show_player_name_dialog))
 		dropdown.add_child(_make_home_menu_item("trophy", "Leaderboard", _start_leaderboard))
 		dropdown.add_child(_make_home_menu_item("help", "Tutorial", _start_tutorial_game))
-		dropdown.add_child(_make_home_menu_item("delete", "Reset best", _reset_best_score))
+		dropdown.add_child(_make_home_menu_item("delete", "Reset best", _show_reset_best_dialog))
 
 	var menu_button := _make_home_menu_button()
 	menu_button.position = menu_button_position
@@ -2148,7 +2173,7 @@ func _show_player_name_dialog() -> void:
 	overlay.name = "PlayerNameOverlay"
 	add_child(overlay)
 
-	var panel := _make_dialog_panel(292)
+	var panel := _make_dialog_panel(352)
 	overlay.add_child(panel)
 	_add_dialog_header(panel, "Claim player name")
 
@@ -2178,8 +2203,9 @@ func _show_player_name_dialog() -> void:
 
 	player_name_status_label = _make_absolute_label("", 12, COLOR_DANGER, 700)
 	player_name_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	player_name_status_label.position = Vector2(14, 178)
-	player_name_status_label.size = Vector2(DIALOG_WIDTH - 28.0, 20)
+	player_name_status_label.position = Vector2(14, 180)
+	player_name_status_label.size = Vector2(DIALOG_WIDTH - 28.0, 36)
+	player_name_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	panel.add_child(player_name_status_label)
 
 	var actions := HBoxContainer.new()
@@ -2188,9 +2214,18 @@ func _show_player_name_dialog() -> void:
 	actions.add_theme_constant_override("separation", 8)
 	panel.add_child(actions)
 
-	actions.add_child(_make_dialog_action_button("Guest", _clear_player_name_from_dialog, COLOR_SECONDARY))
+	player_name_cancel_button = _make_dialog_action_button("Cancel", _dismiss_player_name_dialog, COLOR_SECONDARY)
+	actions.add_child(player_name_cancel_button)
 	player_name_save_button = _make_dialog_action_button("Claim", _save_player_name_from_dialog, COLOR_PRIMARY_STRONG)
 	actions.add_child(player_name_save_button)
+
+	player_name_guest_button = _make_dialog_button("Continue as Guest", _clear_player_name_from_dialog, COLOR_SECONDARY)
+	player_name_guest_button.position = Vector2(12, 288)
+	player_name_guest_button.size = Vector2(DIALOG_WIDTH - 24.0, DIALOG_BUTTON_HEIGHT)
+	panel.add_child(player_name_guest_button)
+
+func _dismiss_player_name_dialog() -> void:
+	_start_home()
 
 func _save_player_name_from_dialog() -> void:
 	if not is_instance_valid(player_name_input):
@@ -2198,6 +2233,8 @@ func _save_player_name_from_dialog() -> void:
 
 	player_name_input.editable = false
 	player_name_save_button.disabled = true
+	player_name_cancel_button.disabled = true
+	player_name_guest_button.disabled = true
 	player_name_status_label.text = "Claiming..."
 	player_name_status_label.add_theme_color_override("font_color", COLOR_INK_SOFT)
 
@@ -2208,6 +2245,8 @@ func _save_player_name_from_dialog() -> void:
 	if not bool(result.get("ok", false)):
 		player_name_input.editable = true
 		player_name_save_button.disabled = false
+		player_name_cancel_button.disabled = false
+		player_name_guest_button.disabled = false
 		player_name_status_label.text = str(result.get("error", "Could not save that player name."))
 		player_name_status_label.add_theme_color_override("font_color", COLOR_DANGER)
 		return
@@ -2559,7 +2598,7 @@ func _build_battle_picker_layout() -> void:
 	var online_section_top := 384.0 + safe_top
 	if not realtime_pending_invitation.is_empty():
 		_add_realtime_invitation_card(body_left, online_section_top, body_width)
-		online_section_top += 112.0
+		online_section_top += 128.0
 
 	_add_battle_section_title(body_left, online_section_top, "users", "Online Players")
 	_add_battle_online_state(body_left, online_section_top + 38.0, body_width)
@@ -2567,7 +2606,7 @@ func _build_battle_picker_layout() -> void:
 func _add_realtime_invitation_card(left: float, top: float, width: float) -> void:
 	var panel := Panel.new()
 	panel.position = Vector2(left, top)
-	panel.size = Vector2(width, 88)
+	panel.size = Vector2(width, 104)
 	_apply_panel_theme(panel, THEME_PANEL_SURFACE)
 	add_child(panel)
 
@@ -2580,13 +2619,13 @@ func _add_realtime_invitation_card(left: float, top: float, width: float) -> voi
 	panel.add_child(title)
 
 	var accept_button := _make_dialog_action_button("Accept", _accept_realtime_invitation, COLOR_PRIMARY_STRONG)
-	accept_button.position = Vector2(12, 44)
-	accept_button.size = Vector2((width - 32.0) / 2.0, 34)
+	accept_button.position = Vector2(12, 48)
+	accept_button.size = Vector2((width - 32.0) / 2.0, 44)
 	panel.add_child(accept_button)
 
 	var decline_button := _make_dialog_action_button("Decline", _decline_realtime_invitation, COLOR_SECONDARY)
-	decline_button.position = Vector2(20.0 + accept_button.size.x, 44)
-	decline_button.size = Vector2((width - 32.0) / 2.0, 34)
+	decline_button.position = Vector2(20.0 + accept_button.size.x, 48)
+	decline_button.size = Vector2((width - 32.0) / 2.0, 44)
 	panel.add_child(decline_button)
 
 func _add_battle_section_title(left: float, top: float, icon_kind: String, label_text: String) -> void:
@@ -2632,8 +2671,8 @@ func _add_battle_picker_row(
 	action.text = action_text
 	action.disabled = disabled
 	_apply_button_theme(action, THEME_BUTTON_SMALL_PRIMARY)
-	action.position = Vector2(left + width - 82.0, top + 6.0)
-	action.size = Vector2(82, 34)
+	action.position = Vector2(left + width - 88.0, top)
+	action.size = Vector2(88, 44)
 	_wire_button_feedback(action, "start")
 	if not disabled:
 		action.pressed.connect(callback)
@@ -2729,8 +2768,8 @@ func _add_battle_online_row(parent: VBoxContainer, player: Dictionary, width: fl
 	action.disabled = player_status != "lobby" or is_invited
 	action.text = "Invited" if is_invited else ("Invite" if player_status == "lobby" else _format_realtime_status(player_status))
 	_apply_button_theme(action, THEME_BUTTON_SMALL_SURFACE if action.disabled else THEME_BUTTON_SMALL_PRIMARY)
-	action.position = Vector2(width - 88.0, 14.0)
-	action.size = Vector2(88, 36)
+	action.position = Vector2(width - 88.0, 10.0)
+	action.size = Vector2(88, 44)
 	_wire_button_feedback(action, "tap")
 	if not action.disabled:
 		action.pressed.connect(_start_hosted_realtime_room.bind(player_id))
@@ -3034,25 +3073,27 @@ func _build_solo_layout() -> void:
 
 func _build_pause_layout() -> void:
 	var overlay := _make_modal_overlay()
+	overlay.name = "PauseOverlay"
 	add_child(overlay)
 
-	var panel := _make_dialog_panel(228)
+	var panel := _make_dialog_panel(248)
 	overlay.add_child(panel)
 
 	_add_dialog_header(panel, "Paused")
 
 	var actions := VBoxContainer.new()
-	actions.position = Vector2(12, 68)
-	actions.size = Vector2(DIALOG_WIDTH - 24.0, 144)
+	actions.position = Vector2(12, 72)
+	actions.size = Vector2(DIALOG_WIDTH - 24.0, 160)
 	actions.add_theme_constant_override("separation", 8)
 	panel.add_child(actions)
 
 	actions.add_child(_make_dialog_button("Resume", _resume_game, COLOR_PRIMARY_STRONG))
-	actions.add_child(_make_dialog_button("Retry", _start_solo_game, COLOR_SECONDARY))
-	actions.add_child(_make_dialog_button("Top", _start_home, COLOR_SECONDARY))
+	actions.add_child(_make_dialog_button("Restart Run", _start_solo_game, COLOR_SECONDARY))
+	actions.add_child(_make_dialog_button("Main Menu", _start_home, COLOR_SECONDARY))
 
 func _build_game_over_layout() -> void:
 	var overlay := _make_modal_overlay()
+	overlay.name = "GameOverOverlay"
 	add_child(overlay)
 
 	var panel := _make_dialog_panel(408)
@@ -3092,8 +3133,8 @@ func _build_game_over_layout() -> void:
 	actions.add_theme_constant_override("separation", 8)
 	panel.add_child(actions)
 
-	actions.add_child(_make_dialog_action_button("Top", _start_home, COLOR_SECONDARY))
-	actions.add_child(_make_dialog_action_button("Retry", _start_solo_game, COLOR_PRIMARY_STRONG))
+	actions.add_child(_make_dialog_action_button("Main Menu", _start_home, COLOR_SECONDARY))
+	actions.add_child(_make_dialog_action_button("Play Again", _start_solo_game, COLOR_PRIMARY_STRONG))
 
 func _render_solo() -> void:
 	if screen != Screen.SOLO:
@@ -3515,7 +3556,7 @@ func _build_battle_over_overlay() -> void:
 	overlay.name = "BattleOverOverlay"
 	add_child(overlay)
 
-	var panel := _make_dialog_panel(360)
+	var panel := _make_dialog_panel(336)
 	_apply_panel_theme(panel, THEME_PANEL_DIALOG_VICTORY if did_win else THEME_PANEL_DIALOG_DEFEAT)
 	if did_win:
 		_spawn_victory_confetti(overlay, panel.position + (panel.size / 2.0))
@@ -3539,15 +3580,15 @@ func _build_battle_over_overlay() -> void:
 	_add_battle_result_column(columns, bot, not did_win, false, 0)
 
 	var actions := HBoxContainer.new()
-	actions.position = Vector2(12, 292)
+	actions.position = Vector2(12, 272)
 	actions.size = Vector2(DIALOG_WIDTH - 24.0, DIALOG_BUTTON_HEIGHT)
 	actions.add_theme_constant_override("separation", 8)
 	panel.add_child(actions)
 
-	var next_battle_label := "Battle" if _is_realtime_room_active() else "Rematch"
+	var next_battle_label := "Find Battle" if _is_realtime_room_active() else "Rematch"
 	var next_battle_callback := _start_battle_picker if _is_realtime_room_active() else _start_battle_ready
 	actions.add_child(_make_dialog_action_button(next_battle_label, next_battle_callback, COLOR_SECONDARY))
-	actions.add_child(_make_dialog_action_button("Top", _start_home, COLOR_PRIMARY_STRONG))
+	actions.add_child(_make_dialog_action_button("Main Menu", _start_home, COLOR_PRIMARY_STRONG))
 
 func _battle_exp_gained(player, opponent, did_win: bool) -> int:
 	if did_win:
@@ -3985,6 +4026,32 @@ func _mark_tutorial_complete() -> void:
 	needs_tutorial = false
 	save_manager.mark_tutorial_complete()
 
+func _show_reset_best_dialog() -> void:
+	home_menu_open = false
+	_build_home_layout()
+
+	var overlay := _make_modal_overlay()
+	overlay.name = "ResetBestOverlay"
+	add_child(overlay)
+
+	var panel := _make_dialog_panel(236)
+	overlay.add_child(panel)
+	_add_dialog_header(panel, "Reset best?")
+
+	var body := _make_absolute_label("Clear your local best score and max combo?\nThis cannot be undone.", 14, COLOR_INK_SOFT, 700)
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.position = Vector2(20, 76)
+	body.size = Vector2(DIALOG_WIDTH - 40.0, 72)
+	panel.add_child(body)
+
+	var actions := HBoxContainer.new()
+	actions.position = Vector2(12, 172)
+	actions.size = Vector2(DIALOG_WIDTH - 24.0, DIALOG_BUTTON_HEIGHT)
+	actions.add_theme_constant_override("separation", 8)
+	panel.add_child(actions)
+	actions.add_child(_make_dialog_action_button("Cancel", _start_home, COLOR_SECONDARY))
+	actions.add_child(_make_dialog_action_button("Reset", _reset_best_score, COLOR_DANGER))
+
 func _reset_best_score() -> void:
 	best_score = 0
 	best_combo = 0
@@ -4044,6 +4111,7 @@ func _make_app_theme() -> Theme:
 	_add_button_theme(app_theme, THEME_BUTTON_SMALL_SURFACE, COLOR_SURFACE, COLOR_PRIMARY, 14, COLOR_KEYPAD_BUTTON_BG, 16, RADIUS_BUTTON, COLOR_BORDER_SOFT)
 	_add_button_theme(app_theme, THEME_BUTTON_PAGE_PRIMARY, COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 16, COLOR_PRIMARY_STRONG, 16, RADIUS_PILL)
 	_add_button_theme(app_theme, THEME_BUTTON_PAGE_SECONDARY, COLOR_SECONDARY, COLOR_TEXT_INVERSE, 16, COLOR_SECONDARY, 16, RADIUS_PILL)
+	_add_button_theme(app_theme, THEME_BUTTON_PAGE_DANGER, COLOR_DANGER, COLOR_TEXT_INVERSE, 16, COLOR_DANGER, 16, RADIUS_PILL)
 	_add_button_theme(app_theme, THEME_BUTTON_BLOB_PRIMARY, COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 16, COLOR_PRIMARY_STRONG, 16, RADIUS_PILL, COLOR_BORDER_INVERSE_SOFT)
 	_add_button_theme(app_theme, THEME_BUTTON_BLOB_SECONDARY, COLOR_SECONDARY, COLOR_TEXT_INVERSE, 16, COLOR_SECONDARY, 16, RADIUS_PILL, COLOR_BORDER_INVERSE_SOFT)
 	_add_transparent_button_theme(app_theme)
@@ -4166,6 +4234,8 @@ func _apply_progress_theme(bar: ProgressBar, variation: String) -> void:
 	bar.theme_type_variation = variation
 
 func _button_theme_for_color(color: Color, primary_theme: String, secondary_theme: String) -> String:
+	if color == COLOR_DANGER:
+		return THEME_BUTTON_PAGE_DANGER
 	return secondary_theme if color == COLOR_SECONDARY else primary_theme
 
 func _panel_theme_for_color(color: Color) -> String:
@@ -4526,6 +4596,7 @@ func _make_modal_overlay() -> Control:
 func _make_dialog_panel(height: float) -> Panel:
 	var viewport_size := get_viewport_rect().size
 	var panel := Panel.new()
+	panel.name = "DialogPanel"
 	panel.size = Vector2(DIALOG_WIDTH, height)
 	panel.position = Vector2((viewport_size.x - DIALOG_WIDTH) / 2.0, (viewport_size.y - height) / 2.0)
 	_apply_panel_theme(panel, THEME_PANEL_DIALOG)

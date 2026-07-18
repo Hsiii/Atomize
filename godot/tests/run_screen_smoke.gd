@@ -42,6 +42,14 @@ func _validate_screen(main_scene: Node, screen_name: String) -> Array[String]:
 	match label:
 		"solo", "battle-game":
 			_validate_gameplay_keypad(main_scene, failures)
+		"dialog-player-name":
+			_validate_dialog_buttons(main_scene, ["Cancel", "Claim", "Continue as Guest"], failures)
+		"dialog-reset-best":
+			_validate_dialog_buttons(main_scene, ["Cancel", "Reset"], failures)
+		"dialog-pause":
+			_validate_dialog_buttons(main_scene, ["Resume", "Restart Run", "Main Menu"], failures)
+		"dialog-game-over":
+			_validate_dialog_buttons(main_scene, ["Main Menu", "Play Again"], failures)
 		"home":
 			_expect_minimum_controls(main_scene, failures, 1, 2)
 		"battle":
@@ -54,6 +62,30 @@ func _validate_screen(main_scene: Node, screen_name: String) -> Array[String]:
 		_validate_battle_emotion_vfx(main_scene, failures)
 
 	return failures
+
+func _validate_dialog_buttons(main_scene: Node, expected_texts: Array, failures: Array[String]) -> void:
+	var panel := main_scene.find_child("DialogPanel", true, false)
+	if panel == null or not (panel is Panel):
+		failures.append("missing DialogPanel")
+		return
+
+	for expected_text in expected_texts:
+		var button := _find_button_by_text(panel, str(expected_text))
+		if button == null:
+			failures.append("missing dialog action %s" % expected_text)
+		elif button.size.x < 44.0 or button.size.y < 44.0:
+			failures.append("dialog action %s is below 44x44" % expected_text)
+
+func _find_button_by_text(root: Node, expected_text: String) -> Button:
+	if root is Button and (root as Button).text == expected_text:
+		return root as Button
+
+	for child in root.get_children():
+		var match_button := _find_button_by_text(child, expected_text)
+		if match_button != null:
+			return match_button
+
+	return null
 
 func _validate_gameplay_keypad(main_scene: Node, failures: Array[String]) -> void:
 	_expect_minimum_controls(main_scene, failures, 11, 3)
