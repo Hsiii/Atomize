@@ -130,6 +130,7 @@ const THEME_BUTTON_PAGE_SECONDARY := "AtomButtonPageSecondary"
 const THEME_BUTTON_BLOB_PRIMARY := "AtomButtonBlobPrimary"
 const THEME_BUTTON_BLOB_SECONDARY := "AtomButtonBlobSecondary"
 const THEME_PANEL_HERO_ORB := "AtomPanelHeroOrb"
+const THEME_PANEL_PAGE_HEADER := "AtomPanelPageHeader"
 const THEME_PANEL_HOME_MENU := "AtomPanelHomeMenu"
 const THEME_PANEL_LOGO_DOT := "AtomPanelLogoDot"
 const THEME_PANEL_SURFACE := "AtomPanelSurface"
@@ -509,6 +510,7 @@ var queue_label: HBoxContainer
 var result_label: Label
 var leaderboard_rows_root: VBoxContainer
 var leaderboard_status_label: Label
+var leaderboard_empty_button: Button
 var battle_online_scroll: ScrollContainer
 var battle_online_rows_root: VBoxContainer
 var battle_online_status_label: Label
@@ -2215,14 +2217,21 @@ func _build_leaderboard_layout() -> void:
 	var body_width: float = min(viewport_size.x - 48.0, 352.0)
 	var body_left: float = (viewport_size.x - body_width) / 2.0
 
-	leaderboard_status_label = _make_absolute_label("", 13, COLOR_INK_SOFT, 700)
-	leaderboard_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	leaderboard_status_label.position = Vector2(body_left, 262.0 + safe_top)
-	leaderboard_status_label.size = Vector2(body_width, 24)
+	leaderboard_status_label = _make_absolute_label("", 15, COLOR_INK_SOFT, 700)
+	leaderboard_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	leaderboard_status_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	leaderboard_status_label.position = Vector2(body_left, 276.0 + safe_top)
+	leaderboard_status_label.size = Vector2(body_width, 64)
+	leaderboard_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	add_child(leaderboard_status_label)
 
+	leaderboard_empty_button = _make_wide_page_button("PLAY SOLO", _start_solo_pregame, COLOR_PRIMARY_STRONG)
+	leaderboard_empty_button.position = Vector2(body_left + 32.0, 356.0 + safe_top)
+	leaderboard_empty_button.size = Vector2(body_width - 64.0, 56.0)
+	add_child(leaderboard_empty_button)
+
 	leaderboard_rows_root = VBoxContainer.new()
-	leaderboard_rows_root.position = Vector2(body_left, 304.0 + safe_top)
+	leaderboard_rows_root.position = Vector2(body_left, 276.0 + safe_top)
 	leaderboard_rows_root.size = Vector2(body_width, maxf(160.0, viewport_size.y - leaderboard_rows_root.position.y - 32.0 - _safe_area_bottom()))
 	leaderboard_rows_root.add_theme_constant_override("separation", 8)
 	add_child(leaderboard_rows_root)
@@ -2266,7 +2275,7 @@ func _on_leaderboard_request_completed(
 		return
 
 	leaderboard_entries = _top_leaderboard_entries(_parse_leaderboard_entries(parsed))
-	leaderboard_status_text = "" if not leaderboard_entries.is_empty() else "No records found"
+	leaderboard_status_text = "" if not leaderboard_entries.is_empty() else "No records yet.\nPlay Solo to set the first score."
 	_render_leaderboard()
 
 func _parse_leaderboard_entries(rows: Array) -> Array[Dictionary]:
@@ -2320,7 +2329,7 @@ func _normalize_historic_solo_high_score(score: float, updated_at: String) -> in
 
 func _use_local_leaderboard_fallback(_status_text: String) -> void:
 	leaderboard_entries = _local_leaderboard_entries()
-	leaderboard_status_text = "" if not leaderboard_entries.is_empty() else "No records found"
+	leaderboard_status_text = "" if not leaderboard_entries.is_empty() else "No records yet.\nPlay Solo to set the first score."
 	_render_leaderboard()
 
 func _local_leaderboard_entries() -> Array[Dictionary]:
@@ -2334,7 +2343,11 @@ func _local_leaderboard_entries() -> Array[Dictionary]:
 	return entries
 
 func _render_leaderboard() -> void:
-	if not is_instance_valid(leaderboard_rows_root) or not is_instance_valid(leaderboard_status_label):
+	if (
+		not is_instance_valid(leaderboard_rows_root)
+		or not is_instance_valid(leaderboard_status_label)
+		or not is_instance_valid(leaderboard_empty_button)
+	):
 		return
 
 	for child in leaderboard_rows_root.get_children():
@@ -2342,6 +2355,7 @@ func _render_leaderboard() -> void:
 
 	leaderboard_status_label.text = leaderboard_status_text
 	leaderboard_status_label.visible = not leaderboard_status_text.is_empty()
+	leaderboard_empty_button.visible = leaderboard_entries.is_empty()
 
 	if not leaderboard_entries.is_empty():
 		_add_leaderboard_header(leaderboard_rows_root, leaderboard_rows_root.size.x)
@@ -2405,23 +2419,18 @@ func _build_page_header(title_text: String, tagline_text: String, icon_kind: Str
 	var viewport_size := get_viewport_rect().size
 	var safe_top := _safe_area_top()
 	var header_bottom := PAGE_HEADER_BOTTOM + safe_top
-	var header := ColorRect.new()
-	header.color = COLOR_PRIMARY
-	header.position = Vector2.ZERO
-	header.size = Vector2(viewport_size.x, header_bottom)
+	var header_diameter: float = max(viewport_size.x * 1.6, viewport_size.y)
+	var header := Panel.new()
+	header.position = Vector2((viewport_size.x - header_diameter) / 2.0, header_bottom - header_diameter)
+	header.size = Vector2(header_diameter, header_diameter)
+	_apply_panel_theme(header, THEME_PANEL_PAGE_HEADER)
 	add_child(header)
 
-	var header_rule := ColorRect.new()
-	header_rule.color = COLOR_PRIMARY_STRONG
-	header_rule.position = Vector2(0, header_bottom - PIXEL_BORDER)
-	header_rule.size = Vector2(viewport_size.x, PIXEL_BORDER)
-	add_child(header_rule)
-
-	var back_button := _make_header_icon_button("←", _start_home)
+	var back_button := _make_page_back_button(_start_home)
 	back_button.position = Vector2(SAFE_AREA_EDGE_PADDING + _safe_area_left(), _safe_top_y(24.0))
 	add_child(back_button)
 
-	var title := _make_absolute_label(title_text, 16, COLOR_TEXT_INVERSE, 900)
+	var title := _make_absolute_label(title_text.to_upper(), 16, COLOR_TEXT_INVERSE, 900)
 	title.position = Vector2(0, _safe_top_y(28.0))
 	title.size = Vector2(viewport_size.x, 36)
 	add_child(title)
@@ -2439,7 +2448,7 @@ func _build_page_header(title_text: String, tagline_text: String, icon_kind: Str
 		_:
 			_add_page_battle_icon(icon_slot)
 
-	var tagline := _make_absolute_label(tagline_text, 12, COLOR_TEXT_INVERSE_SOFT, 800)
+	var tagline := _make_absolute_label(tagline_text.to_upper(), 12, COLOR_TEXT_INVERSE_SOFT, 800)
 	tagline.position = Vector2(0, _safe_top_y(176.0))
 	tagline.size = Vector2(viewport_size.x, 24)
 	add_child(tagline)
@@ -2459,29 +2468,35 @@ func _build_solo_pregame_layout() -> void:
 
 	var body_width: float = min(viewport_size.x - 48.0, 352.0)
 	var body_left: float = (viewport_size.x - body_width) / 2.0
-	var stat_width: float = min(body_width, 224.0)
+	var stat_width: float = min(body_width, 256.0)
 	var stat_left: float = (viewport_size.x - stat_width) / 2.0
-	var button_width: float = min(body_width, viewport_size.x * 0.75)
+	var button_width: float = body_width
 	var button_left: float = (viewport_size.x - button_width) / 2.0
 
-	var pb_title := _make_absolute_label("PERSONAL BEST", 12, COLOR_INK_SOFT, 700)
-	pb_title.position = Vector2(stat_left, 304.0 + safe_top)
-	pb_title.size = Vector2(stat_width, 24)
-	add_child(pb_title)
+	var stat_panel := Panel.new()
+	stat_panel.position = Vector2(stat_left, 284.0 + safe_top)
+	stat_panel.size = Vector2(stat_width, 152.0)
+	_apply_panel_theme(stat_panel, THEME_PANEL_SURFACE)
+	add_child(stat_panel)
 
-	_add_pregame_stat_row(stat_left, 352.0 + safe_top, stat_width, "Score", best_score)
-	_add_pregame_stat_row(stat_left, 400.0 + safe_top, stat_width, "Max Combo", best_combo)
+	var pb_title := _make_absolute_label("PERSONAL BEST", 12, COLOR_INK_SOFT, 800)
+	pb_title.position = Vector2(16.0, 16.0)
+	pb_title.size = Vector2(stat_width - 32.0, 24)
+	stat_panel.add_child(pb_title)
+
+	_add_pregame_stat_row(stat_panel, 16.0, 52.0, stat_width - 32.0, "Score", best_score)
+	_add_pregame_stat_row(stat_panel, 16.0, 96.0, stat_width - 32.0, "Max Combo", best_combo)
 
 	var start_button := _make_wide_page_button("GO", _start_solo_game, COLOR_PRIMARY_STRONG)
-	start_button.position = Vector2(button_left, minf(512.0 + safe_top, _safe_bottom_y(viewport_size.y, 56.0, 48.0)))
+	start_button.position = Vector2(button_left, minf(492.0 + safe_top, _safe_bottom_y(viewport_size.y, 56.0, 48.0)))
 	start_button.size = Vector2(button_width, 56)
 	add_child(start_button)
 
-func _add_pregame_stat_row(left: float, top: float, width: float, label_text: String, value: int) -> void:
+func _add_pregame_stat_row(parent: Control, left: float, top: float, width: float, label_text: String, value: int) -> void:
 	var row := Control.new()
 	row.position = Vector2(left, top)
 	row.size = Vector2(width, 32)
-	add_child(row)
+	parent.add_child(row)
 
 	var label := _make_absolute_label(label_text, 16, COLOR_INK, 800)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -2489,7 +2504,7 @@ func _add_pregame_stat_row(left: float, top: float, width: float, label_text: St
 	label.size = Vector2(width / 2.0, 32)
 	row.add_child(label)
 
-	var value_label := _make_absolute_label(str(value), 16, COLOR_PRIMARY, 800)
+	var value_label := _make_absolute_label(str(value), 18, COLOR_PRIMARY, 900)
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	value_label.position = Vector2(width / 2.0, 0)
 	value_label.size = Vector2(width / 2.0, 32)
@@ -2641,12 +2656,8 @@ func _render_battle_online_players() -> void:
 		battle_online_scroll.visible = false
 		battle_online_status_label.visible = true
 		battle_online_hint_label.visible = true
-		battle_online_status_label.text = realtime_status_text if not realtime_status_text.is_empty() else "No players online"
-		battle_online_hint_label.text = (
-			"Players will appear here when they join."
-			if realtime_status_text.is_empty()
-			else "Check your connection or try again."
-		)
+		battle_online_status_label.text = "No players online"
+		battle_online_hint_label.text = "Players will appear here when they join."
 		return
 
 	battle_online_scroll.visible = true
@@ -3993,12 +4004,13 @@ func _make_app_theme() -> Theme:
 	_add_button_theme(app_theme, THEME_BUTTON_ICON_SURFACE, COLOR_SURFACE, COLOR_PRIMARY, 16, COLOR_KEYPAD_BUTTON_BG, 0, RADIUS_PILL, COLOR_BORDER_SOFT)
 	_add_button_theme(app_theme, THEME_BUTTON_SMALL_PRIMARY, COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 13)
 	_add_button_theme(app_theme, THEME_BUTTON_SMALL_SURFACE, COLOR_SURFACE, COLOR_PRIMARY, 14, COLOR_KEYPAD_BUTTON_BG, 16, RADIUS_BUTTON, COLOR_BORDER_SOFT)
-	_add_button_theme(app_theme, THEME_BUTTON_PAGE_PRIMARY, COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 16)
-	_add_button_theme(app_theme, THEME_BUTTON_PAGE_SECONDARY, COLOR_SECONDARY, COLOR_TEXT_INVERSE, 16)
+	_add_button_theme(app_theme, THEME_BUTTON_PAGE_PRIMARY, COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 16, COLOR_PRIMARY_STRONG, 16, RADIUS_PILL)
+	_add_button_theme(app_theme, THEME_BUTTON_PAGE_SECONDARY, COLOR_SECONDARY, COLOR_TEXT_INVERSE, 16, COLOR_SECONDARY, 16, RADIUS_PILL)
 	_add_button_theme(app_theme, THEME_BUTTON_BLOB_PRIMARY, COLOR_PRIMARY_STRONG, COLOR_TEXT_INVERSE, 16, COLOR_PRIMARY_STRONG, 16, RADIUS_PILL, COLOR_BORDER_INVERSE_SOFT)
 	_add_button_theme(app_theme, THEME_BUTTON_BLOB_SECONDARY, COLOR_SECONDARY, COLOR_TEXT_INVERSE, 16, COLOR_SECONDARY, 16, RADIUS_PILL, COLOR_BORDER_INVERSE_SOFT)
 	_add_transparent_button_theme(app_theme)
 	_add_panel_theme(app_theme, THEME_PANEL_HERO_ORB, "Panel", _make_pixel_box_style(COLOR_PRIMARY, COLOR_OUTLINE_STRONG, PIXEL_BORDER, RADIUS_PILL, true))
+	_add_panel_theme(app_theme, THEME_PANEL_PAGE_HEADER, "Panel", _make_capsule_style(COLOR_PRIMARY))
 	_add_panel_theme(app_theme, THEME_PANEL_HOME_MENU, "Panel", _make_home_menu_panel_style())
 	_add_panel_theme(app_theme, THEME_PANEL_LOGO_DOT, "Panel", _make_pixel_box_style(COLOR_TEXT_INVERSE, Color.TRANSPARENT, 0, RADIUS_PILL))
 	_add_panel_theme(app_theme, THEME_PANEL_SURFACE, "Panel", _make_panel_style(COLOR_SURFACE))
@@ -4252,6 +4264,17 @@ func _make_header_icon_button(text: String, callback: Callable) -> Button:
 	_apply_button_theme(button, THEME_BUTTON_TRANSPARENT)
 	if text == "←":
 		_add_back_arrow_icon(button, 44, 44, COLOR_TEXT_INVERSE)
+	_wire_button_feedback(button, "back")
+	button.pressed.connect(callback)
+	return button
+
+func _make_page_back_button(callback: Callable) -> Button:
+	var button := Button.new()
+	button.text = ""
+	button.size = Vector2(44, 44)
+	button.custom_minimum_size = Vector2(44, 44)
+	_apply_button_theme(button, THEME_BUTTON_ICON_SURFACE)
+	_set_or_add_texture_icon(button, "back", 24, COLOR_PRIMARY)
 	_wire_button_feedback(button, "back")
 	button.pressed.connect(callback)
 	return button
