@@ -131,7 +131,6 @@ const THEME_BUTTON_BLOB_PRIMARY := "AtomButtonBlobPrimary"
 const THEME_BUTTON_BLOB_SECONDARY := "AtomButtonBlobSecondary"
 const THEME_PANEL_HERO_ORB := "AtomPanelHeroOrb"
 const THEME_PANEL_PAGE_HEADER := "AtomPanelPageHeader"
-const THEME_PANEL_HOME_MENU := "AtomPanelHomeMenu"
 const THEME_PANEL_LOGO_DOT := "AtomPanelLogoDot"
 const THEME_PANEL_SURFACE := "AtomPanelSurface"
 const THEME_PANEL_CONTAINER_SURFACE := "AtomPanelContainerSurface"
@@ -2095,12 +2094,6 @@ func _build_home_menu_controls(viewport_size: Vector2, safe_top: float, safe_rig
 	)
 
 	if home_menu_open:
-		var scrim := ColorRect.new()
-		scrim.color = Color(0.063, 0.106, 0.180, 0.18)
-		scrim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		scrim.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		add_child(scrim)
-
 		var dismiss_button := Button.new()
 		dismiss_button.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		dismiss_button.text = ""
@@ -2109,49 +2102,23 @@ func _build_home_menu_controls(viewport_size: Vector2, safe_top: float, safe_rig
 		dismiss_button.pressed.connect(_toggle_home_menu)
 		add_child(dismiss_button)
 
-		var panel := Panel.new()
-		panel.size = Vector2(64.0, 224.0)
-		panel.position = Vector2(
-			viewport_size.x - panel.size.x - SAFE_AREA_EDGE_PADDING - safe_right,
+		var dropdown := VBoxContainer.new()
+		dropdown.position = Vector2(
+			viewport_size.x - HOME_MENU_BUTTON_SIZE - SAFE_AREA_EDGE_PADDING - safe_right,
 			menu_button_position.y + HOME_MENU_BUTTON_SIZE + 4.0
 		)
-		_apply_panel_theme(panel, THEME_PANEL_HOME_MENU)
-		add_child(panel)
-
-		var dropdown := VBoxContainer.new()
-		dropdown.position = Vector2(8.0, 8.0)
-		dropdown.size = Vector2(48.0, 208.0)
+		dropdown.size = Vector2(HOME_MENU_BUTTON_SIZE, 208.0)
 		dropdown.add_theme_constant_override("separation", 4)
-		panel.add_child(dropdown)
+		add_child(dropdown)
 
 		dropdown.add_child(_make_home_menu_item("guest", "Player", _show_player_name_dialog))
 		dropdown.add_child(_make_home_menu_item("trophy", "Leaderboard", _start_leaderboard))
 		dropdown.add_child(_make_home_menu_item("help", "Tutorial", _start_tutorial_game))
 		dropdown.add_child(_make_home_menu_item("delete", "Reset best", _reset_best_score))
 
-		_animate_home_menu_open(scrim, panel)
-
 	var menu_button := _make_home_menu_button()
 	menu_button.position = menu_button_position
 	add_child(menu_button)
-
-func _animate_home_menu_open(scrim: ColorRect, panel: Panel) -> void:
-	if _prefers_reduced_motion():
-		return
-
-	scrim.modulate.a = 0.0
-	panel.modulate.a = 0.0
-	panel.pivot_offset = Vector2(panel.size.x - 20.0, 0.0)
-	panel.scale = Vector2(0.92, 0.92)
-	panel.position.y -= 8.0
-
-	var tween := panel.create_tween().set_parallel(true)
-	tween.set_trans(Tween.TRANS_BACK)
-	tween.set_ease(Tween.EASE_OUT)
-	tween.tween_property(scrim, "modulate:a", 1.0, 0.18)
-	tween.tween_property(panel, "modulate:a", 1.0, 0.16)
-	tween.tween_property(panel, "scale", Vector2.ONE, 0.24)
-	tween.tween_property(panel, "position:y", panel.position.y + 8.0, 0.24)
 
 func _show_player_name_dialog() -> void:
 	home_menu_open = false
@@ -4032,7 +3999,6 @@ func _make_app_theme() -> Theme:
 	_add_transparent_button_theme(app_theme)
 	_add_panel_theme(app_theme, THEME_PANEL_HERO_ORB, "Panel", _make_pixel_box_style(COLOR_PRIMARY, COLOR_OUTLINE_STRONG, PIXEL_BORDER, RADIUS_PILL, true))
 	_add_panel_theme(app_theme, THEME_PANEL_PAGE_HEADER, "Panel", _make_capsule_style(COLOR_PRIMARY))
-	_add_panel_theme(app_theme, THEME_PANEL_HOME_MENU, "Panel", _make_home_menu_panel_style())
 	_add_panel_theme(app_theme, THEME_PANEL_LOGO_DOT, "Panel", _make_pixel_box_style(COLOR_TEXT_INVERSE, Color.TRANSPARENT, 0, RADIUS_PILL))
 	_add_panel_theme(app_theme, THEME_PANEL_SURFACE, "Panel", _make_panel_style(COLOR_SURFACE))
 	_add_panel_theme(app_theme, THEME_PANEL_CONTAINER_SURFACE, "PanelContainer", _make_panel_style(COLOR_SURFACE))
@@ -4271,12 +4237,11 @@ func _make_home_menu_item(icon_kind: String, tooltip: String, callback: Callable
 	var button := Button.new()
 	button.accessibility_name = tooltip
 	button.text = ""
-	button.tooltip_text = tooltip
 	button.custom_minimum_size = Vector2(48, 48)
 	button.flat = true
 	_apply_button_theme(button, THEME_BUTTON_TRANSPARENT)
 	_wire_button_feedback(button, "tap")
-	_set_or_add_texture_icon(button, icon_kind, 24, COLOR_PRIMARY)
+	_set_or_add_texture_icon(button, icon_kind, 24, COLOR_TEXT_INVERSE_SOFT)
 	button.pressed.connect(callback)
 	return button
 
@@ -6253,13 +6218,6 @@ func _make_tutorial_panel_style() -> StyleBoxFlat:
 	style.border_width_top = 0
 	style.border_width_right = 0
 	style.border_width_bottom = 0
-	return style
-
-func _make_home_menu_panel_style() -> StyleBoxFlat:
-	var style := _make_dialog_panel_style(COLOR_BORDER_SOFT)
-	style.shadow_color = Color(0.063, 0.106, 0.180, 0.16)
-	style.shadow_size = 12
-	style.shadow_offset = Vector2(0, 8)
 	return style
 
 func _make_transparent_button_style() -> StyleBoxFlat:

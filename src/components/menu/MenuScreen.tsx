@@ -147,6 +147,11 @@ export function MenuScreen({
                                 }`}
                             >
                                 <button
+                                    aria-label={
+                                        isGuest
+                                            ? uiText.signIn
+                                            : uiText.accountTitle
+                                    }
                                     className='hamburger-toggle'
                                     onClick={() => {
                                         setMenuOpen(false);
@@ -158,16 +163,16 @@ export function MenuScreen({
 
                                         onOpenAccount();
                                     }}
-                                    title={
-                                        isGuest
-                                            ? uiText.signIn
-                                            : uiText.accountTitle
-                                    }
                                     type='button'
                                 >
                                     <CircleUserRound size={22} />
                                 </button>
                                 <button
+                                    aria-label={
+                                        isGuest
+                                            ? uiText.signIn
+                                            : uiText.friendsTitle
+                                    }
                                     className='hamburger-toggle'
                                     onClick={() => {
                                         setMenuOpen(false);
@@ -179,22 +184,17 @@ export function MenuScreen({
 
                                         onOpenFriends();
                                     }}
-                                    title={
-                                        isGuest
-                                            ? uiText.signIn
-                                            : uiText.friendsTitle
-                                    }
                                     type='button'
                                 >
                                     <UsersRound size={22} />
                                 </button>
                                 <button
+                                    aria-label={uiText.leaderboardTitle}
                                     className='hamburger-toggle'
                                     onClick={() => {
                                         setMenuOpen(false);
                                         onOpenLeaderboard();
                                     }}
-                                    title={uiText.leaderboardTitle}
                                     type='button'
                                 >
                                     <Crown size={22} />

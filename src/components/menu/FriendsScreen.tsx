@@ -335,7 +335,6 @@ export function FriendsScreen({
                                     }
                                 );
                             }}
-                            title={uiText.remove}
                             type='button'
                         >
                             {removingFriendId === friend.user_id ? (
@@ -380,7 +379,6 @@ export function FriendsScreen({
                             aria-label={uiText.friendsAddLabel}
                             className='friends-add-btn'
                             disabled={saving || !friendName.trim()}
-                            title={uiText.friendsAddLabel}
                             type='submit'
                             variant='primary'
                         >
