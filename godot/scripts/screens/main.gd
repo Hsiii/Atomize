@@ -2233,7 +2233,7 @@ func _request_leaderboard() -> void:
 		HTTPClient.METHOD_GET
 	)
 	if error != OK:
-		_use_local_leaderboard_fallback("Leaderboard unavailable")
+		_show_leaderboard_unavailable()
 
 func _on_leaderboard_request_completed(
 	result: int,
@@ -2245,12 +2245,12 @@ func _on_leaderboard_request_completed(
 		return
 
 	if result != HTTPRequest.RESULT_SUCCESS or response_code < 200 or response_code >= 300:
-		_use_local_leaderboard_fallback("Leaderboard unavailable")
+		_show_leaderboard_unavailable()
 		return
 
 	var parsed = JSON.parse_string(body.get_string_from_utf8())
 	if typeof(parsed) != TYPE_ARRAY:
-		_use_local_leaderboard_fallback("Leaderboard unavailable")
+		_show_leaderboard_unavailable()
 		return
 
 	leaderboard_entries = _top_leaderboard_entries(_parse_leaderboard_entries(parsed))
@@ -2309,6 +2309,11 @@ func _normalize_historic_solo_high_score(score: float, updated_at: String) -> in
 func _use_local_leaderboard_fallback(_status_text: String) -> void:
 	leaderboard_entries = _local_leaderboard_entries()
 	leaderboard_status_text = "" if not leaderboard_entries.is_empty() else "No records yet.\nPlay Solo to set the first score."
+	_render_leaderboard()
+
+func _show_leaderboard_unavailable() -> void:
+	leaderboard_entries = []
+	leaderboard_status_text = "Leaderboard unavailable.\nCheck your connection and try again."
 	_render_leaderboard()
 
 func _local_leaderboard_entries() -> Array[Dictionary]:

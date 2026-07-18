@@ -54,10 +54,11 @@ export async function fetchLeaderboardData(
             .from('combo_leaderboard')
             .select('player_name, high_score, updated_at')
             .gt('high_score', 0)
+            .order('high_score', { ascending: false })
             .limit(100);
 
         const data = response.data as LeaderboardEntry[] | null;
-        if (!response.error && (data?.length ?? 0) > 0) {
+        if (!response.error) {
             const normalizedEntries = (data ?? []).map((entry) => ({
                 ...entry,
                 high_score: normalizeHistoricSoloHighScore(

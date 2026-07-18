@@ -20,7 +20,7 @@ func is_configured() -> bool:
 	return not supabase_url.is_empty() and not anon_key.is_empty()
 
 func leaderboard_url() -> String:
-	return "%s/rest/v1/combo_leaderboard?select=player_name,high_score,updated_at&high_score=gt.0&limit=100" % supabase_url
+	return "%s/rest/v1/combo_leaderboard?select=player_name,high_score,updated_at&high_score=gt.0&order=high_score.desc&limit=100" % supabase_url
 
 func realtime_websocket_url() -> String:
 	return "%s/realtime/v1/websocket?apikey=%s&vsn=1.0.0" % [
