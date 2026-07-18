@@ -62,7 +62,7 @@ const COLOR_INK_SOFT := Color(0.063, 0.106, 0.180, 0.72)
 const COLOR_INK_SOFT_HINT := Color(0.063, 0.106, 0.180, 0.50)
 const COLOR_KEYPAD_BUTTON_BG := Color(0.094, 0.306, 0.467, 0.12)
 const COLOR_KEYPAD_BUTTON_ACTIVE_BG := Color(0.063, 0.106, 0.180, 0.14)
-const COLOR_KEYPAD_BUTTON_TEXT := Color(0.063, 0.106, 0.180, 0.54)
+const COLOR_KEYPAD_BUTTON_TEXT := Color(0.063, 0.106, 0.180, 0.70)
 const COLOR_TEXT_INVERSE := Color("#ffffff")
 const COLOR_TEXT_INVERSE_SUBTLE := Color(1.0, 1.0, 1.0, 0.85)
 const COLOR_TEXT_INVERSE_SOFT := Color(1.0, 1.0, 1.0, 0.64)
@@ -106,13 +106,13 @@ const HOME_BLOB_GAP := 16.0
 const HOME_MENU_BUTTON_SIZE := 48.0
 const SAFE_AREA_EDGE_PADDING := 12.0
 const SAFE_AREA_PAGE_PADDING := 24.0
-const SOLO_TARGET_SIZE := 256.0
-const SOLO_KEY_SIZE := 80.0
+const SOLO_TARGET_SIZE := 272.0
+const SOLO_KEY_SIZE := 84.0
 const SOLO_KEY_GAP := 8.0
 const QUEUE_CHIP_SIZE := 26.0
 const QUEUE_CHIP_GAP := 2.0
 const QUEUE_SEPARATOR_WIDTH := 10.0
-const SOLO_CONTROL_BOTTOM_MARGIN := 16.0
+const SOLO_CONTROL_BOTTOM_MARGIN := 64.0
 const PAGE_HEADER_BOTTOM := 224.0
 const DIALOG_WIDTH := 304.0
 const DIALOG_BUTTON_HEIGHT := 48.0
@@ -141,6 +141,7 @@ const THEME_PANEL_DIALOG_VICTORY := "AtomPanelDialogVictory"
 const THEME_PANEL_TARGET := "AtomPanelTarget"
 const THEME_PANEL_TARGET_DANGER := "AtomPanelTargetDanger"
 const THEME_PANEL_TARGET_GOLD := "AtomPanelTargetGold"
+const THEME_PANEL_TUTORIAL := "AtomPanelTutorial"
 const THEME_PANEL_AVATAR_PRIMARY := "AtomPanelAvatarPrimary"
 const THEME_PANEL_AVATAR_SECONDARY := "AtomPanelAvatarSecondary"
 const THEME_PANEL_BADGE_GOLD := "AtomPanelBadgeGold"
@@ -506,6 +507,7 @@ var stage_label: Label
 var score_label: Label
 var score_unit_label: Label
 var target_label: Label
+var enemy_target_label: Label
 var queue_label: HBoxContainer
 var result_label: Label
 var leaderboard_rows_root: VBoxContainer
@@ -2866,60 +2868,62 @@ func _build_battle_game_layout() -> void:
 
 	var enemy_blob := Panel.new()
 	enemy_blob.size = Vector2(112, 112)
-	enemy_blob.position = Vector2((viewport_size.x - 112.0) / 2.0, 118.0 + safe_top)
+	enemy_blob.position = Vector2((viewport_size.x - 112.0) / 2.0, 72.0 + safe_top)
 	_apply_panel_theme(enemy_blob, THEME_PANEL_AVATAR_SECONDARY)
 	add_child(enemy_blob)
-	_add_target_atom_art(enemy_blob, 84)
+	enemy_target_label = _make_absolute_label("", 34, COLOR_INK, 900)
+	enemy_target_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	enemy_blob.add_child(enemy_target_label)
 	enemy_avatar_panel = enemy_blob
 
 	var target_blob := Panel.new()
 	target_blob.size = Vector2(160, 160)
-	target_blob.position = Vector2((viewport_size.x - 160.0) / 2.0, 208.0 + safe_top)
+	target_blob.position = Vector2((viewport_size.x - 160.0) / 2.0, 152.0 + safe_top)
 	_apply_panel_theme(target_blob, THEME_PANEL_TARGET)
 	add_child(target_blob)
 	target_blob_panel = target_blob
-
-	_add_target_atom_art(target_blob, 124)
 
 	target_label = _make_absolute_label("", 48, COLOR_INK, 900)
 	target_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	target_blob.add_child(target_label)
 
 	stage_label = _make_absolute_label("", 12, COLOR_INK_SOFT, 800)
-	stage_label.position = Vector2(24.0 + safe_left, 382.0 + safe_top)
+	stage_label.position = Vector2(24.0 + safe_left, 316.0 + safe_top)
 	stage_label.size = Vector2(viewport_size.x - 48.0, 24)
+	stage_label.visible = false
 	add_child(stage_label)
 
 	battle_result_text = ""
 	result_label = _make_absolute_label("", 15, COLOR_SECONDARY, 800)
-	result_label.position = Vector2(0, 412.0 + safe_top)
+	result_label.position = Vector2(0, 324.0 + safe_top)
 	result_label.size = Vector2(viewport_size.x, 24)
 	add_child(result_label)
 
 	var player_name_text := "You" if tutorial_active else _battle_local_player_name()
 	var player_name := _make_absolute_label(player_name_text, 15, COLOR_PRIMARY_STRONG, 800)
 	player_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	player_name.position = Vector2(SAFE_AREA_EDGE_PADDING + safe_left, 452.0 + safe_top)
+	player_name.position = Vector2(SAFE_AREA_EDGE_PADDING + safe_left, 384.0 + safe_top)
 	player_name.size = Vector2(160, 24)
 	add_child(player_name)
 
 	player_hp_label = _make_absolute_label("", 15, COLOR_PRIMARY_STRONG, 800)
 	player_hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	player_hp_label.position = Vector2(viewport_size.x - 92.0 - safe_right, 452.0 + safe_top)
+	player_hp_label.position = Vector2(viewport_size.x - 92.0 - safe_right, 384.0 + safe_top)
 	player_hp_label.size = Vector2(80, 24)
 	add_child(player_hp_label)
 
 	player_hp_bar = _make_hp_bar(COLOR_PRIMARY_STRONG)
-	player_hp_bar.position = Vector2(SAFE_AREA_EDGE_PADDING + safe_left, 476.0 + safe_top)
+	player_hp_bar.position = Vector2(SAFE_AREA_EDGE_PADDING + safe_left, 408.0 + safe_top)
 	player_hp_bar.size = Vector2(viewport_size.x - (SAFE_AREA_EDGE_PADDING * 2.0) - safe_left - safe_right, 10)
 	add_child(player_hp_bar)
 
 	queue_label = _make_queue_panel()
-	queue_label.position = Vector2(24.0 + safe_left, 508.0 + safe_top)
-	queue_label.size = Vector2(viewport_size.x - 48.0 - safe_left - safe_right, 28)
+	queue_label.position = Vector2(24.0 + safe_left, 436.0 + safe_top)
+	queue_label.size = Vector2(viewport_size.x - 48.0 - safe_left - safe_right, 48)
 	add_child(queue_label)
 
-	_build_prime_keypad_controls(_queue_battle_prime, _backspace_battle_queue, _submit_battle_queue)
+	var controls := _build_prime_keypad_controls(_queue_battle_prime, _backspace_battle_queue, _submit_battle_queue)
+	_animate_game_layout_entry(target_blob, controls)
 
 func _clear_screen() -> void:
 	_clear_control_tweens()
@@ -2931,6 +2935,7 @@ func _clear_screen() -> void:
 		child.queue_free()
 	target_blob_panel = null
 	enemy_avatar_panel = null
+	enemy_target_label = null
 
 func _build_solo_layout() -> void:
 	_clear_screen()
@@ -2973,34 +2978,34 @@ func _build_solo_layout() -> void:
 	add_child(score_unit_label)
 
 	stage_label = _make_absolute_label("", 12, COLOR_INK_SOFT, 800)
-	stage_label.position = Vector2(24.0 + safe_left, 92.0 + safe_top)
+	stage_label.position = Vector2(24.0 + safe_left, 88.0 + safe_top)
 	stage_label.size = Vector2(viewport_size.x - 48.0 - safe_left - safe_right, 24)
+	stage_label.visible = false
 	add_child(stage_label)
 
 	var target_blob := Panel.new()
 	target_blob.size = Vector2(SOLO_TARGET_SIZE, SOLO_TARGET_SIZE)
-	target_blob.position = Vector2((viewport_size.x - SOLO_TARGET_SIZE) / 2.0, 120.0 + safe_top)
+	target_blob.position = Vector2((viewport_size.x - SOLO_TARGET_SIZE) / 2.0, 96.0 + safe_top)
 	_apply_panel_theme(target_blob, THEME_PANEL_TARGET)
 	add_child(target_blob)
 	target_blob_panel = target_blob
-
-	_add_target_atom_art(target_blob, 192)
 
 	target_label = _make_absolute_label("", 72, COLOR_INK, 900)
 	target_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	target_blob.add_child(target_label)
 
 	queue_label = _make_queue_panel()
-	queue_label.position = Vector2(24.0 + safe_left, 420.0 + safe_top)
-	queue_label.size = Vector2(viewport_size.x - 48.0 - safe_left - safe_right, 66)
+	queue_label.position = Vector2(24.0 + safe_left, 392.0 + safe_top)
+	queue_label.size = Vector2(viewport_size.x - 48.0 - safe_left - safe_right, 56)
 	add_child(queue_label)
 
 	result_label = _make_absolute_label("", 14, COLOR_PRIMARY, 800)
-	result_label.position = Vector2(24.0 + safe_left, 492.0 + safe_top)
+	result_label.position = Vector2(24.0 + safe_left, 452.0 + safe_top)
 	result_label.size = Vector2(viewport_size.x - 48.0 - safe_left - safe_right, 28)
 	add_child(result_label)
 
-	_build_prime_keypad_controls(_queue_prime, _backspace_queue, _submit_queue)
+	var controls := _build_prime_keypad_controls(_queue_prime, _backspace_queue, _submit_queue)
+	_animate_game_layout_entry(target_blob, controls)
 
 func _build_pause_layout() -> void:
 	var overlay := _make_modal_overlay()
@@ -3114,10 +3119,11 @@ func _render_battle() -> void:
 	enemy_hp_bar.max_value = max_hp
 	enemy_hp_bar.value = battle_display_bot_hp
 	enemy_hp_label.text = str(battle_display_bot_hp)
+	enemy_target_label.text = str(bot["stage"]["remainingValue"])
 	player_hp_bar.max_value = max_hp
 	player_hp_bar.value = battle_display_player_hp
 	player_hp_label.text = str(battle_display_player_hp)
-	stage_label.text = "Stage %s" % [int(player["stageIndex"]) + 1]
+	stage_label.text = ""
 	target_label.text = str(player["stage"]["remainingValue"])
 	_render_queue_panel(battle_prime_queue)
 	result_label.text = battle_result_text
@@ -3784,24 +3790,27 @@ func _render_tutorial_overlay() -> void:
 	var has_primary_action := str(lesson.get("action", "")) != ""
 	var has_skip_action := tutorial_step == TutorialStep.INTRO
 	var card_height := 172.0 if has_primary_action or has_skip_action else 124.0
-	var card_width: float = min(viewport_size.x - 32.0, 360.0)
+	var card_width: float = min(viewport_size.x - 16.0, 374.0)
+	var controls_height := (SOLO_KEY_SIZE * 3.0) + (SOLO_KEY_GAP * 2.0)
+	var controls_top := viewport_size.y - controls_height - SOLO_CONTROL_BOTTOM_MARGIN - _safe_area_bottom()
+	var is_top_lesson := str(lesson.get("position", "bottom")) == "top"
 	var card := Panel.new()
 	card.size = Vector2(card_width, card_height)
 	card.position = Vector2(
 		(viewport_size.x - card_width) / 2.0,
-		_safe_top_y(72.0) if str(lesson.get("position", "bottom")) == "top" else _safe_bottom_y(viewport_size.y, card_height, 24.0)
+		_safe_top_y(72.0) if is_top_lesson else maxf(_safe_top_y(84.0), controls_top - card_height - 12.0)
 	)
 	card.mouse_filter = Control.MOUSE_FILTER_STOP
-	_apply_panel_theme(card, THEME_PANEL_DIALOG)
+	_apply_panel_theme(card, THEME_PANEL_TUTORIAL)
 	overlay.add_child(card)
 
-	var title := _make_absolute_label(str(lesson["title"]), 16, COLOR_INK, 900)
+	var title := _make_absolute_label(str(lesson["title"]).to_upper(), 13, COLOR_PRIMARY, 900)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	title.position = Vector2(14, 12)
 	title.size = Vector2(card_width - 28.0, 24)
 	card.add_child(title)
 
-	var body := _make_absolute_label(str(lesson["body"]), 12, COLOR_INK_SOFT, 700)
+	var body := _make_absolute_label(str(lesson["body"]), 13, COLOR_INK_SOFT, 700)
 	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	body.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -3823,6 +3832,8 @@ func _render_tutorial_overlay() -> void:
 		if has_skip_action:
 			var skip_button := _make_dialog_action_button("Skip", _skip_tutorial, COLOR_SECONDARY)
 			actions.add_child(skip_button)
+
+	_animate_tutorial_card(card)
 
 func _queue_prime(prime: int) -> void:
 	if screen != Screen.SOLO or not resolving_queue.is_empty():
@@ -4021,6 +4032,7 @@ func _make_app_theme() -> Theme:
 	_add_panel_theme(app_theme, THEME_PANEL_TARGET, "Panel", _make_pixel_box_style(COLOR_PRIMARY_STRONG, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER, RADIUS_PILL, true))
 	_add_panel_theme(app_theme, THEME_PANEL_TARGET_DANGER, "Panel", _make_pixel_box_style(COLOR_DANGER, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER, RADIUS_PILL, true))
 	_add_panel_theme(app_theme, THEME_PANEL_TARGET_GOLD, "Panel", _make_pixel_box_style(COLOR_GOLD, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER, RADIUS_PILL, true))
+	_add_panel_theme(app_theme, THEME_PANEL_TUTORIAL, "Panel", _make_tutorial_panel_style())
 	_add_panel_theme(app_theme, THEME_PANEL_AVATAR_PRIMARY, "Panel", _make_pixel_box_style(COLOR_PRIMARY_STRONG, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER, RADIUS_PILL, true))
 	_add_panel_theme(app_theme, THEME_PANEL_AVATAR_SECONDARY, "Panel", _make_pixel_box_style(COLOR_SECONDARY, COLOR_BORDER_INVERSE_SOFT, PIXEL_BORDER, RADIUS_PILL, true))
 	_add_panel_theme(app_theme, THEME_PANEL_BADGE_GOLD, "Panel", _make_button_style(COLOR_GOLD))
@@ -4073,7 +4085,7 @@ func _add_button_theme(
 	app_theme.set_stylebox("focus", variation, _make_button_style(normal_color, content_margin, radius, COLOR_GOLD, 3))
 	app_theme.set_stylebox("pressed", variation, _make_button_style(pressed_color, content_margin, radius, border_color, border_width))
 	app_theme.set_stylebox("hover_pressed", variation, _make_button_style(pressed_color, content_margin, radius, border_color, border_width))
-	var disabled_color := Color(normal_color.r, normal_color.g, normal_color.b, normal_color.a * 0.38)
+	var disabled_color := Color(normal_color.r, normal_color.g, normal_color.b, normal_color.a * 0.56)
 	app_theme.set_stylebox("disabled", variation, _make_button_style(disabled_color, content_margin, radius, Color.TRANSPARENT, 0))
 	_set_button_theme_colors(app_theme, variation, text_color)
 
@@ -4100,7 +4112,7 @@ func _set_button_theme_colors(app_theme: Theme, variation: String, text_color: C
 	]:
 		app_theme.set_color(color_name, variation, text_color)
 
-	var disabled_text_color := Color(text_color.r, text_color.g, text_color.b, text_color.a * 0.38)
+	var disabled_text_color := Color(text_color.r, text_color.g, text_color.b, text_color.a * 0.64)
 	app_theme.set_color("font_disabled_color", variation, disabled_text_color)
 	app_theme.set_color("icon_disabled_color", variation, disabled_text_color)
 
@@ -4359,7 +4371,7 @@ func _build_prime_keypad_controls(
 	prime_callback: Callable,
 	backspace_callback: Callable,
 	submit_callback: Callable
-) -> void:
+) -> Control:
 	var viewport_size := get_viewport_rect().size
 	var safe_left := _safe_area_left()
 	var safe_bottom := _safe_area_bottom()
@@ -4408,6 +4420,40 @@ func _build_prime_keypad_controls(
 	_add_submit_icon(submit_button, SOLO_KEY_SIZE, (SOLO_KEY_SIZE * 2.0) + SOLO_KEY_GAP, _get_button_text_color(COLOR_PRIMARY_STRONG))
 	submit_button.pressed.connect(submit_callback)
 	action_column.add_child(submit_button)
+	return controls
+
+func _animate_game_layout_entry(target: Control, controls: Control) -> void:
+	if _prefers_reduced_motion():
+		return
+
+	target.pivot_offset = target.size / 2.0
+	target.scale = Vector2(0.96, 0.96)
+	target.modulate.a = 0.0
+	controls.position.y += 24.0
+	controls.modulate.a = 0.0
+
+	var tween := target.create_tween().set_parallel(true)
+	tween.set_trans(Tween.TRANS_QUINT)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property(target, "scale", Vector2.ONE, 0.36)
+	tween.tween_property(target, "modulate:a", 1.0, 0.28)
+	tween.tween_property(controls, "position:y", controls.position.y - 24.0, 0.44).set_delay(0.08)
+	tween.tween_property(controls, "modulate:a", 1.0, 0.32).set_delay(0.08)
+
+func _animate_tutorial_card(card: Panel) -> void:
+	if _prefers_reduced_motion():
+		return
+
+	card.pivot_offset = Vector2(card.size.x / 2.0, card.size.y)
+	card.scale = Vector2(0.98, 0.98)
+	card.modulate.a = 0.0
+	card.position.y += 12.0
+	var tween := card.create_tween().set_parallel(true)
+	tween.set_trans(Tween.TRANS_BACK)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property(card, "position:y", card.position.y - 12.0, 0.28)
+	tween.tween_property(card, "scale", Vector2.ONE, 0.28)
+	tween.tween_property(card, "modulate:a", 1.0, 0.18)
 
 func _make_prime_key_button(text: String) -> Button:
 	var button := Button.new()
@@ -6162,6 +6208,14 @@ func _make_dialog_panel_style(border_color: Color = COLOR_PRIMARY) -> StyleBoxFl
 	style.corner_radius_top_right = RADIUS_PANEL
 	style.corner_radius_bottom_right = RADIUS_PANEL
 	style.corner_radius_bottom_left = RADIUS_PANEL
+	return style
+
+func _make_tutorial_panel_style() -> StyleBoxFlat:
+	var style := _make_panel_style(COLOR_SURFACE)
+	style.border_width_left = 0
+	style.border_width_top = 0
+	style.border_width_right = 0
+	style.border_width_bottom = 0
 	return style
 
 func _make_home_menu_panel_style() -> StyleBoxFlat:
