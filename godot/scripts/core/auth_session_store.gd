@@ -64,7 +64,7 @@ func _is_valid_session(session: Dictionary) -> bool:
 	var user = session.get("user", {})
 	return (
 		str(session.get("access_token", "")).length() > 16
-		and str(session.get("refresh_token", "")).length() > 16
+		and str(session.get("refresh_token", "")).length() >= 8
 		and typeof(user) == TYPE_DICTIONARY
 		and not str(user.get("id", "")).is_empty()
 	)

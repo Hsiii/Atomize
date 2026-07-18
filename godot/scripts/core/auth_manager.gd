@@ -35,9 +35,10 @@ func initialize() -> Dictionary:
 
 	var auth_task: AuthTask = await supabase.auth.restore_session(saved_session).completed
 	if auth_task.error != null or auth_task.user == null:
+		var session_error := str(auth_task.error) if auth_task.error != null else "Missing refreshed user"
 		session_store.clear_session()
 		_clear_identity()
-		return {"ok": true}
+		return {"ok": true, "session_error": session_error}
 
 	_remember_user(auth_task.user)
 	var profile_result := await load_profile()
