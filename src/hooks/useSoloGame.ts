@@ -117,6 +117,28 @@ export function useSoloGame({
     }, [isPaused]);
 
     useEffect(() => {
+        function syncBestScore() {
+            setBestScore(loadBestScore());
+        }
+
+        syncBestScore();
+
+        globalThis.addEventListener(
+            'atomize:best-score-updated',
+            syncBestScore
+        );
+        globalThis.addEventListener('storage', syncBestScore);
+
+        return () => {
+            globalThis.removeEventListener(
+                'atomize:best-score-updated',
+                syncBestScore
+            );
+            globalThis.removeEventListener('storage', syncBestScore);
+        };
+    }, [screen]);
+
+    useEffect(() => {
         if (screen !== 'single') {
             return undefined;
         }
