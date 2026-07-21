@@ -145,16 +145,24 @@ export function loadBestScore(): BestScoreRecord {
 export function saveBestScore(score: number, maxCombo: number): boolean {
     const current = loadBestScore();
     const isNewHighScore = score > current.score;
+    const isNewMaxCombo = maxCombo > current.maxCombo;
 
     if (isNewHighScore) {
         globalThis.localStorage.setItem(bestScoreStorageKey, String(score));
     }
 
-    if (maxCombo > current.maxCombo) {
+    if (isNewMaxCombo) {
         globalThis.localStorage.setItem(
             bestMaxComboStorageKey,
             String(maxCombo)
         );
+    }
+
+    if (
+        (isNewHighScore || isNewMaxCombo) &&
+        typeof globalThis.dispatchEvent === 'function'
+    ) {
+        globalThis.dispatchEvent(new Event('atomize:best-score-updated'));
     }
 
     return isNewHighScore;

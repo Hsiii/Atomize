@@ -189,7 +189,8 @@ async function syncAuthenticatedLeaderboardProfile({
     onPlayerName: (name: string) => void;
 }) {
     const userId = currentSession.user.id;
-    const fallbackHighScore = loadBestScore().score;
+    const fallbackBest = loadBestScore();
+    const fallbackHighScore = fallbackBest.score;
     const fallbackExperience = loadExperience();
     const existingRecordResponse = await authClient
         .from('combo_leaderboard')
@@ -213,6 +214,10 @@ async function syncAuthenticatedLeaderboardProfile({
         experience: number;
         updated_at: string | null;
     } | null;
+    const nextMaxCombo = Math.max(
+        existingRecord?.max_combo ?? 0,
+        fallbackBest.maxCombo
+    );
     const nextHighScore = Math.max(
         normalizeHistoricSoloHighScore(
             existingRecord?.high_score ?? 0,
@@ -225,19 +230,15 @@ async function syncAuthenticatedLeaderboardProfile({
         fallbackExperience
     );
 
-    if (nextHighScore > 0) {
-        saveBestScore(nextHighScore, 0);
+    if (nextHighScore > 0 || nextMaxCombo > 0) {
+        saveBestScore(nextHighScore, nextMaxCombo);
     }
 
-    const localBest = loadBestScore();
     const stats: ProfileStats = {
         games_played: existingRecord?.games_played ?? 0,
         wins: existingRecord?.wins ?? 0,
         losses: existingRecord?.losses ?? 0,
-        max_combo: Math.max(
-            existingRecord?.max_combo ?? 0,
-            localBest.maxCombo || 0
-        ),
+        max_combo: nextMaxCombo,
         high_score: nextHighScore,
         experience: nextExperience,
         updated_at: existingRecord?.updated_at,
@@ -500,7 +501,7 @@ export default function App(): JSX.Element {
     const soloGame = useSoloGame({
         screen,
         onScreenChange,
-        onNewBest: (score) => {
+        onNewBest: (score, maxCombo) => {
             const userId = session?.user.id;
             if (!supabaseAuthClient || !userId || !playerName) {
                 return;
@@ -512,6 +513,7 @@ export default function App(): JSX.Element {
                             user_id: userId,
                             player_name: playerName,
                             high_score: score,
+                            max_combo: maxCombo,
                         },
                         { onConflict: 'user_id' }
                     )
