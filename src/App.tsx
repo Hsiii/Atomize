@@ -3,7 +3,7 @@ import type { JSX } from 'react';
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
 
 import { AppProvider } from './app-context';
-import type { AppContextValue } from './app-context';
+import type { AppContextValue, ProfileStats } from './app-context';
 import { seoText, uiText } from './app-state';
 import type { PendingInvitation, Screen } from './app-state';
 import { ActionButton } from './components/game/ui/ActionButton';
@@ -179,11 +179,13 @@ async function syncAuthenticatedLeaderboardProfile({
     authClient,
     currentSession,
     fallbackName,
+    onAccountStats,
     onPlayerName,
 }: {
     authClient: SupabaseClient<Database>;
     currentSession: Session;
     fallbackName: string | undefined;
+    onAccountStats?: (stats: ProfileStats) => void;
     onPlayerName: (name: string) => void;
 }) {
     const userId = currentSession.user.id;
@@ -191,7 +193,9 @@ async function syncAuthenticatedLeaderboardProfile({
     const fallbackExperience = loadExperience();
     const existingRecordResponse = await authClient
         .from('combo_leaderboard')
-        .select('player_name, high_score, experience, updated_at')
+        .select(
+            'player_name, games_played, wins, losses, max_combo, high_score, experience, updated_at'
+        )
         .eq('user_id', userId)
         .maybeSingle();
 
@@ -201,6 +205,10 @@ async function syncAuthenticatedLeaderboardProfile({
 
     const existingRecord = existingRecordResponse.data as {
         player_name: string;
+        games_played: number | null;
+        wins: number | null;
+        losses: number | null;
+        max_combo: number | null;
         high_score: number;
         experience: number;
         updated_at: string | null;
@@ -220,6 +228,21 @@ async function syncAuthenticatedLeaderboardProfile({
     if (nextHighScore > 0) {
         saveBestScore(nextHighScore, 0);
     }
+
+    const localBest = loadBestScore();
+    const stats: ProfileStats = {
+        games_played: existingRecord?.games_played ?? 0,
+        wins: existingRecord?.wins ?? 0,
+        losses: existingRecord?.losses ?? 0,
+        max_combo: Math.max(
+            existingRecord?.max_combo ?? 0,
+            localBest.maxCombo || 0
+        ),
+        high_score: nextHighScore,
+        experience: nextExperience,
+        updated_at: existingRecord?.updated_at,
+    };
+    onAccountStats?.(stats);
 
     let nextPlayerName = existingRecord?.player_name.trim() ?? fallbackName;
 
@@ -344,6 +367,20 @@ export default function App(): JSX.Element {
     const [session, setSession] = useState<Session | undefined>(undefined);
     const [isGuest, setIsGuest] = useState(() => isGuestModeEnabled());
 
+    const [accountStats, setAccountStats] = useState<ProfileStats | undefined>(
+        () => {
+            const localBest = loadBestScore();
+            return {
+                games_played: 0,
+                wins: 0,
+                losses: 0,
+                max_combo: localBest.maxCombo || 0,
+                high_score: localBest.score || 0,
+                experience: loadExperience(),
+            };
+        }
+    );
+
     useEffect(() => {
         if (!supabaseAuthClient) {
             setSessionLoading(false);
@@ -367,6 +404,7 @@ export default function App(): JSX.Element {
                                 | undefined,
                             data.session.user.email
                         ),
+                        onAccountStats: setAccountStats,
                         onPlayerName: setPlayerName,
                     });
                     if (level !== undefined) {
@@ -396,6 +434,7 @@ export default function App(): JSX.Element {
                                     | undefined,
                                 currentSession.user.email
                             ),
+                            onAccountStats: setAccountStats,
                             onPlayerName: setPlayerName,
                         }).then((level) => {
                             if (level !== undefined) {
@@ -724,6 +763,15 @@ export default function App(): JSX.Element {
         setGuestModeEnabled(true);
         setPlayerName('');
         setPlayerLevel(calculateLevel(loadExperience()));
+        const localBest = loadBestScore();
+        setAccountStats({
+            games_played: 0,
+            wins: 0,
+            losses: 0,
+            max_combo: localBest.maxCombo || 0,
+            high_score: localBest.score || 0,
+            experience: loadExperience(),
+        });
         persistPlayerName('');
     }
 
@@ -737,6 +785,7 @@ export default function App(): JSX.Element {
         pathname,
         playerName,
         playerLevel,
+        accountStats,
         soloGame,
         multiplayerGame,
         localCpuGame,

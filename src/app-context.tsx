@@ -8,12 +8,23 @@ import type { useSoloGame } from './hooks/useSoloGame';
 import type { useTutorialGame } from './hooks/useTutorialGame';
 import type { LeaderboardEntry } from './lib/leaderboard';
 
+export type ProfileStats = {
+    games_played: number;
+    wins: number;
+    losses: number;
+    max_combo: number;
+    high_score: number;
+    experience: number;
+    updated_at?: string | null;
+};
+
 export type AppContextValue = {
     session: Session | undefined;
     isGuest: boolean;
     pathname: string;
     playerName: string;
     playerLevel: number | undefined;
+    accountStats: ProfileStats | undefined;
     soloGame: ReturnType<typeof useSoloGame>;
     multiplayerGame: ReturnType<typeof useMultiplayerGame>;
     localCpuGame: ReturnType<typeof useLocalCpuGame>;

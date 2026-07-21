@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import type { JSX, SyntheticEvent } from 'react';
 import { CircleUserRound, Loader2 } from 'lucide-react';
 
+import { useAppContext } from '../../app-context';
+import type { ProfileStats } from '../../app-context';
 import { uiText } from '../../app-state';
 import {
     getExpProgress,
@@ -29,16 +31,6 @@ type AccountStatus = {
     message: string;
 };
 
-type ProfileStats = {
-    games_played: number;
-    wins: number;
-    losses: number;
-    max_combo: number;
-    high_score: number;
-    experience: number;
-    updated_at?: string | null;
-};
-
 export function AccountScreen({
     playerName,
     userId,
@@ -46,13 +38,16 @@ export function AccountScreen({
     onLogout,
     onBack,
 }: AccountScreenProps): JSX.Element {
+    const { accountStats: prefetchedStats } = useAppContext();
     const [editingName, setEditingName] = useState(playerName);
     const [isEditing, setIsEditing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [status, setStatus] = useState<AccountStatus | undefined>(undefined);
 
-    const [stats, setStats] = useState<ProfileStats | undefined>(undefined);
-    const [loadingStats, setLoadingStats] = useState(true);
+    const [stats, setStats] = useState<ProfileStats | undefined>(
+        () => prefetchedStats
+    );
+    const [loadingStats, setLoadingStats] = useState(() => !prefetchedStats);
 
     useEffect(() => {
         let mounted = true;
