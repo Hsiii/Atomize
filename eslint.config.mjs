@@ -5,7 +5,7 @@ export default defineConfig(
     ...completeConfigBase,
 
     {
-        ignores: ['public/theme-init.js'],
+        ignores: ['public/theme-init.js', 'src/lib/database.types.ts'],
     },
 
     {
