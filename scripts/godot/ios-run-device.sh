@@ -20,10 +20,44 @@ detect_device_id() {
         return 1
     fi
 
-    local device_id
-    device_id="$(
-        plutil -extract result.devices.0.hardwareProperties.udid raw -o - "$devices_json" 2>/dev/null || true
+    local device_count
+    device_count="$(
+        plutil -extract result.devices raw -o - "$devices_json" 2>/dev/null || true
     )"
+    if [[ ! "$device_count" =~ ^[0-9]+$ ]]; then
+        rm -f "$devices_json"
+        return 1
+    fi
+
+    local device_id=""
+    local device_index
+    for ((device_index = 0; device_index < device_count; device_index++)); do
+        local tunnel_state
+        tunnel_state="$(
+            plutil \
+                -extract "result.devices.$device_index.connectionProperties.tunnelState" \
+                raw \
+                -o - \
+                "$devices_json" 2>/dev/null || true
+        )"
+
+        if [[ "$tunnel_state" != "connected" ]]; then
+            continue
+        fi
+
+        device_id="$(
+            plutil \
+                -extract "result.devices.$device_index.hardwareProperties.udid" \
+                raw \
+                -o - \
+                "$devices_json" 2>/dev/null || true
+        )"
+
+        if [[ -n "$device_id" ]]; then
+            break
+        fi
+    done
+
     rm -f "$devices_json"
 
     [[ -n "$device_id" ]] && printf '%s\n' "$device_id"
