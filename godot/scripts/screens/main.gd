@@ -6203,14 +6203,12 @@ func _load_icon_image(kind: String, size: int) -> Image:
 	if path.is_empty():
 		return image
 
-	var file := FileAccess.open(path, FileAccess.READ)
-	if file == null:
+	var texture := ResourceLoader.load(path) as Texture2D
+	if texture == null:
 		return image
 
-	var scale: float = max(1.0, float(size) / 24.0)
-	if image.load_svg_from_buffer(file.get_buffer(file.get_length()), scale) != OK:
-		image.fill(Color.TRANSPARENT)
-		return image
+	image = texture.get_image()
+	image.convert(Image.FORMAT_RGBA8)
 
 	if image.get_width() != size or image.get_height() != size:
 		image.resize(size, size, Image.INTERPOLATE_LANCZOS)
