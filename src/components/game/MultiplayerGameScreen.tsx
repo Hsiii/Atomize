@@ -193,7 +193,30 @@ export function MultiplayerGameScreen({
     return (
         <main className='app-shell fullscreen-shell'>
             <section className='screen game-screen multiplayer-game-screen'>
-                <section className='multiplayer-board' ref={battle.overlayRef}>
+                <section
+                    className={[
+                        'multiplayer-board',
+                        battle.hpImpacts.self?.hit
+                            ? 'multiplayer-board--self-hit'
+                            : '',
+                        battle.hpImpacts.enemy?.hit
+                            ? 'multiplayer-board--enemy-hit'
+                            : '',
+                    ]
+                        .filter(Boolean)
+                        .join(' ')}
+                    ref={battle.overlayRef}
+                    style={
+                        {
+                            '--battle-hit-duration': `${
+                                Math.max(
+                                    battle.hpImpacts.self?.hit?.durationMs ?? 0,
+                                    battle.hpImpacts.enemy?.hit?.durationMs ?? 0
+                                ) / 1000
+                            }s`,
+                        } as CSSProperties
+                    }
+                >
                     <BattleHpBar
                         damagePops={battle.damagePops.filter(
                             (damagePop) => damagePop.side === 'enemy'
