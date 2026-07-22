@@ -87,6 +87,8 @@ bun run backend:types:remote
 
 Link state and local environment files remain ignored under `supabase/.temp`
 and `supabase/.env*.local`. Never commit a service-role key.
+The CLI exposes its development ports on the host, so use this stack only on a
+trusted network with the host firewall enabled and stop it when finished.
 
 ## Godot mobile port
 
