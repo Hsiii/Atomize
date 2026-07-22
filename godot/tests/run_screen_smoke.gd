@@ -160,7 +160,7 @@ func _validate_attack_vfx(main_scene: Node, failures: Array[String]) -> void:
 		failures.append("impact shockwave is visible before bullet impact")
 
 func _validate_battle_emotion_vfx(main_scene: Node, failures: Array[String]) -> void:
-	for method_name in ["_spawn_heal_stream", "_spawn_fault_shards", "_spawn_perfect_halo"]:
+	for method_name in ["_spawn_heal_stream", "_spawn_fault_shards", "_spawn_perfect_halo", "_spawn_battle_hit_flash"]:
 		if not main_scene.has_method(method_name):
 			failures.append("missing battle emotion VFX method %s" % method_name)
 			return
@@ -168,8 +168,9 @@ func _validate_battle_emotion_vfx(main_scene: Node, failures: Array[String]) -> 
 	main_scene.call("_spawn_heal_stream", Vector2(120, 420), Vector2(250, 96), 12)
 	main_scene.call("_spawn_fault_shards", Vector2(180, 360), 6)
 	main_scene.call("_spawn_perfect_halo", Vector2(220, 300))
+	main_scene.call("_spawn_battle_hit_flash", true, 1)
 
-	for node_name in ["HealPulse", "HealMote", "FaultShard", "PerfectHalo", "PerfectOrbitMote"]:
+	for node_name in ["HealPulse", "HealMote", "FaultShard", "PerfectHalo", "PerfectOrbitMote", "BattleHitFlash"]:
 		if main_scene.find_child(node_name, true, false) == null:
 			failures.append("battle emotion VFX did not spawn %s" % node_name)
 

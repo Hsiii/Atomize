@@ -4866,7 +4866,8 @@ func _play_hp_hit(bar: ProgressBar, damage: int) -> void:
 
 	var severity := _attack_severity(damage)
 	_shake_control(bar, 6.0 + float(severity) * 3.0)
-	_shake_screen(2.0 + float(severity) * 1.5)
+	_shake_screen(4.0 + float(severity) * 2.0)
+	_spawn_battle_hit_flash(bar == player_hp_bar, severity)
 	_pulse_hp_bar_theme(bar, THEME_PROGRESS_DANGER, 0.42 + float(severity) * 0.06)
 	_pulse_label_color(_hp_label_for_bar(bar), COLOR_DANGER, _base_hp_color_for_bar(bar), 0.42)
 	_flash_control(bar, COLOR_DANGER, 0.56)
@@ -4966,14 +4967,48 @@ func _attack_severity(damage: int) -> int:
 	return 0
 
 func _shake_screen(distance: float) -> void:
+	if _prefers_reduced_motion():
+		return
+
 	var origin := position
 	var tween := _make_control_tween(self, "screen-shake")
 	tween.set_trans(Tween.TRANS_SINE)
 	tween.set_ease(Tween.EASE_OUT)
-	tween.tween_property(self, "position", origin + Vector2(-distance, 0), 0.018)
-	tween.tween_property(self, "position", origin + Vector2(distance * 0.72, 0), 0.018)
-	tween.tween_property(self, "position", origin + Vector2(-distance * 0.36, 0), 0.018)
-	tween.tween_property(self, "position", origin, 0.018)
+	tween.tween_property(self, "position", origin + Vector2(-distance, 0), 0.035)
+	tween.tween_property(self, "position", origin + Vector2(distance * 0.72, -distance * 0.28), 0.035)
+	tween.tween_property(self, "position", origin + Vector2(-distance * 0.48, distance * 0.24), 0.035)
+	tween.tween_property(self, "position", origin + Vector2(distance * 0.24, 0), 0.035)
+	tween.tween_property(self, "position", origin, 0.035)
+
+func _spawn_battle_hit_flash(player_hit: bool, severity: int) -> void:
+	var viewport_size := get_viewport_rect().size
+	var avatar: Control = target_blob_panel if player_hit else enemy_avatar_panel
+	var bar: ProgressBar = player_hp_bar if player_hit else enemy_hp_bar
+	var flash_top := viewport_size.y * (0.42 if player_hit else 0.0)
+	var flash_bottom := viewport_size.y * (1.0 if player_hit else 0.58)
+	if is_instance_valid(avatar) and is_instance_valid(bar):
+		flash_top = max(0.0, min(avatar.global_position.y, bar.global_position.y) - 24.0)
+		flash_bottom = min(
+			viewport_size.y,
+			max(avatar.global_position.y + avatar.size.y, bar.global_position.y + bar.size.y) + 24.0
+		)
+
+	var flash := ColorRect.new()
+	flash.name = "BattleHitFlash"
+	flash.color = COLOR_DANGER
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flash.z_index = 40
+	flash.position = Vector2(0, flash_top)
+	flash.size = Vector2(viewport_size.x, max(1.0, flash_bottom - flash_top))
+	flash.modulate = Color(1, 1, 1, 0.2 + float(severity) * 0.035)
+	add_child(flash)
+
+	var duration := 0.36 + float(severity) * 0.04
+	var tween := flash.create_tween().bind_node(flash)
+	tween.set_trans(Tween.TRANS_QUAD)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property(flash, "modulate", Color(1, 1, 1, 0), duration)
+	tween.finished.connect(flash.queue_free)
 
 func _shake_control(control: Control, distance: float) -> void:
 	if not is_instance_valid(control):
