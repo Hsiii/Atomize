@@ -64,6 +64,30 @@ VITE_SUPABASE_URL=your-project-url
 VITE_SUPABASE_ANON_KEY=your-anon-key
 ```
 
+### Local Supabase
+
+The tracked `supabase/config.toml` uses PostgreSQL 17, anonymous sign-in, Auth,
+Storage, and Realtime to match Atomize's hosted project without storing a token
+or project credential. Start the local backend, reset it from tracked
+migrations, and regenerate database types with:
+
+```bash
+bun run backend:start
+bun run backend:reset
+bun run backend:types
+```
+
+Maintainers can link the checkout to the hosted Atomize project after logging
+in with the Supabase CLI:
+
+```bash
+bunx supabase@2.109.1 link --project-ref <project-ref>
+bun run backend:types:remote
+```
+
+Link state and local environment files remain ignored under `supabase/.temp`
+and `supabase/.env*.local`. Never commit a service-role key.
+
 ## Godot mobile port
 
 The parallel Godot iOS/Android port lives in `godot/`. The Vite app remains the
