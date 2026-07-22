@@ -7,76 +7,123 @@ export type Json =
     | Json[];
 
 export type Database = {
-    /* Allows to automatically instantiate createClient with right options
-     instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY) */
-    __InternalSupabase: {
-        PostgrestVersion: '14.4';
+    graphql_public: {
+        Tables: {
+            [_ in never]: never;
+        };
+        Views: {
+            [_ in never]: never;
+        };
+        Functions: {
+            graphql: {
+                Args: {
+                    extensions?: Json;
+                    operationName?: string;
+                    query?: string;
+                    variables?: Json;
+                };
+                Returns: Json;
+            };
+        };
+        Enums: {
+            [_ in never]: never;
+        };
+        CompositeTypes: {
+            [_ in never]: never;
+        };
     };
     public: {
         Tables: {
             combo_leaderboard: {
                 Row: {
+                    experience: number;
                     games_played: number;
                     high_score: number;
                     losses: number;
                     max_combo: number;
                     player_name: string;
                     ties: number;
-                    updated_at: string | null;
+                    updated_at: string;
                     user_id: string;
                     wins: number;
-                    experience: number;
                 };
                 Insert: {
+                    experience?: number;
                     games_played?: number;
                     high_score?: number;
                     losses?: number;
                     max_combo?: number;
                     player_name: string;
                     ties?: number;
-                    updated_at?: string | null;
+                    updated_at?: string;
                     user_id: string;
                     wins?: number;
-                    experience?: number;
                 };
                 Update: {
+                    experience?: number;
                     games_played?: number;
                     high_score?: number;
                     losses?: number;
                     max_combo?: number;
                     player_name?: string;
                     ties?: number;
-                    updated_at?: string | null;
+                    updated_at?: string;
                     user_id?: string;
                     wins?: number;
-                    experience?: number;
                 };
                 Relationships: [];
             };
             friendships: {
                 Row: {
-                    id: string;
-                    created_at: string | null;
+                    created_at: string;
                     friend_id: string;
+                    id: string;
                     user_id: string;
                 };
                 Insert: {
-                    id?: string;
-                    created_at?: string | null;
+                    created_at?: string;
                     friend_id: string;
+                    id?: string;
                     user_id: string;
                 };
                 Update: {
-                    id?: string;
-                    created_at?: string | null;
+                    created_at?: string;
                     friend_id?: string;
+                    id?: string;
                     user_id?: string;
                 };
                 Relationships: [];
             };
         };
-        Views: Record<string, never>;
+        Views: {
+            [_ in never]: never;
+        };
         Functions: {
+            add_solo_exp: {
+                Args: { p_exp_gain: number; p_user_id: string };
+                Returns: undefined;
+            };
+            claim_player_name: {
+                Args: { p_player_name: string };
+                Returns: {
+                    experience: number;
+                    games_played: number;
+                    high_score: number;
+                    losses: number;
+                    max_combo: number;
+                    player_name: string;
+                    ties: number;
+                    updated_at: string;
+                    user_id: string;
+                    wins: number;
+                };
+                SetofOptions: {
+                    from: '*';
+                    to: 'combo_leaderboard';
+                    isOneToOne: true;
+                    isSetofReturn: false;
+                };
+            };
             record_match_result: {
                 Args: {
                     p_is_tie: boolean;
@@ -85,16 +132,34 @@ export type Database = {
                 };
                 Returns: undefined;
             };
-            add_solo_exp: {
-                Args: {
-                    p_user_id: string;
-                    p_exp_gain: number;
+            submit_solo_score: {
+                Args: { p_max_combo?: number; p_score: number };
+                Returns: {
+                    experience: number;
+                    games_played: number;
+                    high_score: number;
+                    losses: number;
+                    max_combo: number;
+                    player_name: string;
+                    ties: number;
+                    updated_at: string;
+                    user_id: string;
+                    wins: number;
                 };
-                Returns: undefined;
+                SetofOptions: {
+                    from: '*';
+                    to: 'combo_leaderboard';
+                    isOneToOne: true;
+                    isSetofReturn: false;
+                };
             };
         };
-        Enums: Record<string, never>;
-        CompositeTypes: Record<string, never>;
+        Enums: {
+            [_ in never]: never;
+        };
+        CompositeTypes: {
+            [_ in never]: never;
+        };
     };
 };
 
@@ -109,12 +174,12 @@ export type Tables<
     DefaultSchemaTableNameOrOptions extends
         | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
         | { schema: keyof DatabaseWithoutInternals },
-    TableName extends DefaultSchemaTableNameOrOptions extends {
+    TableName extends (DefaultSchemaTableNameOrOptions extends {
         schema: keyof DatabaseWithoutInternals;
     }
         ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
               DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
-        : never = never,
+        : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
 }
@@ -138,11 +203,11 @@ export type TablesInsert<
     DefaultSchemaTableNameOrOptions extends
         | keyof DefaultSchema['Tables']
         | { schema: keyof DatabaseWithoutInternals },
-    TableName extends DefaultSchemaTableNameOrOptions extends {
+    TableName extends (DefaultSchemaTableNameOrOptions extends {
         schema: keyof DatabaseWithoutInternals;
     }
         ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
-        : never = never,
+        : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
 }
@@ -163,11 +228,11 @@ export type TablesUpdate<
     DefaultSchemaTableNameOrOptions extends
         | keyof DefaultSchema['Tables']
         | { schema: keyof DatabaseWithoutInternals },
-    TableName extends DefaultSchemaTableNameOrOptions extends {
+    TableName extends (DefaultSchemaTableNameOrOptions extends {
         schema: keyof DatabaseWithoutInternals;
     }
         ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
-        : never = never,
+        : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
 }
@@ -188,11 +253,11 @@ export type Enums<
     DefaultSchemaEnumNameOrOptions extends
         | keyof DefaultSchema['Enums']
         | { schema: keyof DatabaseWithoutInternals },
-    EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    EnumName extends (DefaultSchemaEnumNameOrOptions extends {
         schema: keyof DatabaseWithoutInternals;
     }
         ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
-        : string = never,
+        : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
 }
@@ -205,11 +270,11 @@ export type CompositeTypes<
     PublicCompositeTypeNameOrOptions extends
         | keyof DefaultSchema['CompositeTypes']
         | { schema: keyof DatabaseWithoutInternals },
-    CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
         schema: keyof DatabaseWithoutInternals;
     }
         ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
-        : string = never,
+        : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
 }
@@ -219,6 +284,9 @@ export type CompositeTypes<
       : never;
 
 export const Constants = {
+    graphql_public: {
+        Enums: {},
+    },
     public: {
         Enums: {},
     },
